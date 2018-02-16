@@ -26,6 +26,7 @@
 #include <memory>
 #include <string>
 
+#if 1
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 namespace http = boost::beast::http;    // from <boost/beast/http.hpp>
 
@@ -44,7 +45,7 @@ class session : public std::enable_shared_from_this<session>
     tcp::resolver resolver_;
     tcp::socket socket_;
     boost::beast::flat_buffer buffer_; // (Must persist between reads)
-    http::request<http::empty_body> req_;
+    http::request<http::string_body> req_;
     http::response<http::string_body> res_;
 
 public:
@@ -62,7 +63,8 @@ public:
         char const* host,
         char const* port,
         char const* target,
-        int version)
+        int version,
+        const std::string& command)
     {
         // Set up an HTTP GET request message
         req_.version(version);
@@ -70,6 +72,14 @@ public:
         req_.target(target);
         req_.set(http::field::host, host);
         req_.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+
+        //boost::beast::http::field
+        //req_.set(http::field::body, "test_body");
+
+        req_.set(http::field::content_type, "text/plain");
+        req_.body() = command;
+
+        req_.prepare_payload();
 
         // Look up the domain name
         resolver_.async_resolve(
@@ -146,7 +156,9 @@ public:
             return fail(ec, "read");
 
         // Write the message to standard out
-        std::cout << res_ << std::endl;
+        //std::cout << res_ << std::endl;
+
+        std::cout << res_.body() << std::endl;
 
         // Gracefully close the socket
         socket_.shutdown(tcp::socket::shutdown_both, ec);
@@ -158,6 +170,7 @@ public:
         // If we get here then the connection is closed gracefully
     }
 };
+#endif
 
 //------------------------------------------------------------------------------
 
@@ -198,10 +211,11 @@ void test_http_client()
     std::string host = "127.0.0.1";
     std::string port = "6750";
     std::string target = "/test.txt";
+    std::string command = "user i20k";
 
     boost::asio::io_context ioc;
 
-    std::make_shared<session>(ioc)->run(host.c_str(), port.c_str(), target.c_str(), 11);
+    std::make_shared<session>(ioc)->run(host.c_str(), port.c_str(), target.c_str(), 11, command);
 
     ioc.run();
 }
