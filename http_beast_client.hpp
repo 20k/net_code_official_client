@@ -1,6 +1,10 @@
 #ifndef HTTP_BEAST_CLIENT_HPP_INCLUDED
 #define HTTP_BEAST_CLIENT_HPP_INCLUDED
 
+#include <fstream>
+#include <string>
+#include <vector>
+
 /*struct request
 {
     //int64_t id;
@@ -46,6 +50,16 @@ struct request_holder
         return to_process.size() > 0;
     }
 };*/
+
+inline
+std::string read_file(const std::string& file)
+{
+    std::ifstream t(file);
+    std::string str((std::istreambuf_iterator<char>(t)),
+                     std::istreambuf_iterator<char>());
+
+    return str;
+}
 
 void test_http_client();
 

@@ -26,6 +26,8 @@
 #include <memory>
 #include <string>
 
+#include "../crapmud/script_util_shared.hpp"
+
 #if 1
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 namespace http = boost::beast::http;    // from <boost/beast/http.hpp>
@@ -205,6 +207,16 @@ int main(int argc, char** argv)
     return EXIT_SUCCESS;
 }
 #endif
+
+
+std::string handle_up(const std::string& unknown_command)
+{
+    std::string up = "#up ";
+
+    std::vector<std::string> strings = no_ss_split(unknown_command, " ");
+
+
+}
 
 void test_http_client()
 {
