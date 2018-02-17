@@ -1,8 +1,16 @@
 function(context, args)
-{
-	JSON = "hi";
+{		
+	//ns_call("test.hello");
+
+	#hs.i20k.test_freeze;
 	
-	return JSON;
+	return fs_call("i20k.test_freeze")();
+	
+	//return #fs.i20k.test_freeze();
+	
+	//return fs_call("i20k.test_freeze")();
+			
+	//return #fs.i20k.test_freeze();
 	
 	return JSON.stringify("hello");
 	
