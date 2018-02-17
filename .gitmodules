@@ -1,0 +1,3 @@
+[submodule "deps/crapmud"]
+	path = deps/crapmud
+	url = https://bitbucket.org/20k11/crapmud

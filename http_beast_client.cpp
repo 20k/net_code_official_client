@@ -25,7 +25,7 @@
 #include <iostream>
 #include <string>
 
-#include "../crapmud/script_util_shared.hpp"
+#include <crapmud/script_util_shared.hpp>
 
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 namespace http = boost::beast::http;    // from <boost/beast/http.hpp>
