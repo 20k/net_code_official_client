@@ -28,12 +28,12 @@
 
 #include "../crapmud/script_util_shared.hpp"
 
-#if 1
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 namespace http = boost::beast::http;    // from <boost/beast/http.hpp>
 
 //------------------------------------------------------------------------------
 
+#if 0
 // Report a failure
 void
 fail(boost::system::error_code ec, char const* what)
@@ -163,11 +163,11 @@ public:
         std::cout << res_.body() << std::endl;
 
         // Gracefully close the socket
-        socket_.shutdown(tcp::socket::shutdown_both, ec);
+        /*socket_.shutdown(tcp::socket::shutdown_both, ec);
 
         // not_connected happens sometimes so don't bother reporting it.
         if(ec && ec != boost::system::errc::not_connected)
-            return fail(ec, "shutdown");
+            return fail(ec, "shutdown");*/
 
         // If we get here then the connection is closed gracefully
     }
@@ -215,8 +215,72 @@ std::string handle_up(const std::string& unknown_command)
 
     std::vector<std::string> strings = no_ss_split(unknown_command, " ");
 
+    if(unknown_command.substr(0, up.length()) == up && strings.size() == 2)
+    {
+        std::string name = strings[1];
 
+        std::string hardcoded_user = "i20k";
+
+        std::string diskname = "./scripts/" + hardcoded_user + "." + name + ".js";
+
+        return up + name + " " + read_file(diskname);
+    }
+
+    return unknown_command;
 }
+
+#if 0
+void do_net_send()
+{
+    // The io_context is required for all I/O
+    boost::asio::io_context ioc;
+
+    // These objects perform our I/O
+    tcp::resolver resolver{ioc};
+    tcp::socket socket{ioc};
+
+    // Look up the domain name
+    auto const results = resolver.resolve(host, port);
+
+    // Make the connection on the IP address we get from a lookup
+    boost::asio::connect(socket, results.begin(), results.end());
+
+    // Set up an HTTP GET request message
+    http::request<http::string_body> req{http::verb::get, target, version};
+    req.set(http::field::host, host);
+    req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+
+    /*req.set(http::field::content_type, "text/plain");
+    req.body() = command;
+
+    req.prepare_payload();*/
+
+    // Send the HTTP request to the remote host
+    http::write(socket, req);
+
+    // This buffer is used for reading and must be persisted
+    boost::beast::flat_buffer buffer;
+
+    // Declare a container to hold the response
+    http::response<http::dynamic_body> res;
+
+    // Receive the HTTP response
+    http::read(socket, buffer, res);
+
+    // Write the message to standard out
+    std::cout << res << std::endl;
+
+    // Gracefully close the socket
+    boost::system::error_code ec;
+    socket.shutdown(tcp::socket::shutdown_both, ec);
+
+    // not_connected happens sometimes
+    // so don't bother reporting it.
+    //
+    if(ec && ec != boost::system::errc::not_connected)
+        throw boost::system::system_error{ec};
+}
+#endif
 
 void test_http_client()
 {
@@ -225,9 +289,90 @@ void test_http_client()
     std::string target = "/test.txt";
     std::string command = "user i20k";
 
+    int version = 11;
+
     boost::asio::io_context ioc;
 
-    std::make_shared<session>(ioc)->run(host.c_str(), port.c_str(), target.c_str(), 11, command);
+    tcp::resolver resolver{ioc};
+    tcp::socket socket{ioc};
 
-    ioc.run();
+    auto const results = resolver.resolve(host, port);
+
+    // Make the connection on the IP address we get from a lookup
+    boost::asio::connect(socket, results.begin(), results.end());
+
+
+    while(1)
+    {
+        std::string next_command;
+
+        std::getline(std::cin, next_command);
+
+        next_command = handle_up(next_command);
+
+        http::request<http::string_body> req{http::verb::get, target, version};
+        req.set(http::field::host, host);
+        req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+
+        req.set(http::field::content_type, "text/plain");
+        req.body() = next_command;
+
+        req.prepare_payload();
+
+        http::write(socket, req);
+
+        // This buffer is used for reading and must be persisted
+        boost::beast::flat_buffer buffer;
+
+        // Declare a container to hold the response
+        http::response<http::dynamic_body> res;
+
+        // Receive the HTTP response
+        http::read(socket, buffer, res);
+
+        // Write the message to standard out
+        std::cout << res << std::endl;
+    }
 }
+
+///problem is we need to login as a user first
+///gotta do this properly sadly
+#if 0
+void test_http_client()
+{
+    std::string host = "127.0.0.1";
+    std::string port = "6750";
+    std::string target = "/test.txt";
+    std::string command = "user i20k";
+
+    //std::string command = "#up newscript";
+
+    command = handle_up(command);
+
+    std::cout << "exec " << command << std::endl;
+
+    boost::asio::io_context ioc;
+
+    std::shared_ptr<session> var = std::make_shared<session>(ioc);
+
+
+    while(1)
+    {
+        std::string next_command;
+
+        std::getline(std::cin, next_command);
+
+        next_command = handle_up(next_command);
+
+        var->run(host.c_str(), port.c_str(), target.c_str(), 11, next_command);
+
+        std::cout << "block\n";
+
+        ioc.run();
+
+        std::cout << "done\n";
+
+        //printf("hi\n");
+    }
+}
+#endif
