@@ -93,12 +93,14 @@ void test_http_client()
         boost::beast::flat_buffer buffer;
 
         // Declare a container to hold the response
-        http::response<http::dynamic_body> res;
+        http::response<http::string_body> res;
 
         // Receive the HTTP response
         http::read(socket, buffer, res);
 
+        std::string str = res.body();
+
         // Write the message to standard out
-        std::cout << res << std::endl;
+        std::cout << str << std::endl;
     }
 }
