@@ -31,6 +31,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
+			<Add option="-Wno-narrowing" />
 			<Add directory="deps" />
 		</Compiler>
 		<Linker>
@@ -54,6 +55,7 @@
 		<Unit filename="http_beast_client.cpp" />
 		<Unit filename="http_beast_client.hpp" />
 		<Unit filename="main.cpp" />
+		<Unit filename="util.hpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />
