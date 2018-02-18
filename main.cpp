@@ -248,11 +248,14 @@ int main()
                     }
                 }
             }
-        }
 
-        if(ONCE_MACRO(sf::Keyboard::BackSpace) && is_focused(window))
-        {
-            term.remove_back();
+            if(event.type == sf::Event::KeyPressed)
+            {
+                if(event.key.code == sf::Keyboard::BackSpace)
+                {
+                    term.remove_back();
+                }
+            }
         }
 
         if(ONCE_MACRO(sf::Keyboard::Return) && is_focused(window))
