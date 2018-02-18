@@ -116,6 +116,79 @@ struct terminal
     }
 };
 
+/*
+std::vector<hackmud_char> chars;
+
+for(int y=0; y<nimage.getSize().y; y++)
+{
+    for(int x=0; x<nimage.getSize().x; x++)
+    {
+        sf::Color col = nimage.getPixel(x, y);
+
+        char nearest_col = get_nearest_col(col, colour_map);
+
+        vec3f real_col = {col.r, col.g, col.b};
+        vec3f cur_col = colour_map[nearest_col];
+
+        float brightness_scale = col2bright(real_col) / col2bright(cur_col);
+
+        brightness_scale = clamp(brightness_scale, 0.f, 10.f);
+
+        if(isnan(brightness_scale) || isinf(brightness_scale))
+            brightness_scale = 1.f;
+
+        hackmud_char hc;
+
+        hc.is_newline = x == nimage.getSize().x - 1;
+        hc.c = '@';
+        hc.c = col2ascii({col.r, col.g, col.b}, brightness_scale);
+
+        hc.colour = nearest_col;
+
+        if(chars.size() != 0)
+        {
+            hc.try_merge(chars.back());
+        }
+
+        chars.push_back(hc);
+    }
+}
+
+///appears to be fixed in live
+#ifdef FIX_ONECHARACTER_BUG
+for(int i=1; i<chars.size()-1; i++)
+{
+    if(SPACE == "")
+        chars[i].eliminate_single(chars[i-1], chars[i+1]);
+}
+#endif
+
+for(int i=1; i<chars.size(); i++)
+{
+    chars[i].try_merge(chars[i-1]);
+}*/
+
+/* hackmud_char hc = chars[y*max_w + x];
+
+std::string rs = std::string(1,hc.c);
+
+if(hc.is_newline)
+{
+    rs += "\n";
+}
+
+vec3f fc = colour_map[hc.colour];
+sf::Color sc = sf::Color(fc.x(), fc.y(), fc.z());
+
+if(once)
+std::cout << rs;
+
+txt.setPosition(x*10, y*10);
+txt.setString(rs);
+txt.setColor(sc);
+
+win.draw(txt);*/
+
 bool is_focused(sf::RenderWindow& win)
 {
     return win.getSystemHandle() == GetFocus();
