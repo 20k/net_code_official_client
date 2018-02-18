@@ -6,6 +6,7 @@ std::map<char, vec3f> get_cmap()
     std::map<char, vec3f> colour_map;
 
     ///sigh
+    ///need to sample with bloom off
     colour_map['A'] = {240, 240, 240};
     colour_map['B'] = {234, 241, 241};
     colour_map['C'] = {206, 202, 203};
@@ -65,29 +66,57 @@ std::map<char, vec3f> get_cmap()
 
 struct interop_char
 {
-    std::string characters;
-    vec3f col = {1,1,1};
+    char c = 'A';
+    vec3f col = {255,255,255};
 };
 
-std::vector<interop_char> build_from_colour_string(std::string in)
+std::vector<interop_char> strip_interop(std::vector<interop_char> in)
+{
+    if(in.size() <= 2)
+        return in;
+
+    if(in.front().c == '`' && in.back().c == '`' && isalpha(in[1].c))
+    {
+        in.pop_back();
+        in.erase(in.begin());
+        in.erase(in.begin());
+    }
+
+    return in;
+}
+
+std::vector<interop_char> build_from_colour_string(const std::string& in)
 {
     std::vector<interop_char> ret;
 
-    interop_char last;
     bool found_colour = false;
     bool set_colour = false;
 
-    bool termd = false;
+    char last_col = 'A';
+
+    bool term = false;
+
+    std::vector<interop_char> current_color_buf;
 
     for(int i=0; i < in.size(); i++)
     {
         char cur = in[i];
 
-        termd = false;
+        term = false;
 
         if(cur == '`' && !found_colour)
         {
+            current_color_buf = strip_interop(current_color_buf);
+            ret.insert(ret.end(), current_color_buf.begin(), current_color_buf.end());
+            current_color_buf.clear();
+
             set_colour = true;
+
+            interop_char c;
+            c.c = cur;
+
+            current_color_buf.push_back(c);
+
             continue;
         }
 
@@ -96,35 +125,53 @@ std::vector<interop_char> build_from_colour_string(std::string in)
             set_colour = false;
             found_colour = true;
 
-            last.colour = get_cmap()[cur];
+            last_col = cur;
+
+            interop_char c;
+            c.c = cur;
+            c.col = get_cmap()[last_col];
+
+            current_color_buf.push_back(c);
+
             continue;
         }
 
         if(cur != '`')
         {
-            last.characters += std::string(1, cur);
+            interop_char c;
+            c.c = cur;
+            c.col = get_cmap()[last_col];
+
+            current_color_buf.push_back(c);
 
             continue;
         }
 
         if(cur == '`' && found_colour)
         {
-            ret.push_back(last);
+            interop_char c;
+            c.c = cur;
 
-            termd = true;
+            current_color_buf.push_back(c);
+
+            current_color_buf = strip_interop(current_color_buf);
+
+            ret.insert(ret.end(), current_color_buf.begin(), current_color_buf.end());
+            current_color_buf.clear();
 
             found_colour = false;
             set_colour = false;
+            last_col = 'A';
+            term = true;
 
             continue;
         }
     }
 
-    if(!termd)
+    if(!term)
     {
-        last.characters = "`" + last.characters;
-
-        ret.push_back(last);
+        ret.insert(ret.end(), current_color_buf.begin(), current_color_buf.end());
+        current_color_buf.clear();
     }
 
     return ret;

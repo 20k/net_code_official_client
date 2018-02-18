@@ -9,6 +9,7 @@
 #include "util.hpp"
 
 #include <crapmud/script_util_shared.hpp>
+#include "colour_interop.hpp"
 
 struct terminal
 {
@@ -43,9 +44,9 @@ struct terminal
     int cheight = 16;
     int cwbuf = 4;
 
-    int get_num_lines(sf::RenderWindow& win, const std::string& str)
+    int get_num_lines(sf::RenderWindow& win, int str_len)
     {
-        int len = str.size() * cwidth;
+        int len = str_len * cwidth;
 
         int num_lines = floor(len / (float)win.getSize().x);
 
@@ -60,11 +61,13 @@ struct terminal
 
         vec2f pos = cpos;
 
-        int num_lines = get_num_lines(win, str);
+        std::vector<interop_char> chars = build_from_colour_string(str);
+
+        int num_lines = get_num_lines(win, chars.size());
 
         pos.y() -= num_lines * cheight;
 
-        for(int i=0; i < str.size(); i++)
+        for(int i=0; i < chars.size(); i++)
         {
             if(pos.x() >= win.getSize().x - 4)
             {
@@ -74,15 +77,13 @@ struct terminal
 
             vec2f found_pos = round(pos);
 
-            txt.setString(std::string(1, str[i]));
+            txt.setString(std::string(1, chars[i].c));
             txt.setCharacterSize(12);
             txt.setPosition(found_pos.x(), found_pos.y());
 
-            vec4f col = {1,1,1,1};
+            vec3f col = chars[i].col;
 
-            col = col * 255.f;
-
-            txt.setFillColor(sf::Color(col.x(), col.y(), col.z(), col.w()));
+            txt.setFillColor(sf::Color(col.x(), col.y(), col.z(), 255));
 
             vec2i dim = {txt.getGlobalBounds().width, txt.getGlobalBounds().height};
 
