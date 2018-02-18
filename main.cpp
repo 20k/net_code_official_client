@@ -29,8 +29,6 @@ struct terminal
 
     void add_to_command(char c)
     {
-        //command.push_back(c);
-
         if(cursor_pos_idx >= command.size())
         {
             command.push_back(c);
@@ -68,7 +66,6 @@ struct terminal
         return num_lines;
     }
 
-    ///need to wrap text here
     void render_str(sf::RenderWindow& win, const std::string& str, vec2f& cpos)
     {
         sf::Text txt;
