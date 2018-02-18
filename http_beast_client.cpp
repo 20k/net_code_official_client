@@ -31,7 +31,7 @@
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 namespace http = boost::beast::http;    // from <boost/beast/http.hpp>
 
-std::string handle_up(const std::string& unknown_command)
+std::string handle_up(shared_data* shared, const std::string& unknown_command)
 {
     std::string up = "#up ";
 
@@ -41,7 +41,7 @@ std::string handle_up(const std::string& unknown_command)
     {
         std::string name = strings[1];
 
-        std::string hardcoded_user = "i20k";
+        std::string hardcoded_user = shared->get_user();
 
         std::string diskname = "./scripts/" + hardcoded_user + "." + name + ".js";
 
@@ -63,7 +63,7 @@ void handle_async_write(shared_data* shared, tcp::socket* socket)
         {
             std::string next_command = shared->get_front_write();
 
-            next_command = handle_up(next_command);
+            next_command = handle_up(shared, next_command);
 
             http::request<http::string_body> req{http::verb::get, target, version};
             req.set(http::field::host, host);

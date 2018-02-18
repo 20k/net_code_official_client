@@ -67,6 +67,7 @@ struct shared_data
 {
     std::deque<std::string> read_queue;
     std::deque<std::string> write_queue;
+    std::string user;
 
     std::mutex ilock;
 
@@ -128,6 +129,20 @@ struct shared_data
         std::lock_guard<std::mutex> lk(ilock);
 
         read_queue.push_back(str);
+    }
+
+    void set_user(const std::string& in)
+    {
+        std::lock_guard<std::mutex> lk(ilock);
+
+        user = in;
+    }
+
+    std::string get_user()
+    {
+        std::lock_guard<std::mutex> lk(ilock);
+
+        return user;
     }
 };
 

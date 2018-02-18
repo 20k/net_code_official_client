@@ -191,6 +191,20 @@ int main()
 
             term.command = strip_whitespace(term.command);
 
+            std::string swapping_users = "user ";
+
+            if(term.command.substr(0, swapping_users.length()) == swapping_users)
+            {
+                std::vector<std::string> spl = no_ss_split(term.command, " ");
+
+                ///HACK ALERT
+                ///NEED TO WAIT FOR SERVER CONFIRMATION
+                if(spl.size() >= 2)
+                {
+                    shared.set_user(spl[1]);
+                }
+            }
+
             shared.add_back_write(term.command);
             term.text_history.push_back(term.command);
             term.command = "";
