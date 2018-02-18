@@ -100,9 +100,9 @@ struct terminal
 
             txt.setFillColor(sf::Color(col.x(), col.y(), col.z(), 255));
 
-            vec2i dim = {txt.getGlobalBounds().width, txt.getGlobalBounds().height};
+            //vec2i dim = {txt.getGlobalBounds().width, txt.getGlobalBounds().height};
 
-            pos.x() += 8;
+            pos.x() += cwidth;
 
             win.draw(txt);
         }
@@ -129,6 +129,13 @@ struct terminal
 
             current_pos.y() -= cheight;
         }
+
+        std::string cursor_icon = "|";
+
+        vec2f to_render_curs = start_pos;
+        to_render_curs.x() += cwidth * cursor_pos_idx - cwidth/2.f;
+
+        render_str(win, cursor_icon, to_render_curs);
     }
 
     void move_command_history_idx(int dir)
@@ -274,6 +281,16 @@ int main()
                 if(event.key.code == sf::Keyboard::Down)
                 {
                     term.move_command_history_idx(1);
+                }
+
+                if(event.key.code == sf::Keyboard::Left)
+                {
+                    term.move_cursor(-1);
+                }
+
+                if(event.key.code == sf::Keyboard::Right)
+                {
+                    term.move_cursor(1);
                 }
 
                 if(event.key.code == sf::Keyboard::Escape)
