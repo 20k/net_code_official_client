@@ -176,7 +176,11 @@ void watchdog(shared_data* shared, shared_context* ctx)
 
                 std::cout << "Try Reconnect" << std::endl;
 
+                shared->add_back_read("Connecting...");
+
                 ctx->connect(host, port);
+
+                shared->add_back_read("Connected");
 
                 socket_alive = true;
 
@@ -184,8 +188,10 @@ void watchdog(shared_data* shared, shared_context* ctx)
             }
             catch(...)
             {
+                shared->add_back_read("Connection to the server failed");
+
                 std::cout << "Server down" << std::endl;
-                Sleep(1);
+                Sleep(5000);
             }
         }
 
@@ -195,20 +201,7 @@ void watchdog(shared_data* shared, shared_context* ctx)
 
 void test_http_client(shared_data& shared)
 {
-    std::string host = "127.0.0.1";
-    std::string port = "6750";
-    //std::string target = "/test.txt";
-    //std::string command = "user i20k";
-
-    //int version = 11;
-
-    /*boost::asio::io_context* ioc = new boost::asio::io_context;
-
-    tcp::resolver* resolver = new tcp::resolver(*ioc);
-    tcp::socket* socket = new tcp::socket(*ioc);*/
-
     shared_context* ctx = new shared_context();
-    //ctx->connect(host, port);
 
     std::thread(handle_async_read, &shared, &ctx->socket).detach();
     std::thread(handle_async_write, &shared, &ctx->socket).detach();
