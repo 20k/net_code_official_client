@@ -24,6 +24,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <thread>
 
 #include <crapmud/script_util_shared.hpp>
 
@@ -50,57 +51,82 @@ std::string handle_up(const std::string& unknown_command)
     return unknown_command;
 }
 
-void test_http_client()
+void handle_async_write(shared_data* shared, tcp::socket* socket)
 {
-    std::string host = "127.0.0.1";
-    std::string port = "6750";
-    std::string target = "/test.txt";
-    std::string command = "user i20k";
-
-    int version = 11;
-
-    boost::asio::io_context ioc;
-
-    tcp::resolver resolver{ioc};
-    tcp::socket socket{ioc};
-
-    auto const results = resolver.resolve(host, port);
-
-    // Make the connection on the IP address we get from a lookup
-    boost::asio::connect(socket, results.begin(), results.end());
-
-
     while(1)
     {
-        std::string next_command;
+        std::string target = "/test.txt";
+        int version = 11;
+        std::string host = "127.0.0.1";
 
-        std::getline(std::cin, next_command);
+        if(shared->has_front_write())
+        {
+            std::string next_command = shared->get_front_write();
 
-        next_command = handle_up(next_command);
+            next_command = handle_up(next_command);
 
-        http::request<http::string_body> req{http::verb::get, target, version};
-        req.set(http::field::host, host);
-        req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+            http::request<http::string_body> req{http::verb::get, target, version};
+            req.set(http::field::host, host);
+            req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
 
-        req.set(http::field::content_type, "text/plain");
-        req.body() = next_command;
+            req.set(http::field::content_type, "text/plain");
+            req.body() = next_command;
 
-        req.prepare_payload();
+            req.prepare_payload();
 
-        http::write(socket, req);
+            http::write(*socket, req);
+        }
 
-        // This buffer is used for reading and must be persisted
+        Sleep(1);
+    }
+}
+
+void handle_async_read(shared_data* shared, tcp::socket* socket)
+{
+    while(1)
+    {
         boost::beast::flat_buffer buffer;
 
         // Declare a container to hold the response
         http::response<http::string_body> res;
 
-        // Receive the HTTP response
-        http::read(socket, buffer, res);
+        if(socket->available() > 0)
+        {
+            // Receive the HTTP response
+            http::read(*socket, buffer, res);
 
-        std::string str = res.body();
+            std::string str = res.body();
 
-        // Write the message to standard out
-        std::cout << str << std::endl;
+            // Write the message to standard out
+            std::cout << str << std::endl;
+
+            shared->add_back_read(str);
+        }
+
+        Sleep(1);
     }
+}
+
+void test_http_client(shared_data& shared)
+{
+    std::string host = "127.0.0.1";
+    std::string port = "6750";
+    //std::string target = "/test.txt";
+    //std::string command = "user i20k";
+
+    //int version = 11;
+
+    boost::asio::io_context* ioc = new boost::asio::io_context;
+
+    tcp::resolver* resolver = new tcp::resolver(*ioc);
+    tcp::socket* socket = new tcp::socket(*ioc);
+
+    auto const results = resolver->resolve(host, port);
+
+    // Make the connection on the IP address we get from a lookup
+    boost::asio::connect(*socket, results.begin(), results.end());
+
+
+    std::thread(handle_async_read, &shared, socket).detach();
+    std::thread(handle_async_write, &shared, socket).detach();
 }

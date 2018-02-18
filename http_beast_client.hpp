@@ -116,14 +116,14 @@ struct shared_data
         return ret;
     }
 
-    void add_front_write(const std::string& str)
+    void add_back_write(const std::string& str)
     {
         std::lock_guard<std::mutex> lk(ilock);
 
         write_queue.push_back(str);
     }
 
-    void add_front_read(const std::string& str)
+    void add_back_read(const std::string& str)
     {
         std::lock_guard<std::mutex> lk(ilock);
 
@@ -131,6 +131,6 @@ struct shared_data
     }
 };
 
-void test_http_client();
+void test_http_client(shared_data& shared);
 
 #endif // HTTP_BEAST_CLIENT_HPP_INCLUDED
