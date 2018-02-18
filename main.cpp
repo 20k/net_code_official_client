@@ -168,8 +168,6 @@ struct terminal
     {
         int to_remove = cursor_pos_idx - 1;
 
-        std::cout << "to rem " << to_remove << " " << command.size() << std::endl;
-
         if(to_remove < 0 || to_remove >= command.size())
             return;
 
