@@ -51,33 +51,71 @@ std::string handle_up(shared_data* shared, const std::string& unknown_command)
     return unknown_command;
 }
 
+static std::mutex local_mut;
+volatile static bool socket_alive = false;
+
+struct shared_context
+{
+    boost::asio::io_context ioc;// = new boost::asio::io_context;
+
+    tcp::resolver resolver;// = new tcp::resolver(*ioc);
+    tcp::socket socket;// = new tcp::socket(*ioc);
+
+    shared_context() : resolver(ioc), socket(ioc)
+    {
+
+    }
+
+    void connect(const std::string& host, const std::string& port)
+    {
+        auto const results = resolver.resolve(host, port);
+
+        // Make the connection on the IP address we get from a lookup
+        boost::asio::connect(socket, results.begin(), results.end());
+    }
+};
+
 void handle_async_write(shared_data* shared, tcp::socket* socket)
 {
     while(1)
     {
-        std::string target = "/test.txt";
-        int version = 11;
-        std::string host = "127.0.0.1";
-
-        if(shared->has_front_write())
-        {
-            std::string next_command = shared->get_front_write();
-
-            next_command = handle_up(shared, next_command);
-
-            http::request<http::string_body> req{http::verb::get, target, version};
-            req.set(http::field::host, host);
-            req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-
-            req.set(http::field::content_type, "text/plain");
-            req.body() = next_command;
-
-            req.prepare_payload();
-
-            http::write(*socket, req);
-        }
-
+        //std::lock_guard<std::mutex> lk(local_mut);
         Sleep(1);
+
+        try
+        {
+            if(!socket_alive)
+                continue;
+
+            std::string target = "/test.txt";
+            int version = 11;
+            std::string host = "127.0.0.1";
+
+            if(shared->has_front_write())
+            {
+                std::string next_command = shared->get_front_write();
+
+                next_command = handle_up(shared, next_command);
+
+                http::request<http::string_body> req{http::verb::get, target, version};
+                req.set(http::field::host, host);
+                req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+
+                req.set(http::field::content_type, "text/plain");
+                req.body() = next_command;
+
+                req.prepare_payload();
+
+                http::write(*socket, req);
+            }
+
+        }
+        catch(...)
+        {
+            socket_alive = false;
+            std::cout << "caught write exception" << std::endl;
+            Sleep(1000);
+        }
     }
 }
 
@@ -85,22 +123,70 @@ void handle_async_read(shared_data* shared, tcp::socket* socket)
 {
     while(1)
     {
-        boost::beast::flat_buffer buffer;
+        //std::lock_guard<std::mutex> lk(local_mut);
+        Sleep(1);
 
-        // Declare a container to hold the response
-        http::response<http::string_body> res;
-
-        if(socket->available() > 0)
+        try
         {
-            // Receive the HTTP response
-            http::read(*socket, buffer, res);
+            if(!socket_alive)
+                continue;
 
-            std::string str = res.body();
+            boost::beast::flat_buffer buffer;
 
-            // Write the message to standard out
-            std::cout << str << std::endl;
+            // Declare a container to hold the response
+            http::response<http::string_body> res;
 
-            shared->add_back_read(str);
+            if(socket->available() > 0)
+            {
+                // Receive the HTTP response
+                http::read(*socket, buffer, res);
+
+                std::string str = res.body();
+
+                // Write the message to standard out
+                std::cout << str << std::endl;
+
+                shared->add_back_read(str);
+            }
+        }
+        catch(...)
+        {
+            socket_alive = false;
+            std::cout << "caught read exception" << std::endl;
+            Sleep(1000);
+        }
+    }
+}
+
+void watchdog(shared_data* shared, shared_context* ctx)
+{
+    while(1)
+    {
+        if(socket_alive)
+            Sleep(250);
+
+        //std::lock_guard<std::mutex> lk(local_mut);
+
+        while(!socket_alive)
+        {
+            try
+            {
+                std::string host = "127.0.0.1";
+                std::string port = "6750";
+
+                std::cout << "Try Reconnect" << std::endl;
+
+                ctx->connect(host, port);
+
+                socket_alive = true;
+
+                Sleep(1000);
+            }
+            catch(...)
+            {
+                std::cout << "Server down" << std::endl;
+                Sleep(1);
+            }
         }
 
         Sleep(1);
@@ -116,17 +202,15 @@ void test_http_client(shared_data& shared)
 
     //int version = 11;
 
-    boost::asio::io_context* ioc = new boost::asio::io_context;
+    /*boost::asio::io_context* ioc = new boost::asio::io_context;
 
     tcp::resolver* resolver = new tcp::resolver(*ioc);
-    tcp::socket* socket = new tcp::socket(*ioc);
+    tcp::socket* socket = new tcp::socket(*ioc);*/
 
-    auto const results = resolver->resolve(host, port);
+    shared_context* ctx = new shared_context();
+    //ctx->connect(host, port);
 
-    // Make the connection on the IP address we get from a lookup
-    boost::asio::connect(*socket, results.begin(), results.end());
-
-
-    std::thread(handle_async_read, &shared, socket).detach();
-    std::thread(handle_async_write, &shared, socket).detach();
+    std::thread(handle_async_read, &shared, &ctx->socket).detach();
+    std::thread(handle_async_write, &shared, &ctx->socket).detach();
+    std::thread(watchdog, &shared, ctx).detach();
 }
