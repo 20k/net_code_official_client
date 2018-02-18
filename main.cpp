@@ -18,6 +18,8 @@ struct terminal
     std::vector<std::string> command_history;
     std::vector<std::string> text_history;
 
+    int cursor_pos_idx = 0;
+
     sf::Font font;
 
     terminal()
@@ -27,7 +29,18 @@ struct terminal
 
     void add_to_command(char c)
     {
-        command.push_back(c);
+        //command.push_back(c);
+
+        if(cursor_pos_idx >= command.size())
+        {
+            command.push_back(c);
+        }
+        else
+        {
+            command.insert(command.begin() + cursor_pos_idx, c);
+        }
+
+        cursor_pos_idx++;
     }
 
     bool should_send()
@@ -134,12 +147,45 @@ struct terminal
             ///ideally we'd reset to partially held commands
             command = "";
         }
+
+        cursor_pos_idx = command.size();
+    }
+
+    void move_cursor(int dir)
+    {
+        cursor_pos_idx += dir;
+        cursor_pos_idx = clamp(cursor_pos_idx, 0, command.size());
+    }
+
+    void process_backspace()
+    {
+        int to_remove = cursor_pos_idx - 1;
+
+        std::cout << "to rem " << to_remove << " " << command.size() << std::endl;
+
+        if(to_remove < 0 || to_remove >= command.size())
+            return;
+
+        command.erase(command.begin() + to_remove);
+
+        cursor_pos_idx--;
+    }
+
+    void process_delete()
+    {
+        int to_remove = cursor_pos_idx;
+
+        if(to_remove < 0 || to_remove >= command.size())
+            return;
+
+        command.erase(command.begin() + to_remove);
     }
 
     void clear_command()
     {
         command = "";
         command_history_idx = command_history.size();
+        cursor_pos_idx = 0;
     }
 
     void push_command_to_history(const std::string& cmd)
@@ -212,7 +258,12 @@ int main()
             {
                 if(event.key.code == sf::Keyboard::BackSpace)
                 {
-                    term.remove_back();
+                    term.process_backspace();
+                }
+
+                if(event.key.code == sf::Keyboard::Delete)
+                {
+                    term.process_delete();
                 }
 
                 if(event.key.code == sf::Keyboard::Up)
@@ -256,7 +307,7 @@ int main()
 
             shared.add_back_write(term.command);
             term.text_history.push_back(term.command);
-            term.command = "";
+            term.clear_command();
         }
 
         if(shared.has_front_read())
