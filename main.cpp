@@ -68,16 +68,40 @@ struct terminal
             command.pop_back();
     }
 
+    int cwidth = 8;
+
+    int cheight = 16;
+    int cwbuf = 4;
+
+    int get_num_lines(sf::RenderWindow& win, const std::string& str)
+    {
+        int len = str.size() * cwidth;
+
+        int num_lines = floor(len / (float)win.getSize().x);
+
+        return num_lines;
+    }
+
     ///need to wrap text here
-    void render_str(sf::RenderWindow& win, const std::string& str, vec2f cpos)
+    void render_str(sf::RenderWindow& win, const std::string& str, vec2f& cpos)
     {
         sf::Text txt;
         txt.setFont(font);
 
         vec2f pos = cpos;
 
+        int num_lines = get_num_lines(win, str);
+
+        pos.y() -= num_lines * cheight;
+
         for(int i=0; i < str.size(); i++)
         {
+            if(pos.x() >= win.getSize().x - 4)
+            {
+                pos.y() += cheight;
+                pos.x() = cwbuf;
+            }
+
             vec2f found_pos = round(pos);
 
             txt.setString(std::string(1, str[i]));
@@ -96,13 +120,13 @@ struct terminal
 
             win.draw(txt);
         }
+
+        cpos.y() -= num_lines * cheight;
     }
 
     void render(sf::RenderWindow& win)
     {
-        int cheight = 16;
-
-        vec2f start_pos = {4, win.getSize().y - cheight};
+        vec2f start_pos = {cwbuf, win.getSize().y - cheight};
         vec2f current_pos = start_pos;
 
         render_str(win, command, current_pos);
@@ -182,14 +206,6 @@ int main()
             }
         }
 
-        /*for(auto& i : key_map)
-        {
-            if(key.isKeyPressed(i.first))
-            {
-                term.add_to_command(i.second);
-            }
-        }*/
-
         if(ONCE_MACRO(sf::Keyboard::BackSpace))
         {
             term.remove_back();
@@ -211,18 +227,10 @@ int main()
             term.text_history.push_back(shared.get_front_read());
         }
 
-        //std::cout << term.command << std::endl;
-
-        /*std::string next_command;
-
-        std::getline(std::cin, next_command);
-
-        shared.add_back_write(next_command);*/
-
         term.render(window);
 
         window.display();
-        window.clear();
+        window.clear(sf::Color(30, 30, 30));
     }
 
     return 0;
