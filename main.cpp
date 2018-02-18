@@ -14,6 +14,8 @@
 struct terminal
 {
     std::string command;
+    int command_history_idx = 0;
+    std::vector<std::string> command_history;
     std::vector<std::string> text_history;
 
     sf::Font font;
@@ -115,6 +117,36 @@ struct terminal
             current_pos.y() -= cheight;
         }
     }
+
+    void move_command_history_idx(int dir)
+    {
+        command_history_idx += dir;
+
+        command_history_idx = clamp(command_history_idx, 0, (int)command_history.size());
+
+        if(command_history_idx >= 0 && command_history_idx < command_history.size())
+        {
+            command = command_history[command_history_idx];
+        }
+
+        if(command_history_idx == command_history.size())
+        {
+            ///ideally we'd reset to partially held commands
+            command = "";
+        }
+    }
+
+    void clear_command()
+    {
+        command = "";
+        command_history_idx = command_history.size();
+    }
+
+    void push_command_to_history(const std::string& cmd)
+    {
+        command_history.push_back(cmd);
+        command_history_idx = (int)command_history.size();
+    }
 };
 
 bool is_focused(sf::RenderWindow& win)
@@ -182,6 +214,21 @@ int main()
                 {
                     term.remove_back();
                 }
+
+                if(event.key.code == sf::Keyboard::Up)
+                {
+                    term.move_command_history_idx(-1);
+                }
+
+                if(event.key.code == sf::Keyboard::Down)
+                {
+                    term.move_command_history_idx(1);
+                }
+
+                if(event.key.code == sf::Keyboard::Escape)
+                {
+                    term.clear_command();
+                }
             }
         }
 
@@ -190,6 +237,8 @@ int main()
             //term.add_to_command('\n');
 
             term.command = strip_whitespace(term.command);
+
+            term.push_command_to_history(term.command);
 
             std::string swapping_users = "user ";
 
