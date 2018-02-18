@@ -250,12 +250,12 @@ int main()
             }
         }
 
-        if(ONCE_MACRO(sf::Keyboard::BackSpace))
+        if(ONCE_MACRO(sf::Keyboard::BackSpace) && is_focused(window))
         {
             term.remove_back();
         }
 
-        if(ONCE_MACRO(sf::Keyboard::Return))
+        if(ONCE_MACRO(sf::Keyboard::Return) && is_focused(window))
         {
             //term.add_to_command('\n');
 
