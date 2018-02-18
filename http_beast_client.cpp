@@ -180,7 +180,7 @@ void watchdog(shared_data* shared, shared_context* ctx)
 
                 ctx->connect(host, port);
 
-                shared->add_back_read("Connected");
+                shared->add_back_read("`LConnected`");
 
                 socket_alive = true;
 
@@ -188,7 +188,7 @@ void watchdog(shared_data* shared, shared_context* ctx)
             }
             catch(...)
             {
-                shared->add_back_read("Connection to the server failed");
+                shared->add_back_read("`DConnection to the server failed`");
 
                 std::cout << "Server down" << std::endl;
                 Sleep(5000);
