@@ -89,7 +89,7 @@ void handle_async_write(shared_data* shared, tcp::socket* socket)
 
             std::string target = "/test.txt";
             int version = 11;
-            std::string host = "127.0.0.1";
+            std::string host = HOST_IP;
 
             if(shared->has_front_write())
             {
@@ -192,8 +192,8 @@ void watchdog(shared_data* shared, shared_context* ctx)
         {
             try
             {
-                std::string host = "127.0.0.1";
-                std::string port = "6750";
+                std::string host = HOST_IP;
+                std::string port = HOST_PORT;
 
                 std::cout << "Try Reconnect" << std::endl;
 

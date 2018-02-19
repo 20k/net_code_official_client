@@ -7,6 +7,17 @@
 #include <deque>
 #include <mutex>
 
+//#define HOST_IP "192.168.0.55"
+#ifdef EXTERN_IP
+#define HOST_IP "77.96.132.101"
+#endif // EXTERN_IP
+
+#ifdef LOCAL_IP
+#define HOST_IP "127.0.0.1"
+#endif // LOCAL_IP
+
+#define HOST_PORT "6750"
+
 /*struct request
 {
     //int64_t id;
