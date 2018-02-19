@@ -63,6 +63,16 @@ std::string read_file(const std::string& file)
     return str;
 }
 
+inline
+std::string read_file_bin(const std::string& file)
+{
+    std::ifstream t(file, std::ios::binary);
+    std::string str((std::istreambuf_iterator<char>(t)),
+                     std::istreambuf_iterator<char>());
+
+    return str;
+}
+
 struct shared_data
 {
     std::deque<std::string> read_queue;

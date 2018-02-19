@@ -130,7 +130,7 @@ void check_auth(shared_data* shared, const std::string& str)
 
         if(!file_exists("key.key"))
         {
-            write_all("key.key", key);
+            write_all_bin("key.key", key);
 
             shared->auth = key;
         }

@@ -210,7 +210,10 @@ int main()
 
     if(file_exists("key.key"))
     {
-        shared.auth = read_file("key.key");
+        shared.auth = read_file_bin("key.key");
+
+        std::cout << "loaded auth of " << shared.auth.size() << std::endl;
+
         //shared.send_auth = true;
 
         //shared.add_back_write("auth client " + shared.auth);
