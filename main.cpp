@@ -208,6 +208,14 @@ int main()
 {
     shared_data shared;
 
+    if(file_exists("key.key"))
+    {
+        shared.auth = read_file("key.key");
+        //shared.send_auth = true;
+
+        //shared.add_back_write("auth client " + shared.auth);
+    }
+
     test_http_client(shared);
 
     sf::ContextSettings sett;

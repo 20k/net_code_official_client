@@ -119,6 +119,28 @@ void handle_async_write(shared_data* shared, tcp::socket* socket)
     }
 }
 
+void check_auth(shared_data* shared, const std::string& str)
+{
+    std::string auth_str = "####registered secret ";
+
+    if(str.substr(0, auth_str.length()) == auth_str)
+    {
+        auto start = str.begin() + auth_str.length();
+        std::string key(start, str.end());
+
+        if(!file_exists("key.key"))
+        {
+            write_all("key.key", key);
+
+            shared->auth = key;
+        }
+        else
+        {
+            printf("Key file already exists");
+        }
+    }
+}
+
 void handle_async_read(shared_data* shared, tcp::socket* socket)
 {
     while(1)
@@ -143,8 +165,7 @@ void handle_async_read(shared_data* shared, tcp::socket* socket)
 
                 std::string str = res.body();
 
-                // Write the message to standard out
-                std::cout << str << std::endl;
+                check_auth(shared, str);
 
                 shared->add_back_read(str);
             }
@@ -181,6 +202,7 @@ void watchdog(shared_data* shared, shared_context* ctx)
                 ctx->connect(host, port);
 
                 shared->add_back_read("`LConnected`");
+                shared->add_back_write("auth client " + shared->auth);
 
                 socket_alive = true;
 

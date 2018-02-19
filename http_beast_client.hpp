@@ -69,6 +69,9 @@ struct shared_data
     std::deque<std::string> write_queue;
     std::string user;
 
+    std::string auth;
+    bool send_auth = false;
+
     std::mutex ilock;
 
     void make_lock()
