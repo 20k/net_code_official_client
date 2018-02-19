@@ -56,10 +56,10 @@ volatile static bool socket_alive = false;
 
 struct shared_context
 {
-    boost::asio::io_context ioc;// = new boost::asio::io_context;
+    boost::asio::io_context ioc;
 
-    tcp::resolver resolver;// = new tcp::resolver(*ioc);
-    tcp::socket socket;// = new tcp::socket(*ioc);
+    tcp::resolver resolver;
+    tcp::socket socket;
 
     shared_context() : resolver(ioc), socket(ioc)
     {
