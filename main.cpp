@@ -340,7 +340,7 @@ int main()
         window.display();
         window.clear(sf::Color(30, 30, 30));
 
-        Sleep(1);
+        Sleep(4);
     }
 
     return 0;
