@@ -66,14 +66,14 @@ struct terminal
         return num_lines;
     }
 
-    void render_str(sf::RenderWindow& win, const std::string& str, vec2f& cpos)
+    void render_str(sf::RenderWindow& win, const std::string& str, vec2f& cpos, bool render_specials)
     {
         sf::Text txt;
         txt.setFont(font);
 
         vec2f pos = cpos;
 
-        std::vector<interop_char> chars = build_from_colour_string(str);
+        std::vector<interop_char> chars = build_from_colour_string(str, render_specials);
 
         int num_lines = get_num_lines(win, chars.size());
 
@@ -112,7 +112,7 @@ struct terminal
         vec2f start_pos = {cwbuf, win.getSize().y - cheight};
         vec2f current_pos = start_pos;
 
-        render_str(win, command, current_pos);
+        render_str(win, command, current_pos, true);
 
         current_pos.y() -= cheight;
 
@@ -122,7 +122,7 @@ struct terminal
         {
             std::string str = text_history[i];
 
-            render_str(win, str, current_pos);
+            render_str(win, str, current_pos, false);
 
             current_pos.y() -= cheight;
         }
@@ -132,7 +132,7 @@ struct terminal
         vec2f to_render_curs = start_pos;
         to_render_curs.x() += cwidth * cursor_pos_idx - cwidth/2.f;
 
-        render_str(win, cursor_icon, to_render_curs);
+        render_str(win, cursor_icon, to_render_curs, false);
     }
 
     void move_command_history_idx(int dir)

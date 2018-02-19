@@ -85,7 +85,7 @@ std::vector<interop_char> strip_interop(std::vector<interop_char> in)
     return in;
 }
 
-std::vector<interop_char> build_from_colour_string(const std::string& in)
+std::vector<interop_char> build_from_colour_string(const std::string& in, bool include_specials)
 {
     std::vector<interop_char> ret;
 
@@ -156,7 +156,8 @@ std::vector<interop_char> build_from_colour_string(const std::string& in)
 
             current_color_buf.push_back(c);
 
-            current_color_buf = strip_interop(current_color_buf);
+            if(!include_specials)
+                current_color_buf = strip_interop(current_color_buf);
 
             ret.insert(ret.end(), current_color_buf.begin(), current_color_buf.end());
             current_color_buf.clear();
