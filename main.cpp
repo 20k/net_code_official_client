@@ -278,6 +278,11 @@ int main()
                 }
             }
 
+            if(event.type == sf::Event::Resized)
+            {
+                window.create(sf::VideoMode(event.size.width, event.size.height), "Resizedmud", sf::Style::Default, sett);
+            }
+
             if(event.type == sf::Event::KeyPressed)
             {
                 if(event.key.code == sf::Keyboard::BackSpace)
