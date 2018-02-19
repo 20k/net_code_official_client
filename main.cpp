@@ -123,6 +123,9 @@ struct terminal
         {
             std::string str = text_history[i];
 
+            if(current_pos.y() >= win.getSize().y || current_pos.y() + cheight < 0)
+                continue;
+
             render_str(win, str, current_pos, render_specials[i]);
 
             current_pos.y() -= cheight;
