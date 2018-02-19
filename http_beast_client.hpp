@@ -16,7 +16,13 @@
 #define HOST_IP "127.0.0.1"
 #endif // LOCAL_IP
 
+#ifdef EXTERN_IP
 #define HOST_PORT "6750"
+#endif // EXTERN_IP
+
+#ifdef LOCAL_IP
+#define HOST_PORT "6751"
+#endif // LOCAL_IP
 
 /*struct request
 {
