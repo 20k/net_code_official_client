@@ -98,6 +98,8 @@ std::vector<interop_char> build_from_colour_string(const std::string& in)
 
     std::vector<interop_char> current_color_buf;
 
+    static auto cmap = get_cmap();
+
     for(int i=0; i < in.size(); i++)
     {
         char cur = in[i];
@@ -129,7 +131,7 @@ std::vector<interop_char> build_from_colour_string(const std::string& in)
 
             interop_char c;
             c.c = cur;
-            c.col = get_cmap()[last_col];
+            c.col = cmap[last_col];
 
             current_color_buf.push_back(c);
 
@@ -140,7 +142,7 @@ std::vector<interop_char> build_from_colour_string(const std::string& in)
         {
             interop_char c;
             c.c = cur;
-            c.col = get_cmap()[last_col];
+            c.col = cmap[last_col];
 
             current_color_buf.push_back(c);
 
