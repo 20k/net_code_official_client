@@ -17,6 +17,7 @@ struct terminal
     int command_history_idx = 0;
     std::vector<std::string> command_history;
     std::vector<std::string> text_history;
+    std::vector<bool> render_specials;
 
     int cursor_pos_idx = 0;
 
@@ -122,7 +123,7 @@ struct terminal
         {
             std::string str = text_history[i];
 
-            render_str(win, str, current_pos, false);
+            render_str(win, str, current_pos, render_specials[i]);
 
             current_pos.y() -= cheight;
         }
@@ -194,6 +195,13 @@ struct terminal
     {
         command_history.push_back(cmd);
         command_history_idx = (int)command_history.size();
+    }
+
+    void bump_command_to_history()
+    {
+        text_history.push_back(command);
+        render_specials.push_back(1);
+        clear_command();
     }
 };
 
@@ -329,13 +337,13 @@ int main()
             }
 
             shared.add_back_write(term.command);
-            term.text_history.push_back(term.command);
-            term.clear_command();
+            term.bump_command_to_history();
         }
 
         if(shared.has_front_read())
         {
             term.text_history.push_back(shared.get_front_read());
+            term.render_specials.push_back(0);
         }
 
         term.render(window);
