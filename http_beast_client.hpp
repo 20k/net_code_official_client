@@ -6,6 +6,7 @@
 #include <vector>
 #include <deque>
 #include <mutex>
+#include <atomic>
 
 /*struct request
 {
@@ -71,6 +72,8 @@ struct shared_data
 
     std::string auth;
     bool send_auth = false;
+    volatile bool should_terminate = false;
+    std::atomic_int termination_count{0};
 
     std::mutex ilock;
 
