@@ -58,11 +58,33 @@ struct terminal
     int cheight = 16;
     int cwbuf = 4;
 
-    int get_num_lines(sf::RenderWindow& win, int str_len)
+    int get_num_lines(sf::RenderWindow& win, const std::vector<interop_char>& str)
     {
-        int len = str_len * cwidth;
+        int width = win.getSize().x;
 
-        int num_lines = floor(len / (float)win.getSize().x);
+        int startx = cwbuf;
+        int num_lines = 0;
+
+        bool backslash = false;
+
+        for(int i=0; i < str.size(); i++)
+        {
+            startx += cwidth;
+
+            if(str[i].c == '\n')
+            {
+                num_lines++;
+                startx = cwbuf;
+                continue;
+            }
+
+            if(startx >= win.getSize().x - cwbuf)
+            {
+                num_lines++;
+                startx = cwbuf;
+                continue;
+            }
+        }
 
         return num_lines;
     }
@@ -76,17 +98,27 @@ struct terminal
 
         std::vector<interop_char> chars = build_from_colour_string(str, render_specials);
 
-        int num_lines = get_num_lines(win, chars.size());
+        while(chars.size() > 0 && chars.back().c == '\n')
+        {
+            chars.pop_back();
+        }
+
+        int num_lines = get_num_lines(win, chars);
+
+        chars.push_back({'\n'});
 
         pos.y() -= num_lines * cheight;
 
         for(int i=0; i < chars.size(); i++)
         {
-            if(pos.x() >= win.getSize().x - 4)
+            if(pos.x() >= win.getSize().x - cwbuf || chars[i].c == '\n')
             {
                 pos.y() += cheight;
                 pos.x() = cwbuf;
             }
+
+            if(chars[i].c == '\n')
+                continue;
 
             vec2f found_pos = round(pos);
 
