@@ -194,7 +194,7 @@ struct terminal
     void move_cursor(int dir)
     {
         cursor_pos_idx += dir;
-        cursor_pos_idx = clamp(cursor_pos_idx, 0, command.size());
+        cursor_pos_idx = clamp(cursor_pos_idx, 0, (int)command.size());
     }
 
     void process_backspace()
