@@ -28,6 +28,23 @@
 
 #include <crapmud/script_util_shared.hpp>
 
+//#define HOST_IP "192.168.0.55"
+#ifdef EXTERN_IP
+#define HOST_IP "77.96.132.101"
+#endif // EXTERN_IP
+
+#ifdef LOCAL_IP
+#define HOST_IP "127.0.0.1"
+#endif // LOCAL_IP
+
+#ifdef EXTERN_IP
+#define HOST_PORT "6750"
+#endif // EXTERN_IP
+
+#ifdef LOCAL_IP
+#define HOST_PORT "6751"
+#endif // LOCAL_IP
+
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 namespace http = boost::beast::http;    // from <boost/beast/http.hpp>
 

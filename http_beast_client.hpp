@@ -7,23 +7,6 @@
 #include <deque>
 #include <mutex>
 
-//#define HOST_IP "192.168.0.55"
-#ifdef EXTERN_IP
-#define HOST_IP "77.96.132.101"
-#endif // EXTERN_IP
-
-#ifdef LOCAL_IP
-#define HOST_IP "127.0.0.1"
-#endif // LOCAL_IP
-
-#ifdef EXTERN_IP
-#define HOST_PORT "6750"
-#endif // EXTERN_IP
-
-#ifdef LOCAL_IP
-#define HOST_PORT "6751"
-#endif // LOCAL_IP
-
 /*struct request
 {
     //int64_t id;
@@ -69,16 +52,6 @@ struct request_holder
         return to_process.size() > 0;
     }
 };*/
-
-inline
-std::string read_file(const std::string& file)
-{
-    std::ifstream t(file);
-    std::string str((std::istreambuf_iterator<char>(t)),
-                     std::istreambuf_iterator<char>());
-
-    return str;
-}
 
 inline
 std::string read_file_bin(const std::string& file)
