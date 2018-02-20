@@ -138,7 +138,7 @@ void handle_async_write(shared_data* shared, tcp::socket* socket)
 
 void check_auth(shared_data* shared, const std::string& str)
 {
-    std::string auth_str = "####registered secret ";
+    std::string auth_str = "command ####registered secret ";
 
     if(str.substr(0, auth_str.length()) == auth_str)
     {

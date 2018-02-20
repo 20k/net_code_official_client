@@ -238,6 +238,58 @@ struct terminal
         render_specials.push_back(1);
         clear_command();
     }
+
+    void add_text_from_server(const std::string& in)
+    {
+        std::string command_str = "command ";
+        std::string chat_api = "chat_api ";
+
+        std::string str = in;
+
+        if(str.substr(0, command_str.size()) == command_str)
+        {
+            str = std::string(str.begin() + command_str.size(), str.end());
+        }
+        else if(str.substr(0, chat_api.size()) == chat_api)
+        {
+            std::vector<std::string> strings = no_ss_split(str, " ");
+
+            if(strings.size() >= 2)
+            {
+                //std::string channel = strings[1];
+
+                std::string fchannel = "";
+                int offset = 0;
+
+                for(offset=chat_api.size(); offset < str.size(); offset++)
+                {
+                    char c = str[offset];
+
+                    if(c == ' ')
+                        break;
+
+                    fchannel += c;
+                }
+
+                offset++;
+
+                std::string msg = "";
+
+                for(; offset < str.size(); offset++)
+                {
+                    msg += str[offset];
+                }
+
+                str = msg;
+
+                std::cout << "fstr " << str << std::endl;
+                std::cout << "fchn " << fchannel << std::endl;
+            }
+        }
+
+        text_history.push_back(str);
+        render_specials.push_back(0);
+    }
 };
 
 bool is_focused(sf::RenderWindow& win)
@@ -382,8 +434,7 @@ int main()
 
         if(shared.has_front_read())
         {
-            term.text_history.push_back(shared.get_front_read());
-            term.render_specials.push_back(0);
+            term.add_text_from_server(shared.get_front_read());
         }
 
         term.render(window);
