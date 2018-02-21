@@ -115,6 +115,11 @@ struct button
 
     vec2f pos;
     vec2f dim;
+
+    bool within(vec2f mpos)
+    {
+        return mpos.x() >= pos.x() && mpos.y() >= pos.y() && mpos.x() < pos.x() + dim.x() && mpos.y() < pos.y() + dim.y();
+    }
 };
 
 struct chat_window
@@ -136,6 +141,11 @@ struct chat_window
     sf::Color get_frame_col()
     {
         return sf::Color(frame_col.x()*255.f, frame_col.y()*255.f, frame_col.z()*255.f, 255);
+    }
+
+    sf::Color get_highlight_col()
+    {
+        return sf::Color(70, 70, 70, 255);
     }
 
     bool focused = false;
@@ -196,23 +206,24 @@ struct chat_window
         vec2f start_pos = {side_pos.x() + char_inf::cwbuf, side_pos.y() + char_inf::cheight/4.f};
         vec2f current_pos = start_pos;
 
-        /*sf::Text txt;
-        txt.setFont(font);
-        txt.setCharacterSize(12);*/
-
         for(int i=0; i < side_buttons.size(); i++)
         {
             side_buttons[i].pos = current_pos;
             side_buttons[i].dim = {side_dim.x(), char_inf::cheight};
 
-            /*txt.setString(side_buttons[i].txt);
-            txt.setPosition(current_pos.x(), current_pos.y());
-            txt.setFillColor(sf::Color(255, 255, 255, 255));
+            if(side_buttons[i].is_selected)
+            {
+                sf::RectangleShape shape;
+                shape.setPosition({current_pos.x() - char_inf::cwbuf, current_pos.y()});
+                shape.setFillColor(get_highlight_col());
 
-            win.draw(txt);
+                vec2f cdim = side_buttons[i].dim;
+                //cdim.x() -= char_inf::cwbuf;
 
-            current_pos.y() += char_inf::cheight;
-            current_pos.x() = start_pos.x();*/
+                shape.setSize({cdim.x(), cdim.y()});
+
+                win.draw(shape);
+            }
 
             render_str(win, side_buttons[i].txt, current_pos, false, start_pos, start_pos + side_dim, -1);
 
@@ -222,9 +233,23 @@ struct chat_window
 
     void process_click(vec2f pos)
     {
+        bool any = false;
+
         for(button& b : side_buttons)
         {
-            if(pos.x() >= b.pos.x() && pos.y() >= b.pos.y() && pos.x() < b.pos.x() + b.dim.x() && pos.y() < b.pos.y() + b.dim.y())
+            if(b.within(pos))
+            {
+                any = true;
+                break;
+            }
+        }
+
+        if(!any)
+            return;
+
+        for(button& b : side_buttons)
+        {
+            if(b.within(pos))
             {
                 selected = b.txt;
                 b.is_selected = true;
@@ -532,6 +557,10 @@ int main()
 
         Sleep(4);
     }
+
+    shared.should_terminate = true;
+
+    while(shared.termination_count != 3) {}
 
     return 0;
 }

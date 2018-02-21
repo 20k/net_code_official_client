@@ -99,6 +99,9 @@ void handle_async_write(shared_data* shared, tcp::socket* socket)
         //std::lock_guard<std::mutex> lk(local_mut);
         Sleep(4);
 
+        if(shared->should_terminate)
+            break;
+
         try
         {
             if(!socket_alive)
@@ -134,6 +137,8 @@ void handle_async_write(shared_data* shared, tcp::socket* socket)
             Sleep(1000);
         }
     }
+
+    shared->termination_count++;
 }
 
 void check_auth(shared_data* shared, const std::string& str)
@@ -165,6 +170,9 @@ void handle_async_read(shared_data* shared, tcp::socket* socket)
         //std::lock_guard<std::mutex> lk(local_mut);
         Sleep(4);
 
+        if(shared->should_terminate)
+            break;
+
         try
         {
             if(!socket_alive)
@@ -194,6 +202,8 @@ void handle_async_read(shared_data* shared, tcp::socket* socket)
             Sleep(1000);
         }
     }
+
+    shared->termination_count++;
 }
 
 void watchdog(shared_data* shared, shared_context* ctx)
@@ -202,6 +212,9 @@ void watchdog(shared_data* shared, shared_context* ctx)
     {
         if(socket_alive)
             Sleep(250);
+
+        if(shared->should_terminate)
+            break;
 
         //std::lock_guard<std::mutex> lk(local_mut);
 
@@ -236,6 +249,8 @@ void watchdog(shared_data* shared, shared_context* ctx)
 
         Sleep(4);
     }
+
+    shared->termination_count++;
 }
 
 void test_http_client(shared_data& shared)
