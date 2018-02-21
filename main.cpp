@@ -450,7 +450,7 @@ int main()
     sett.antialiasingLevel = 8;
 
     sf::RenderWindow window;
-    window.create(sf::VideoMode(800,600), "Crapmud", sf::Style::Default, sett);
+    window.create(sf::VideoMode(1200,600), "Crapmud", sf::Style::Default, sett);
 
     terminal term;
     chat_window chat_win;
