@@ -550,7 +550,7 @@ int main()
             term.add_text_from_server(shared.get_front_read());
         }
 
-        if(client_poll_clock.getElapsedTime().asSeconds() > 5)
+        if(client_poll_clock.getElapsedTime().asSeconds() > 1)
         {
             shared.add_back_write("client_poll");
 
