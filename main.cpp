@@ -303,6 +303,9 @@ struct terminal
 
     void add_text_from_server(const std::string& in)
     {
+        if(in == "")
+            return;
+
         std::string command_str = "command ";
         std::string chat_api = "chat_api ";
 
@@ -374,8 +377,6 @@ int main()
         std::cout << "loaded auth of " << shared.auth.size() << std::endl;
 
         //shared.send_auth = true;
-
-        //shared.add_back_write("auth client " + shared.auth);
     }
 
     font.loadFromFile("VeraMono.ttf");
@@ -504,12 +505,12 @@ int main()
 
             if(term.focused)
             {
-                shared.add_back_write(term.command.command);
+                shared.add_back_write("client_command " + term.command.command);
             }
             else
             {
                 ///TODO
-                shared.add_back_write("#hs.chats.send({channel:\"" + chat_win.selected + "\", msg:\"" + chat_win.command.command + "\"})");
+                shared.add_back_write("client_chat #hs.chats.send({channel:\"" + chat_win.selected + "\", msg:\"" + chat_win.command.command + "\"})");
             }
 
             if(term.focused)

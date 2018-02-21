@@ -232,7 +232,7 @@ void watchdog(shared_data* shared, shared_context* ctx)
                 ctx->connect(host, port);
 
                 shared->add_back_read("`LConnected`");
-                shared->add_back_write("auth client " + shared->auth);
+                shared->add_back_write("client_command auth client " + shared->auth);
 
                 socket_alive = true;
 
