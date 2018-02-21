@@ -364,7 +364,8 @@ int main()
 
             if(event.type == sf::Event::Resized)
             {
-                window.create(sf::VideoMode(event.size.width, event.size.height), "Resizedmud", sf::Style::Default, sett);
+                window.setSize({event.size.width, event.size.height});
+                window.setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));
             }
 
             if(event.type == sf::Event::KeyPressed)
