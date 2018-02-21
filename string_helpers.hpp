@@ -128,7 +128,16 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
     //vec2f start_pos = {char_inf::cwbuf + start_pos.x(), (win.getSize().y - char_inf::cheight) + start_pos.y()};
     vec2f current_pos = start_pos;
 
-    render_str(win, command, current_pos, true, start, wrap_dim, cursor_pos_idx);
+    std::string render_command = command;
+    bool specials = true;
+
+    if(render_command == "")
+    {
+        render_command = "`bType something here...`";
+        specials = false;
+    }
+
+    render_str(win, render_command, current_pos, specials, start, wrap_dim, cursor_pos_idx);
 
     current_pos.y() -= char_inf::cheight;
 
