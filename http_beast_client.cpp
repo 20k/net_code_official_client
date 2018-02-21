@@ -50,19 +50,21 @@ namespace http = boost::beast::http;    // from <boost/beast/http.hpp>
 
 std::string handle_up(shared_data* shared, const std::string& unknown_command)
 {
-    std::string up = "#up ";
+    std::string up = "client_command #up ";
 
     std::vector<std::string> strings = no_ss_split(unknown_command, " ");
 
-    if(unknown_command.substr(0, up.length()) == up && strings.size() == 2)
+    if(unknown_command.substr(0, up.length()) == up && strings.size() == 3)
     {
-        std::string name = strings[1];
+        std::string name = strings[2];
 
         std::string hardcoded_user = shared->get_user();
 
         std::string diskname = "./scripts/" + hardcoded_user + "." + name + ".js";
 
-        return up + name + " " + read_file(diskname);
+        std::string final_command = up + name + " " + read_file(diskname);
+
+        return final_command;
     }
 
     return unknown_command;

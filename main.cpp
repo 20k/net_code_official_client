@@ -663,6 +663,14 @@ int main()
         Sleep(4);
     }
 
+    serialise sterm;
+    sterm.handle_serialise(term, true);
+    sterm.save(terminal_file);
+
+    serialise swindow;
+    swindow.handle_serialise(chat_win, true);
+    swindow.save(chat_file);
+
     shared.should_terminate = true;
 
     while(shared.termination_count != 3) {}
