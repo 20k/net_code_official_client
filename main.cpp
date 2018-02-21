@@ -111,7 +111,7 @@ struct editable_string
 struct chat_window
 {
     vec2f render_start = {0,0};
-    vec2i dim = {400, 300};
+    vec2i dim = {500, 300};
     vec3f frame_col = {0.46f, 0.8f, 1.f};
 
     std::string selected = "0000";
@@ -146,7 +146,7 @@ struct chat_window
         for(auto& i : specials)
             i = true;
 
-        ::render(win, command.command, thread.chats, specials, 0, {render_pos.x(), dim.y()}, {win.getSize().x, win.getSize().y});
+        ::render(win, command.command, thread.chats, specials, command.cursor_pos_idx, {render_pos.x(), dim.y()}, {win.getSize().x, win.getSize().y});
     }
 
     bool within(vec2f pos)

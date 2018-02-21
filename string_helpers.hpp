@@ -15,7 +15,7 @@ int get_num_lines(vec2f start, vec2f dim, const std::vector<interop_char>& str)
 {
     int width = dim.x();
 
-    int startx = char_inf::cwbuf;
+    int startx = start.x() + char_inf::cwbuf;
     int num_lines = 0;
 
     for(int i=0; i < (int)str.size(); i++)
