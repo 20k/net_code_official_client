@@ -22,6 +22,10 @@ struct chat_window
     vec2i dim = {500, 300};
     vec3f frame_col = {0.46f, 0.8f, 1.f};
 
+    std::string selected = "0000";
+
+    std::string command;
+
     void render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads)
     {
         float border_size = 2.f;
@@ -40,6 +44,9 @@ struct chat_window
         shape.setPosition(render_pos.x(), render_pos.y());
 
         win.draw(shape);
+
+
+
     }
 };
 
@@ -60,6 +67,11 @@ struct terminal
     terminal()
     {
         font.loadFromFile("VeraMono.ttf");
+    }
+
+    void render(sf::RenderWindow& win)
+    {
+        ::render(win, command, text_history, render_specials, cursor_pos_idx, {0.f, win.getSize().y}, {win.getSize().x, win.getSize().y});
     }
 
     void add_to_command(char c)
@@ -85,37 +97,6 @@ struct terminal
     {
         if(command.size() > 0)
             command.pop_back();
-    }
-
-    void render(sf::RenderWindow& win)
-    {
-        vec2f start_pos = {char_inf::cwbuf, win.getSize().y - char_inf::cheight};
-        vec2f current_pos = start_pos;
-
-        render_str(win, command, current_pos, true);
-
-        current_pos.y() -= char_inf::cheight;
-
-        int len = text_history.size();
-
-        for(int i=len-1; i >= 0; i--)
-        {
-            std::string str = text_history[i];
-
-            if(current_pos.y() >= win.getSize().y || current_pos.y() + char_inf::cheight < 0)
-                continue;
-
-            render_str(win, str, current_pos, render_specials[i]);
-
-            current_pos.y() -= char_inf::cheight;
-        }
-
-        std::string cursor_icon = "|";
-
-        vec2f to_render_curs = start_pos;
-        to_render_curs.x() += char_inf::cwidth * cursor_pos_idx - char_inf::cwidth/2.f;
-
-        render_str(win, cursor_icon, to_render_curs, false);
     }
 
     void move_command_history_idx(int dir)

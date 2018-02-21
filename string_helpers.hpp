@@ -11,9 +11,9 @@ namespace char_inf
     int cwbuf = 4;
 }
 
-int get_num_lines(sf::RenderWindow& win, const std::vector<interop_char>& str)
+int get_num_lines(vec2f start, vec2f dim, const std::vector<interop_char>& str)
 {
-    int width = win.getSize().x;
+    int width = dim.x();
 
     int startx = char_inf::cwbuf;
     int num_lines = 0;
@@ -25,14 +25,14 @@ int get_num_lines(sf::RenderWindow& win, const std::vector<interop_char>& str)
         if(str[i].c == '\n')
         {
             num_lines++;
-            startx = char_inf::cwbuf;
+            startx = char_inf::cwbuf + start.x();
             continue;
         }
 
         if(startx >= width - char_inf::cwbuf)
         {
             num_lines++;
-            startx = char_inf::cwbuf;
+            startx = char_inf::cwbuf + start.x();
             continue;
         }
     }
@@ -41,7 +41,7 @@ int get_num_lines(sf::RenderWindow& win, const std::vector<interop_char>& str)
 }
 
 
-void render_str(sf::RenderWindow& win, const std::string& str, vec2f& cpos, bool render_specials)
+void render_str(sf::RenderWindow& win, const std::string& str, vec2f& cpos, bool render_specials, vec2f start, vec2f wrap_dim)
 {
     sf::Text txt;
     txt.setFont(font);
@@ -55,7 +55,7 @@ void render_str(sf::RenderWindow& win, const std::string& str, vec2f& cpos, bool
         chars.pop_back();
     }
 
-    int num_lines = get_num_lines(win, chars);
+    int num_lines = get_num_lines(start, wrap_dim, chars);
 
     chars.push_back({'\n'});
 
@@ -63,10 +63,11 @@ void render_str(sf::RenderWindow& win, const std::string& str, vec2f& cpos, bool
 
     for(int i=0; i < (int)chars.size(); i++)
     {
-        if(pos.x() >= ((int)win.getSize().x) - char_inf::cwbuf || chars[i].c == '\n')
+        if(pos.x() >= wrap_dim.x() - char_inf::cwbuf || chars[i].c == '\n')
         {
             pos.y() += char_inf::cheight;
-            pos.x() = char_inf::cwbuf;
+            //pos.x() = char_inf::cwbuf;
+            pos.x() = start.x() + char_inf::cwbuf;
         }
 
         if(chars[i].c == '\n')
@@ -92,5 +93,38 @@ void render_str(sf::RenderWindow& win, const std::string& str, vec2f& cpos, bool
     cpos.y() -= num_lines * char_inf::cheight;
 }
 
+void render(sf::RenderWindow& win, const std::string& command, const std::vector<std::string>& text_history,
+            const std::vector<bool>& render_specials, int cursor_pos_idx, vec2f start, vec2f wrap_dim)
+{
+    vec2f start_pos = {start.x() + char_inf::cwbuf, start.y() - char_inf::cheight};
+
+    //vec2f start_pos = {char_inf::cwbuf + start_pos.x(), (win.getSize().y - char_inf::cheight) + start_pos.y()};
+    vec2f current_pos = start_pos;
+
+    render_str(win, command, current_pos, true, start, wrap_dim);
+
+    current_pos.y() -= char_inf::cheight;
+
+    int len = text_history.size();
+
+    for(int i=len-1; i >= 0; i--)
+    {
+        std::string str = text_history[i];
+
+        if(current_pos.y() >= wrap_dim.y() || current_pos.y() + char_inf::cheight < 0)
+            continue;
+
+        render_str(win, str, current_pos, render_specials[i], start, wrap_dim);
+
+        current_pos.y() -= char_inf::cheight;
+    }
+
+    std::string cursor_icon = "|";
+
+    vec2f to_render_curs = start_pos;
+    to_render_curs.x() += char_inf::cwidth * cursor_pos_idx - char_inf::cwidth/2.f;
+
+    render_str(win, cursor_icon, to_render_curs, false, start, wrap_dim);
+}
 
 #endif // STRING_HELPERS_HPP_INCLUDED
