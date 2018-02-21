@@ -140,13 +140,19 @@ struct chat_window
         win.draw(shape);
 
         chat_thread& thread = threads[selected];
+
         std::vector<int> specials;
         specials.resize(thread.chats.size());
 
         for(auto& i : specials)
-            i = true;
+            i = 1;
 
-        ::render(win, command.command, thread.chats, specials, command.cursor_pos_idx, {render_pos.x(), dim.y()}, {win.getSize().x, win.getSize().y});
+        int idx = command.cursor_pos_idx;
+
+        if(!focused)
+            idx = -1;
+
+        ::render(win, command.command, thread.chats, specials, idx, {render_pos.x(), dim.y()}, {win.getSize().x, win.getSize().y});
     }
 
     bool within(vec2f pos)
@@ -174,7 +180,12 @@ struct terminal
 
     void render(sf::RenderWindow& win)
     {
-        ::render(win, command.command, text_history, command.render_specials, command.cursor_pos_idx, {0.f, win.getSize().y}, {win.getSize().x, win.getSize().y});
+        int idx = command.cursor_pos_idx;
+
+        if(!focused)
+            idx = -1;
+
+        ::render(win, command.command, text_history, command.render_specials, idx, {0.f, win.getSize().y}, {win.getSize().x, win.getSize().y});
     }
 
     void bump_command_to_history()
