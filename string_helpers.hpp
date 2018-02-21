@@ -55,7 +55,7 @@ void render_individual(sf::RenderWindow& win, char c, vec2f pos, sf::Text& txt)
     win.draw(txt);
 }
 
-void render_str(sf::RenderWindow& win, const std::string& str, vec2f& cpos, bool render_specials, vec2f start, vec2f wrap_dim, int render_cursor_at)
+void render_str(sf::RenderWindow& win, const std::string& str, vec2f& cpos, bool render_specials, vec2f start, vec2f wrap_dim, int render_cursor_at, float zero_bound)
 {
     sf::Text txt;
     txt.setFont(font);
@@ -90,6 +90,11 @@ void render_str(sf::RenderWindow& win, const std::string& str, vec2f& cpos, bool
             pos.x() = start.x() + char_inf::cwbuf;
         }
 
+        if(pos.y() <= zero_bound)
+        {
+            continue;
+        }
+
         if(chars[i].c == '\n')
         {
             continue;
@@ -121,7 +126,7 @@ void render_str(sf::RenderWindow& win, const std::string& str, vec2f& cpos, bool
 }
 
 void render(sf::RenderWindow& win, const std::string& command, const std::vector<std::string>& text_history,
-            const std::vector<int>& render_specials, int cursor_pos_idx, vec2f start, vec2f wrap_dim)
+            const std::vector<int>& render_specials, int cursor_pos_idx, vec2f start, vec2f wrap_dim, float zero_bound)
 {
     vec2f start_pos = {start.x() + char_inf::cwbuf, start.y() - char_inf::cheight};
 
@@ -137,7 +142,7 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
         specials = false;
     }
 
-    render_str(win, render_command, current_pos, specials, start, wrap_dim, cursor_pos_idx);
+    render_str(win, render_command, current_pos, specials, start, wrap_dim, cursor_pos_idx, zero_bound);
 
     current_pos.y() -= char_inf::cheight;
 
@@ -147,10 +152,10 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
     {
         std::string str = text_history[i];
 
-        if(current_pos.y() >= wrap_dim.y() || current_pos.y() + char_inf::cheight < 0)
+        if(current_pos.y() >= wrap_dim.y() || current_pos.y() < zero_bound)
             continue;
 
-        render_str(win, str, current_pos, render_specials[i], start, wrap_dim, -1);
+        render_str(win, str, current_pos, render_specials[i], start, wrap_dim, -1, zero_bound);
 
         current_pos.y() -= char_inf::cheight;
     }
