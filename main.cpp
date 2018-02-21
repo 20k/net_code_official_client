@@ -16,6 +16,32 @@ struct chat_thread
     std::vector<std::string> chats;
 };
 
+struct chat_window
+{
+    vec2i dim = {500, 300};
+    vec3f frame_col = {0.46f, 0.8f, 1.f};
+
+    void render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads)
+    {
+        float border_size = 2.f;
+
+        vec2f swidth = {win.getSize().x, win.getSize().y};
+
+        vec2f render_pos = (vec2f){swidth.x() - dim.x() - border_size, border_size};
+
+        sf::RectangleShape shape;
+
+        shape.setSize({dim.x(), dim.y()});
+        shape.setOutlineColor(sf::Color(frame_col.x()*255.f, frame_col.y()*255.f, frame_col.z()*255.f, 255));
+        shape.setOutlineThickness(border_size);
+        shape.setFillColor(sf::Color(30,30,30,255));
+
+        shape.setPosition(render_pos.x(), render_pos.y());
+
+        win.draw(shape);
+    }
+};
+
 struct terminal
 {
     std::string command;
@@ -330,6 +356,7 @@ int main()
     window.create(sf::VideoMode(800,600), "Crapmud", sf::Style::Default, sett);
 
     terminal term;
+    chat_window chat_win;
 
     sf::Event event;
 
@@ -344,6 +371,7 @@ int main()
     DMAP(S);DMAP(T);DMAP(U);
     DMAP(V);DMAP(W);DMAP(X);
     DMAP(Y);DMAP(Z);
+
 
     sf::Keyboard key;
 
@@ -446,6 +474,8 @@ int main()
         }
 
         term.render(window);
+
+        chat_win.render(window, term.chat_threads);
 
         window.display();
         window.clear(sf::Color(30, 30, 30));
