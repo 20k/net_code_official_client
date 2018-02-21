@@ -10,6 +10,7 @@
 
 #include <crapmud/script_util_shared.hpp>
 #include "colour_interop.hpp"
+#include "string_helpers.hpp"
 
 struct chat_thread
 {
@@ -86,99 +87,14 @@ struct terminal
             command.pop_back();
     }
 
-    int cwidth = 8;
-
-    int cheight = 16;
-    int cwbuf = 4;
-
-    int get_num_lines(sf::RenderWindow& win, const std::vector<interop_char>& str)
-    {
-        int width = win.getSize().x;
-
-        int startx = cwbuf;
-        int num_lines = 0;
-
-        for(int i=0; i < (int)str.size(); i++)
-        {
-            startx += cwidth;
-
-            if(str[i].c == '\n')
-            {
-                num_lines++;
-                startx = cwbuf;
-                continue;
-            }
-
-            if(startx >= width - cwbuf)
-            {
-                num_lines++;
-                startx = cwbuf;
-                continue;
-            }
-        }
-
-        return num_lines;
-    }
-
-    void render_str(sf::RenderWindow& win, const std::string& str, vec2f& cpos, bool render_specials)
-    {
-        sf::Text txt;
-        txt.setFont(font);
-
-        vec2f pos = cpos;
-
-        std::vector<interop_char> chars = build_from_colour_string(str, render_specials);
-
-        while(chars.size() > 0 && chars.back().c == '\n')
-        {
-            chars.pop_back();
-        }
-
-        int num_lines = get_num_lines(win, chars);
-
-        chars.push_back({'\n'});
-
-        pos.y() -= num_lines * cheight;
-
-        for(int i=0; i < (int)chars.size(); i++)
-        {
-            if(pos.x() >= ((int)win.getSize().x) - cwbuf || chars[i].c == '\n')
-            {
-                pos.y() += cheight;
-                pos.x() = cwbuf;
-            }
-
-            if(chars[i].c == '\n')
-                continue;
-
-            vec2f found_pos = round(pos);
-
-            txt.setString(std::string(1, chars[i].c));
-            txt.setCharacterSize(12);
-            txt.setPosition(found_pos.x(), found_pos.y());
-
-            vec3f col = chars[i].col;
-
-            txt.setFillColor(sf::Color(col.x(), col.y(), col.z(), 255));
-
-            //vec2i dim = {txt.getGlobalBounds().width, txt.getGlobalBounds().height};
-
-            pos.x() += cwidth;
-
-            win.draw(txt);
-        }
-
-        cpos.y() -= num_lines * cheight;
-    }
-
     void render(sf::RenderWindow& win)
     {
-        vec2f start_pos = {cwbuf, win.getSize().y - cheight};
+        vec2f start_pos = {char_inf::cwbuf, win.getSize().y - char_inf::cheight};
         vec2f current_pos = start_pos;
 
         render_str(win, command, current_pos, true);
 
-        current_pos.y() -= cheight;
+        current_pos.y() -= char_inf::cheight;
 
         int len = text_history.size();
 
@@ -186,18 +102,18 @@ struct terminal
         {
             std::string str = text_history[i];
 
-            if(current_pos.y() >= win.getSize().y || current_pos.y() + cheight < 0)
+            if(current_pos.y() >= win.getSize().y || current_pos.y() + char_inf::cheight < 0)
                 continue;
 
             render_str(win, str, current_pos, render_specials[i]);
 
-            current_pos.y() -= cheight;
+            current_pos.y() -= char_inf::cheight;
         }
 
         std::string cursor_icon = "|";
 
         vec2f to_render_curs = start_pos;
-        to_render_curs.x() += cwidth * cursor_pos_idx - cwidth/2.f;
+        to_render_curs.x() += char_inf::cwidth * cursor_pos_idx - char_inf::cwidth/2.f;
 
         render_str(win, cursor_icon, to_render_curs, false);
     }
@@ -346,6 +262,8 @@ int main()
 
         //shared.add_back_write("auth client " + shared.auth);
     }
+
+    font.loadFromFile("VeraMono.ttf");
 
     test_http_client(shared);
 
