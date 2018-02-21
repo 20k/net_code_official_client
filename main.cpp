@@ -130,7 +130,7 @@ struct chat_window
 
     std::vector<button> side_buttons
     {
-        {"0000"},
+        {"0000", true},
         {"7001"},
         {"memes"},
     };
