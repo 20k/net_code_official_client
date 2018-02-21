@@ -111,7 +111,10 @@ struct editable_string
 struct button
 {
     std::string txt;
-    bool selected = false;
+    bool is_selected = false;
+
+    vec2f pos;
+    vec2f dim;
 };
 
 struct chat_window
@@ -193,20 +196,43 @@ struct chat_window
         vec2f start_pos = {side_pos.x() + char_inf::cwbuf, side_pos.y() + char_inf::cheight/4.f};
         vec2f current_pos = start_pos;
 
-        sf::Text txt;
+        /*sf::Text txt;
         txt.setFont(font);
-        txt.setCharacterSize(12);
+        txt.setCharacterSize(12);*/
 
         for(int i=0; i < side_buttons.size(); i++)
         {
-            txt.setString(side_buttons[i].txt);
+            side_buttons[i].pos = current_pos;
+            side_buttons[i].dim = {side_dim.x(), char_inf::cheight};
+
+            /*txt.setString(side_buttons[i].txt);
             txt.setPosition(current_pos.x(), current_pos.y());
             txt.setFillColor(sf::Color(255, 255, 255, 255));
 
             win.draw(txt);
 
             current_pos.y() += char_inf::cheight;
-            current_pos.x() = start_pos.x();
+            current_pos.x() = start_pos.x();*/
+
+            render_str(win, side_buttons[i].txt, current_pos, false, start_pos, start_pos + side_dim, -1);
+
+            current_pos.y() += char_inf::cheight;
+        }
+    }
+
+    void process_click(vec2f pos)
+    {
+        for(button& b : side_buttons)
+        {
+            if(pos.x() >= b.pos.x() && pos.y() >= b.pos.y() && pos.x() < b.pos.x() + b.dim.x() && pos.y() < b.pos.y() + b.dim.y())
+            {
+                selected = b.txt;
+                b.is_selected = true;
+            }
+            else
+            {
+                b.is_selected = false;
+            }
         }
     }
 
@@ -488,6 +514,8 @@ int main()
                 chat_win.focused = false;
                 term.focused = true;
             }
+
+            chat_win.process_click(mpos);
         }
 
         if(shared.has_front_read())
