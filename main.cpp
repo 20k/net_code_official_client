@@ -11,6 +11,11 @@
 #include <crapmud/script_util_shared.hpp>
 #include "colour_interop.hpp"
 
+struct chat_thread
+{
+    std::vector<std::string> chats;
+};
+
 struct terminal
 {
     std::string command;
@@ -21,6 +26,8 @@ struct terminal
 
     int cursor_pos_idx = 0;
 
+    std::map<std::string, chat_thread> chat_threads;
+
     sf::Font font;
 
     terminal()
@@ -30,7 +37,7 @@ struct terminal
 
     void add_to_command(char c)
     {
-        if(cursor_pos_idx >= command.size())
+        if(cursor_pos_idx >= (int)command.size())
         {
             command.push_back(c);
         }
@@ -65,9 +72,7 @@ struct terminal
         int startx = cwbuf;
         int num_lines = 0;
 
-        bool backslash = false;
-
-        for(int i=0; i < str.size(); i++)
+        for(int i=0; i < (int)str.size(); i++)
         {
             startx += cwidth;
 
@@ -78,7 +83,7 @@ struct terminal
                 continue;
             }
 
-            if(startx >= win.getSize().x - cwbuf)
+            if(startx >= width - cwbuf)
             {
                 num_lines++;
                 startx = cwbuf;
@@ -111,7 +116,7 @@ struct terminal
 
         for(int i=0; i < chars.size(); i++)
         {
-            if(pos.x() >= win.getSize().x - cwbuf || chars[i].c == '\n')
+            if(pos.x() >= ((int)win.getSize().x) - cwbuf || chars[i].c == '\n')
             {
                 pos.y() += cheight;
                 pos.x() = cwbuf;
@@ -284,6 +289,8 @@ struct terminal
 
                 std::cout << "fstr " << str << std::endl;
                 std::cout << "fchn " << fchannel << std::endl;
+
+                chat_threads[fchannel].chats.push_back(str);
             }
         }
 

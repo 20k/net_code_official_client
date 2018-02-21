@@ -100,7 +100,7 @@ std::vector<interop_char> build_from_colour_string(const std::string& in, bool i
 
     static auto cmap = get_cmap();
 
-    for(int i=0; i < in.size(); i++)
+    for(int i=0; i < (int)in.size(); i++)
     {
         char cur = in[i];
 
