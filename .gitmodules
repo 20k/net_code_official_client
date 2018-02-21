@@ -7,3 +7,6 @@
 [submodule "deps/tinydir"]
 	path = deps/tinydir
 	url = https://github.com/cxong/tinydir
+[submodule "deps/serialise"]
+	path = deps/serialise
+	url = https://github.com/20k/funserialisation

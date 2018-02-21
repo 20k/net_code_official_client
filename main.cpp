@@ -11,19 +11,41 @@
 #include <crapmud/script_util_shared.hpp>
 #include "colour_interop.hpp"
 #include "string_helpers.hpp"
+#include <serialise/serialise.hpp>
 
-struct chat_thread
+struct chat_thread : serialisable
 {
     std::vector<std::string> chats;
+
+    virtual void do_serialise(serialise& s, bool ser)
+    {
+        s.handle_serialise(chats, ser);
+    }
 };
 
-struct editable_string
+template<typename T>
+void limit_size(T& t, int max_size)
+{
+    while((int)t.size() >= max_size)
+    {
+        t.erase(t.begin());
+    }
+}
+
+struct editable_string : serialisable
 {
     int cursor_pos_idx = 0;
     std::string command;
     std::vector<std::string> command_history;
-    std::vector<int> render_specials;
     int command_history_idx = 0;
+
+    virtual void do_serialise(serialise& s, bool ser)
+    {
+        s.handle_serialise(cursor_pos_idx, ser);
+        s.handle_serialise(command, ser);
+        s.handle_serialise(command_history, ser);
+        s.handle_serialise(command_history_idx, ser);
+    }
 
     void add_to_command(char c)
     {
@@ -103,12 +125,16 @@ struct editable_string
 
     void push_command_to_history(const std::string& cmd)
     {
+        int max_command_history = 1000;
+
+        limit_size(command_history, max_command_history);
+
         command_history.push_back(cmd);
         command_history_idx = (int)command_history.size();
     }
 };
 
-struct button
+struct button : serialisable
 {
     std::string txt;
     bool is_selected = false;
@@ -116,13 +142,24 @@ struct button
     vec2f pos;
     vec2f dim;
 
+    button(){}
+    button(const std::string& txt, bool is_selected = false) : txt(txt), is_selected(is_selected) {}
+
     bool within(vec2f mpos)
     {
         return mpos.x() >= pos.x() && mpos.y() >= pos.y() && mpos.x() < pos.x() + dim.x() && mpos.y() < pos.y() + dim.y();
     }
+
+    virtual void do_serialise(serialise& s, bool ser)
+    {
+        s.handle_serialise(txt, ser);
+        s.handle_serialise(is_selected, ser);
+        s.handle_serialise(pos, ser);
+        s.handle_serialise(dim, ser);
+    }
 };
 
-struct chat_window
+struct chat_window : serialisable
 {
     vec2f render_start = {0,0};
     vec2i dim = {500, 300};
@@ -132,11 +169,19 @@ struct chat_window
     {
         {"0000", true},
         {"7001"},
-        {"memes"},
+        {"memes"}
     };
 
     std::string selected = "0000";
     editable_string command;
+
+    virtual void do_serialise(serialise& s, bool ser)
+    {
+        s.handle_serialise(render_start, ser);
+        s.handle_serialise(side_buttons, ser);
+        s.handle_serialise(selected, ser);
+        s.handle_serialise(command, ser);
+    }
 
     sf::Color get_frame_col()
     {
@@ -268,9 +313,10 @@ struct chat_window
     }
 };
 
-struct terminal
+struct terminal : serialisable
 {
     std::vector<std::string> text_history;
+    std::vector<int> render_specials;
 
     std::map<std::string, chat_thread> chat_threads;
 
@@ -278,6 +324,14 @@ struct terminal
 
     bool focused = true;
     editable_string command;
+
+    virtual void do_serialise(serialise& s, bool ser)
+    {
+        s.handle_serialise(text_history, ser);
+        s.handle_serialise(render_specials, ser);
+        s.handle_serialise(chat_threads, ser);
+        s.handle_serialise(command, ser);
+    }
 
     terminal()
     {
@@ -291,13 +345,13 @@ struct terminal
         if(!focused)
             idx = -1;
 
-        ::render(win, command.command, text_history, command.render_specials, idx, {0.f, win.getSize().y}, {win.getSize().x, win.getSize().y});
+        ::render(win, command.command, text_history, render_specials, idx, {0.f, win.getSize().y}, {win.getSize().x, win.getSize().y});
     }
 
     void bump_command_to_history()
     {
         text_history.push_back(command.command);
-        command.render_specials.push_back(1);
+        render_specials.push_back(1);
         command.clear_command();
     }
 
@@ -350,12 +404,21 @@ struct terminal
                 std::cout << "fstr " << str << std::endl;
                 std::cout << "fchn " << fchannel << std::endl;
 
+                int max_chat_history = 500;
+
+                limit_size(chat_threads[fchannel].chats, max_chat_history);
+
                 chat_threads[fchannel].chats.push_back(str);
             }
         }
 
+        int max_history = 1000;
+
+        limit_size(text_history, max_history);
+        limit_size(render_specials, max_history);
+
         text_history.push_back(str);
-        command.render_specials.push_back(0);
+        render_specials.push_back(0);
     }
 };
 
@@ -405,6 +468,23 @@ int main()
     DMAP(S);DMAP(T);DMAP(U);
     DMAP(V);DMAP(W);DMAP(X);
     DMAP(Y);DMAP(Z);
+
+    std::string terminal_file = "./terminal.txt";
+    std::string chat_file = "./chat.txt";
+
+    if(file_exists(terminal_file))
+    {
+        serialise sterm;
+        sterm.load(terminal_file);
+        sterm.handle_serialise(term, false);
+    }
+
+    if(file_exists(chat_file))
+    {
+        serialise swindow;
+        swindow.load(chat_file);
+        swindow.handle_serialise(chat_win, false);
+    }
 
     sf::Clock client_poll_clock;
 
@@ -522,6 +602,14 @@ int main()
             {
                 chat_win.command.clear_command();
             }
+
+            serialise sterm;
+            sterm.handle_serialise(term, true);
+            sterm.save(terminal_file);
+
+            serialise swindow;
+            swindow.handle_serialise(chat_win, true);
+            swindow.save(chat_file);
         }
 
         if(ONCE_MACRO(sf::Mouse::Left) && is_focused(window))
@@ -548,6 +636,14 @@ int main()
         if(shared.has_front_read())
         {
             term.add_text_from_server(shared.get_front_read());
+
+            serialise sterm;
+            sterm.handle_serialise(term, true);
+            sterm.save(terminal_file);
+
+            serialise swindow;
+            swindow.handle_serialise(chat_win, true);
+            swindow.save(chat_file);
         }
 
         if(client_poll_clock.getElapsedTime().asSeconds() > 1)

@@ -211,7 +211,7 @@ void watchdog(shared_data* shared, shared_context* ctx)
     while(1)
     {
         if(socket_alive)
-            Sleep(250);
+            Sleep(50);
 
         if(shared->should_terminate)
             break;
@@ -236,7 +236,7 @@ void watchdog(shared_data* shared, shared_context* ctx)
 
                 socket_alive = true;
 
-                Sleep(1000);
+                Sleep(50);
             }
             catch(...)
             {
