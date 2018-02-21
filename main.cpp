@@ -406,6 +406,7 @@ int main()
     DMAP(V);DMAP(W);DMAP(X);
     DMAP(Y);DMAP(Z);
 
+    sf::Clock client_poll_clock;
 
     sf::Keyboard key;
 
@@ -547,6 +548,13 @@ int main()
         if(shared.has_front_read())
         {
             term.add_text_from_server(shared.get_front_read());
+        }
+
+        if(client_poll_clock.getElapsedTime().asSeconds() > 5)
+        {
+            shared.add_back_write("client_poll");
+
+            client_poll_clock.restart();
         }
 
         term.render(window);
