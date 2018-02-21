@@ -21,6 +21,9 @@ struct editable_string
 {
     int cursor_pos_idx = 0;
     std::string command;
+    std::vector<std::string> command_history;
+    std::vector<int> render_specials;
+    int command_history_idx = 0;
 
     void add_to_command(char c)
     {
@@ -69,6 +72,40 @@ struct editable_string
 
         command.erase(command.begin() + to_remove);
     }
+
+
+    void move_command_history_idx(int dir)
+    {
+        command_history_idx += dir;
+
+        command_history_idx = clamp(command_history_idx, 0, (int)command_history.size());
+
+        if(command_history_idx >= 0 && command_history_idx < (int)command_history.size())
+        {
+            command = command_history[command_history_idx];
+        }
+
+        if(command_history_idx == (int)command_history.size())
+        {
+            ///ideally we'd reset to partially held commands
+            command = "";
+        }
+
+        cursor_pos_idx = command.size();
+    }
+
+    void clear_command()
+    {
+        command = "";
+        command_history_idx = command_history.size();
+        cursor_pos_idx = 0;
+    }
+
+    void push_command_to_history(const std::string& cmd)
+    {
+        command_history.push_back(cmd);
+        command_history_idx = (int)command_history.size();
+    }
 };
 
 struct chat_window
@@ -78,7 +115,7 @@ struct chat_window
     vec3f frame_col = {0.46f, 0.8f, 1.f};
 
     std::string selected = "0000";
-    std::string command;
+    editable_string command;
 
     bool focused = false;
 
@@ -102,7 +139,6 @@ struct chat_window
 
         win.draw(shape);
 
-
         chat_thread& thread = threads[selected];
         std::vector<int> specials;
         specials.resize(thread.chats.size());
@@ -110,7 +146,7 @@ struct chat_window
         for(auto& i : specials)
             i = true;
 
-        ::render(win, command, thread.chats, specials, 0, {render_pos.x(), swidth.y() - render_pos.x()}, {win.getSize().x, win.getSize().y});
+        ::render(win, command.command, thread.chats, specials, 0, {render_pos.x(), swidth.y() - render_pos.x()}, {win.getSize().x, win.getSize().y});
     }
 
     bool within(vec2f pos)
@@ -122,10 +158,7 @@ struct chat_window
 
 struct terminal
 {
-    int command_history_idx = 0;
-    std::vector<std::string> command_history;
     std::vector<std::string> text_history;
-    std::vector<int> render_specials;
 
     std::map<std::string, chat_thread> chat_threads;
 
@@ -141,47 +174,14 @@ struct terminal
 
     void render(sf::RenderWindow& win)
     {
-        ::render(win, command.command, text_history, render_specials, command.cursor_pos_idx, {0.f, win.getSize().y}, {win.getSize().x, win.getSize().y});
-    }
-
-    void move_command_history_idx(int dir)
-    {
-        command_history_idx += dir;
-
-        command_history_idx = clamp(command_history_idx, 0, (int)command_history.size());
-
-        if(command_history_idx >= 0 && command_history_idx < (int)command_history.size())
-        {
-            command.command = command_history[command_history_idx];
-        }
-
-        if(command_history_idx == (int)command_history.size())
-        {
-            ///ideally we'd reset to partially held commands
-            command.command = "";
-        }
-
-        command.cursor_pos_idx = command.command.size();
-    }
-
-    void clear_command()
-    {
-        command.command = "";
-        command_history_idx = command_history.size();
-        command.cursor_pos_idx = 0;
-    }
-
-    void push_command_to_history(const std::string& cmd)
-    {
-        command_history.push_back(cmd);
-        command_history_idx = (int)command_history.size();
+        ::render(win, command.command, text_history, command.render_specials, command.cursor_pos_idx, {0.f, win.getSize().y}, {win.getSize().x, win.getSize().y});
     }
 
     void bump_command_to_history()
     {
         text_history.push_back(command.command);
-        render_specials.push_back(1);
-        clear_command();
+        command.render_specials.push_back(1);
+        command.clear_command();
     }
 
     void add_text_from_server(const std::string& in)
@@ -235,7 +235,7 @@ struct terminal
         }
 
         text_history.push_back(str);
-        render_specials.push_back(0);
+        command.render_specials.push_back(0);
     }
 };
 
@@ -295,6 +295,11 @@ int main()
 
     while(running)
     {
+        editable_string* to_edit = &term.command;
+
+        if(chat_win.focused)
+            to_edit = &chat_win.command;
+
         while(window.pollEvent(event))
         {
             if(event.type == sf::Event::Closed)
@@ -308,7 +313,7 @@ int main()
                 {
                     if(event.text.unicode >= 32 && event.text.unicode <= 126)
                     {
-                        term.command.add_to_command(event.text.unicode);
+                        to_edit->add_to_command(event.text.unicode);
                     }
                 }
             }
@@ -323,37 +328,37 @@ int main()
             {
                 if(event.key.code == sf::Keyboard::BackSpace)
                 {
-                    term.command.process_backspace();
+                    to_edit->process_backspace();
                 }
 
                 if(event.key.code == sf::Keyboard::Delete)
                 {
-                    term.command.process_delete();
+                    to_edit->process_delete();
                 }
 
                 if(event.key.code == sf::Keyboard::Up)
                 {
-                    term.move_command_history_idx(-1);
+                    to_edit->move_command_history_idx(-1);
                 }
 
                 if(event.key.code == sf::Keyboard::Down)
                 {
-                    term.move_command_history_idx(1);
+                    to_edit->move_command_history_idx(1);
                 }
 
                 if(event.key.code == sf::Keyboard::Left)
                 {
-                    term.command.move_cursor(-1);
+                    to_edit->move_cursor(-1);
                 }
 
                 if(event.key.code == sf::Keyboard::Right)
                 {
-                    term.command.move_cursor(1);
+                    to_edit->move_cursor(1);
                 }
 
                 if(event.key.code == sf::Keyboard::Escape)
                 {
-                    term.clear_command();
+                    to_edit->clear_command();
                 }
             }
         }
@@ -362,13 +367,13 @@ int main()
         {
             //term.add_to_command('\n');
 
-            term.command.command = strip_whitespace(term.command.command);
+            to_edit->command = strip_whitespace(to_edit->command);
 
-            term.push_command_to_history(term.command.command);
+            to_edit->push_command_to_history(to_edit->command);
 
             std::string swapping_users = "user ";
 
-            if(term.command.command.substr(0, swapping_users.length()) == swapping_users)
+            if(term.focused && term.command.command.substr(0, swapping_users.length()) == swapping_users)
             {
                 std::vector<std::string> spl = no_ss_split(term.command.command, " ");
 
@@ -380,8 +385,24 @@ int main()
                 }
             }
 
-            shared.add_back_write(term.command.command);
-            term.bump_command_to_history();
+            if(term.focused)
+            {
+                shared.add_back_write(term.command.command);
+            }
+            else
+            {
+                ///TODO
+                shared.add_back_write("#hs.chats.send({channel:\"" + chat_win.selected + "\", msg:\"" + chat_win.command.command + "\"})");
+            }
+
+            if(term.focused)
+            {
+                term.bump_command_to_history();
+            }
+            else
+            {
+                chat_win.command.clear_command();
+            }
         }
 
         if(ONCE_MACRO(sf::Mouse::Left) && is_focused(window))
