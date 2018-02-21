@@ -108,21 +108,38 @@ struct editable_string
     }
 };
 
+struct button
+{
+    std::string txt;
+    bool selected = false;
+};
+
 struct chat_window
 {
     vec2f render_start = {0,0};
     vec2i dim = {500, 300};
     vec3f frame_col = {0.46f, 0.8f, 1.f};
 
+    std::vector<button> side_buttons
+    {
+        {"0000"},
+        {"7001"},
+        {"memes"},
+    };
+
     std::string selected = "0000";
     editable_string command;
 
+    sf::Color get_frame_col()
+    {
+        return sf::Color(frame_col.x()*255.f, frame_col.y()*255.f, frame_col.z()*255.f, 255);
+    }
+
     bool focused = false;
+    float border_size = 2.f;
 
     void render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads)
     {
-        float border_size = 2.f;
-
         vec2f swidth = {win.getSize().x, win.getSize().y};
 
         vec2f render_pos = (vec2f){swidth.x() - dim.x() - border_size, border_size};
@@ -131,7 +148,7 @@ struct chat_window
         sf::RectangleShape shape;
 
         shape.setSize({dim.x(), dim.y()});
-        shape.setOutlineColor(sf::Color(frame_col.x()*255.f, frame_col.y()*255.f, frame_col.z()*255.f, 255));
+        shape.setOutlineColor(get_frame_col());
         shape.setOutlineThickness(border_size);
         shape.setFillColor(sf::Color(30,30,30,255));
 
@@ -145,7 +162,7 @@ struct chat_window
         specials.resize(thread.chats.size());
 
         for(auto& i : specials)
-            i = 1;
+            i = 0;
 
         int idx = command.cursor_pos_idx;
 
@@ -153,6 +170,44 @@ struct chat_window
             idx = -1;
 
         ::render(win, command.command, thread.chats, specials, idx, {render_pos.x(), dim.y()}, {win.getSize().x, win.getSize().y});
+
+        render_side_attachment(win);
+    }
+
+    void render_side_attachment(sf::RenderWindow& win)
+    {
+        vec2f side_dim = {100, dim.y()};
+        vec2f side_pos = {render_start.x() - side_dim.x() - border_size, render_start.y()};
+
+        sf::RectangleShape shape;
+
+        shape.setSize({side_dim.x(), side_dim.y()});
+        shape.setOutlineColor(get_frame_col());
+        shape.setOutlineThickness(border_size);
+        shape.setFillColor(sf::Color(30, 30, 30, 255));
+
+        shape.setPosition(side_pos.x(), side_pos.y());
+
+        win.draw(shape);
+
+        vec2f start_pos = {side_pos.x() + char_inf::cwbuf, side_pos.y() + char_inf::cheight/4.f};
+        vec2f current_pos = start_pos;
+
+        sf::Text txt;
+        txt.setFont(font);
+        txt.setCharacterSize(12);
+
+        for(int i=0; i < side_buttons.size(); i++)
+        {
+            txt.setString(side_buttons[i].txt);
+            txt.setPosition(current_pos.x(), current_pos.y());
+            txt.setFillColor(sf::Color(255, 255, 255, 255));
+
+            win.draw(txt);
+
+            current_pos.y() += char_inf::cheight;
+            current_pos.x() = start_pos.x();
+        }
     }
 
     bool within(vec2f pos)
