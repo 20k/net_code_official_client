@@ -46,7 +46,15 @@ struct chat_window
         win.draw(shape);
 
 
+        chat_thread& thread = threads[selected];
+        std::vector<int> specials;
+        specials.resize(thread.chats.size());
 
+        for(auto& i : specials)
+            i = true;
+
+        ::render(win, command, thread.chats, specials, 0, {render_pos.x(), swidth.y() - render_pos.x()}, {win.getSize().x, win.getSize().y});
+        //::render(win, command, thread.chats, specials, 0, render_pos, {dim.x(), dim.y()});
     }
 };
 
@@ -56,7 +64,7 @@ struct terminal
     int command_history_idx = 0;
     std::vector<std::string> command_history;
     std::vector<std::string> text_history;
-    std::vector<bool> render_specials;
+    std::vector<int> render_specials;
 
     int cursor_pos_idx = 0;
 

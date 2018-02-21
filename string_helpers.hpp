@@ -94,7 +94,7 @@ void render_str(sf::RenderWindow& win, const std::string& str, vec2f& cpos, bool
 }
 
 void render(sf::RenderWindow& win, const std::string& command, const std::vector<std::string>& text_history,
-            const std::vector<bool>& render_specials, int cursor_pos_idx, vec2f start, vec2f wrap_dim)
+            const std::vector<int>& render_specials, int cursor_pos_idx, vec2f start, vec2f wrap_dim)
 {
     vec2f start_pos = {start.x() + char_inf::cwbuf, start.y() - char_inf::cheight};
 
