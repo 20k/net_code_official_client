@@ -17,70 +17,10 @@ struct chat_thread
     std::vector<std::string> chats;
 };
 
-struct chat_window
+struct editable_string
 {
-    vec2i dim = {500, 300};
-    vec3f frame_col = {0.46f, 0.8f, 1.f};
-
-    std::string selected = "0000";
-
-    std::string command;
-
-    void render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads)
-    {
-        float border_size = 2.f;
-
-        vec2f swidth = {win.getSize().x, win.getSize().y};
-
-        vec2f render_pos = (vec2f){swidth.x() - dim.x() - border_size, border_size};
-
-        sf::RectangleShape shape;
-
-        shape.setSize({dim.x(), dim.y()});
-        shape.setOutlineColor(sf::Color(frame_col.x()*255.f, frame_col.y()*255.f, frame_col.z()*255.f, 255));
-        shape.setOutlineThickness(border_size);
-        shape.setFillColor(sf::Color(30,30,30,255));
-
-        shape.setPosition(render_pos.x(), render_pos.y());
-
-        win.draw(shape);
-
-
-        chat_thread& thread = threads[selected];
-        std::vector<int> specials;
-        specials.resize(thread.chats.size());
-
-        for(auto& i : specials)
-            i = true;
-
-        ::render(win, command, thread.chats, specials, 0, {render_pos.x(), swidth.y() - render_pos.x()}, {win.getSize().x, win.getSize().y});
-        //::render(win, command, thread.chats, specials, 0, render_pos, {dim.x(), dim.y()});
-    }
-};
-
-struct terminal
-{
-    std::string command;
-    int command_history_idx = 0;
-    std::vector<std::string> command_history;
-    std::vector<std::string> text_history;
-    std::vector<int> render_specials;
-
     int cursor_pos_idx = 0;
-
-    std::map<std::string, chat_thread> chat_threads;
-
-    sf::Font font;
-
-    terminal()
-    {
-        font.loadFromFile("VeraMono.ttf");
-    }
-
-    void render(sf::RenderWindow& win)
-    {
-        ::render(win, command, text_history, render_specials, cursor_pos_idx, {0.f, win.getSize().y}, {win.getSize().x, win.getSize().y});
-    }
+    std::string command;
 
     void add_to_command(char c)
     {
@@ -96,35 +36,10 @@ struct terminal
         cursor_pos_idx++;
     }
 
-    bool should_send()
-    {
-        return command.size() > 0 && command.back() == '\n';
-    }
-
     void remove_back()
     {
         if(command.size() > 0)
             command.pop_back();
-    }
-
-    void move_command_history_idx(int dir)
-    {
-        command_history_idx += dir;
-
-        command_history_idx = clamp(command_history_idx, 0, (int)command_history.size());
-
-        if(command_history_idx >= 0 && command_history_idx < (int)command_history.size())
-        {
-            command = command_history[command_history_idx];
-        }
-
-        if(command_history_idx == (int)command_history.size())
-        {
-            ///ideally we'd reset to partially held commands
-            command = "";
-        }
-
-        cursor_pos_idx = command.size();
     }
 
     void move_cursor(int dir)
@@ -154,12 +69,106 @@ struct terminal
 
         command.erase(command.begin() + to_remove);
     }
+};
+
+struct chat_window
+{
+    vec2f render_start = {0,0};
+    vec2i dim = {500, 300};
+    vec3f frame_col = {0.46f, 0.8f, 1.f};
+
+    std::string selected = "0000";
+    std::string command;
+
+    bool focused = false;
+
+    void render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads)
+    {
+        float border_size = 2.f;
+
+        vec2f swidth = {win.getSize().x, win.getSize().y};
+
+        vec2f render_pos = (vec2f){swidth.x() - dim.x() - border_size, border_size};
+        render_start = render_pos;
+
+        sf::RectangleShape shape;
+
+        shape.setSize({dim.x(), dim.y()});
+        shape.setOutlineColor(sf::Color(frame_col.x()*255.f, frame_col.y()*255.f, frame_col.z()*255.f, 255));
+        shape.setOutlineThickness(border_size);
+        shape.setFillColor(sf::Color(30,30,30,255));
+
+        shape.setPosition(render_pos.x(), render_pos.y());
+
+        win.draw(shape);
+
+
+        chat_thread& thread = threads[selected];
+        std::vector<int> specials;
+        specials.resize(thread.chats.size());
+
+        for(auto& i : specials)
+            i = true;
+
+        ::render(win, command, thread.chats, specials, 0, {render_pos.x(), swidth.y() - render_pos.x()}, {win.getSize().x, win.getSize().y});
+    }
+
+    bool within(vec2f pos)
+    {
+        return pos.x() >= render_start.x() && pos.y() >= render_start.y() &&
+               pos.x() < render_start.x() + dim.x() && pos.y() < render_start.y() + dim.y();
+    }
+};
+
+struct terminal
+{
+    int command_history_idx = 0;
+    std::vector<std::string> command_history;
+    std::vector<std::string> text_history;
+    std::vector<int> render_specials;
+
+    std::map<std::string, chat_thread> chat_threads;
+
+    sf::Font font;
+
+    bool focused = true;
+    editable_string command;
+
+    terminal()
+    {
+        font.loadFromFile("VeraMono.ttf");
+    }
+
+    void render(sf::RenderWindow& win)
+    {
+        ::render(win, command.command, text_history, render_specials, command.cursor_pos_idx, {0.f, win.getSize().y}, {win.getSize().x, win.getSize().y});
+    }
+
+    void move_command_history_idx(int dir)
+    {
+        command_history_idx += dir;
+
+        command_history_idx = clamp(command_history_idx, 0, (int)command_history.size());
+
+        if(command_history_idx >= 0 && command_history_idx < (int)command_history.size())
+        {
+            command.command = command_history[command_history_idx];
+        }
+
+        if(command_history_idx == (int)command_history.size())
+        {
+            ///ideally we'd reset to partially held commands
+            command.command = "";
+        }
+
+        command.cursor_pos_idx = command.command.size();
+    }
 
     void clear_command()
     {
-        command = "";
+        command.command = "";
         command_history_idx = command_history.size();
-        cursor_pos_idx = 0;
+        command.cursor_pos_idx = 0;
     }
 
     void push_command_to_history(const std::string& cmd)
@@ -170,7 +179,7 @@ struct terminal
 
     void bump_command_to_history()
     {
-        text_history.push_back(command);
+        text_history.push_back(command.command);
         render_specials.push_back(1);
         clear_command();
     }
@@ -299,7 +308,7 @@ int main()
                 {
                     if(event.text.unicode >= 32 && event.text.unicode <= 126)
                     {
-                        term.add_to_command(event.text.unicode);
+                        term.command.add_to_command(event.text.unicode);
                     }
                 }
             }
@@ -314,12 +323,12 @@ int main()
             {
                 if(event.key.code == sf::Keyboard::BackSpace)
                 {
-                    term.process_backspace();
+                    term.command.process_backspace();
                 }
 
                 if(event.key.code == sf::Keyboard::Delete)
                 {
-                    term.process_delete();
+                    term.command.process_delete();
                 }
 
                 if(event.key.code == sf::Keyboard::Up)
@@ -334,12 +343,12 @@ int main()
 
                 if(event.key.code == sf::Keyboard::Left)
                 {
-                    term.move_cursor(-1);
+                    term.command.move_cursor(-1);
                 }
 
                 if(event.key.code == sf::Keyboard::Right)
                 {
-                    term.move_cursor(1);
+                    term.command.move_cursor(1);
                 }
 
                 if(event.key.code == sf::Keyboard::Escape)
@@ -353,15 +362,15 @@ int main()
         {
             //term.add_to_command('\n');
 
-            term.command = strip_whitespace(term.command);
+            term.command.command = strip_whitespace(term.command.command);
 
-            term.push_command_to_history(term.command);
+            term.push_command_to_history(term.command.command);
 
             std::string swapping_users = "user ";
 
-            if(term.command.substr(0, swapping_users.length()) == swapping_users)
+            if(term.command.command.substr(0, swapping_users.length()) == swapping_users)
             {
-                std::vector<std::string> spl = no_ss_split(term.command, " ");
+                std::vector<std::string> spl = no_ss_split(term.command.command, " ");
 
                 ///HACK ALERT
                 ///NEED TO WAIT FOR SERVER CONFIRMATION
@@ -371,8 +380,27 @@ int main()
                 }
             }
 
-            shared.add_back_write(term.command);
+            shared.add_back_write(term.command.command);
             term.bump_command_to_history();
+        }
+
+        if(ONCE_MACRO(sf::Mouse::Left) && is_focused(window))
+        {
+            sf::Mouse mouse;
+            auto ppos = mouse.getPosition(window);
+
+            vec2f mpos = {ppos.x, ppos.y};
+
+            if(chat_win.within(mpos))
+            {
+                chat_win.focused = true;
+                term.focused = false;
+            }
+            else
+            {
+                chat_win.focused = false;
+                term.focused = true;
+            }
         }
 
         if(shared.has_front_read())
