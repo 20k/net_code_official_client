@@ -114,7 +114,7 @@ struct terminal
 
         pos.y() -= num_lines * cheight;
 
-        for(int i=0; i < chars.size(); i++)
+        for(int i=0; i < (int)chars.size(); i++)
         {
             if(pos.x() >= ((int)win.getSize().x) - cwbuf || chars[i].c == '\n')
             {
@@ -182,12 +182,12 @@ struct terminal
 
         command_history_idx = clamp(command_history_idx, 0, (int)command_history.size());
 
-        if(command_history_idx >= 0 && command_history_idx < command_history.size())
+        if(command_history_idx >= 0 && command_history_idx < (int)command_history.size())
         {
             command = command_history[command_history_idx];
         }
 
-        if(command_history_idx == command_history.size())
+        if(command_history_idx == (int)command_history.size())
         {
             ///ideally we'd reset to partially held commands
             command = "";
@@ -206,7 +206,7 @@ struct terminal
     {
         int to_remove = cursor_pos_idx - 1;
 
-        if(to_remove < 0 || to_remove >= command.size())
+        if(to_remove < 0 || to_remove >= (int)command.size())
             return;
 
         command.erase(command.begin() + to_remove);
@@ -218,7 +218,7 @@ struct terminal
     {
         int to_remove = cursor_pos_idx;
 
-        if(to_remove < 0 || to_remove >= command.size())
+        if(to_remove < 0 || to_remove >= (int)command.size())
             return;
 
         command.erase(command.begin() + to_remove);
@@ -266,7 +266,7 @@ struct terminal
                 std::string fchannel = "";
                 int offset = 0;
 
-                for(offset=chat_api.size(); offset < str.size(); offset++)
+                for(offset=chat_api.size(); offset < (int)str.size(); offset++)
                 {
                     char c = str[offset];
 
@@ -280,7 +280,7 @@ struct terminal
 
                 std::string msg = "";
 
-                for(; offset < str.size(); offset++)
+                for(; offset < (int)str.size(); offset++)
                 {
                     msg += str[offset];
                 }
