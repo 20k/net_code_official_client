@@ -99,7 +99,7 @@ void handle_async_write(shared_data* shared, tcp::socket* socket)
     while(1)
     {
         //std::lock_guard<std::mutex> lk(local_mut);
-        Sleep(4);
+        Sleep(8);
 
         if(shared->should_terminate)
             break;
@@ -170,7 +170,7 @@ void handle_async_read(shared_data* shared, tcp::socket* socket)
     while(1)
     {
         //std::lock_guard<std::mutex> lk(local_mut);
-        Sleep(4);
+        Sleep(8);
 
         if(shared->should_terminate)
             break;
@@ -249,7 +249,7 @@ void watchdog(shared_data* shared, shared_context* ctx)
             }
         }
 
-        Sleep(4);
+        Sleep(8);
     }
 
     shared->termination_count++;
