@@ -20,8 +20,6 @@ int get_num_lines(vec2f start, vec2f dim, const interop_vec_t& str)
 
     for(int i=0; i < (int)str.size(); i++)
     {
-        startx += char_inf::cwidth;
-
         if(str[i].c == '\n')
         {
             num_lines++;
@@ -35,6 +33,8 @@ int get_num_lines(vec2f start, vec2f dim, const interop_vec_t& str)
             startx = char_inf::cwbuf + start.x();
             continue;
         }
+
+        startx += char_inf::cwidth;
     }
 
     return num_lines;
@@ -62,7 +62,7 @@ void render_str(sf::RenderWindow& win, const interop_vec_t& chars, vec2f& cpos, 
 
     vec2f pos = cpos;
 
-    int num_lines = get_num_lines(start, wrap_dim, chars) - 1;
+    int num_lines = get_num_lines(start, wrap_dim, chars);
 
     pos.y() -= num_lines * char_inf::cheight;
 
@@ -76,7 +76,6 @@ void render_str(sf::RenderWindow& win, const interop_vec_t& chars, vec2f& cpos, 
         if(pos.x() >= wrap_dim.x() - char_inf::cwbuf || chars[i].c == '\n')
         {
             pos.y() += char_inf::cheight;
-            //pos.x() = char_inf::cwbuf;
             pos.x() = start.x() + char_inf::cwbuf;
         }
 
@@ -93,6 +92,7 @@ void render_str(sf::RenderWindow& win, const interop_vec_t& chars, vec2f& cpos, 
         vec2f found_pos = round(pos);
 
         txt.setString(std::string(1, chars[i].c));
+        //txt.setString(std::to_string(num_lines));
         txt.setPosition(found_pos.x(), found_pos.y());
 
         vec3f col = chars[i].col;
@@ -124,7 +124,7 @@ interop_vec_t string_to_interop(const std::string& str, bool render_specials)
         chars.pop_back();
     }
 
-    chars.push_back({'\n'});
+    //chars.push_back({'\n'});
 
     return chars;
 }

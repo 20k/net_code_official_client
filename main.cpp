@@ -228,7 +228,7 @@ struct chat_window : serialisable
         if(!focused)
             idx = -1;
 
-        ::render(win, command.command, thread.chats, specials, idx, {render_pos.x(), dim.y()}, {win.getSize().x, win.getSize().y}, border_size);
+        ::render(win, command.command, thread.chats, specials, idx, {render_pos.x(), dim.y()}, {(int)win.getSize().x - char_inf::cwbuf/2.f - border_size, win.getSize().y}, border_size);
 
         render_side_attachment(win);
     }
@@ -348,7 +348,7 @@ struct terminal : serialisable
         if(!focused)
             idx = -1;
 
-        ::render(win, command.command, text_history, render_specials, idx, {0.f, win.getSize().y}, {win.getSize().x, win.getSize().y}, -char_inf::cheight);
+        ::render(win, command.command, text_history, render_specials, idx, {0.f, win.getSize().y}, {(int)win.getSize().x - char_inf::cwbuf, win.getSize().y}, -char_inf::cheight);
     }
 
     void bump_command_to_history()
