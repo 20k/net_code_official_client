@@ -12,6 +12,7 @@
 #include "colour_interop.hpp"
 #include "string_helpers.hpp"
 #include <serialise/serialise.hpp>
+#include <crapmud/shared_data.hpp>
 
 struct chat_thread : serialisable
 {

@@ -27,6 +27,8 @@
 #include <thread>
 
 #include <crapmud/script_util_shared.hpp>
+#include <crapmud/shared_data.hpp>
+
 
 //#define HOST_IP "192.168.0.55"
 #ifdef EXTERN_IP
