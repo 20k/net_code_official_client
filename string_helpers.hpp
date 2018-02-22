@@ -40,7 +40,6 @@ int get_num_lines(vec2f start, vec2f dim, const interop_vec_t& str)
     return num_lines;
 }
 
-
 void render_individual(sf::RenderWindow& win, char c, vec2f pos, sf::Text& txt)
 {
     vec2f cpos = pos;
@@ -168,13 +167,6 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
 
         current_pos.y() -= char_inf::cheight;
     }
-
-    /*std::string cursor_icon = "|";
-
-    vec2f to_render_curs = start_pos;
-    to_render_curs.x() += char_inf::cwidth * cursor_pos_idx - char_inf::cwidth/2.f;
-
-    render_str(win, cursor_icon, to_render_curs, false, start, wrap_dim);*/
 }
 
 #endif // STRING_HELPERS_HPP_INCLUDED

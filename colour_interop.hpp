@@ -70,7 +70,7 @@ struct interop_char
     vec3f col = {255,255,255};
 };
 
-using interop_vec_t = std::deque<interop_char>;
+using interop_vec_t = std::vector<interop_char>;
 
 void strip_interop(interop_vec_t& in)
 {

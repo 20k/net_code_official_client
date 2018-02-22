@@ -488,9 +488,13 @@ int main()
         swindow.handle_serialise(chat_win, false);
     }
 
+    sf::Clock render_clock;
+
     sf::Clock client_poll_clock;
 
     sf::Keyboard key;
+
+    double diff_s = 0.f;
 
     bool running = true;
 
@@ -654,6 +658,8 @@ int main()
 
             client_poll_clock.restart();
         }
+
+        //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
 
         term.render(window);
 
