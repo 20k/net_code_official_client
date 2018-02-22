@@ -191,6 +191,8 @@ std::string get_clipboard_contents()
 
     GlobalUnlock( hData );
 
+    CloseClipboard();
+
     return ntext;
 }
 
