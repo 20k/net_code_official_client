@@ -565,6 +565,19 @@ int main()
                 {
                     to_edit->clear_command();
                 }
+
+                if(event.key.code == sf::Keyboard::V)
+                {
+                    if(key.isKeyPressed(sf::Keyboard::LControl) && is_focused(window))
+                    {
+                        std::string add_text = get_clipboard_contents();
+
+                        for(auto& i : add_text)
+                        {
+                            to_edit->add_to_command(i);
+                        }
+                    }
+                }
             }
         }
 
@@ -637,16 +650,6 @@ int main()
             }
 
             chat_win.process_click(mpos);
-        }
-
-        if(key.isKeyPressed(sf::Keyboard::LControl) && ONCE_MACRO(sf::Keyboard::V) && is_focused(window))
-        {
-            std::string add_text = get_clipboard_contents();
-
-            for(auto& i : add_text)
-            {
-                to_edit->add_to_command(i);
-            }
         }
 
         if(shared.has_front_read())
