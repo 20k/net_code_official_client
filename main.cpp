@@ -270,7 +270,9 @@ struct chat_window : serialisable
                 win.draw(shape);
             }
 
-            render_str(win, side_buttons[i].txt, current_pos, false, start_pos, start_pos + side_dim, -1, border_size);
+            auto ichars = string_to_interop(side_buttons[i].txt, false);
+
+            render_str(win, ichars, current_pos, start_pos, start_pos + side_dim, -1, border_size);
 
             current_pos.y() += char_inf::cheight;
         }

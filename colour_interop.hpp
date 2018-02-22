@@ -70,10 +70,12 @@ struct interop_char
     vec3f col = {255,255,255};
 };
 
-std::vector<interop_char> strip_interop(std::vector<interop_char> in)
+using interop_vec_t = std::deque<interop_char>;
+
+void strip_interop(interop_vec_t& in)
 {
     if(in.size() <= 2)
-        return in;
+        return;
 
     if(in.front().c == '`' && in.back().c == '`' && isalpha(in[1].c))
     {
@@ -81,13 +83,11 @@ std::vector<interop_char> strip_interop(std::vector<interop_char> in)
         in.erase(in.begin());
         in.erase(in.begin());
     }
-
-    return in;
 }
 
-std::vector<interop_char> build_from_colour_string(const std::string& in, bool include_specials)
+interop_vec_t build_from_colour_string(const std::string& in, bool include_specials)
 {
-    std::vector<interop_char> ret;
+    interop_vec_t ret;
 
     bool found_colour = false;
     bool set_colour = false;
@@ -96,7 +96,7 @@ std::vector<interop_char> build_from_colour_string(const std::string& in, bool i
 
     bool term = false;
 
-    std::vector<interop_char> current_color_buf;
+    interop_vec_t current_color_buf;
 
     static auto cmap = get_cmap();
 
@@ -108,7 +108,7 @@ std::vector<interop_char> build_from_colour_string(const std::string& in, bool i
 
         if(cur == '`' && !found_colour)
         {
-            current_color_buf = strip_interop(current_color_buf);
+            strip_interop(current_color_buf);
             ret.insert(ret.end(), current_color_buf.begin(), current_color_buf.end());
             current_color_buf.clear();
 
@@ -157,7 +157,7 @@ std::vector<interop_char> build_from_colour_string(const std::string& in, bool i
             current_color_buf.push_back(c);
 
             if(!include_specials)
-                current_color_buf = strip_interop(current_color_buf);
+                strip_interop(current_color_buf);
 
             ret.insert(ret.end(), current_color_buf.begin(), current_color_buf.end());
             current_color_buf.clear();

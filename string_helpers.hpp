@@ -11,7 +11,7 @@ namespace char_inf
     int cwbuf = 4;
 }
 
-int get_num_lines(vec2f start, vec2f dim, const std::vector<interop_char>& str)
+int get_num_lines(vec2f start, vec2f dim, const interop_vec_t& str)
 {
     int width = dim.x();
 
@@ -55,7 +55,7 @@ void render_individual(sf::RenderWindow& win, char c, vec2f pos, sf::Text& txt)
     win.draw(txt);
 }
 
-void render_str(sf::RenderWindow& win, const std::string& str, vec2f& cpos, bool render_specials, vec2f start, vec2f wrap_dim, int render_cursor_at, float zero_bound)
+void render_str(sf::RenderWindow& win, const interop_vec_t& chars, vec2f& cpos, vec2f start, vec2f wrap_dim, int render_cursor_at, float zero_bound)
 {
     sf::Text txt;
     txt.setFont(font);
@@ -63,16 +63,7 @@ void render_str(sf::RenderWindow& win, const std::string& str, vec2f& cpos, bool
 
     vec2f pos = cpos;
 
-    std::vector<interop_char> chars = build_from_colour_string(str, render_specials);
-
-    while(chars.size() > 0 && chars.back().c == '\n')
-    {
-        chars.pop_back();
-    }
-
-    int num_lines = get_num_lines(start, wrap_dim, chars);
-
-    chars.push_back({'\n'});
+    int num_lines = get_num_lines(start, wrap_dim, chars) - 1;
 
     pos.y() -= num_lines * char_inf::cheight;
 
@@ -125,6 +116,20 @@ void render_str(sf::RenderWindow& win, const std::string& str, vec2f& cpos, bool
     cpos.y() -= num_lines * char_inf::cheight;
 }
 
+interop_vec_t string_to_interop(const std::string& str, bool render_specials)
+{
+    interop_vec_t chars = build_from_colour_string(str, render_specials);
+
+    while(chars.size() > 0 && chars.back().c == '\n')
+    {
+        chars.pop_back();
+    }
+
+    chars.push_back({'\n'});
+
+    return chars;
+}
+
 void render(sf::RenderWindow& win, const std::string& command, const std::vector<std::string>& text_history,
             const std::vector<int>& render_specials, int cursor_pos_idx, vec2f start, vec2f wrap_dim, float zero_bound)
 {
@@ -142,7 +147,9 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
         specials = false;
     }
 
-    render_str(win, render_command, current_pos, specials, start, wrap_dim, cursor_pos_idx, zero_bound);
+    auto icommand = string_to_interop(render_command, specials);
+
+    render_str(win, icommand, current_pos, start, wrap_dim, cursor_pos_idx, zero_bound);
 
     current_pos.y() -= char_inf::cheight;
 
@@ -150,12 +157,14 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
 
     for(int i=len-1; i >= 0; i--)
     {
-        std::string str = text_history[i];
+        const std::string& str = text_history[i];
 
         if(current_pos.y() >= wrap_dim.y() || current_pos.y() < zero_bound)
             continue;
 
-        render_str(win, str, current_pos, render_specials[i], start, wrap_dim, -1, zero_bound);
+        auto istr = string_to_interop(str, render_specials[i]);
+
+        render_str(win, istr, current_pos, start, wrap_dim, -1, zero_bound);
 
         current_pos.y() -= char_inf::cheight;
     }
