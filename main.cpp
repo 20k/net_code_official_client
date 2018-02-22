@@ -251,7 +251,7 @@ struct chat_window : serialisable
         vec2f start_pos = {side_pos.x() + char_inf::cwbuf, side_pos.y() + char_inf::cheight/4.f};
         vec2f current_pos = start_pos;
 
-        for(int i=0; i < side_buttons.size(); i++)
+        for(int i=0; i < (int)side_buttons.size(); i++)
         {
             side_buttons[i].pos = current_pos;
             side_buttons[i].dim = {side_dim.x(), char_inf::cheight};
@@ -637,6 +637,16 @@ int main()
             }
 
             chat_win.process_click(mpos);
+        }
+
+        if(key.isKeyPressed(sf::Keyboard::LControl) && ONCE_MACRO(sf::Keyboard::V) && is_focused(window))
+        {
+            std::string add_text = get_clipboard_contents();
+
+            for(auto& i : add_text)
+            {
+                to_edit->add_to_command(i);
+            }
         }
 
         if(shared.has_front_read())

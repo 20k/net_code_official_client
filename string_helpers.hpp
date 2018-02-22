@@ -169,4 +169,29 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
     }
 }
 
+std::string get_clipboard_contents()
+{
+    if(!OpenClipboard(NULL))
+    {
+        return std::string();
+    }
+
+    HANDLE hData = GetClipboardData(CF_TEXT);
+
+    if (hData == nullptr)
+    {
+        CloseClipboard();
+        return std::string();
+    }
+
+    // Lock the handle to get the actual text pointer
+    char * pszText = static_cast<char*>( GlobalLock(hData) );
+
+    std::string ntext(pszText);
+
+    GlobalUnlock( hData );
+
+    return ntext;
+}
+
 #endif // STRING_HELPERS_HPP_INCLUDED
