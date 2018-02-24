@@ -132,7 +132,6 @@ void handle_async_write(shared_data* shared, tcp::socket* socket)
 
                 http::write(*socket, req);
             }
-
         }
         catch(...)
         {
