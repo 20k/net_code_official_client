@@ -364,6 +364,48 @@ struct terminal : serialisable
         command.clear_command();
     }
 
+    std::string get_next_chat_api_str(const std::string& chat_in, std::string& fchannel, std::string& fmsg)
+    {
+        std::string chat_api = "chat_api ";
+
+        if(starts_with(chat_in, chat_api))
+        {
+            std::vector<std::string> splits = no_ss_split(chat_in, " ");
+
+            if(splits.size() < 3)
+                return "";
+
+            std::string length = splits[1];
+            std::string chan = splits[2];
+            std::string msg;
+
+            std::cout << "found len " << length << std::endl;
+
+            if(splits.size() >= 3)
+            {
+                auto it = chat_in.begin();
+
+                it = it + chat_api.size();
+                it = it + length.size() + 1;
+                it = it + chan.size() + 1;
+
+                auto fin = chat_in.begin();
+
+                fin = fin + chat_api.size();
+                fin = fin + atoll(length.c_str()) + 1 + length.size();
+
+                msg = std::string(it, fin);
+            }
+
+            fchannel = chan;
+            fmsg = msg;
+
+            return std::string(chat_in.begin() + atoll(length.c_str()), chat_in.end());
+        }
+
+        return "";
+    }
+
     void add_text_from_server(const std::string& in, bool server_command = true)
     {
         if(in == "")
@@ -382,7 +424,7 @@ struct terminal : serialisable
             }
             else if(str.substr(0, chat_api.size()) == chat_api)
             {
-                std::vector<std::string> strings = no_ss_split(str, " ");
+                /*std::vector<std::string> strings = no_ss_split(str, " ");
 
                 if(strings.size() >= 2)
                 {
@@ -420,6 +462,25 @@ struct terminal : serialisable
                     limit_size(chat_threads[fchannel].chats, max_chat_history);
 
                     chat_threads[fchannel].chats.push_back(str);
+                }*/
+
+                std::string chan;
+                std::string msg;
+
+                std::string next = get_next_chat_api_str(str, chan, msg);
+
+                while(next != "")
+                {
+                    std::cout << "fstr " << msg << std::endl;
+                    std::cout << "fchn " << chan << std::endl;
+
+                    int max_chat_history = 500;
+
+                    limit_size(chat_threads[chan].chats, max_chat_history);
+
+                    chat_threads[chan].chats.push_back(msg);
+
+                    next = get_next_chat_api_str(next, chan, msg);
                 }
             }
         }
