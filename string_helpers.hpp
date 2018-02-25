@@ -81,16 +81,17 @@ void render_str(sf::RenderWindow& win, const interop_vec_t& chars, vec2f& cpos, 
             pos.x() = start.x() + char_inf::cwbuf;
         }
 
+        if(chars[i].c == '\n')
+        {
+            continue;
+        }
+
         if(pos.y() <= zero_bound)
         {
             pos.x() += char_inf::cwidth;
             continue;
         }
 
-        if(chars[i].c == '\n')
-        {
-            continue;
-        }
 
         vec2f found_pos = round(pos);
 

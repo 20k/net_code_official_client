@@ -434,7 +434,7 @@ struct terminal : serialisable
 
                 while(msg != "")
                 {
-                    text_history.push_back(msg);
+                    text_history.push_back(msg + "\n");
                     render_specials.push_back(0);
 
                     std::cout << "fstr " << msg << std::endl;
@@ -452,7 +452,7 @@ struct terminal : serialisable
                 int max_history = 1000;
 
                 limit_size(text_history, max_history);
-                limit_size(render_specials, max_history);s
+                limit_size(render_specials, max_history);
 
                 return;
             }
