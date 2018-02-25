@@ -83,6 +83,7 @@ void render_str(sf::RenderWindow& win, const interop_vec_t& chars, vec2f& cpos, 
 
         if(pos.y() <= zero_bound)
         {
+            pos.x() += char_inf::cwidth;
             continue;
         }
 
@@ -161,7 +162,10 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
         const std::string& str = text_history[i];
 
         if(current_pos.y() >= wrap_dim.y() || current_pos.y() < zero_bound)
+        {
+            current_pos.y() -= char_inf::cheight;
             continue;
+        }
 
         auto istr = string_to_interop(str, render_specials[i]);
 

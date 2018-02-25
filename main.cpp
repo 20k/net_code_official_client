@@ -168,6 +168,8 @@ struct chat_window : serialisable
     vec2i dim = {500, 300};
     vec3f frame_col = {0.46f, 0.8f, 1.f};
 
+    vec2f side_dim = {100, dim.y()};
+
     std::vector<button> side_buttons
     {
         {"0000", true},
@@ -237,7 +239,6 @@ struct chat_window : serialisable
 
     void render_side_attachment(sf::RenderWindow& win)
     {
-        vec2f side_dim = {100, dim.y()};
         vec2f side_pos = {render_start.x() - side_dim.x() - border_size, render_start.y()};
 
         sf::RectangleShape shape;
@@ -313,8 +314,11 @@ struct chat_window : serialisable
 
     bool within(vec2f pos)
     {
-        return pos.x() >= render_start.x() && pos.y() >= render_start.y() &&
-               pos.x() < render_start.x() + dim.x() && pos.y() < render_start.y() + dim.y();
+        vec2f tl = render_start - side_dim;
+        vec2f br = render_start + (vec2f){dim.x(), dim.y()};
+
+        return pos.x() >= tl.x() && pos.y() >= tl.y() &&
+               pos.x() < br.x() && pos.y() < br.y();
     }
 };
 
