@@ -439,6 +439,8 @@ bool is_focused(sf::RenderWindow& win)
 
 int main()
 {
+    CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+
     shared_data shared;
 
     if(file_exists("key.key"))

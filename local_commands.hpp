@@ -78,6 +78,11 @@ std::string handle_local_command(const std::string& username, const std::string&
         system(("start " + file_name).c_str());
     }
 
+    if(starts_with(command, "#dir"))
+    {
+        ShellExecute(NULL, "open", "scripts", NULL, NULL, SW_SHOWDEFAULT);
+    }
+
     return "";
 }
 
