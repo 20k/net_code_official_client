@@ -368,6 +368,9 @@ struct terminal : serialisable
     {
         std::string chat_api = "chat_api ";
 
+        fmsg = "";
+        fchannel = "";
+
         if(starts_with(chat_in, chat_api))
         {
             std::vector<std::string> splits = no_ss_split(chat_in, " ");
@@ -381,6 +384,11 @@ struct terminal : serialisable
 
             std::cout << "found len " << length << std::endl;
 
+            auto fin = chat_in.begin();
+
+            fin = fin + chat_api.size();
+            fin = fin + atoll(length.c_str()) + 1 + length.size();
+
             if(splits.size() >= 3)
             {
                 auto it = chat_in.begin();
@@ -389,18 +397,13 @@ struct terminal : serialisable
                 it = it + length.size() + 1;
                 it = it + chan.size() + 1;
 
-                auto fin = chat_in.begin();
-
-                fin = fin + chat_api.size();
-                fin = fin + atoll(length.c_str()) + 1 + length.size();
-
                 msg = std::string(it, fin);
             }
 
             fchannel = chan;
             fmsg = msg;
 
-            return std::string(chat_in.begin() + atoll(length.c_str()), chat_in.end());
+            return std::string(fin, chat_in.end());
         }
 
         return "";
@@ -424,53 +427,16 @@ struct terminal : serialisable
             }
             else if(str.substr(0, chat_api.size()) == chat_api)
             {
-                /*std::vector<std::string> strings = no_ss_split(str, " ");
-
-                if(strings.size() >= 2)
-                {
-                    //std::string channel = strings[1];
-
-                    std::string fchannel = "";
-                    int offset = 0;
-
-                    for(offset=chat_api.size(); offset < (int)str.size(); offset++)
-                    {
-                        char c = str[offset];
-
-                        if(c == ' ')
-                            break;
-
-                        fchannel += c;
-                    }
-
-                    offset++;
-
-                    std::string msg = "";
-
-                    for(; offset < (int)str.size(); offset++)
-                    {
-                        msg += str[offset];
-                    }
-
-                    str = msg;
-
-                    std::cout << "fstr " << str << std::endl;
-                    std::cout << "fchn " << fchannel << std::endl;
-
-                    int max_chat_history = 500;
-
-                    limit_size(chat_threads[fchannel].chats, max_chat_history);
-
-                    chat_threads[fchannel].chats.push_back(str);
-                }*/
-
                 std::string chan;
                 std::string msg;
 
                 std::string next = get_next_chat_api_str(str, chan, msg);
 
-                while(next != "")
+                while(msg != "")
                 {
+                    text_history.push_back(msg);
+                    render_specials.push_back(0);
+
                     std::cout << "fstr " << msg << std::endl;
                     std::cout << "fchn " << chan << std::endl;
 
@@ -482,6 +448,13 @@ struct terminal : serialisable
 
                     next = get_next_chat_api_str(next, chan, msg);
                 }
+
+                int max_history = 1000;
+
+                limit_size(text_history, max_history);
+                limit_size(render_specials, max_history);s
+
+                return;
             }
         }
 
