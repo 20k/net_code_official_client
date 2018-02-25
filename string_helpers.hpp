@@ -9,6 +9,8 @@ namespace char_inf
 
     int cheight = 16;
     int cwbuf = 4;
+
+    int font_size = 12;
 }
 
 int get_num_lines(vec2f start, vec2f dim, const interop_vec_t& str)
@@ -58,7 +60,7 @@ void render_str(sf::RenderWindow& win, const interop_vec_t& chars, vec2f& cpos, 
 {
     sf::Text txt;
     txt.setFont(font);
-    txt.setCharacterSize(12);
+    txt.setCharacterSize(char_inf::font_size);
 
     vec2f pos = cpos;
 
