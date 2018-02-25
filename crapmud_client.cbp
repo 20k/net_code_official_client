@@ -111,6 +111,7 @@
 		<Unit filename="deps/serialise/serialise.hpp" />
 		<Unit filename="http_beast_client.cpp" />
 		<Unit filename="http_beast_client.hpp" />
+		<Unit filename="local_commands.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="string_helpers.hpp" />
 		<Unit filename="util.hpp" />

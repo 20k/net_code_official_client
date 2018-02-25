@@ -14,6 +14,8 @@
 #include <serialise/serialise.hpp>
 #include <crapmud/shared_data.hpp>
 
+#include "local_commands.hpp"
+
 struct chat_thread : serialisable
 {
     std::vector<std::string> chats;
@@ -358,60 +360,63 @@ struct terminal : serialisable
         command.clear_command();
     }
 
-    void add_text_from_server(const std::string& in)
+    void add_text_from_server(const std::string& in, bool server_command = true)
     {
         if(in == "")
             return;
 
-        std::string command_str = "command ";
-        std::string chat_api = "chat_api ";
-
         std::string str = in;
 
-        if(str.substr(0, command_str.size()) == command_str)
+        if(server_command)
         {
-            str = std::string(str.begin() + command_str.size(), str.end());
-        }
-        else if(str.substr(0, chat_api.size()) == chat_api)
-        {
-            std::vector<std::string> strings = no_ss_split(str, " ");
+            std::string command_str = "command ";
+            std::string chat_api = "chat_api ";
 
-            if(strings.size() >= 2)
+            if(str.substr(0, command_str.size()) == command_str)
             {
-                //std::string channel = strings[1];
+                str = std::string(str.begin() + command_str.size(), str.end());
+            }
+            else if(str.substr(0, chat_api.size()) == chat_api)
+            {
+                std::vector<std::string> strings = no_ss_split(str, " ");
 
-                std::string fchannel = "";
-                int offset = 0;
-
-                for(offset=chat_api.size(); offset < (int)str.size(); offset++)
+                if(strings.size() >= 2)
                 {
-                    char c = str[offset];
+                    //std::string channel = strings[1];
 
-                    if(c == ' ')
-                        break;
+                    std::string fchannel = "";
+                    int offset = 0;
 
-                    fchannel += c;
+                    for(offset=chat_api.size(); offset < (int)str.size(); offset++)
+                    {
+                        char c = str[offset];
+
+                        if(c == ' ')
+                            break;
+
+                        fchannel += c;
+                    }
+
+                    offset++;
+
+                    std::string msg = "";
+
+                    for(; offset < (int)str.size(); offset++)
+                    {
+                        msg += str[offset];
+                    }
+
+                    str = msg;
+
+                    std::cout << "fstr " << str << std::endl;
+                    std::cout << "fchn " << fchannel << std::endl;
+
+                    int max_chat_history = 500;
+
+                    limit_size(chat_threads[fchannel].chats, max_chat_history);
+
+                    chat_threads[fchannel].chats.push_back(str);
                 }
-
-                offset++;
-
-                std::string msg = "";
-
-                for(; offset < (int)str.size(); offset++)
-                {
-                    msg += str[offset];
-                }
-
-                str = msg;
-
-                std::cout << "fstr " << str << std::endl;
-                std::cout << "fchn " << fchannel << std::endl;
-
-                int max_chat_history = 500;
-
-                limit_size(chat_threads[fchannel].chats, max_chat_history);
-
-                chat_threads[fchannel].chats.push_back(str);
             }
         }
 
@@ -606,13 +611,16 @@ int main()
 
             if(term.focused)
             {
-                shared.add_back_write("client_command " + term.command.command);
+                if(!is_local_command(term.command.command))
+                    shared.add_back_write("client_command " + term.command.command);
             }
             else
             {
                 ///TODO
                 shared.add_back_write("client_chat #hs.msgs.send({channel:\"" + chat_win.selected + "\", msg:\"" + chat_win.command.command + "\"})");
             }
+
+            std::string cmd = term.command.command;
 
             if(term.focused)
             {
@@ -621,6 +629,13 @@ int main()
             else
             {
                 chat_win.command.clear_command();
+            }
+
+            if(term.focused && is_local_command(cmd))
+            {
+                std::string data = handle_local_command(shared.get_user(), cmd);
+
+                term.add_text_from_server(data, false);
             }
 
             serialise sterm;
