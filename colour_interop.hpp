@@ -138,7 +138,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
             continue;
         }
 
-        if(cur != '`' && cur != '\n')
+        if(cur != '`')
         {
             interop_char c;
             c.c = cur;
@@ -149,7 +149,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
             continue;
         }
 
-        if((cur == '`' || cur == '\n') && found_colour)
+        if(cur == '`' && found_colour)
         {
             interop_char c;
             c.c = cur;
