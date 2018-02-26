@@ -77,7 +77,7 @@ void strip_interop(interop_vec_t& in)
     if(in.size() <= 2)
         return;
 
-    if(in.front().c == '`' && in.back().c == '`' && isalpha(in[1].c))
+    if(in.front().c == '`' && in.back().c == '`' && isalpha(in[1].c) && in[1].c != '`')
     {
         in.pop_back();
         in.erase(in.begin());
@@ -109,7 +109,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
 
         term = false;
 
-        if(cur == '`' && !found_colour)
+        if(cur == '`' && !found_colour && !set_colour)
         {
             strip_interop(current_color_buf);
             ret.insert(ret.end(), current_color_buf.begin(), current_color_buf.end());
@@ -123,6 +123,18 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
             current_color_buf.push_back(c);
 
             continue;
+        }
+
+        if(cur == '`' && set_colour)
+        {
+            set_colour = false;
+            found_colour = true;
+
+            /*interop_char c;
+            c.c = '¬';
+            c.col = cmap['A'];
+
+            current_color_buf.push_back(c);*/
         }
 
         if(set_colour)
