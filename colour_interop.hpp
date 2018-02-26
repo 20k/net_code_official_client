@@ -89,6 +89,9 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
 {
     interop_vec_t ret;
 
+    if(in.size() == 0)
+        return ret;
+
     bool found_colour = false;
     bool set_colour = false;
 
@@ -100,10 +103,61 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
 
     static auto cmap = get_cmap();
 
+    //std::cout << in << std::endl;
+
     for(int i=0; i < (int)in.size(); i++)
     {
         char cur = in[i];
 
+        //int next = i + 1;
+
+        //if(next >= in.size())
+            //next = (int)in.size() - 1;
+
+        #if 0
+        if(cur == '`' && !found_colour)
+        {
+            found_colour = true;
+            //last_col = in[next];
+            set_colour = true;
+            //i++;
+            continue;
+        }
+
+        if(set_colour)
+        {
+            last_col = cur;
+            set_colour = false;
+            continue;
+        }
+
+        if(cur == '`' && found_colour)
+        {
+            found_colour = false;
+            last_col = 'A';
+
+            continue;
+        }
+
+        if(cur == '\n')
+        {
+            found_colour = false;
+            last_col = 'A';
+        }
+
+        if(cur != '`')
+        {
+            interop_char c;
+            c.c = cur;
+            c.col = cmap[last_col];
+
+            //std::cout << std::string(1, last_col) << std::endl;
+
+            ret.push_back(c);
+        }
+        #endif // 0
+
+        #if 1
         term = false;
 
         if(cur == '`' && !found_colour)
@@ -138,7 +192,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
             continue;
         }
 
-        if(cur != '`')
+        if(cur != '`' && cur != '\n')
         {
             interop_char c;
             c.c = cur;
@@ -149,7 +203,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
             continue;
         }
 
-        if(cur == '`' && found_colour)
+        if((cur == '`' && found_colour) || cur == '\n')
         {
             interop_char c;
             c.c = cur;
@@ -169,6 +223,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
 
             continue;
         }
+        #endif // 0
     }
 
     if(!term)
