@@ -28,6 +28,10 @@
 				<Linker>
 					<Add option="-s" />
 				</Linker>
+				<ExtraCommands>
+					<Add after="build_test.bat" />
+					<Mode after="always" />
+				</ExtraCommands>
 			</Target>
 			<Target title="Profile">
 				<Option output="bin/Profile/crapmud_client" prefix_auto="1" extension_auto="1" />
@@ -78,6 +82,24 @@
 					<Add option="-pg -lgmon" />
 				</Linker>
 			</Target>
+			<Target title="DeployToSteam">
+				<Option output="bin/Deploy/crapmud_client" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="DebugDeploy" />
+				<Option object_output="obj/Deploy/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-DEXTERN_IP" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+				<ExtraCommands>
+					<Add after="build_release.bat" />
+					<Add after="C:/Users/James/Downloads/steamworks_sdk_142/sdk/tools/ContentBuilder/run_build.bat" />
+				</ExtraCommands>
+			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
@@ -105,6 +127,7 @@
 			<Add option="-lbson-1.0.dll" />
 			<Add option="-lboost_system-mt" />
 			<Add option="-lmswsock" />
+			<Add option="-lole32" />
 		</Linker>
 		<Unit filename="colour_interop.hpp" />
 		<Unit filename="deps/serialise/serialise.cpp" />
