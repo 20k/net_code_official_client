@@ -364,49 +364,68 @@ struct terminal : serialisable
         command.clear_command();
     }
 
-    std::string get_next_chat_api_str(const std::string& chat_in, std::string& fchannel, std::string& fmsg)
+    void get_chat_api_strs(const std::string& chat_in, std::vector<std::string>& channels, std::vector<std::string>& msgs)
     {
         std::string chat_api = "chat_api ";
 
-        fmsg = "";
-        fchannel = "";
+        auto post_intro = chat_in.begin() + chat_api.size();
 
-        if(starts_with(chat_in, chat_api))
+        auto strs = no_ss_split(chat_in, " ");
+
+        if(strs.size() < 3)
+            return;
+
+        std::string prologue_size = strs[1];
+        std::string num_channels = strs[2];
+
+        int num = atoi(num_channels.c_str());
+        int prologue_bytes = atoi(prologue_size.c_str());
+
+        int base = 3;
+
+        for(int i=0; i < num; i++)
         {
-            std::vector<std::string> splits = no_ss_split(chat_in, " ");
+            int offset = i + base;
 
-            if(splits.size() < 3)
-                return "";
-
-            std::string length = splits[1];
-            std::string chan = splits[2];
-            std::string msg;
-
-            std::cout << "found len " << length << std::endl;
-
-            auto fin = chat_in.begin();
-
-            fin = fin + chat_api.size();
-            fin = fin + atoll(length.c_str()) + 1 + length.size();
-
-            if(splits.size() >= 3)
-            {
-                auto it = chat_in.begin();
-
-                it = it + chat_api.size();
-                it = it + length.size() + 1;
-                it = it + chan.size() + 1;
-
-                msg = std::string(it, fin);
-            }
-
-            fchannel = chan;
-            fmsg = msg;
-
-            return std::string(fin, chat_in.end());
+            std::string user_is_in_chan = strs[i];
         }
 
-        return "";
+        std::string remaining(post_intro + prologue_bytes + 2, chat_in.end());
+
+        while(1)
+        {
+            auto bytes_check = no_ss_split(remaining, " ");
+
+            if(bytes_check.size() == 0)
+                return;
+
+            int next_size = atoi(bytes_check[0].c_str());
+
+            auto it = remaining.begin();
+
+            while(*it != ' ')
+                it++;
+
+            it++;
+
+            std::string total_msg(it, it + next_size);
+
+            auto next_it = it;
+
+            while(*next_it != ' ')
+                next_it++;
+
+            std::string chan(it, next_it);
+
+            next_it++;
+
+            std::string msg(next_it, it + next_size);
+
+            channels.push_back(chan);
+            msgs.push_back(msg);
+
+            remaining = std::string(it + next_size, remaining.end());
+        }
     }
 
     void add_text_from_server(const std::string& in, bool server_command = true)
@@ -427,26 +446,17 @@ struct terminal : serialisable
             }
             else if(str.substr(0, chat_api.size()) == chat_api)
             {
-                std::string chan;
-                std::string msg;
+                std::vector<std::string> chnls;
+                std::vector<std::string> msgs;
 
-                std::string next = get_next_chat_api_str(str, chan, msg);
+                get_chat_api_strs(str, chnls, msgs);
 
-                while(msg != "")
+                for(int i=0; i < chnls.size(); i++)
                 {
-                    text_history.push_back(msg + "\n");
+                    text_history.push_back(msgs[i] + "\n");
                     render_specials.push_back(0);
 
-                    std::cout << "fstr " << msg << std::endl;
-                    std::cout << "fchn " << chan << std::endl;
-
-                    int max_chat_history = 500;
-
-                    limit_size(chat_threads[chan].chats, max_chat_history);
-
-                    chat_threads[chan].chats.push_back(msg);
-
-                    next = get_next_chat_api_str(next, chan, msg);
+                    chat_threads[chnls[i]].chats.push_back(msgs[i]);
                 }
 
                 int max_history = 1000;
