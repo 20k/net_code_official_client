@@ -22,14 +22,7 @@ int get_num_lines(vec2f start, vec2f dim, const interop_vec_t& str)
 
     for(int i=0; i < (int)str.size(); i++)
     {
-        if(str[i].c == '\n')
-        {
-            num_lines++;
-            startx = char_inf::cwbuf + start.x();
-            continue;
-        }
-
-        if(startx >= width - char_inf::cwbuf)
+        if(startx >= width - char_inf::cwbuf || str[i].c == '\n')
         {
             num_lines++;
             startx = char_inf::cwbuf + start.x();
