@@ -172,7 +172,7 @@ struct chat_window : serialisable
 
     std::vector<button> side_buttons
     {
-        {"0000", true},
+        {"0000"},
         {"7001"},
         {"memes"}
     };
@@ -200,6 +200,21 @@ struct chat_window : serialisable
 
     bool focused = false;
     float border_size = 2.f;
+
+    void tick()
+    {
+        for(auto& i : side_buttons)
+        {
+            if(i.txt == selected)
+            {
+                i.is_selected = true;
+            }
+            else
+            {
+                i.is_selected = false;
+            }
+        }
+    }
 
     void render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads)
     {
@@ -320,6 +335,19 @@ struct chat_window : serialisable
         return pos.x() >= tl.x() && pos.y() >= tl.y() &&
                pos.x() < br.x() && pos.y() < br.y();
     }
+
+    void set_side_channels(const std::vector<std::string>& sides)
+    {
+        side_buttons.clear();
+
+        for(auto& i : sides)
+        {
+            if(i == selected)
+                side_buttons.push_back({i, true});
+            else
+                side_buttons.push_back({i});
+        }
+    }
 };
 
 struct terminal : serialisable
@@ -364,9 +392,11 @@ struct terminal : serialisable
         command.clear_command();
     }
 
-    void get_chat_api_strs(const std::string& chat_in, std::vector<std::string>& channels, std::vector<std::string>& msgs)
+    void get_chat_api_strs(const std::string& chat_in, std::vector<std::string>& channels, std::vector<std::string>& msgs, std::vector<std::string>& in_channels)
     {
         std::string chat_api = "chat_api ";
+
+        //std::cout << chat_in << std::endl;
 
         auto post_intro = chat_in.begin() + chat_api.size();
 
@@ -387,14 +417,23 @@ struct terminal : serialisable
         {
             int offset = i + base;
 
-            std::string user_is_in_chan = strs[i];
+            std::string user_is_in_chan = strs[offset];
+
+            in_channels.push_back(user_is_in_chan);
+
+            //std::cout << user_is_in_chan << " fchan " << std::endl;
         }
 
         std::string remaining(post_intro + prologue_bytes + 2, chat_in.end());
 
         while(1)
         {
+            while(remaining.size() > 0 && remaining.front() == ' ')
+                remaining.erase(remaining.begin());
+
             auto bytes_check = no_ss_split(remaining, " ");
+
+            //std::cout << "rem " << remaining << std::endl;
 
             if(bytes_check.size() == 0)
                 return;
@@ -428,7 +467,7 @@ struct terminal : serialisable
         }
     }
 
-    void add_text_from_server(const std::string& in, bool server_command = true)
+    void add_text_from_server(const std::string& in, chat_window& chat_win, bool server_command = true)
     {
         if(in == "")
             return;
@@ -449,9 +488,13 @@ struct terminal : serialisable
                 std::vector<std::string> chnls;
                 std::vector<std::string> msgs;
 
-                get_chat_api_strs(str, chnls, msgs);
+                std::vector<std::string> in_channels;
 
-                for(int i=0; i < chnls.size(); i++)
+                get_chat_api_strs(str, chnls, msgs, in_channels);
+
+                chat_win.set_side_channels(in_channels);
+
+                for(int i=0; i < (int)chnls.size(); i++)
                 {
                     text_history.push_back(msgs[i] + "\n");
                     render_specials.push_back(0);
@@ -685,7 +728,7 @@ int main()
             {
                 std::string data = handle_local_command(shared.get_user(), cmd);
 
-                term.add_text_from_server(data, false);
+                term.add_text_from_server(data, chat_win, false);
             }
 
             serialise sterm;
@@ -696,6 +739,8 @@ int main()
             swindow.handle_serialise(chat_win, true);
             swindow.save(chat_file);
         }
+
+        chat_win.tick();
 
         if(ONCE_MACRO(sf::Mouse::Left) && is_focused(window))
         {
@@ -720,7 +765,7 @@ int main()
 
         if(shared.has_front_read())
         {
-            term.add_text_from_server(shared.get_front_read());
+            term.add_text_from_server(shared.get_front_read(), chat_win);
 
             serialise sterm;
             sterm.handle_serialise(term, true);
