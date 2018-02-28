@@ -424,7 +424,7 @@ struct terminal : serialisable
             //std::cout << user_is_in_chan << " fchan " << std::endl;
         }
 
-        std::string remaining(post_intro + prologue_bytes + 2, chat_in.end());
+        std::string remaining(post_intro + prologue_bytes + prologue_size.size() + 1, chat_in.end());
 
         if(remaining.size() > 0 && remaining.front() == ' ')
             remaining.erase(remaining.begin());
