@@ -726,7 +726,7 @@ int main()
             else
             {
                 ///TODO
-                shared.add_back_write("client_chat #hs.msgs.send({channel:\"" + chat_win.selected + "\", msg:\"" + chat_win.command.command + "\"})");
+                shared.add_back_write("client_chat #hs.msg.send({channel:\"" + chat_win.selected + "\", msg:\"" + chat_win.command.command + "\"})");
             }
 
             std::string cmd = term.command.command;
