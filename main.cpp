@@ -426,14 +426,14 @@ struct terminal : serialisable
 
         std::string remaining(post_intro + prologue_bytes + 2, chat_in.end());
 
+        if(remaining.size() > 0 && remaining.front() == ' ')
+            remaining.erase(remaining.begin());
+
         while(1)
         {
-            while(remaining.size() > 0 && remaining.front() == ' ')
-                remaining.erase(remaining.begin());
+            //std::cout << "rem " << remaining << std::endl;
 
             auto bytes_check = no_ss_split(remaining, " ");
-
-            //std::cout << "rem " << remaining << std::endl;
 
             if(bytes_check.size() == 0)
                 return;
@@ -446,6 +446,18 @@ struct terminal : serialisable
                 it++;
 
             it++;
+
+            if(next_size == 0)
+            {
+                it++;
+
+                if(it >= remaining.end())
+                    return;
+
+                remaining = std::string(it, remaining.end());
+
+                continue;
+            }
 
             std::string total_msg(it, it + next_size);
 
@@ -462,6 +474,9 @@ struct terminal : serialisable
 
             channels.push_back(chan);
             msgs.push_back(msg);
+
+            if(it + next_size >= remaining.end())
+                return;
 
             remaining = std::string(it + next_size, remaining.end());
         }
@@ -684,7 +699,8 @@ int main()
         {
             //term.add_to_command('\n');
 
-            to_edit->command = strip_whitespace(to_edit->command);
+            if(!chat_win.focused)
+                to_edit->command = strip_whitespace(to_edit->command);
 
             to_edit->push_command_to_history(to_edit->command);
 
