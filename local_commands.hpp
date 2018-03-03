@@ -75,7 +75,7 @@ std::string handle_local_command(const std::string& username, const std::string&
             write_all_bin(file_name, "function(context, args)\n{\n\n}");
         }
 
-        ///need to use shellexecute to prevent hands on no js
+        ///need to use shellexecute to prevent hangs on no js
         system(("start " + file_name).c_str());
     }
 
