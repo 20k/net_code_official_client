@@ -1,6 +1,6 @@
 [submodule "deps/crapmud"]
 	path = deps/crapmud
-	url = https://bitbucket.org/20k11/crapmud
+	url = git@gitlab.com:20k/crapmud.git
 [submodule "deps/vec"]
 	path = deps/vec
 	url = https://github.com/20k/funvectormaths
