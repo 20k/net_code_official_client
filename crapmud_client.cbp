@@ -98,6 +98,7 @@
 				<ExtraCommands>
 					<Add after="build_release.bat" />
 					<Add after="C:/Users/James/Downloads/steamworks_sdk_142/sdk/tools/ContentBuilder/run_build.bat" />
+					<Mode after="always" />
 				</ExtraCommands>
 			</Target>
 		</Build>
@@ -123,8 +124,6 @@
 			<Add option="-lflac" />
 			<Add option="-lopenal32" />
 			<Add option="-logg" />
-			<Add option="-lmongoc-1.0.dll" />
-			<Add option="-lbson-1.0.dll" />
 			<Add option="-lboost_system-mt" />
 			<Add option="-lmswsock" />
 			<Add option="-lole32" />
@@ -134,6 +133,9 @@
 		<Unit filename="deps/serialise/serialise.hpp" />
 		<Unit filename="http_beast_client.cpp" />
 		<Unit filename="http_beast_client.hpp" />
+		<Unit filename="icon.res">
+			<Option target="Deploy" />
+		</Unit>
 		<Unit filename="local_commands.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="string_helpers.hpp" />
