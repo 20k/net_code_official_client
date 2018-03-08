@@ -1,6 +1,12 @@
 #ifndef COLOUR_INTEROP_HPP_INCLUDED
 #define COLOUR_INTEROP_HPP_INCLUDED
 
+#include <map>
+#include <vec/vec.hpp>
+#include <string>
+#include <vector>
+
+inline
 std::map<char, vec3f> get_cmap()
 {
     std::map<char, vec3f> colour_map;
@@ -69,10 +75,12 @@ struct interop_char
     char c = 'A';
     vec3f col = {255,255,255};
     bool is_cursor = false;
+    bool coloured = false;
 };
 
 using interop_vec_t = std::vector<interop_char>;
 
+inline
 void strip_interop(interop_vec_t& in)
 {
     if(in.size() <= 2)
@@ -86,6 +94,7 @@ void strip_interop(interop_vec_t& in)
     }
 }
 
+inline
 interop_vec_t build_from_colour_string(const std::string& in, bool include_specials)
 {
     interop_vec_t ret;
@@ -148,6 +157,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
             interop_char c;
             c.c = cur;
             c.col = cmap[last_col];
+            c.coloured = true;
 
             current_color_buf.push_back(c);
 
@@ -159,6 +169,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
             interop_char c;
             c.c = cur;
             c.col = cmap[last_col];
+            c.coloured = found_colour;
 
             current_color_buf.push_back(c);
 
@@ -169,6 +180,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
         {
             interop_char c;
             c.c = cur;
+            c.coloured = found_colour;
 
             current_color_buf.push_back(c);
 

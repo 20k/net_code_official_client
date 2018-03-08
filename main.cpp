@@ -4,8 +4,6 @@
 
 #include "http_beast_client.hpp"
 
-#include <windows.h>
-
 #include "util.hpp"
 
 #include <crapmud/script_util_shared.hpp>
@@ -15,6 +13,7 @@
 #include <crapmud/shared_data.hpp>
 
 #include "local_commands.hpp"
+#include "auto_handlers.hpp"
 
 struct chat_thread : serialisable
 {
@@ -609,7 +608,7 @@ int main()
 
     sf::Keyboard key;
 
-    double diff_s = 0.f;
+    //double diff_s = 0.f;
 
     bool running = true;
 

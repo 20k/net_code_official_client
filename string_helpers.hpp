@@ -1,16 +1,19 @@
 #ifndef STRING_HELPERS_HPP_INCLUDED
 #define STRING_HELPERS_HPP_INCLUDED
 
+#include <SFML/Graphics.hpp>
+#include "colour_interop.hpp"
+
 static inline sf::Font font;
 
 namespace char_inf
 {
-    int cwidth = 8;
+    inline int cwidth = 8;
 
-    int cheight = 16;
-    int cwbuf = 4;
+    inline int cheight = 16;
+    inline int cwbuf = 4;
 
-    int font_size = 12;
+    inline int font_size = 12;
 }
 
 struct formatted_char
@@ -121,6 +124,7 @@ void render_str(sf::RenderWindow& win, const interop_vec_t& chars, vec2f& cpos, 
 }
 #endif // 0
 
+inline
 void render_str(sf::RenderWindow& win, const interop_vec_t& chars, vec2f& cpos, vec2f start, vec2f wrap_dim, float zero_bound)
 {
     sf::Text txt;
@@ -161,6 +165,7 @@ void render_str(sf::RenderWindow& win, const interop_vec_t& chars, vec2f& cpos, 
     }
 }
 
+inline
 interop_vec_t string_to_interop(const std::string& str, bool render_specials)
 {
     interop_vec_t chars = build_from_colour_string(str, render_specials);
@@ -175,6 +180,7 @@ interop_vec_t string_to_interop(const std::string& str, bool render_specials)
     return chars;
 }
 
+inline
 std::vector<formatted_char> format_characters(const std::vector<interop_char>& interop, vec2f& cpos, vec2f start, vec2f wrap_dim, float up_cutoff)
 {
     std::vector<formatted_char> ret;
@@ -183,7 +189,7 @@ std::vector<formatted_char> format_characters(const std::vector<interop_char>& i
     pos.x() = start.x() + char_inf::cwbuf;
     pos.y() += char_inf::cheight;
 
-    for(int i=0; i < interop.size(); i++)
+    for(int i=0; i < (int)interop.size(); i++)
     {
         const interop_char& ioc = interop[i];
 
@@ -218,6 +224,7 @@ std::vector<formatted_char> format_characters(const std::vector<interop_char>& i
 }
 
 ///on the y axis
+inline
 float get_greatest_y(std::vector<formatted_char>& chars)
 {
     float greatest_y = 0;
@@ -233,6 +240,7 @@ float get_greatest_y(std::vector<formatted_char>& chars)
     return greatest_y;
 }
 
+inline
 void internally_format(std::vector<std::vector<formatted_char>>& chars, vec2f start)
 {
     float greatest_y = 0;
@@ -251,6 +259,7 @@ void internally_format(std::vector<std::vector<formatted_char>>& chars, vec2f st
     }
 }
 
+inline
 void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& chars, float zero_bound)
 {
     sf::Text txt;
@@ -277,6 +286,7 @@ void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& ch
     }
 }
 
+inline
 void render(sf::RenderWindow& win, const std::string& command, const std::vector<std::string>& text_history,
             const std::vector<int>& render_specials, int cursor_pos_idx, vec2f start, vec2f wrap_dim, float zero_bound)
 {
@@ -284,7 +294,7 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
 
     std::vector<std::vector<interop_char>> all_interop;
 
-    for(int i=0; i < text_history.size(); i++)
+    for(int i=0; i < (int)text_history.size(); i++)
     {
         const std::string& str = text_history[i];
 
@@ -331,31 +341,6 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
     }
 }
 
-std::string get_clipboard_contents()
-{
-    if(!OpenClipboard(NULL))
-    {
-        return std::string();
-    }
-
-    HANDLE hData = GetClipboardData(CF_TEXT);
-
-    if (hData == nullptr)
-    {
-        CloseClipboard();
-        return std::string();
-    }
-
-    // Lock the handle to get the actual text pointer
-    char * pszText = static_cast<char*>( GlobalLock(hData) );
-
-    std::string ntext(pszText);
-
-    GlobalUnlock( hData );
-
-    CloseClipboard();
-
-    return ntext;
-}
+std::string get_clipboard_contents();
 
 #endif // STRING_HELPERS_HPP_INCLUDED

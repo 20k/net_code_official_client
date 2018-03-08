@@ -128,6 +128,8 @@
 			<Add option="-lmswsock" />
 			<Add option="-lole32" />
 		</Linker>
+		<Unit filename="auto_handlers.cpp" />
+		<Unit filename="auto_handlers.hpp" />
 		<Unit filename="colour_interop.hpp" />
 		<Unit filename="deps/serialise/serialise.cpp" />
 		<Unit filename="deps/serialise/serialise.hpp" />
@@ -138,6 +140,7 @@
 		</Unit>
 		<Unit filename="local_commands.hpp" />
 		<Unit filename="main.cpp" />
+		<Unit filename="string_helpers.cpp" />
 		<Unit filename="string_helpers.hpp" />
 		<Unit filename="util.hpp" />
 		<Extensions>
