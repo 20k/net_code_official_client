@@ -68,6 +68,7 @@ struct interop_char
 {
     char c = 'A';
     vec3f col = {255,255,255};
+    bool is_cursor = false;
 };
 
 using interop_vec_t = std::vector<interop_char>;
