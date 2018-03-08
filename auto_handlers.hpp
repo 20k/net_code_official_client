@@ -7,7 +7,7 @@ struct interop_char;
 
 struct auto_handler
 {
-    std::vector<interop_char> auto_colour(std::vector<interop_char>& in);
+    std::vector<interop_char> auto_colour(const std::vector<interop_char>& in);
 };
 
 #endif // AUTO_HANDLERS_HPP_INCLUDED
