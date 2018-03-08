@@ -4,7 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include "colour_interop.hpp"
 
-static inline sf::Font font;
+inline sf::Font font;
 
 namespace char_inf
 {
