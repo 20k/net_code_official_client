@@ -26,6 +26,8 @@
 #include <string>
 #include <thread>
 
+#include <SFML/System.hpp>
+
 #include <crapmud/script_util_shared.hpp>
 #include <crapmud/shared_data.hpp>
 
@@ -107,7 +109,7 @@ void handle_async_write(shared_data* shared, tcp::socket* socket)
     while(1)
     {
         //std::lock_guard<std::mutex> lk(local_mut);
-        Sleep(8);
+        sf::sleep(sf::milliseconds(8));
 
         if(shared->should_terminate)
             break;
@@ -143,7 +145,7 @@ void handle_async_write(shared_data* shared, tcp::socket* socket)
         {
             socket_alive = false;
             std::cout << "caught write exception" << std::endl;
-            Sleep(1000);
+            sf::sleep(sf::milliseconds(1000));
         }
     }
 
@@ -177,7 +179,7 @@ void handle_async_read(shared_data* shared, tcp::socket* socket)
     while(1)
     {
         //std::lock_guard<std::mutex> lk(local_mut);
-        Sleep(8);
+        sf::sleep(sf::milliseconds(8));
 
         if(shared->should_terminate)
             break;
@@ -208,7 +210,7 @@ void handle_async_read(shared_data* shared, tcp::socket* socket)
         {
             socket_alive = false;
             std::cout << "caught read exception" << std::endl;
-            Sleep(1000);
+            sf::sleep(sf::milliseconds(1000));
         }
     }
 
@@ -220,7 +222,7 @@ void watchdog(shared_data* shared, shared_context* ctx)
     while(1)
     {
         if(socket_alive)
-            Sleep(50);
+            sf::sleep(sf::milliseconds(50));
 
         if(shared->should_terminate)
             break;
@@ -245,18 +247,18 @@ void watchdog(shared_data* shared, shared_context* ctx)
 
                 socket_alive = true;
 
-                Sleep(50);
+                sf::sleep(sf::milliseconds(50));
             }
             catch(...)
             {
                 shared->add_back_read("`DConnection to the server failed`");
 
                 std::cout << "Server down" << std::endl;
-                Sleep(5000);
+                sf::sleep(sf::milliseconds(5000));
             }
         }
 
-        Sleep(8);
+        sf::sleep(sf::milliseconds(8));
     }
 
     shared->termination_count++;

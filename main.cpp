@@ -179,6 +179,8 @@ struct chat_window : serialisable
     std::string selected = "0000";
     editable_string command;
 
+    auto_handler auto_handle;
+
     virtual void do_serialise(serialise& s, bool ser)
     {
         s.handle_serialise(render_start, ser);
@@ -246,7 +248,7 @@ struct chat_window : serialisable
         if(!focused)
             idx = -1;
 
-        ::render(win, command.command, thread.chats, specials, idx, {render_pos.x(), dim.y()}, {(int)win.getSize().x - char_inf::cwbuf/2.f - border_size, win.getSize().y}, border_size);
+        ::render(win, command.command, thread.chats, specials, idx, {render_pos.x(), dim.y()}, {(int)win.getSize().x - char_inf::cwbuf/2.f - border_size, win.getSize().y}, border_size, auto_handle);
 
         render_side_attachment(win);
     }
@@ -361,6 +363,8 @@ struct terminal : serialisable
     bool focused = true;
     editable_string command;
 
+    auto_handler auto_handle;
+
     virtual void do_serialise(serialise& s, bool ser)
     {
         s.handle_serialise(text_history, ser);
@@ -381,7 +385,7 @@ struct terminal : serialisable
         if(!focused)
             idx = -1;
 
-        ::render(win, command.command, text_history, render_specials, idx, {0.f, win.getSize().y}, {(int)win.getSize().x - char_inf::cwbuf, win.getSize().y}, -char_inf::cheight);
+        ::render(win, command.command, text_history, render_specials, idx, {0.f, win.getSize().y}, {(int)win.getSize().x - char_inf::cwbuf, win.getSize().y}, -char_inf::cheight, auto_handle);
     }
 
     void bump_command_to_history()
@@ -808,7 +812,7 @@ int main()
         window.display();
         window.clear(sf::Color(30, 30, 30));
 
-        Sleep(4);
+        sf::sleep(sf::milliseconds(4));
     }
 
     serialise sterm;
