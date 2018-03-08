@@ -309,11 +309,9 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
     curs.c = '|';
     curs.is_cursor = true;
 
-    if(cursor_pos_idx < 0)
-        icommand.insert(icommand.begin(), curs);
-    else if(cursor_pos_idx >= icommand.size())
+    if(cursor_pos_idx >= (int)icommand.size())
         icommand.push_back(curs);
-    else
+    else if(cursor_pos_idx >= 0 && cursor_pos_idx < (int)icommand.size())
         icommand.insert(icommand.begin() + cursor_pos_idx, curs);
 
     all_interop.push_back(icommand);
