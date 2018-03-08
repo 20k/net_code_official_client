@@ -291,7 +291,7 @@ struct chat_window : serialisable
 
             auto ichars = string_to_interop(side_buttons[i].txt, false);
 
-            render_str(win, ichars, current_pos, start_pos, start_pos + side_dim, -1, border_size);
+            render_str(win, ichars, current_pos, start_pos, start_pos + side_dim, border_size);
 
             current_pos.y() += char_inf::cheight;
         }
