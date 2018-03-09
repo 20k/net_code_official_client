@@ -116,8 +116,6 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
     auto icommand = string_to_interop(render_command, specials);
     auto_handle.auto_colour(icommand);
 
-    //auto icommand = auto_handle.auto_colour(string_to_interop(render_command, specials));
-
     interop_char curs;
     curs.col = {255, 255, 255};
     curs.c = '|';
