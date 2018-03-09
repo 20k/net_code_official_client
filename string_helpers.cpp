@@ -81,7 +81,7 @@ void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& ch
 
 void render(sf::RenderWindow& win, const std::string& command, const std::vector<interop_vec_t>& text_history,
             int cursor_pos_idx, vec2f start, vec2f wrap_dim, float zero_bound,
-            auto_handler& auto_handle)
+            auto_handler& auto_handle, bool focused)
 {
     vec2f spos = start;
 
@@ -128,7 +128,8 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
 
     internally_format(formatted, start);
 
-    get_global_copy_handler()->process_formatted(formatted);
+    if(focused)
+        get_global_copy_handler()->process_formatted(formatted);
 
     for(int i=min_start; i < (int)formatted.size(); i++)
     {

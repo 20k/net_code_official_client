@@ -259,7 +259,7 @@ struct auto_handler;
 ///and parse them only once, as its now expensive to parse them
 void render(sf::RenderWindow& win, const std::string& command, const std::vector<interop_vec_t>& text_history,
        int cursor_pos_idx, vec2f start, vec2f wrap_dim, float zero_bound,
-       auto_handler& auto_handle);
+       auto_handler& auto_handle, bool focused);
 
 std::string get_clipboard_contents();
 void set_clipboard_contents(const std::string& str);
