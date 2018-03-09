@@ -84,14 +84,15 @@ void interop_colour_string(std::vector<interop_char>& chs, vec3f col)
             }
         }
 
-        escaped = false;
 
-        if(ch == starter && (ch == "\"" || ch == "\'"))
+        if(ch == starter && (ch == "\"" || ch == "\'") && !escaped)
         {
             force_col(chs, start, i+1, col);
             starter = "";
-            continue;
+            //continue;
         }
+
+        escaped = false;
     }
 }
 
