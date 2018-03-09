@@ -371,7 +371,7 @@ struct terminal : serialisable
         s.handle_serialise(chat_threads, ser);
         s.handle_serialise(command, ser);
 
-        std::cout << "loaded hist " << text_history.size() << std::endl;
+        //std::cout << "loaded hist " << text_history.size() << std::endl;
     }
 
     terminal()
@@ -821,7 +821,7 @@ int main()
             client_poll_clock.restart();
         }
 
-        std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
+        //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
 
         term.render(window);
 
@@ -830,7 +830,7 @@ int main()
         window.display();
         window.clear(sf::Color(30, 30, 30));
 
-        //sf::sleep(sf::milliseconds(4));
+        sf::sleep(sf::milliseconds(4));
     }
 
     serialise sterm;
