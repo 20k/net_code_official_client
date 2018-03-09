@@ -778,7 +778,7 @@ int main()
         auto sf_mpos = mouse.getPosition(window);
         vec2f vpos = {sf_mpos.x, sf_mpos.y};
 
-        if(mouse.isButtonPressed(sf::Mouse::Left))
+        if(mouse.isButtonPressed(sf::Mouse::Left) && is_focused(window))
             get_global_copy_handler()->on_hold_lclick(window,  vpos);
 
         if(ONCE_MACRO(sf::Mouse::Left) && is_focused(window))
