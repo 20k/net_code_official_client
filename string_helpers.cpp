@@ -48,7 +48,7 @@ void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& ch
 
         txt.setString(std::string(1, c.ioc.c));
 
-        if(global_copy->held && rect_intersect(p1, p2, tl, br))
+        if(global_copy->held && rect_intersect(p1, p2, tl, br) && (global_copy->copy_end - global_copy->copy_start).length() >= MIN_SELECT_DISTANCE)
         {
             if(c.ioc.c != ' ')
             {
