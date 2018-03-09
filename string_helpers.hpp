@@ -166,20 +166,9 @@ void render_str(sf::RenderWindow& win, const interop_vec_t& chars, vec2f& cpos, 
     }
 }
 
-inline
-interop_vec_t string_to_interop(const std::string& str, bool render_specials)
-{
-    interop_vec_t chars = build_from_colour_string(str, render_specials);
+struct auto_handler;
 
-    while(chars.size() > 0 && chars.back().c == '\n')
-    {
-        chars.pop_back();
-    }
-
-    //chars.push_back({'\n'});
-
-    return chars;
-}
+interop_vec_t string_to_interop(const std::string& str, bool render_specials, auto_handler& auto_handle);
 
 inline
 std::vector<formatted_char> format_characters(const std::vector<interop_char>& interop, vec2f& cpos, vec2f start, vec2f wrap_dim, float up_cutoff)
@@ -266,8 +255,10 @@ struct auto_handler;
 
 ///this might look suspiciously like bad api design
 ///and you'd be right
-void render(sf::RenderWindow& win, const std::string& command, const std::vector<std::string>& text_history,
-       const std::vector<int>& render_specials, int cursor_pos_idx, vec2f start, vec2f wrap_dim, float zero_bound,
+///ok. Need to pass interop chars into here instead
+///and parse them only once, as its now expensive to parse them
+void render(sf::RenderWindow& win, const std::string& command, const std::vector<interop_vec_t>& text_history,
+       int cursor_pos_idx, vec2f start, vec2f wrap_dim, float zero_bound,
        auto_handler& auto_handle);
 
 std::string get_clipboard_contents();

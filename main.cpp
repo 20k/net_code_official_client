@@ -18,7 +18,7 @@
 
 struct chat_thread : serialisable
 {
-    std::vector<std::string> chats;
+    std::vector<interop_vec_t> chats;
 
     virtual void do_serialise(serialise& s, bool ser)
     {
@@ -238,18 +238,18 @@ struct chat_window : serialisable
 
         chat_thread& thread = threads[selected];
 
-        std::vector<int> specials;
+        /*std::vector<int> specials;
         specials.resize(thread.chats.size());
 
         for(auto& i : specials)
-            i = 0;
+            i = 0;*/
 
         int idx = command.cursor_pos_idx;
 
         if(!focused)
             idx = -1;
 
-        ::render(win, command.command, thread.chats, specials, idx, {render_pos.x(), dim.y()}, {(int)win.getSize().x - char_inf::cwbuf/2.f - border_size, win.getSize().y}, border_size, auto_handle);
+        ::render(win, command.command, thread.chats, idx, {render_pos.x(), dim.y()}, {(int)win.getSize().x - char_inf::cwbuf/2.f - border_size, win.getSize().y}, border_size, auto_handle);
 
         render_side_attachment(win);
     }
@@ -291,7 +291,7 @@ struct chat_window : serialisable
                 win.draw(shape);
             }
 
-            auto ichars = string_to_interop(side_buttons[i].txt, false);
+            auto ichars = string_to_interop(side_buttons[i].txt, false, auto_handle);
 
             render_str(win, ichars, current_pos, start_pos, start_pos + side_dim, border_size);
 
@@ -354,7 +354,7 @@ struct chat_window : serialisable
 
 struct terminal : serialisable
 {
-    std::vector<std::string> text_history;
+    std::vector<interop_vec_t> text_history;
     std::vector<int> render_specials;
 
     std::map<std::string, chat_thread> chat_threads;
@@ -386,12 +386,12 @@ struct terminal : serialisable
         if(!focused)
             idx = -1;
 
-        ::render(win, command.command, text_history, render_specials, idx, {0.f, win.getSize().y}, {(int)win.getSize().x - char_inf::cwbuf, win.getSize().y}, -char_inf::cheight, auto_handle);
+        ::render(win, command.command, text_history, idx, {0.f, win.getSize().y}, {(int)win.getSize().x - char_inf::cwbuf, win.getSize().y}, -char_inf::cheight, auto_handle);
     }
 
     void bump_command_to_history()
     {
-        text_history.push_back(command.command);
+        text_history.push_back(string_to_interop(command.command, true, auto_handle));
         render_specials.push_back(1);
         command.clear_command();
     }
@@ -515,10 +515,10 @@ struct terminal : serialisable
 
                 for(int i=0; i < (int)chnls.size(); i++)
                 {
-                    text_history.push_back(msgs[i] + "\n");
+                    text_history.push_back(string_to_interop(msgs[i] + "\n", false, auto_handle));
                     render_specials.push_back(0);
 
-                    chat_threads[chnls[i]].chats.push_back(msgs[i]);
+                    chat_threads[chnls[i]].chats.push_back(string_to_interop(msgs[i], false, auto_handle));
                 }
 
                 int max_history = 1000;
@@ -535,7 +535,7 @@ struct terminal : serialisable
         limit_size(text_history, max_history);
         limit_size(render_specials, max_history);
 
-        text_history.push_back(str);
+        text_history.push_back(string_to_interop(str, false, auto_handle));
         render_specials.push_back(0);
     }
 };
@@ -590,8 +590,8 @@ int main()
     DMAP(V);DMAP(W);DMAP(X);
     DMAP(Y);DMAP(Z);
 
-    std::string terminal_file = "./terminal.txt";
-    std::string chat_file = "./chat.txt";
+    std::string terminal_file = "./terminal_v2.txt";
+    std::string chat_file = "./chat_v2.txt";
 
     if(file_exists(terminal_file))
     {

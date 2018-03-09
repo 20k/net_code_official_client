@@ -4,6 +4,22 @@
 
 #include <windows.h>
 
+interop_vec_t string_to_interop(const std::string& str, bool render_specials, auto_handler& auto_handle)
+{
+    interop_vec_t chars = build_from_colour_string(str, render_specials);
+
+    while(chars.size() > 0 && chars.back().c == '\n')
+    {
+        chars.pop_back();
+    }
+
+    auto_handle.auto_colour(chars);
+
+    //chars.push_back({'\n'});
+
+    return chars;
+}
+
 void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& chars, float zero_bound)
 {
     copy_handler* global_copy = get_global_copy_handler();
@@ -77,9 +93,8 @@ void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& ch
     }
 }
 
-
-void render(sf::RenderWindow& win, const std::string& command, const std::vector<std::string>& text_history,
-            const std::vector<int>& render_specials, int cursor_pos_idx, vec2f start, vec2f wrap_dim, float zero_bound,
+void render(sf::RenderWindow& win, const std::string& command, const std::vector<interop_vec_t>& text_history,
+            int cursor_pos_idx, vec2f start, vec2f wrap_dim, float zero_bound,
             auto_handler& auto_handle)
 {
     vec2f spos = start;
@@ -88,7 +103,7 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
 
     int vertical_columns = ceil((float)win.getSize().y / char_inf::cheight);
 
-    int min_start = (int)text_history.size() - vertical_columns;
+    /*int min_start = (int)text_history.size() - vertical_columns;
 
     if(min_start < 0)
         min_start = 0;
@@ -102,7 +117,9 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
         auto_handle.auto_colour(interop);
 
         all_interop.push_back(std::move(interop));
-    }
+    }*/
+
+    all_interop = text_history;
 
     std::string render_command = command;
     bool specials = true;
@@ -113,8 +130,7 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
         specials = false;
     }
 
-    auto icommand = string_to_interop(render_command, specials);
-    auto_handle.auto_colour(icommand);
+    auto icommand = string_to_interop(render_command, specials, auto_handle);
 
     interop_char curs;
     curs.col = {255, 255, 255};
