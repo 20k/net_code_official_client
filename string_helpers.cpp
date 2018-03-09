@@ -94,17 +94,6 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
     if(min_start < 0)
         min_start = 0;
 
-    /*for(int i=min_start; i < (int)text_history.size(); i++)
-    {
-        const std::string& str = text_history[i];
-
-        std::vector<interop_char> interop = string_to_interop(str, render_specials[i]);
-
-        auto_handle.auto_colour(interop);
-
-        all_interop.push_back(std::move(interop));
-    }*/
-
     all_interop = text_history;
 
     std::string render_command = command;
@@ -140,11 +129,6 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
     internally_format(formatted, start);
 
     get_global_copy_handler()->process_formatted(formatted);
-
-    /*for(auto& i : formatted)
-    {
-        render_formatted_str(win, i, zero_bound);
-    }*/
 
     for(int i=min_start; i < (int)formatted.size(); i++)
     {
