@@ -156,6 +156,7 @@ std::vector<interop_char> auto_handler::auto_colour(const std::vector<interop_ch
         cols["while?"] = pale_blue;
         cols["for?"] = pale_blue;
         cols["if?"] = pale_blue;
+        cols["return?"] = pale_blue;
         cols["{"] = pale_red;
         cols["}"] = pale_red;
         cols["["] = pale_red;
