@@ -26,16 +26,6 @@ void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& ch
 
     auto [tl, br] = points_to_rect(global_copy->copy_start, global_copy->copy_end);
 
-    /*static sf::RectangleShape shape;
-    shape.setFillColor(sf::Color(255, 255, 255, 128));
-    shape.setSize({char_inf::cwidth, char_inf::cheight});
-
-    static sf::CircleShape circle;
-    circle.setFillColor(hcol);
-
-    circle.setRadius(2.f);
-    circle.setOrigin(2.f, 2.f);*/
-
     sf::Color hcol = sf::Color(100, 100, 255, 255);
 
     sf::Text txt;
@@ -75,10 +65,6 @@ void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& ch
                 txt.setOutlineColor(sf::Color(60, 60, 255, 255));
 
                 txt.setFillColor(hcol);
-
-                //vec2f hpos = found_pos + (vec2f){char_inf::cwidth, char_inf::cheight}/2.f;
-                //circle.setPosition(hpos.x(), hpos.y());
-                //win.draw(circle);
             }
         }
         else
