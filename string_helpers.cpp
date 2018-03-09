@@ -4,6 +4,80 @@
 
 #include <windows.h>
 
+void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& chars, float zero_bound)
+{
+    copy_handler* global_copy = get_global_copy_handler();
+
+    auto [tl, br] = points_to_rect(global_copy->copy_start, global_copy->copy_end);
+
+    static sf::RectangleShape shape;
+    shape.setFillColor(sf::Color(255, 255, 255, 128));
+    shape.setSize({char_inf::cwidth, char_inf::cheight});
+
+    sf::Color hcol = sf::Color(100, 100, 255, 255);
+
+    static sf::CircleShape circle;
+    circle.setFillColor(hcol);
+
+    circle.setRadius(2.f);
+    circle.setOrigin(2.f, 2.f);
+
+    sf::Text txt;
+    txt.setFont(font);
+    txt.setCharacterSize(char_inf::font_size);
+
+    for(formatted_char& c : chars)
+    {
+        vec2f pos = c.render_pos;
+
+        vec2f found_pos = round(pos);
+
+        if(found_pos.y() < zero_bound)
+            continue;
+
+        vec2f p1 = pos;
+        vec2f p2 = pos + (vec2f){char_inf::cwidth, char_inf::cheight};
+
+        vec3f col = c.ioc.col;
+
+        txt.setString(std::string(1, c.ioc.c));
+
+        if(global_copy->held && rect_intersect(p1, p2, tl, br))
+        {
+            if(c.ioc.c != ' ')
+            {
+                txt.setOutlineThickness(0);
+                txt.setOutlineColor(sf::Color(60, 60, 255, 255));
+
+                txt.setFillColor(hcol);
+            }
+            else
+            {
+                txt.setString(std::string(1, '-'));
+
+                txt.setOutlineThickness(0);
+                txt.setOutlineColor(sf::Color(60, 60, 255, 255));
+
+                txt.setFillColor(hcol);
+
+                //vec2f hpos = found_pos + (vec2f){char_inf::cwidth, char_inf::cheight}/2.f;
+                //circle.setPosition(hpos.x(), hpos.y());
+                //win.draw(circle);
+            }
+        }
+        else
+        {
+            txt.setFillColor(sf::Color(col.x(), col.y(), col.z(), 255));
+            txt.setOutlineThickness(0);
+        }
+
+        txt.setPosition(found_pos.x(), found_pos.y());
+
+        win.draw(txt);
+    }
+}
+
+
 void render(sf::RenderWindow& win, const std::string& command, const std::vector<std::string>& text_history,
             const std::vector<int>& render_specials, int cursor_pos_idx, vec2f start, vec2f wrap_dim, float zero_bound,
             auto_handler& auto_handle)
@@ -12,7 +86,14 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
 
     std::vector<std::vector<interop_char>> all_interop;
 
-    for(int i=0; i < (int)text_history.size(); i++)
+    int vertical_columns = ceil((float)win.getSize().y / char_inf::cheight);
+
+    int min_start = (int)text_history.size() - vertical_columns;
+
+    if(min_start < 0)
+        min_start = 0;
+
+    for(int i=min_start; i < (int)text_history.size(); i++)
     {
         const std::string& str = text_history[i];
 
@@ -53,12 +134,12 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
 
     internally_format(formatted, start);
 
+    get_global_copy_handler()->process_formatted(formatted);
+
     for(auto& i : formatted)
     {
         render_formatted_str(win, i, zero_bound);
     }
-
-    get_global_copy_handler()->process_formatted(formatted);
 }
 
 std::string get_clipboard_contents()

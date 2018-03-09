@@ -612,6 +612,7 @@ int main()
     sf::Clock client_poll_clock;
 
     sf::Keyboard key;
+    sf::Mouse mouse;
 
     //double diff_s = 0.f;
 
@@ -779,9 +780,14 @@ int main()
 
         chat_win.tick();
 
+        auto sf_mpos = mouse.getPosition(window);
+        vec2f vpos = {sf_mpos.x, sf_mpos.y};
+
+        if(mouse.isButtonPressed(sf::Mouse::Left))
+            get_global_copy_handler()->on_hold_lclick(window,  vpos);
+
         if(ONCE_MACRO(sf::Mouse::Left) && is_focused(window))
         {
-            sf::Mouse mouse;
             auto ppos = mouse.getPosition(window);
 
             vec2f mpos = {ppos.x, ppos.y};
@@ -820,7 +826,7 @@ int main()
             client_poll_clock.restart();
         }
 
-        //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
+        std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
 
         term.render(window);
 

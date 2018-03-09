@@ -125,14 +125,16 @@ void interop_colour_numbers(std::vector<interop_char>& chs, vec3f col)
     }
 }
 
-void interop_colour(std::vector<interop_char>& chs, int idx, std::string str, vec3f col)
+void interop_colour(std::vector<interop_char>& chs, int idx, const std::string& str, vec3f col)
 {
     if(!interop_starts_with(chs, idx, str))
         return;
 
-    strip_input(str);
+    std::string op = str;
 
-    for(int i=idx; i < idx + (int)str.size(); i++)
+    strip_input(op);
+
+    for(int i=idx; i < idx + (int)op.size(); i++)
     {
         if(chs[i].coloured)
             continue;

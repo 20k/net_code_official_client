@@ -21,6 +21,7 @@ struct formatted_char
     interop_char ioc;
     vec2f internal_pos;
     vec2f render_pos;
+    vec4f background_col = {0,0,0,0};
 };
 
 #if 0
@@ -259,32 +260,7 @@ void internally_format(std::vector<std::vector<formatted_char>>& chars, vec2f st
     }
 }
 
-inline
-void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& chars, float zero_bound)
-{
-    sf::Text txt;
-    txt.setFont(font);
-    txt.setCharacterSize(char_inf::font_size);
-
-    for(formatted_char& c : chars)
-    {
-        vec2f pos = c.render_pos;
-
-        vec2f found_pos = round(pos);
-
-        if(found_pos.y() < zero_bound)
-            continue;
-
-        txt.setString(std::string(1, c.ioc.c));
-        txt.setPosition(found_pos.x(), found_pos.y());
-
-        vec3f col = c.ioc.col;
-
-        txt.setFillColor(sf::Color(col.x(), col.y(), col.z(), 255));
-
-        win.draw(txt);
-    }
-}
+void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& chars, float zero_bound);
 
 struct auto_handler;
 
