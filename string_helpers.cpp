@@ -1,5 +1,6 @@
 #include "string_helpers.hpp"
 #include "auto_handlers.hpp"
+#include "copy_handler.hpp"
 
 #include <windows.h>
 
@@ -56,6 +57,8 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
     {
         render_formatted_str(win, i, zero_bound);
     }
+
+    get_global_copy_handler()->process_formatted(formatted);
 }
 
 std::string get_clipboard_contents()

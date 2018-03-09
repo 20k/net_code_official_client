@@ -291,8 +291,8 @@ struct auto_handler;
 ///this might look suspiciously like bad api design
 ///and you'd be right
 void render(sf::RenderWindow& win, const std::string& command, const std::vector<std::string>& text_history,
-            const std::vector<int>& render_specials, int cursor_pos_idx, vec2f start, vec2f wrap_dim, float zero_bound,
-            auto_handler& auto_handle);
+       const std::vector<int>& render_specials, int cursor_pos_idx, vec2f start, vec2f wrap_dim, float zero_bound,
+       auto_handler& auto_handle);
 
 std::string get_clipboard_contents();
 

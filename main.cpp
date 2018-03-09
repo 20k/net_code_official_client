@@ -14,6 +14,7 @@
 
 #include "local_commands.hpp"
 #include "auto_handlers.hpp"
+#include "copy_handler.hpp"
 
 struct chat_thread : serialisable
 {
@@ -695,6 +696,22 @@ int main()
                             to_edit->add_to_command(i);
                         }
                     }
+                }
+            }
+
+            if(event.type == sf::Event::MouseButtonPressed)
+            {
+                if(event.mouseButton.button == sf::Mouse::Left)
+                {
+                    get_global_copy_handler()->on_lclick({event.mouseButton.x, event.mouseButton.y});
+                }
+            }
+
+            if(event.type == sf::Event::MouseButtonReleased)
+            {
+                if(event.mouseButton.button == sf::Mouse::Left)
+                {
+                    get_global_copy_handler()->on_lclick_release({event.mouseButton.x, event.mouseButton.y});
                 }
             }
         }
