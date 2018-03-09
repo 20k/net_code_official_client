@@ -143,10 +143,8 @@ void interop_colour(std::vector<interop_char>& chs, int idx, const std::string& 
     }
 }
 
-std::vector<interop_char> auto_handler::auto_colour(const std::vector<interop_char>& in, bool colour_special)
+void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_special)
 {
-    std::vector<interop_char> ret = in;
-
     std::map<std::string, vec3f> cols
     {
         {"#fs.", {60, 255, 60}},
@@ -183,6 +181,4 @@ std::vector<interop_char> auto_handler::auto_colour(const std::vector<interop_ch
 
     interop_colour_string(ret, value_col);
     interop_colour_numbers(ret, value_col);
-
-    return ret;
 }

@@ -99,7 +99,9 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
 
         std::vector<interop_char> interop = string_to_interop(str, render_specials[i]);
 
-        all_interop.push_back(auto_handle.auto_colour(interop));
+        auto_handle.auto_colour(interop);
+
+        all_interop.push_back(std::move(interop));
     }
 
     std::string render_command = command;
@@ -111,7 +113,10 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
         specials = false;
     }
 
-    auto icommand = auto_handle.auto_colour(string_to_interop(render_command, specials));
+    auto icommand = string_to_interop(render_command, specials);
+    auto_handle.auto_colour(icommand);
+
+    //auto icommand = auto_handle.auto_colour(string_to_interop(render_command, specials));
 
     interop_char curs;
     curs.col = {255, 255, 255};
