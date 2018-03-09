@@ -99,7 +99,14 @@ void interop_colour_numbers(std::vector<interop_char>& chs, vec3f col)
 {
     for(int i=0; i < (int)chs.size(); i++)
     {
-        if(isdigit(chs[i].c) && !chs[i].coloured)
+        bool can_col = false;
+
+        if(i == 0)
+            can_col = true;
+        else
+            can_col = !isalnum(chs[i-1].c);
+
+        if(isdigit(chs[i].c) && !chs[i].coloured && can_col)
         {
             int start = i;
 
