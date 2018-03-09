@@ -355,7 +355,6 @@ struct chat_window : serialisable
 struct terminal : serialisable
 {
     std::vector<interop_vec_t> text_history;
-    std::vector<int> render_specials;
 
     std::map<std::string, chat_thread> chat_threads;
 
@@ -369,9 +368,10 @@ struct terminal : serialisable
     virtual void do_serialise(serialise& s, bool ser)
     {
         s.handle_serialise(text_history, ser);
-        s.handle_serialise(render_specials, ser);
         s.handle_serialise(chat_threads, ser);
         s.handle_serialise(command, ser);
+
+        std::cout << "loaded hist " << text_history.size() << std::endl;
     }
 
     terminal()
@@ -392,7 +392,6 @@ struct terminal : serialisable
     void bump_command_to_history()
     {
         text_history.push_back(string_to_interop(command.command, true, auto_handle));
-        render_specials.push_back(1);
         command.clear_command();
     }
 
@@ -516,7 +515,6 @@ struct terminal : serialisable
                 for(int i=0; i < (int)chnls.size(); i++)
                 {
                     text_history.push_back(string_to_interop(msgs[i] + "\n", false, auto_handle));
-                    render_specials.push_back(0);
 
                     chat_threads[chnls[i]].chats.push_back(string_to_interop(msgs[i], false, auto_handle));
                 }
@@ -524,7 +522,6 @@ struct terminal : serialisable
                 int max_history = 1000;
 
                 limit_size(text_history, max_history);
-                limit_size(render_specials, max_history);
 
                 return;
             }
@@ -533,10 +530,8 @@ struct terminal : serialisable
         int max_history = 1000;
 
         limit_size(text_history, max_history);
-        limit_size(render_specials, max_history);
 
         text_history.push_back(string_to_interop(str, false, auto_handle));
-        render_specials.push_back(0);
     }
 };
 
@@ -835,7 +830,7 @@ int main()
         window.display();
         window.clear(sf::Color(30, 30, 30));
 
-        sf::sleep(sf::milliseconds(4));
+        //sf::sleep(sf::milliseconds(4));
     }
 
     serialise sterm;
