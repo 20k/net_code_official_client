@@ -20,18 +20,6 @@ interop_vec_t string_to_interop(const std::string& str, bool render_specials, au
     return chars;
 }
 
-struct text_cache
-{
-    std::string str;
-    vec3f col;
-
-    friend bool operator<(const text_cache& l, const text_cache& r)
-    {
-        return std::tie(l.str, l.col.v[0], l.col.v[1], l.col.v[2])
-             < std::tie(r.str, r.col.v[0], r.col.v[1], r.col.v[2]); // keep the same order
-    }
-};
-
 void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& chars, float zero_bound)
 {
     copy_handler* global_copy = get_global_copy_handler();
@@ -54,12 +42,6 @@ void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& ch
     txt.setFont(font);
     txt.setCharacterSize(char_inf::font_size);
 
-    //std::map<text_cache, sf::Text> text_map;
-
-    /*txt.setPosition(150, 150);
-    txt.setFillColor(hcol);
-    txt.setString(std::string(1, 'h'));*/
-
     for(formatted_char& c : chars)
     {
         vec2f pos = c.render_pos;
@@ -73,27 +55,6 @@ void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& ch
         vec2f p2 = pos + (vec2f){char_inf::cwidth, char_inf::cheight};
 
         vec3f col = c.ioc.col;
-
-        /*text_cache cur;
-        cur.str = std::string(1, c.ioc.c);
-        cur.col = col;
-
-        auto it = text_map.find(cur);
-
-        if(it == text_map.end())
-        {
-            sf::Text next = txt;
-            next.setFillColor(sf::Color(col.x(), col.y(), col.z()));
-            next.setString(cur.str);
-
-            text_map[cur] = next;
-        }
-
-        //sf::Text next = text_map[cur];
-
-        auto fit = text_map.find(cur);
-
-        fit->second.setPosition(found_pos.x(), found_pos.y());*/
 
         txt.setString(std::string(1, c.ioc.c));
 
@@ -129,7 +90,6 @@ void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& ch
         txt.setPosition(found_pos.x(), found_pos.y());
 
         win.draw(txt);
-        //win.draw(fit->second);
     }
 }
 
