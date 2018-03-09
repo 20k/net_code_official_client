@@ -37,10 +37,61 @@ bool interop_starts_with(const std::vector<interop_char>& chs, int idx, const st
 
 void force_col(std::vector<interop_char>& chs, int start, int fin, vec3f col)
 {
-    for(int i=start; i < fin; i++)
+    for(int i=start; i < fin && i < (int)chs.size(); i++)
     {
         chs[i].col = col;
         chs[i].coloured = true;
+    }
+}
+
+void interop_colour_string(std::vector<interop_char>& chs, vec3f col)
+{
+    std::string starter;
+
+    bool escaped = false;
+
+    int start = 0;
+
+    for(int i=0; i < (int)chs.size(); i++)
+    {
+        if(chs[i].coloured)
+            continue;
+
+        std::string ch = std::string(1, chs[i].c);
+
+        if(!escaped)
+        {
+            ///DOUBLE QUOTE
+            if(ch == "\"" && starter == "")
+            {
+                starter = ch;
+                start = i;
+                continue;
+            }
+
+            ///SINGLE QUOTE
+            if(ch == "\'" && starter == "")
+            {
+                starter = ch;
+                start = i;
+                continue;
+            }
+
+            if(ch == "\\")
+            {
+                escaped = true;
+                continue;
+            }
+        }
+
+        escaped = false;
+
+        if(ch == starter && (ch == "\"" || ch == "\'"))
+        {
+            force_col(chs, start, i+1, col);
+            starter = "";
+            continue;
+        }
     }
 }
 
@@ -118,7 +169,10 @@ std::vector<interop_char> auto_handler::auto_colour(const std::vector<interop_ch
             interop_colour(ret, kk, i.first, i.second);
     }
 
-    interop_colour_numbers(ret, {255, 60, 255});
+    vec3f value_col = {100, 206, 209};
+
+    interop_colour_string(ret, value_col);
+    interop_colour_numbers(ret, value_col);
 
     return ret;
 }
