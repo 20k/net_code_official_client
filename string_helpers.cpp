@@ -87,3 +87,15 @@ std::string get_clipboard_contents()
 
     return ntext;
 }
+
+void set_clipboard_contents(const std::string& data)
+{
+    HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, data.size() + 1);
+    memcpy(GlobalLock(hMem), data.c_str(), data.size());
+    GlobalUnlock(hMem);
+
+    OpenClipboard(NULL);
+    EmptyClipboard();
+    SetClipboardData(CF_TEXT, hMem);
+    CloseClipboard();
+}

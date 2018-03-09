@@ -295,5 +295,6 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
        auto_handler& auto_handle);
 
 std::string get_clipboard_contents();
+void set_clipboard_contents(const std::string& str);
 
 #endif // STRING_HELPERS_HPP_INCLUDED
