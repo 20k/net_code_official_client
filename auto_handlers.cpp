@@ -136,7 +136,7 @@ void interop_colour(std::vector<interop_char>& chs, int idx, const std::string& 
 
     strip_input(op);
 
-    for(int i=idx; i < idx + (int)op.size(); i++)
+    for(int i=idx; i < idx + (int)op.size() && i < chs.size(); i++)
     {
         if(chs[i].coloured)
             continue;
@@ -225,10 +225,18 @@ bool until(std::vector<interop_char>& t, int& idx, int min_len, int max_len, con
 
 bool expect(std::vector<interop_char>& t, int& idx, const std::vector<std::string>& c)
 {
+    int start = idx;
+
     int which = is_any_of(c, t, idx);
 
     if(which == -1)
         return false;
+
+    if(which >= c.size())
+    {
+        idx = start;
+        return false;
+    }
 
     idx += c[which].size();
 
@@ -238,6 +246,9 @@ bool expect(std::vector<interop_char>& t, int& idx, const std::vector<std::strin
 int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out)
 {
     out = std::string();
+
+    if(idx >= chs.size())
+        return 0;
 
     if(chs[idx].c != '#')
         return 0;
@@ -271,12 +282,12 @@ int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out)
     if(!until(chs, idx, 1, MAX_ANY_NAME_LEN, {";", "(", " ", "\n"}))
         return 0;
 
-    for(int i=start; i < idx; i++)
+    for(int i=start; i < idx && i < chs.size(); i++)
     {
         out.push_back(chs[i].c);
     }
 
-    std::cout << "fnd " << out << std::endl;
+    //std::cout << "fnd " << out << std::endl;
 
     return idx - start;
 }
@@ -319,7 +330,6 @@ void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_speci
 
     interop_colour_string(ret, value_col);
     interop_colour_numbers(ret, value_col);
-
 
     ///find full strings to autocomplete
     ///uses different parsing algorithm to is_valid
