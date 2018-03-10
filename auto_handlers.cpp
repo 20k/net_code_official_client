@@ -145,36 +145,6 @@ void interop_colour(std::vector<interop_char>& chs, int idx, const std::string& 
     }
 }
 
-#define CHECK_ERR(idx, chs) if(idx >= chs.size()){return 0;}
-
-/*bool expect(std::vector<interop_char>& t, int& idx, char c)
-{
-    if(idx >= (int)t.size())
-        return false;
-
-    if(t[idx].c == c)
-    {
-        idx++;
-        return true;
-    }
-
-    return false;
-}
-
-bool expect_alpha(std::vector<interop_char>& t, int& idx)
-{
-    if(idx >= (int)t.size())
-        return false;
-
-    if(isalpha(t[idx].c))
-    {
-        idx++;
-        return true;
-    }
-
-    return false;
-}*/
-
 template<typename T>
 int is_any_of(const T& t, std::vector<interop_char>& c, int idx)
 {
@@ -214,7 +184,7 @@ int is_any_of(const T& t, std::vector<interop_char>& c, int idx)
     return -1;
 }
 
-bool until(std::vector<interop_char>& t, int& idx, int max_len, const std::vector<std::string>& c, bool must_be_alpha = true)
+bool until(std::vector<interop_char>& t, int& idx, int min_len, int max_len, const std::vector<std::string>& c, bool must_be_alpha = true)
 {
     int len = 0;
 
@@ -245,6 +215,12 @@ bool until(std::vector<interop_char>& t, int& idx, int max_len, const std::vecto
         return false;
     }
 
+    if(len < min_len)
+    {
+        idx = start;
+        return false;
+    }
+
     //std::cout << "len " << len << " ml " << max_len << std::endl;
 
     return true;
@@ -269,14 +245,6 @@ int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out)
     if(chs[idx].c != '#')
         return 0;
 
-    //std::cout << chs[idx].c << std::endl;
-
-    int start = idx;
-
-    ///#fs[.]
-    //if(!until(chs, idx, 4, {"."}))
-    //    return 0;
-
     std::vector<std::string> match
     {
         "#fs.",
@@ -285,7 +253,6 @@ int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out)
         "#ls.",
         "#ns.",
         "#s.",
-        //"#",
     };
 
     if(!expect(chs, idx, match))
@@ -294,17 +261,19 @@ int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out)
             return 0;
     }
 
+    int start = idx;
+
     //idx++;
 
     ///#fs.[]
 
     ///#fs.namehere[.]
-    if(!until(chs, idx, MAX_ANY_NAME_LEN, {"."}))
+    if(!until(chs, idx, 1, MAX_ANY_NAME_LEN, {"."}))
         return 0;
 
     idx++;
 
-    if(!until(chs, idx, MAX_ANY_NAME_LEN, {";", "(", " ", "\n"}))
+    if(!until(chs, idx, 1, MAX_ANY_NAME_LEN, {";", "(", " ", "\n"}))
         return 0;
 
     for(int i=start; i < idx; i++)
@@ -314,16 +283,7 @@ int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out)
 
     std::cout << "fnd " << out << std::endl;
 
-    //out = std::string(chs.begin() + start, chs.begin() + idx);
-
     return idx - start;
-
-    ///need to parse until any one of the following
-
-    /*for(int i=idx; i < (int)chs.size(); i++)
-    {
-
-    }*/
 }
 
 void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_special)
