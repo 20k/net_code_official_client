@@ -15,6 +15,7 @@
 #include "local_commands.hpp"
 #include "auto_handlers.hpp"
 #include "copy_handler.hpp"
+#include "stacktrace.hpp"
 
 struct chat_thread : serialisable
 {
@@ -542,10 +543,17 @@ bool is_focused(sf::RenderWindow& win)
 
 #define DMAP(A) key_map[sf::Keyboard::A] = tolower((#A)[0]);
 
+void test()
+{
+    //raise(SIGSEGV);
+}
+
 ///test new repo
 int main()
 {
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+
+    stack_on_start();
 
     shared_data shared;
 
@@ -557,6 +565,8 @@ int main()
 
         //shared.send_auth = true;
     }
+
+    test();
 
     font.loadFromFile("VeraMono.ttf");
 
@@ -821,7 +831,7 @@ int main()
             client_poll_clock.restart();
         }
 
-        //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
+        std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
 
         term.render(window);
         chat_win.render(window, term.chat_threads);
