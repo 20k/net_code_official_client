@@ -1,5 +1,6 @@
 #include "auto_handlers.hpp"
 #include "string_helpers.hpp"
+#include <crapmud/script_util_shared.hpp>
 
 bool strip_input(std::string& in)
 {
@@ -144,6 +145,99 @@ void interop_colour(std::vector<interop_char>& chs, int idx, const std::string& 
     }
 }
 
+#define CHECK_ERR(idx, chs) if(idx >= chs.size()){return 0;}
+
+bool expect(std::vector<interop_char>& t, int& idx, char c)
+{
+    if(idx >= (int)t.size())
+        return false;
+
+    return t[idx++].c == c;
+}
+
+template<typename T, typename U>
+bool is_any_of(const T& t, const U& u)
+{
+    for(auto& i : t)
+    {
+        if(i == u)
+            return true;
+    }
+
+    return false;
+}
+
+bool until(std::vector<interop_char>& t, int& idx, int max_len, const std::vector<char>& c)
+{
+    int len = 0;
+
+    while(idx < (int)t.size() && len < max_len && !is_any_of(c, t[idx].c))
+    {
+        len++;
+
+        idx++;
+    }
+
+    if(idx >= (int)t.size())
+        return false;
+
+    if(idx > max_len)
+        return false;
+
+    return true;
+}
+
+int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out)
+{
+    out = std::string();
+
+    if(chs[idx].c != '#')
+        return 0;
+
+    int start = idx;
+
+    /*idx++;
+
+    CHECK_ERR(idx, chs);
+
+    if(!expect(chs, idx, ))*/
+
+    ///#fs[.]
+    if(!until(chs, idx, 3, {'.'}))
+        return 0;
+
+    idx++;
+
+    ///#fs.[]
+
+    ///#fs.namehere[.]
+    if(!until(chs, idx, MAX_ANY_NAME_LEN, {'.'}))
+        return 0;
+
+    idx++;
+
+    if(!until(chs, idx, MAX_ANY_NAME_LEN, {';', '(', ' ', '\n'}))
+        return 0;
+
+    for(int i=start; i < idx; i++)
+    {
+        out.push_back(chs[i].c);
+    }
+
+    std::cout << "fnd " << out << std::endl;
+
+    //out = std::string(chs.begin() + start, chs.begin() + idx);
+
+    return idx - start;
+
+    ///need to parse until any one of the following
+
+    /*for(int i=idx; i < (int)chs.size(); i++)
+    {
+
+    }*/
+}
+
 void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_special)
 {
     std::map<std::string, vec3f> cols
@@ -174,7 +268,7 @@ void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_speci
 
     for(auto& i : cols)
     {
-        for(int kk=0; kk < ret.size(); kk++)
+        for(int kk=0; kk < (int)ret.size(); kk++)
             interop_colour(ret, kk, i.first, i.second);
     }
 
@@ -182,4 +276,16 @@ void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_speci
 
     interop_colour_string(ret, value_col);
     interop_colour_numbers(ret, value_col);
+
+
+    ///find full strings to autocomplete
+    ///uses different parsing algorithm to is_valid
+    {
+        for(int i=0; i < (int)ret.size(); i++)
+        {
+            std::string out;
+
+            get_autocomplete(ret, i, out);
+        }
+    }
 }
