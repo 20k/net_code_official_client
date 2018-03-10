@@ -826,7 +826,8 @@ int main()
         term.render(window);
         chat_win.render(window, term.chat_threads);
 
-        ///sometimes this breaks
+        ///this is a hack to fix the fact that sometimes
+        ///click input doesn't make clean click/release pairs
         if(!mouse.isButtonPressed(sf::Mouse::Left))
         {
             get_global_copy_handler()->finished = false;
