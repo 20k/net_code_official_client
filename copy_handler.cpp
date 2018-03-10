@@ -168,6 +168,7 @@ void copy_handler::process_formatted(std::vector<std::vector<formatted_char>>& f
     }
 
     finished = false;
+    held = false;
 }
 
 void copy_handler::tick(vec2f pos)

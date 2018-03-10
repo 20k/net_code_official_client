@@ -826,6 +826,13 @@ int main()
         term.render(window);
         chat_win.render(window, term.chat_threads);
 
+        ///sometimes this breaks
+        if(!mouse.isButtonPressed(sf::Mouse::Left))
+        {
+            get_global_copy_handler()->finished = false;
+            get_global_copy_handler()->held = false;
+        }
+
         window.display();
         window.clear(sf::Color(30, 30, 30));
 
