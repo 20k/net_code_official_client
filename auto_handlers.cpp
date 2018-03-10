@@ -181,8 +181,10 @@ bool until(std::vector<interop_char>& t, int& idx, int max_len, const std::vecto
     if(idx >= (int)t.size())
         return false;
 
-    if(idx > max_len)
+    if(len >= max_len)
         return false;
+
+    //std::cout << "len " << len << " ml " << max_len << std::endl;
 
     return true;
 }
@@ -194,16 +196,12 @@ int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out)
     if(chs[idx].c != '#')
         return 0;
 
+    //std::cout << chs[idx].c << std::endl;
+
     int start = idx;
 
-    /*idx++;
-
-    CHECK_ERR(idx, chs);
-
-    if(!expect(chs, idx, ))*/
-
     ///#fs[.]
-    if(!until(chs, idx, 3, {'.'}))
+    if(!until(chs, idx, 4, {'.'}))
         return 0;
 
     idx++;
