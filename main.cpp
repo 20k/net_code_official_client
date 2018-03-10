@@ -520,7 +520,7 @@ struct terminal : serialisable
                     chat_threads[chnls[i]].chats.push_back(string_to_interop(msgs[i], false, auto_handle));
                 }
 
-                int max_history = 1000;
+                int max_history = 250;
 
                 limit_size(text_history, max_history);
 
@@ -528,7 +528,7 @@ struct terminal : serialisable
             }
         }
 
-        int max_history = 1000;
+        int max_history = 250;
 
         limit_size(text_history, max_history);
 
@@ -542,11 +542,6 @@ bool is_focused(sf::RenderWindow& win)
 }
 
 #define DMAP(A) key_map[sf::Keyboard::A] = tolower((#A)[0]);
-
-void test()
-{
-    //raise(SIGSEGV);
-}
 
 ///test new repo
 int main()
@@ -565,8 +560,6 @@ int main()
 
         //shared.send_auth = true;
     }
-
-    test();
 
     font.loadFromFile("VeraMono.ttf");
 
@@ -831,7 +824,7 @@ int main()
             client_poll_clock.restart();
         }
 
-        std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
+        //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
 
         term.render(window);
         chat_win.render(window, term.chat_threads);
