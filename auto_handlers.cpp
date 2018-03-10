@@ -149,12 +149,9 @@ template<typename T>
 int is_any_of(const T& t, std::vector<interop_char>& c, int idx)
 {
     //for(auto& str : t)
-    for(int kk=0; kk < t.size(); kk++)
+    for(int kk=0; kk < (int)t.size(); kk++)
     {
         auto str = t[kk];
-
-        /*if(i == u)
-            return true;*/
 
         bool all = true;
 
@@ -263,8 +260,6 @@ int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out)
 
     int start = idx;
 
-    //idx++;
-
     ///#fs.[]
 
     ///#fs.namehere[.]
@@ -333,7 +328,12 @@ void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_speci
         {
             std::string out;
 
-            get_autocomplete(ret, i, out);
+            int len = get_autocomplete(ret, i, out);
+
+            if(len != 0 && found_args.find(out) == found_args.end())
+            {
+                found_unprocessed_autocompletes.insert(out);
+            }
         }
     }
 }
