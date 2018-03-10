@@ -147,44 +147,117 @@ void interop_colour(std::vector<interop_char>& chs, int idx, const std::string& 
 
 #define CHECK_ERR(idx, chs) if(idx >= chs.size()){return 0;}
 
-bool expect(std::vector<interop_char>& t, int& idx, char c)
+/*bool expect(std::vector<interop_char>& t, int& idx, char c)
 {
     if(idx >= (int)t.size())
         return false;
 
-    return t[idx++].c == c;
-}
-
-template<typename T, typename U>
-bool is_any_of(const T& t, const U& u)
-{
-    for(auto& i : t)
+    if(t[idx].c == c)
     {
-        if(i == u)
-            return true;
+        idx++;
+        return true;
     }
 
     return false;
 }
 
-bool until(std::vector<interop_char>& t, int& idx, int max_len, const std::vector<char>& c)
+bool expect_alpha(std::vector<interop_char>& t, int& idx)
+{
+    if(idx >= (int)t.size())
+        return false;
+
+    if(isalpha(t[idx].c))
+    {
+        idx++;
+        return true;
+    }
+
+    return false;
+}*/
+
+template<typename T>
+int is_any_of(const T& t, std::vector<interop_char>& c, int idx)
+{
+    //for(auto& str : t)
+    for(int kk=0; kk < t.size(); kk++)
+    {
+        auto str = t[kk];
+
+        /*if(i == u)
+            return true;*/
+
+        bool all = true;
+
+        for(int i=0; i < (int)str.size(); i++)
+        {
+            int offset = idx + i;
+
+            if(offset >= (int)c.size())
+            {
+                all = false;
+                break;
+            }
+
+            if(str[i] != c[offset].c)
+            {
+                all = false;
+                break;
+            }
+        }
+
+        if(all)
+        {
+            return kk;
+        }
+    }
+
+    return -1;
+}
+
+bool until(std::vector<interop_char>& t, int& idx, int max_len, const std::vector<std::string>& c, bool must_be_alpha = true)
 {
     int len = 0;
 
-    while(idx < (int)t.size() && len < max_len && !is_any_of(c, t[idx].c))
+    int start = idx;
+
+    while(idx < (int)t.size() && len < max_len && is_any_of(c, t, idx) == -1)
     {
+        if(must_be_alpha && !isalpha(t[idx].c) && is_any_of(c, t, idx) == -1)
+        {
+            idx = start;
+            return false;
+        }
+
         len++;
 
         idx++;
     }
 
     if(idx >= (int)t.size())
+    {
+        idx = start;
         return false;
+    }
 
     if(len >= max_len)
+    {
+        idx = start;
         return false;
+    }
 
     //std::cout << "len " << len << " ml " << max_len << std::endl;
+
+    return true;
+}
+
+bool expect(std::vector<interop_char>& t, int& idx, const std::vector<std::string>& c)
+{
+    int which = is_any_of(c, t, idx);
+
+    if(which == -1)
+        return false;
+
+    idx += c[which].size();
 
     return true;
 }
@@ -201,20 +274,37 @@ int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out)
     int start = idx;
 
     ///#fs[.]
-    if(!until(chs, idx, 4, {'.'}))
-        return 0;
+    //if(!until(chs, idx, 4, {"."}))
+    //    return 0;
 
-    idx++;
+    std::vector<std::string> match
+    {
+        "#fs.",
+        "#hs.",
+        "#ms.",
+        "#ls.",
+        "#ns.",
+        "#s.",
+        //"#",
+    };
+
+    if(!expect(chs, idx, match))
+    {
+        if(!expect(chs, idx, {"#"}))
+            return 0;
+    }
+
+    //idx++;
 
     ///#fs.[]
 
     ///#fs.namehere[.]
-    if(!until(chs, idx, MAX_ANY_NAME_LEN, {'.'}))
+    if(!until(chs, idx, MAX_ANY_NAME_LEN, {"."}))
         return 0;
 
     idx++;
 
-    if(!until(chs, idx, MAX_ANY_NAME_LEN, {';', '(', ' ', '\n'}))
+    if(!until(chs, idx, MAX_ANY_NAME_LEN, {";", "(", " ", "\n"}))
         return 0;
 
     for(int i=start; i < idx; i++)
