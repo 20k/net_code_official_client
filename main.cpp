@@ -486,6 +486,63 @@ struct terminal : serialisable
         }
     }
 
+    void parse_scriptargs(const std::string& in)
+    {
+        std::cout << "pstring " << in << std::endl;
+
+        std::string_view view(&in[0]);
+
+        view.remove_prefix(std::min(view.find_first_of(" ")+1, view.size()));
+
+        /*if(view.size() == 0)
+            return;
+
+        std::string scriptname(view.substr(0, view.find_first_of(" ")));
+
+        std::min(view.find_first_of(" ")+1, view.size());*/
+
+        std::vector<std::string> strings;
+
+        while(view.size() > 0)
+        {
+            auto found = view.find(" ");
+
+            if(found == std::string_view::npos)
+                break;
+
+            std::string_view num(view.data(), found);
+
+            std::string len(num);
+
+            int ilen = stoi(len);
+
+            std::string dat(view.substr(len.size() + 1, ilen));
+
+            strings.push_back(dat);
+
+            ///"len" + " " + len_bytes + " "
+            view.remove_prefix(len.size() + 2 + ilen);
+        }
+
+        if(strings.size() == 0)
+            return;
+
+        std::string scriptname = strings[0];
+
+        strings.erase(strings.begin());
+
+        std::cout << "for script " << scriptname << std::endl;
+
+        for(auto& i : strings)
+        {
+            std::cout << i << std::endl;
+        }
+
+        ///this all fundamentally works
+
+        //auto_handle.found_args[]
+    }
+
     void add_text_from_server(const std::string& in, chat_window& chat_win, bool server_command = true)
     {
         if(in == "")
@@ -499,11 +556,11 @@ struct terminal : serialisable
             std::string chat_api = "chat_api ";
             std::string scriptargs = "server_scriptargs ";
 
-            if(str.substr(0, command_str.size()) == command_str)
+            if(starts_with(str, command_str))
             {
                 str = std::string(str.begin() + command_str.size(), str.end());
             }
-            else if(str.substr(0, chat_api.size()) == chat_api)
+            else if(starts_with(str, chat_api))
             {
                 std::vector<std::string> chnls;
                 std::vector<std::string> msgs;
@@ -527,9 +584,11 @@ struct terminal : serialisable
 
                 return;
             }
-            else if(str.substr(0, scriptargs.size()) == scriptargs)
+            else if(starts_with(str, scriptargs))
             {
-                std::cout << str << std::endl;
+                //std::cout << str << std::endl;
+
+                parse_scriptargs(str);
 
                 return;
             }
@@ -615,6 +674,8 @@ int main()
     sf::Clock render_clock;
 
     sf::Clock client_poll_clock;
+
+    sf::Clock request_clock;
 
     sf::Keyboard key;
     sf::Mouse mouse;
@@ -831,8 +892,10 @@ int main()
             client_poll_clock.restart();
         }
 
-        if(term.auto_handle.found_unprocessed_autocompletes.size() > 0 && ONCE_MACRO(sf::Keyboard::Q))
+        if(term.auto_handle.found_unprocessed_autocompletes.size() > 0 && request_clock.getElapsedTime().asMilliseconds() > 100)// && ONCE_MACRO(sf::Keyboard::Q))
         {
+            request_clock.restart();
+
             for(auto& str : term.auto_handle.found_unprocessed_autocompletes)
             {
                 std::string command = "client_scriptargs " + str;
@@ -841,6 +904,8 @@ int main()
 
                 std::cout << "requesting " << command << std::endl;
             }
+
+            term.auto_handle.found_unprocessed_autocompletes.clear();
         }
 
         //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
