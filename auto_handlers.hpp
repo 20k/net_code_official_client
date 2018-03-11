@@ -26,6 +26,7 @@ struct specials_status
 struct auto_handler
 {
     bool use_autocomplete = false;
+    bool use_autocolour = false;
 
     bool window_in_focus = false;
 

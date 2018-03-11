@@ -322,17 +322,19 @@ void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_speci
     vec3f pale_blue = {120, 120, 255};
     vec3f pale_red = {255, 60, 60};
 
+    cols["{"] = pale_red;
+    cols["}"] = pale_red;
+    cols["["] = pale_red;
+    cols["]"] = pale_red;
+
     //if(colour_special)
+    if(use_autocolour)
     {
         cols["function?"] = pale_blue;
         cols["while?"] = pale_blue;
         cols["for?"] = pale_blue;
         cols["if?"] = pale_blue;
         cols["return?"] = pale_blue;
-        cols["{"] = pale_red;
-        cols["}"] = pale_red;
-        cols["["] = pale_red;
-        cols["]"] = pale_red;
         cols[";"] = pale_red;
     }
 
@@ -344,8 +346,12 @@ void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_speci
 
     vec3f value_col = {100, 206, 209};
 
-    interop_colour_string(ret, value_col);
     interop_colour_numbers(ret, value_col);
+
+    if(!use_autocolour)
+        return;
+
+    interop_colour_string(ret, value_col);
 
     ///find full strings to autocomplete
     ///uses different parsing algorithm to is_valid

@@ -375,6 +375,7 @@ struct terminal : serialisable
         font.loadFromFile("VeraMono.ttf");
 
         auto_handle.use_autocomplete = true;
+        auto_handle.use_autocolour = true;
     }
 
     void render(sf::RenderWindow& win)
@@ -581,9 +582,9 @@ struct terminal : serialisable
 
                 for(int i=0; i < (int)chnls.size(); i++)
                 {
-                    text_history.push_back(string_to_interop(msgs[i] + "\n", false, auto_handle));
+                    text_history.push_back(string_to_interop(msgs[i] + "\n", false, chat_win.auto_handle));
 
-                    chat_threads[chnls[i]].chats.push_back(string_to_interop(msgs[i], false, auto_handle));
+                    chat_threads[chnls[i]].chats.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
                 }
 
                 int max_history = 250;
@@ -908,7 +909,7 @@ int main()
             client_poll_clock.restart();
         }
 
-        if(term.auto_handle.found_unprocessed_autocompletes.size() > 0 && request_clock.getElapsedTime().asMilliseconds() > 100)// && ONCE_MACRO(sf::Keyboard::Q))
+        if(term.auto_handle.found_unprocessed_autocompletes.size() > 0 && request_clock.getElapsedTime().asMilliseconds() > 1000)
         {
             request_clock.restart();
 
