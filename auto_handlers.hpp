@@ -14,6 +14,14 @@ struct autocomplete_args
     std::string arg;
 };
 
+struct specials_status
+{
+    bool has_open_curly = false;
+    bool has_close_curly = false;
+    bool has_close_paren = false;
+    bool has_trailing_comma = false;
+};
+
 struct auto_handler
 {
     bool use_autocomplete = false;
@@ -29,7 +37,10 @@ struct auto_handler
     void auto_colour(std::vector<interop_char>& in, bool colour_special = false);
 
     void handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx, std::string& command_str);
-    void handle_tab(std::vector<interop_char>& in, int& cursor_idx, int parse_start, const std::vector<autocomplete_args>& found, bool has_open_curly, std::string& command_str);
+
+    void handle_tab(const std::vector<interop_char>& in, int& cursor_idx, int parse_start,
+                    const std::vector<autocomplete_args>& found, const specials_status& specials, std::string& command_str,
+                    const std::vector<std::string>& to_skip);
 
     void clear_internal_state();
 

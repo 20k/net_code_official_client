@@ -138,7 +138,7 @@ void interop_colour(std::vector<interop_char>& chs, int idx, const std::string& 
 
     strip_input(op);
 
-    for(int i=idx; i < idx + (int)op.size() && i < chs.size(); i++)
+    for(int i=idx; i < idx + (int)op.size() && i < (int)chs.size(); i++)
     {
         if(chs[i].coloured)
             continue;
@@ -148,7 +148,7 @@ void interop_colour(std::vector<interop_char>& chs, int idx, const std::string& 
 }
 
 template<typename T>
-int is_any_of(const T& t, std::vector<interop_char>& c, int idx)
+int is_any_of(const T& t, const std::vector<interop_char>& c, int idx)
 {
     //for(auto& str : t)
     for(int kk=0; kk < (int)t.size(); kk++)
@@ -183,7 +183,7 @@ int is_any_of(const T& t, std::vector<interop_char>& c, int idx)
     return -1;
 }
 
-bool until(std::vector<interop_char>& t, int& idx, int min_len, int max_len, const std::vector<std::string>& c, bool must_be_alpha = true)
+bool until(const std::vector<interop_char>& t, int& idx, int min_len, int max_len, const std::vector<std::string>& c, bool must_be_alpha = true)
 {
     int len = 0;
 
@@ -237,20 +237,20 @@ bool expect(std::vector<interop_char>& t, int& idx, const std::vector<std::strin
     if(which == -1)
         return false;
 
-    if(which >= c.size())
+    if(which >= (int)c.size())
     {
         idx = start;
         return false;
     }
 
-    idx += c[which].size();
+    idx += (int)c[which].size();
 
     return true;
 }
 
 void remove_whitespace(std::vector<interop_char>& t, int& idx)
 {
-    while((int)idx < t.size() && t[idx].c == ' ')
+    while(idx < (int)t.size() && t[idx].c == ' ')
         idx++;
 }
 
@@ -260,7 +260,7 @@ int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out)
 {
     out = std::string();
 
-    if(idx >= chs.size())
+    if(idx >= (int)chs.size())
         return 0;
 
     if(chs[idx].c != '#')
@@ -297,7 +297,7 @@ int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out)
     if(!until(chs, idx, 1, MAX_ANY_NAME_LEN, {";", "(", " ", "\n"}))
         return 0;
 
-    for(int i=start; i < idx && i < chs.size(); i++)
+    for(int i=start; i < idx && i < (int)chs.size(); i++)
     {
         out.push_back(chs[i].c);
     }
@@ -366,7 +366,7 @@ void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_speci
     }
 }
 
-std::vector<std::string> get_skip_argnames(std::vector<interop_char>& in, int parse_start, bool& opening_curly, bool& closing_curly, bool& closing_paren)
+std::vector<std::string> get_skip_argnames(std::vector<interop_char>& in, int parse_start, specials_status& specials)
 {
     ///so
     ///the pattern we're looking for is either
@@ -378,7 +378,7 @@ std::vector<std::string> get_skip_argnames(std::vector<interop_char>& in, int pa
 
     int idx = parse_start;
 
-    while(idx < in.size())
+    while(idx < (int)in.size())
     {
         //std::cout << "hi" << std::endl;
 
@@ -399,7 +399,7 @@ std::vector<std::string> get_skip_argnames(std::vector<interop_char>& in, int pa
             break;
 
         if(in[idx].c == '{')
-            opening_curly = true;
+            specials.has_open_curly = true;
 
         //std::cout << "expected" << std::endl;
 
@@ -430,17 +430,27 @@ std::vector<std::string> get_skip_argnames(std::vector<interop_char>& in, int pa
         ret.push_back(arg);
     }
 
+    {
+        int check_trailing = idx;
+
+        while(check_trailing >= 0 && in[check_trailing].c == ' ')
+            check_trailing--;
+
+        if(check_trailing >= 0 && in[check_trailing].c == ',')
+            specials.has_trailing_comma = true;
+    }
+
     if(!until(in, idx, 0, MAX_ANY_NAME_LEN, {"}"}, false))
         return ret;
 
     if(in[idx].c == '}')
-        closing_curly = true;
+        specials.has_close_curly = true;
 
     if(!until(in, idx, 0, MAX_ANY_NAME_LEN, {")"}, false))
         return ret;
 
     if(in[idx].c == ')')
-        closing_paren = true;
+        specials.has_close_paren = true;
 
     return ret;
 }
@@ -500,20 +510,22 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
     ///so. Look for name: and name :
     ///and then skippity those args
 
-    bool has_open_curly = false;
-    bool has_close_curly = false;
-    bool has_close_paren = false;
+    specials_status specials;
 
     int parse_start = flen + where;
 
-    auto to_skip = get_skip_argnames(in, parse_start, has_open_curly, has_close_curly, has_close_paren);
+    auto to_skip = get_skip_argnames(in, parse_start, specials);
 
     std::vector<autocomplete_args> args = found_args[found];
+
+    {
+        handle_tab(in, cursor_idx, parse_start, args, specials, command_str, to_skip);
+    }
 
     ///we need to skip constructs here if they're already inserted
     std::string str;
 
-    if(!has_open_curly)
+    if(!specials.has_open_curly)
         str += "`c{`";
 
     /*for(auto& i : args)
@@ -525,14 +537,14 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
     bool had_last = false;
 
-    for(int i=0; i < args.size(); i++)
+    for(int i=0; i < (int)args.size(); i++)
     {
         const auto& p = args[i];
 
         if(std::find(to_skip.begin(), to_skip.end(), p.key) != to_skip.end())
             continue;
 
-        if(had_last)
+        if(had_last || (!specials.has_trailing_comma && to_skip.size() > 0))
             str += "`c, `";
 
         str += "`c" + p.key + ":" + p.arg + "`";
@@ -550,24 +562,20 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
     ///when cycling into an autocomplete, we need to make it 'real' in the code and place the cusor just past the : i think
     ///don't want to get more swanky than that atm
 
-    if(!has_close_curly)
+    if(!specials.has_close_curly)
         str += "`c}`";
 
-    if(!has_close_paren)
+    if(!specials.has_close_paren)
         str += "`c)`";
 
     auto interop = string_to_interop_no_autos(str, false);
 
     in.insert(in.end(), interop.begin(), interop.end());
 
-    {
-        handle_tab(in, cursor_idx, parse_start, args, has_open_curly,  command_str);
-    }
-
     //in.insert(in.begin() + flen + where, interop.begin(), interop.end());
 }
 
-void auto_handler::handle_tab(std::vector<interop_char>& in, int& cursor_idx, int parse_start, const std::vector<autocomplete_args>& found, bool has_open_curly, std::string& command_str)
+void auto_handler::handle_tab(const std::vector<interop_char>& in, int& cursor_idx, int parse_start, const std::vector<autocomplete_args>& found, const specials_status& specials, std::string& command_str, const std::vector<std::string>& to_skip)
 {
     if(!ONCE_MACRO(sf::Keyboard::Tab) || !window_in_focus)
         return;
@@ -579,11 +587,57 @@ void auto_handler::handle_tab(std::vector<interop_char>& in, int& cursor_idx, in
     ///and then insert the next. Need to check commas
     ///if there are none left and we press tab, insert })
 
-    if(!has_open_curly)
+    if(!specials.has_open_curly)
     {
         command_str.insert(command_str.begin() + parse_start, '{');
         cursor_idx = command_str.size();
+        return;
     }
+
+    ///insert new funtimes, found no args
+    if(!until(in, cursor_idx, 0, MAX_ANY_NAME_LEN, {":"}, false))
+    {
+        if(found.size() > 0)
+        {
+            for(auto& to_insert : found)
+            {
+                if(std::find(to_skip.begin(), to_skip.end(), to_insert.key) != to_skip.end())
+                    continue;
+
+                std::string str = to_insert.key + ":" + to_insert.arg;
+
+                if(!specials.has_trailing_comma && to_skip.size() > 0)
+                {
+                    str = ", " + str;
+                }
+
+                command_str += str;
+
+                cursor_idx += str.size();
+
+                return;
+            }
+
+        }
+    }
+
+    ///nothing left to insert
+    if(!specials.has_close_curly || !specials.has_close_paren)
+    {
+        command_str += "})";
+        cursor_idx = command_str.size();
+
+        return;
+    }
+
+    /*cursor_idx++;
+
+    if(cursor_idx >= (int)command_str.size())
+        return;*/
+
+
+
+    ///has open curly
 }
 
 void auto_handler::clear_internal_state()
