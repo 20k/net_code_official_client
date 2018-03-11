@@ -189,7 +189,7 @@ bool until(std::vector<interop_char>& t, int& idx, int min_len, int max_len, con
 
     while(idx < (int)t.size() && len < max_len && is_any_of(c, t, idx) == -1)
     {
-        if(must_be_alpha && !isalpha(t[idx].c) && is_any_of(c, t, idx) == -1)
+        if(must_be_alpha && !isalnum(t[idx].c) && is_any_of(c, t, idx) == -1)
         {
             idx = start;
             return false;

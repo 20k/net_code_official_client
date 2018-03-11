@@ -497,6 +497,7 @@ struct terminal : serialisable
         {
             std::string command_str = "command ";
             std::string chat_api = "chat_api ";
+            std::string scriptargs = "server_scriptargs ";
 
             if(str.substr(0, command_str.size()) == command_str)
             {
@@ -523,6 +524,12 @@ struct terminal : serialisable
                 int max_history = 250;
 
                 limit_size(text_history, max_history);
+
+                return;
+            }
+            else if(str.substr(0, scriptargs.size()) == scriptargs)
+            {
+                std::cout << str << std::endl;
 
                 return;
             }
@@ -822,6 +829,18 @@ int main()
             shared.add_back_write("client_poll");
 
             client_poll_clock.restart();
+        }
+
+        if(term.auto_handle.found_unprocessed_autocompletes.size() > 0 && ONCE_MACRO(sf::Keyboard::Q))
+        {
+            for(auto& str : term.auto_handle.found_unprocessed_autocompletes)
+            {
+                std::string command = "client_scriptargs " + str;
+
+                shared.add_back_write(command);
+
+                std::cout << "requesting " << command << std::endl;
+            }
         }
 
         //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
