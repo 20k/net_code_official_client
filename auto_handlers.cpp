@@ -243,6 +243,14 @@ bool expect(std::vector<interop_char>& t, int& idx, const std::vector<std::strin
     return true;
 }
 
+void remove_whitespace(std::vector<interop_char>& t, int& idx)
+{
+    while((int)idx < t.size() && t[idx].c == ' ')
+        idx++;
+}
+
+///out is the name of the autocomplete to add. If the input is #fs.script.name, we get script.name
+///returns the full length of #fs.script.name
 int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out)
 {
     out = std::string();
@@ -262,6 +270,8 @@ int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out)
         "#ns.",
         "#s.",
     };
+
+    int start_full_length = idx;
 
     if(!expect(chs, idx, match))
     {
@@ -289,7 +299,8 @@ int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out)
 
     //std::cout << "fnd " << out << std::endl;
 
-    return idx - start;
+    ///the +1 is to include the end character
+    return (idx - start_full_length) + 1;
 }
 
 void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_special)
@@ -338,12 +349,160 @@ void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_speci
         {
             std::string out;
 
-            int len = get_autocomplete(ret, i, out);
+            get_autocomplete(ret, i, out);
 
-            if(len != 0 && found_args.find(out) == found_args.end())
+            bool exists = found_args.find(out) != found_args.end();
+
+            if(out.size() != 0 && !exists)
             {
                 found_unprocessed_autocompletes.insert(out);
             }
         }
     }
+}
+
+std::set<std::string> get_skip_argnames(std::vector<interop_char>& in, int parse_start)
+{
+    ///so
+    ///the pattern we're looking for is either
+    ///{ arg:
+    ///or
+    ///, arg:
+
+    std::set<std::string> ret;
+
+    int idx = parse_start;
+
+    while(idx < in.size())
+    {
+        remove_whitespace(in, idx);
+
+        ///find first instance of "{" or ","
+        ///ideally we'd parse away strings
+        if(!until(in, idx, 1, MAX_ANY_NAME_LEN, {"{", ","}, false))
+            return ret;
+
+        remove_whitespace(in, idx);
+
+        int cur = idx;
+
+        ///find the : symbol
+        if(!until(in, idx, 1, MAX_ANY_NAME_LEN, {":"}, false))
+            return ret;
+
+        ///this is our arg
+        //std::string arg(in.begin() + cur, in.begin() + idx);
+
+        std::string arg;
+
+        for(auto it = in.begin() + cur; it != in.begin() + idx; it++)
+        {
+            arg += it->c;
+        }
+
+        ret.insert(arg);
+    }
+
+    return ret;
+}
+
+///so. We should store an arg offset
+///then when tab happens, insert the first arg properly
+///bump the arg offset
+///when the command is sent, we need to bump the offset back to 0
+void auto_handler::handle_autocompletes(std::vector<interop_char>& in)
+{
+    ///in is disposable
+    ///aka we freely edit it
+
+    std::string found;
+    int where = -1;
+    int flen = -1;
+
+    for(int i=0; i < (int)in.size(); i++)
+    {
+        std::string out;
+
+        int len = get_autocomplete(in, i, out);
+
+        bool exists = found_args.find(out) != found_args.end();
+
+        if(exists)
+        {
+            found = out;
+            where = i;
+            flen = len;
+        }
+    }
+
+    if(found.size() == 0)
+        return;
+
+    if(where < 0)
+        return;
+
+    //if(in.size() != flen)
+    //    return;
+
+    if(in.size() == 0)
+        return;
+
+    if(in.back().c == ')' || in.back().c == ';')
+        return;
+
+    ///ok
+    ///Do i really need to parse arg string?
+    ///need to extract key params I think
+    ///to see what args we've inserted
+    ///and then skip those args
+    ///so. Look for name: and name :
+    ///and then skippity those args
+
+    bool has_open_curly = false;
+    bool has_close_curly = false;
+
+    int parse_start = flen + where;
+
+    auto to_skip = get_skip_argnames(in, parse_start);
+
+    std::vector<autocomplete_args> args = found_args[found];
+
+    ///we need to skip constructs here if they're already inserted
+    std::string str;
+
+    if(!has_open_curly)
+        str += "`c{`";
+
+    /*for(auto& i : args)
+    {
+        str += "`F" + i.key + "`:`P" + i.arg + "``c, `";
+    }*/
+
+    //for(auto& i : args)
+
+    bool had_last = false;
+
+    for(int i=0; i < args.size(); i++)
+    {
+        const auto& p = args[i];
+
+        if(to_skip.find(p.key) != to_skip.end())
+            continue;
+
+        if(had_last)
+            str += "`c, `";
+
+        str += "`c" + p.key + ":" + p.arg + "`";
+
+        had_last = true;
+    }
+
+    if(!has_close_curly)
+        str += "`c}`";
+
+    //str += "`";
+
+    auto interop = string_to_interop_no_autos(str, false);
+
+    in.insert(in.begin() + flen + where, interop.begin(), interop.end());
 }

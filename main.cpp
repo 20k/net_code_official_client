@@ -495,13 +495,6 @@ struct terminal : serialisable
 
         view.remove_prefix(std::min(view.find_first_of(" ")+1, view.size()));
 
-        /*if(view.size() == 0)
-            return;
-
-        std::string scriptname(view.substr(0, view.find_first_of(" ")));
-
-        std::min(view.find_first_of(" ")+1, view.size());*/
-
         std::vector<std::string> strings;
 
         while(view.size() > 0)
@@ -532,12 +525,12 @@ struct terminal : serialisable
 
         strings.erase(strings.begin());
 
-        std::cout << "for script " << scriptname << std::endl;
+        /*std::cout << "for script " << scriptname << std::endl;
 
         for(auto& i : strings)
         {
             std::cout << i << std::endl;
-        }
+        }*/
 
         std::vector<autocomplete_args> args;
 

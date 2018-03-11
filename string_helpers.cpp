@@ -20,6 +20,18 @@ interop_vec_t string_to_interop(const std::string& str, bool render_specials, au
     return chars;
 }
 
+interop_vec_t string_to_interop_no_autos(const std::string& str, bool render_specials)
+{
+    interop_vec_t chars = build_from_colour_string(str, render_specials);
+
+    while(chars.size() > 0 && chars.back().c == '\n')
+    {
+        chars.pop_back();
+    }
+
+    return chars;
+}
+
 void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& chars, float zero_bound)
 {
     copy_handler* global_copy = get_global_copy_handler();
@@ -106,6 +118,7 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
     }
 
     auto icommand = string_to_interop(render_command, specials, auto_handle);
+    auto_handle.handle_autocompletes(icommand);
 
     interop_char curs;
     curs.col = {255, 255, 255};
