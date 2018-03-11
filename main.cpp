@@ -490,6 +490,7 @@ struct terminal : serialisable
     {
         std::cout << "pstring " << in << std::endl;
 
+        ///TODO: Make all server/client communication use this format
         std::string_view view(&in[0]);
 
         view.remove_prefix(std::min(view.find_first_of(" ")+1, view.size()));
@@ -538,9 +539,31 @@ struct terminal : serialisable
             std::cout << i << std::endl;
         }
 
+        std::vector<autocomplete_args> args;
+
+        int len = strings.size();
+
+        if((strings.size() % 2) != 0)
+            return;
+
+        for(int i=0; i < (int)strings.size(); i+=2)
+        {
+            std::string key = strings[i];
+            std::string arg = strings[i + 1];
+
+            args.push_back({key, arg});
+        }
+
         ///this all fundamentally works
 
-        //auto_handle.found_args[]
+        ///to future james
+        ///dump script in here
+        ///dump args
+        ///when we detect a fullname script in terminal with args, show in gray
+        ///press tab to fill in and jump cursor between args
+        ///to future james again
+        ///gotta hardcode in autocomplete args to trust scripts (limitation of c++ style), maybe some sort of REGISTER_ARGS thing
+        auto_handle.found_args[scriptname] = args;
     }
 
     void add_text_from_server(const std::string& in, chat_window& chat_win, bool server_command = true)
