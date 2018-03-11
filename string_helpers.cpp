@@ -91,7 +91,7 @@ void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& ch
     }
 }
 
-void render(sf::RenderWindow& win, const std::string& command, const std::vector<interop_vec_t>& text_history,
+void render(sf::RenderWindow& win, std::string& command, const std::vector<interop_vec_t>& text_history,
             int& cursor_pos_idx, vec2f start, vec2f wrap_dim, float zero_bound,
             auto_handler& auto_handle, bool focused)
 {
@@ -119,7 +119,7 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
 
     auto icommand = string_to_interop(render_command, specials, auto_handle);
 
-    auto_handle.handle_autocompletes(icommand, cursor_pos_idx);
+    auto_handle.handle_autocompletes(icommand, cursor_pos_idx, command);
 
     interop_char curs;
     curs.col = {255, 255, 255};

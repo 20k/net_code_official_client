@@ -258,7 +258,7 @@ struct auto_handler;
 ///and you'd be right
 ///ok. Need to pass interop chars into here instead
 ///and parse them only once, as its now expensive to parse them
-void render(sf::RenderWindow& win, const std::string& command, const std::vector<interop_vec_t>& text_history,
+void render(sf::RenderWindow& win, std::string& command, const std::vector<interop_vec_t>& text_history,
        int& cursor_pos_idx, vec2f start, vec2f wrap_dim, float zero_bound,
        auto_handler& auto_handle, bool focused);
 

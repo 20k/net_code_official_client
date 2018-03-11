@@ -1,6 +1,8 @@
 #include "auto_handlers.hpp"
 #include "string_helpers.hpp"
 #include <crapmud/script_util_shared.hpp>
+#include <SFML/System.hpp>
+#include "util.hpp"
 
 bool strip_input(std::string& in)
 {
@@ -364,7 +366,7 @@ void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_speci
     }
 }
 
-std::set<std::string> get_skip_argnames(std::vector<interop_char>& in, int parse_start, bool& opening_curly, bool& closing_curly, bool& closing_paren)
+std::vector<std::string> get_skip_argnames(std::vector<interop_char>& in, int parse_start, bool& opening_curly, bool& closing_curly, bool& closing_paren)
 {
     ///so
     ///the pattern we're looking for is either
@@ -372,7 +374,7 @@ std::set<std::string> get_skip_argnames(std::vector<interop_char>& in, int parse
     ///or
     ///, arg:
 
-    std::set<std::string> ret;
+    std::vector<std::string> ret;
 
     int idx = parse_start;
 
@@ -425,7 +427,7 @@ std::set<std::string> get_skip_argnames(std::vector<interop_char>& in, int parse
 
         //std::cout << "arg " << arg << std::endl;
 
-        ret.insert(arg);
+        ret.push_back(arg);
     }
 
     if(!until(in, idx, 0, MAX_ANY_NAME_LEN, {"}"}, false))
@@ -447,7 +449,7 @@ std::set<std::string> get_skip_argnames(std::vector<interop_char>& in, int parse
 ///then when tab happens, insert the first arg properly
 ///bump the arg offset
 ///when the command is sent, we need to bump the offset back to 0
-void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx)
+void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx, std::string& command_str)
 {
     if(!use_autocomplete)
         return;
@@ -527,7 +529,7 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
     {
         const auto& p = args[i];
 
-        if(to_skip.find(p.key) != to_skip.end())
+        if(std::find(to_skip.begin(), to_skip.end(), p.key) != to_skip.end())
             continue;
 
         if(had_last)
@@ -537,6 +539,16 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
         had_last = true;
     }
+
+    ///ok so
+    ///we have a list of args
+    ///what we want to do is: on tab, cycle to next arg
+    ///regardless of the autocomplete stuff? But also including the autocomplete string
+    ///which means: need to parse current actual text, as well as autocompletes (which we have in the form of to skips)
+    ///all to skips must occur before all autocompletes (due to the nature of this)
+    ///which means that when we tab, we first cycle through the to skips, then we cycle through the autocompletes
+    ///when cycling into an autocomplete, we need to make it 'real' in the code and place the cusor just past the : i think
+    ///don't want to get more swanky than that atm
 
     if(!has_close_curly)
         str += "`c}`";
@@ -548,7 +560,30 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
     in.insert(in.end(), interop.begin(), interop.end());
 
+    {
+        handle_tab(in, cursor_idx, parse_start, args, has_open_curly,  command_str);
+    }
+
     //in.insert(in.begin() + flen + where, interop.begin(), interop.end());
+}
+
+void auto_handler::handle_tab(std::vector<interop_char>& in, int& cursor_idx, int parse_start, const std::vector<autocomplete_args>& found, bool has_open_curly, std::string& command_str)
+{
+    if(!ONCE_MACRO(sf::Keyboard::Tab) || !window_in_focus)
+        return;
+
+    ///so. We've pressed tab
+    ///we start at cursor_idx
+    ///we look for the next : symbol and jump to it. Check if we have a ({ construct, and insert { if necessary
+    ///if we find none, we check through the autocompletes
+    ///and then insert the next. Need to check commas
+    ///if there are none left and we press tab, insert })
+
+    if(!has_open_curly)
+    {
+        command_str.insert(command_str.begin() + parse_start, '{');
+        cursor_idx = command_str.size();
+    }
 }
 
 void auto_handler::clear_internal_state()

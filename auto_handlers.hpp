@@ -18,6 +18,8 @@ struct auto_handler
 {
     bool use_autocomplete = false;
 
+    bool window_in_focus = false;
+
     int internal_state = 0;
 
     std::set<std::string> found_unprocessed_autocompletes;
@@ -26,9 +28,11 @@ struct auto_handler
     ///returns autocomplete
     void auto_colour(std::vector<interop_char>& in, bool colour_special = false);
 
-    void handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx);
+    void handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx, std::string& command_str);
+    void handle_tab(std::vector<interop_char>& in, int& cursor_idx, int parse_start, const std::vector<autocomplete_args>& found, bool has_open_curly, std::string& command_str);
 
     void clear_internal_state();
+
 };
 
 #endif // AUTO_HANDLERS_HPP_INCLUDED
