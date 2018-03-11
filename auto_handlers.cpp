@@ -376,7 +376,12 @@ std::vector<std::string> get_skip_argnames(std::vector<interop_char>& in, int pa
 
     std::vector<std::string> ret;
 
-    int idx = parse_start;
+    int idx = parse_start - 1;
+
+    if(expect(in, idx, {"("}))
+    {
+        specials.has_open_paren = true;
+    }
 
     while(idx < (int)in.size())
     {
@@ -525,6 +530,9 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
     ///we need to skip constructs here if they're already inserted
     std::string str;
 
+    //if(!specials.has_open_paren)
+    //    str += "`c(";
+
     if(!specials.has_open_curly)
         str += "`c{`";
 
@@ -586,6 +594,20 @@ void auto_handler::handle_tab(const std::vector<interop_char>& in, int& cursor_i
     ///if we find none, we check through the autocompletes
     ///and then insert the next. Need to check commas
     ///if there are none left and we press tab, insert })
+
+    if(!specials.has_open_paren && command_str.size() > 0)
+    {
+        if(!isalnum(command_str.back()))
+        {
+            parse_start--;
+            command_str.pop_back();
+        }
+
+        command_str.insert(command_str.begin() + parse_start, '(');
+
+        cursor_idx = command_str.size();
+        return;
+    }
 
     if(!specials.has_open_curly)
     {

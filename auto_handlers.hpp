@@ -16,6 +16,7 @@ struct autocomplete_args
 
 struct specials_status
 {
+    bool has_open_paren = false;
     bool has_open_curly = false;
     bool has_close_curly = false;
     bool has_close_paren = false;
