@@ -200,6 +200,9 @@ bool until(std::vector<interop_char>& t, int& idx, int min_len, int max_len, con
         idx++;
     }
 
+    //std::cout << "fidx " << idx << std::endl;
+    //std::cout << "flen " << len << std::endl;
+
     if(idx >= (int)t.size())
     {
         idx = start;
@@ -361,7 +364,7 @@ void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_speci
     }
 }
 
-std::set<std::string> get_skip_argnames(std::vector<interop_char>& in, int parse_start)
+std::set<std::string> get_skip_argnames(std::vector<interop_char>& in, int parse_start, bool& opening_curly, bool& closing_curly, bool& closing_paren)
 {
     ///so
     ///the pattern we're looking for is either
@@ -375,20 +378,40 @@ std::set<std::string> get_skip_argnames(std::vector<interop_char>& in, int parse
 
     while(idx < in.size())
     {
+        //std::cout << "hi" << std::endl;
+
         remove_whitespace(in, idx);
+
+        std::vector<interop_char> fnd(in.begin() + idx, in.end());
+
+        /*for(auto& i : fnd)
+        {
+            std::cout << i.c;
+        }
+
+        std::cout << std::endl;*./
 
         ///find first instance of "{" or ","
         ///ideally we'd parse away strings
-        if(!until(in, idx, 1, MAX_ANY_NAME_LEN, {"{", ","}, false))
-            return ret;
+        if(!until(in, idx, 0, MAX_ANY_NAME_LEN, {"{", ","}, false))
+            break;
+
+        if(in[idx].c == '{')
+            opening_curly = true;
+
+        //std::cout << "expected" << std::endl;
+
+        idx++;
 
         remove_whitespace(in, idx);
 
         int cur = idx;
 
         ///find the : symbol
-        if(!until(in, idx, 1, MAX_ANY_NAME_LEN, {":"}, false))
-            return ret;
+        if(!until(in, idx, 0, MAX_ANY_NAME_LEN, {":"}, false))
+            break;
+
+        //std::cout << "e2 " << std::endl;
 
         ///this is our arg
         //std::string arg(in.begin() + cur, in.begin() + idx);
@@ -400,8 +423,22 @@ std::set<std::string> get_skip_argnames(std::vector<interop_char>& in, int parse
             arg += it->c;
         }
 
+        //std::cout << "arg " << arg << std::endl;
+
         ret.insert(arg);
     }
+
+    if(!until(in, idx, 0, MAX_ANY_NAME_LEN, {"}"}, false))
+        return ret;
+
+    if(in[idx].c == '}')
+        closing_curly = true;
+
+    if(!until(in, idx, 0, MAX_ANY_NAME_LEN, {")"}, false))
+        return ret;
+
+    if(in[idx].c == ')')
+        closing_paren = true;
 
     return ret;
 }
@@ -460,10 +497,11 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in)
 
     bool has_open_curly = false;
     bool has_close_curly = false;
+    bool has_close_paren = false;
 
     int parse_start = flen + where;
 
-    auto to_skip = get_skip_argnames(in, parse_start);
+    auto to_skip = get_skip_argnames(in, parse_start, has_open_curly, has_close_curly, has_close_paren);
 
     std::vector<autocomplete_args> args = found_args[found];
 
@@ -500,9 +538,14 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in)
     if(!has_close_curly)
         str += "`c}`";
 
+    if(!has_close_paren)
+        str += "`c)`";
+
     //str += "`";
 
     auto interop = string_to_interop_no_autos(str, false);
 
-    in.insert(in.begin() + flen + where, interop.begin(), interop.end());
+    in.insert(in.end(), interop.begin(), interop.end());
+
+    //in.insert(in.begin() + flen + where, interop.begin(), interop.end());
 }
