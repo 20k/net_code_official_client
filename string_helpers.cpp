@@ -92,7 +92,7 @@ void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& ch
 }
 
 void render(sf::RenderWindow& win, const std::string& command, const std::vector<interop_vec_t>& text_history,
-            int cursor_pos_idx, vec2f start, vec2f wrap_dim, float zero_bound,
+            int& cursor_pos_idx, vec2f start, vec2f wrap_dim, float zero_bound,
             auto_handler& auto_handle, bool focused)
 {
     vec2f spos = start;
@@ -118,17 +118,21 @@ void render(sf::RenderWindow& win, const std::string& command, const std::vector
     }
 
     auto icommand = string_to_interop(render_command, specials, auto_handle);
-    auto_handle.handle_autocompletes(icommand);
+
+    auto_handle.handle_autocompletes(icommand, cursor_pos_idx);
 
     interop_char curs;
     curs.col = {255, 255, 255};
     curs.c = '|';
     curs.is_cursor = true;
 
-    if(cursor_pos_idx >= (int)icommand.size())
-        icommand.push_back(curs);
-    else if(cursor_pos_idx >= 0 && cursor_pos_idx < (int)icommand.size())
-        icommand.insert(icommand.begin() + cursor_pos_idx, curs);
+    if(focused)
+    {
+        if(cursor_pos_idx >= (int)icommand.size())
+            icommand.push_back(curs);
+        else if(cursor_pos_idx >= 0 && cursor_pos_idx < (int)icommand.size())
+            icommand.insert(icommand.begin() + cursor_pos_idx, curs);
+    }
 
     all_interop.push_back(icommand);
 

@@ -447,8 +447,11 @@ std::set<std::string> get_skip_argnames(std::vector<interop_char>& in, int parse
 ///then when tab happens, insert the first arg properly
 ///bump the arg offset
 ///when the command is sent, we need to bump the offset back to 0
-void auto_handler::handle_autocompletes(std::vector<interop_char>& in)
+void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx)
 {
+    if(!use_autocomplete)
+        return;
+
     ///in is disposable
     ///aka we freely edit it
 
@@ -541,11 +544,14 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in)
     if(!has_close_paren)
         str += "`c)`";
 
-    //str += "`";
-
     auto interop = string_to_interop_no_autos(str, false);
 
     in.insert(in.end(), interop.begin(), interop.end());
 
     //in.insert(in.begin() + flen + where, interop.begin(), interop.end());
+}
+
+void auto_handler::clear_internal_state()
+{
+    internal_state = 0;
 }

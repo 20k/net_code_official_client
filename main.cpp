@@ -245,12 +245,7 @@ struct chat_window : serialisable
         for(auto& i : specials)
             i = 0;*/
 
-        int idx = command.cursor_pos_idx;
-
-        if(!focused)
-            idx = -1;
-
-        ::render(win, command.command, thread.chats, idx, {render_pos.x(), dim.y()}, {(int)win.getSize().x - char_inf::cwbuf/2.f - border_size, win.getSize().y}, border_size, auto_handle, focused);
+        ::render(win, command.command, thread.chats, command.cursor_pos_idx, {render_pos.x(), dim.y()}, {(int)win.getSize().x - char_inf::cwbuf/2.f - border_size, win.getSize().y}, border_size, auto_handle, focused);
 
         render_side_attachment(win);
     }
@@ -378,16 +373,13 @@ struct terminal : serialisable
     terminal()
     {
         font.loadFromFile("VeraMono.ttf");
+
+        auto_handle.use_autocomplete = true;
     }
 
     void render(sf::RenderWindow& win)
     {
-        int idx = command.cursor_pos_idx;
-
-        if(!focused)
-            idx = -1;
-
-        ::render(win, command.command, text_history, idx, {0.f, win.getSize().y}, {(int)win.getSize().x - char_inf::cwbuf, win.getSize().y}, -char_inf::cheight, auto_handle, focused);
+        ::render(win, command.command, text_history, command.cursor_pos_idx, {0.f, win.getSize().y}, {(int)win.getSize().x - char_inf::cwbuf, win.getSize().y}, -char_inf::cheight, auto_handle, focused);
     }
 
     void bump_command_to_history()
@@ -746,11 +738,15 @@ int main()
                 if(event.key.code == sf::Keyboard::Up)
                 {
                     to_edit->move_command_history_idx(-1);
+
+                    term.auto_handle.clear_internal_state();
                 }
 
                 if(event.key.code == sf::Keyboard::Down)
                 {
                     to_edit->move_command_history_idx(1);
+
+                    term.auto_handle.clear_internal_state();
                 }
 
                 if(event.key.code == sf::Keyboard::Left)
@@ -766,6 +762,8 @@ int main()
                 if(event.key.code == sf::Keyboard::Escape)
                 {
                     to_edit->clear_command();
+
+                    term.auto_handle.clear_internal_state();
                 }
 
                 if(event.key.code == sf::Keyboard::V)
@@ -826,6 +824,8 @@ int main()
             {
                 if(!is_local_command(term.command.command))
                     shared.add_back_write("client_command " + term.command.command);
+
+                term.auto_handle.clear_internal_state();
             }
             else
             {
