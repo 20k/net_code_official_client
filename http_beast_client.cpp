@@ -15,6 +15,7 @@
 //
 //------------------------------------------------------------------------------
 
+#include <crapmud/socket_shared.hpp>
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
@@ -42,11 +43,11 @@
 #endif // LOCAL_IP
 
 #ifdef EXTERN_IP
-#define HOST_PORT "6750"
+#define HOST_PORT "6760"
 #endif // EXTERN_IP
 
 #ifdef LOCAL_IP
-#define HOST_PORT "6751"
+#define HOST_PORT "6761"
 #endif // LOCAL_IP
 
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
@@ -87,24 +88,39 @@ struct shared_context
 {
     boost::asio::io_context ioc;
 
-    tcp::resolver resolver;
-    tcp::socket socket;
+    //tcp::resolver resolver;
+    //tcp::socket socket;
 
-    shared_context() : resolver(ioc), socket(ioc)
+    websock_socket* sock = nullptr;
+
+    shared_context()
     {
 
     }
 
     void connect(const std::string& host, const std::string& port)
     {
-        auto const results = resolver.resolve(host, port);
+        //auto const results = resolver.resolve(host, port);
 
         // Make the connection on the IP address we get from a lookup
-        boost::asio::connect(socket, results.begin(), results.end());
+
+
+        if(sock)
+            delete sock;
+
+        websock_socket_client* tsock = new websock_socket_client(ioc);
+
+        auto const results = tsock->resolver.resolve(host, port);
+
+        boost::asio::connect(tsock->ws.next_layer(), results.begin(), results.end());
+        tsock->ws.handshake(host, "/");
+        tsock->ws.text(false);
+
+        sock = tsock;
     }
 };
 
-void handle_async_write(shared_data* shared, tcp::socket* socket)
+void handle_async_write(shared_data* shared, shared_context& ctx)
 {
     while(1)
     {
@@ -119,9 +135,9 @@ void handle_async_write(shared_data* shared, tcp::socket* socket)
             if(!socket_alive)
                 continue;
 
-            std::string target = "/test.txt";
-            int version = 11;
-            std::string host = HOST_IP;
+            //std::string target = "/test.txt";
+            //int version = 11;
+            //std::string host = HOST_IP;
 
             if(shared->has_front_write())
             {
@@ -129,7 +145,7 @@ void handle_async_write(shared_data* shared, tcp::socket* socket)
 
                 next_command = handle_up(shared, next_command);
 
-                http::request<http::string_body> req{http::verb::get, target, version};
+                /*http::request<http::string_body> req{http::verb::get, target, version};
                 req.set(http::field::host, host);
                 req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
 
@@ -138,7 +154,10 @@ void handle_async_write(shared_data* shared, tcp::socket* socket)
 
                 req.prepare_payload();
 
-                http::write(*socket, req);
+                http::write(*socket, req);*/
+
+                if(ctx.sock->write(next_command))
+                    break;
             }
         }
         catch(...)
@@ -174,8 +193,10 @@ void check_auth(shared_data* shared, const std::string& str)
     }
 }
 
-void handle_async_read(shared_data* shared, tcp::socket* socket)
+void handle_async_read(shared_data* shared, shared_context& ctx)
 {
+    boost::system::error_code ec;
+
     while(1)
     {
         //std::lock_guard<std::mutex> lk(local_mut);
@@ -189,7 +210,7 @@ void handle_async_read(shared_data* shared, tcp::socket* socket)
             if(!socket_alive)
                 continue;
 
-            boost::beast::flat_buffer buffer;
+            /*boost::beast::flat_buffer buffer;
 
             // Declare a container to hold the response
             http::response<http::string_body> res;
@@ -204,7 +225,17 @@ void handle_async_read(shared_data* shared, tcp::socket* socket)
                 check_auth(shared, str);
 
                 shared->add_back_read(str);
-            }
+            }*/
+
+            if(ctx.sock->read(ec))
+                break;
+
+            std::string next_command = ctx.sock->get_read();
+
+            check_auth(shared, next_command);
+            shared->add_back_read(next_command);
+
+
         }
         catch(...)
         {
@@ -217,7 +248,7 @@ void handle_async_read(shared_data* shared, tcp::socket* socket)
     shared->termination_count++;
 }
 
-void watchdog(shared_data* shared, shared_context* ctx)
+void watchdog(shared_data* shared, shared_context& ctx)
 {
     while(1)
     {
@@ -240,7 +271,7 @@ void watchdog(shared_data* shared, shared_context* ctx)
 
                 shared->add_back_read("Connecting...");
 
-                ctx->connect(host, port);
+                ctx.connect(host, port);
 
                 shared->add_back_read("`LConnected`");
                 shared->add_back_write("client_command auth client " + shared->auth);
@@ -268,7 +299,7 @@ void test_http_client(shared_data& shared)
 {
     shared_context* ctx = new shared_context();
 
-    std::thread(handle_async_read, &shared, &ctx->socket).detach();
-    std::thread(handle_async_write, &shared, &ctx->socket).detach();
-    std::thread(watchdog, &shared, ctx).detach();
+    std::thread(handle_async_read, &shared, std::ref(*ctx)).detach();
+    std::thread(handle_async_write, &shared, std::ref(*ctx)).detach();
+    std::thread(watchdog, &shared, std::ref(*ctx)).detach();
 }
