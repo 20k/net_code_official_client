@@ -100,11 +100,6 @@ struct shared_context
 
     void connect(const std::string& host, const std::string& port)
     {
-        //auto const results = resolver.resolve(host, port);
-
-        // Make the connection on the IP address we get from a lookup
-
-
         if(sock)
             delete sock;
 
@@ -135,26 +130,11 @@ void handle_async_write(shared_data* shared, shared_context& ctx)
             if(!socket_alive)
                 continue;
 
-            //std::string target = "/test.txt";
-            //int version = 11;
-            //std::string host = HOST_IP;
-
             if(shared->has_front_write())
             {
                 std::string next_command = shared->get_front_write();
 
                 next_command = handle_up(shared, next_command);
-
-                /*http::request<http::string_body> req{http::verb::get, target, version};
-                req.set(http::field::host, host);
-                req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-
-                req.set(http::field::content_type, "text/plain");
-                req.body() = next_command;
-
-                req.prepare_payload();
-
-                http::write(*socket, req);*/
 
                 if(ctx.sock->write(next_command))
                     break;
@@ -199,7 +179,6 @@ void handle_async_read(shared_data* shared, shared_context& ctx)
 
     while(1)
     {
-        //std::lock_guard<std::mutex> lk(local_mut);
         sf::sleep(sf::milliseconds(8));
 
         if(shared->should_terminate)
@@ -210,23 +189,6 @@ void handle_async_read(shared_data* shared, shared_context& ctx)
             if(!socket_alive)
                 continue;
 
-            /*boost::beast::flat_buffer buffer;
-
-            // Declare a container to hold the response
-            http::response<http::string_body> res;
-
-            if(socket->available() > 0)
-            {
-                // Receive the HTTP response
-                http::read(*socket, buffer, res);
-
-                std::string str = res.body();
-
-                check_auth(shared, str);
-
-                shared->add_back_read(str);
-            }*/
-
             if(ctx.sock->read(ec))
                 break;
 
@@ -234,8 +196,6 @@ void handle_async_read(shared_data* shared, shared_context& ctx)
 
             check_auth(shared, next_command);
             shared->add_back_read(next_command);
-
-
         }
         catch(...)
         {
@@ -257,8 +217,6 @@ void watchdog(shared_data* shared, shared_context& ctx)
 
         if(shared->should_terminate)
             break;
-
-        //std::lock_guard<std::mutex> lk(local_mut);
 
         while(!socket_alive)
         {
