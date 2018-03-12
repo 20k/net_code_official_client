@@ -542,6 +542,9 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
     if(in.back().c == ')' || in.back().c == ';')
         return;
 
+    //if(is_valid.find(found) == is_valid.end() || is_valid[found] == false)
+    //    return;
+
     ///ok
     ///Do i really need to parse arg string?
     ///need to extract key params I think
@@ -556,7 +559,14 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
     auto to_skip = get_skip_argnames(in, parse_start, specials);
 
-    std::vector<autocomplete_args> args = found_args[found];
+    std::vector<autocomplete_args> args;
+
+    if(found_args.find(found) != found_args.end())
+    {
+        args = found_args[found];
+    }
+
+    std::cout << "asize " << args.size() << std::endl;
 
     {
         handle_tab(in, cursor_idx, parse_start, args, specials, command_str, to_skip);
@@ -706,14 +716,5 @@ void auto_handler::do_serialise(serialise& s, bool ser)
 {
     s.handle_serialise(found_unprocessed_autocompletes, ser);
     s.handle_serialise(found_args, ser);
-
-    /*for(auto& i : found_args)
-    {
-        std::cout << "script " << i.first << std::endl;
-
-        for(auto& k : i.second)
-        {
-            std::cout << "key " << k.key << " arg " << k.arg << std::endl;
-        }
-    }*/
+    s.handle_serialise(is_valid, ser);
 }

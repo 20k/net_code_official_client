@@ -367,6 +367,7 @@ struct terminal : serialisable
         {
             auto_handle.found_unprocessed_autocompletes.clear();
             auto_handle.found_args.clear();
+            auto_handle.is_valid.clear();
         }
 
         s.handle_serialise(text_history, ser);
@@ -557,6 +558,7 @@ struct terminal : serialisable
         ///to future james again
         ///gotta hardcode in autocomplete args to trust scripts (limitation of c++ style), maybe some sort of REGISTER_ARGS thing
         auto_handle.found_args[scriptname] = args;
+        auto_handle.is_valid[scriptname] = true;
     }
 
     void add_text_from_server(const std::string& in, chat_window& chat_win, bool server_command = true)
@@ -616,7 +618,9 @@ struct terminal : serialisable
                     std::string script(in.begin() + invalid_str.size() + 1, in.end());
 
                     if(script.size() > 0)
-                        auto_handle.found_args[script] = {{"", "", false}};
+                    {
+                        auto_handle.is_valid[script] = false;
+                    }
                 }
 
                 return;

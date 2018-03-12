@@ -13,17 +13,15 @@ struct autocomplete_args : serialisable
 {
     std::string key;
     std::string arg;
-    bool valid = true;
 
     autocomplete_args(){}
 
-    autocomplete_args(const std::string& key_, const std::string& arg_, bool valid_ = true) : key(key_), arg(arg_), valid(valid_) {}
+    autocomplete_args(const std::string& key_, const std::string& arg_) : key(key_), arg(arg_) {}
 
     virtual void do_serialise(serialise& s, bool ser)
     {
         s.handle_serialise(key, ser);
         s.handle_serialise(arg, ser);
-        s.handle_serialise(valid, ser);
     }
 };
 
@@ -47,6 +45,7 @@ struct auto_handler : serialisable
 
     std::set<std::string> found_unprocessed_autocompletes;
     std::map<std::string, std::vector<autocomplete_args>> found_args;
+    std::map<std::string, bool> is_valid;
 
     ///returns autocomplete
     void auto_colour(std::vector<interop_char>& in, bool colour_special = false);
