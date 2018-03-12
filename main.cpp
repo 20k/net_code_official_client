@@ -588,7 +588,7 @@ struct terminal : serialisable
                     chat_threads[chnls[i]].chats.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
                 }
 
-                int max_history = 100;
+                int max_history = 250;
 
                 limit_size(text_history, max_history);
 
@@ -616,7 +616,7 @@ struct terminal : serialisable
             }
         }
 
-        int max_history = 100;
+        int max_history = 250;
 
         limit_size(text_history, max_history);
 
