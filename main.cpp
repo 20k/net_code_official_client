@@ -363,9 +363,16 @@ struct terminal : serialisable
 
     virtual void do_serialise(serialise& s, bool ser)
     {
+        if(ser == false)
+        {
+            auto_handle.found_unprocessed_autocompletes.clear();
+            auto_handle.found_args.clear();
+        }
+
         s.handle_serialise(text_history, ser);
         s.handle_serialise(chat_threads, ser);
         s.handle_serialise(command, ser);
+        s.handle_serialise_no_clear(auto_handle, ser);
 
         //std::cout << "loaded hist " << text_history.size() << std::endl;
     }
@@ -676,8 +683,8 @@ int main()
     DMAP(V);DMAP(W);DMAP(X);
     DMAP(Y);DMAP(Z);
 
-    std::string terminal_file = "./terminal_v2.txt";
-    std::string chat_file = "./chat_v2.txt";
+    std::string terminal_file = "./terminal_v3.txt";
+    std::string chat_file = "./chat_v3.txt";
 
     if(file_exists(terminal_file))
     {

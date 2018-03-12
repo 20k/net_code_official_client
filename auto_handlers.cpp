@@ -680,3 +680,19 @@ void auto_handler::clear_internal_state()
 {
     internal_state = 0;
 }
+
+void auto_handler::do_serialise(serialise& s, bool ser)
+{
+    s.handle_serialise(found_unprocessed_autocompletes, ser);
+    s.handle_serialise(found_args, ser);
+
+    /*for(auto& i : found_args)
+    {
+        std::cout << "script " << i.first << std::endl;
+
+        for(auto& k : i.second)
+        {
+            std::cout << "key " << k.key << " arg " << k.arg << std::endl;
+        }
+    }*/
+}

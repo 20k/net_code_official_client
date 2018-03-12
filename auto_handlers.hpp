@@ -5,14 +5,26 @@
 #include <map>
 #include <set>
 #include <string>
+#include <serialise/serialise.hpp>
 
 struct interop_char;
 
-struct autocomplete_args
+struct autocomplete_args : serialisable
 {
     std::string key;
     std::string arg;
     bool valid = true;
+
+    autocomplete_args(){}
+
+    autocomplete_args(const std::string& key_, const std::string& arg_, bool valid_ = true) : key(key_), arg(arg_), valid(valid_) {}
+
+    virtual void do_serialise(serialise& s, bool ser)
+    {
+        s.handle_serialise(key, ser);
+        s.handle_serialise(arg, ser);
+        s.handle_serialise(valid, ser);
+    }
 };
 
 struct specials_status
@@ -24,7 +36,7 @@ struct specials_status
     bool has_trailing_comma = false;
 };
 
-struct auto_handler
+struct auto_handler : serialisable
 {
     bool use_autocomplete = false;
     bool use_autocolour = false;
@@ -46,6 +58,8 @@ struct auto_handler
                     const std::vector<std::string>& to_skip);
 
     void clear_internal_state();
+
+    virtual void do_serialise(serialise& s, bool ser) override;
 };
 
 #endif // AUTO_HANDLERS_HPP_INCLUDED
