@@ -507,11 +507,16 @@ bool auto_handler::handle_script_autocomplete(std::vector<interop_char>& in, int
     ///longer is considered above
     auto it = found_args.upper_bound(name);
 
-    if(it == found_args.end())
-        return false;
+    if(it == found_args.end() || !starts_with(it->first, name))
+    {
+        if(tab_pressed)
+        {
+            command_str += "()";
+            cursor_idx = command_str.size();
+        }
 
-    if(!starts_with(it->first, name))
         return false;
+    }
 
     auto splits = no_ss_split(name, ".");
 
@@ -764,18 +769,15 @@ void auto_handler::handle_tab(const std::vector<interop_char>& in, int& cursor_i
     ///nothing left to insert
     if(!specials.has_close_curly || !specials.has_close_paren)
     {
-        command_str += "})";
+        if(!specials.has_close_curly)
+            command_str += "}";
+        if(!specials.has_close_paren)
+            command_str += ")";
+
         cursor_idx = command_str.size();
 
         return;
     }
-
-    /*cursor_idx++;
-
-    if(cursor_idx >= (int)command_str.size())
-        return;*/
-
-
 
     ///has open curly
 }
