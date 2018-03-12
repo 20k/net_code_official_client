@@ -503,7 +503,8 @@ bool auto_handler::handle_script_autocomplete(std::vector<interop_char>& in, int
     if(found_args.find(name) != found_args.end())
         return false;
 
-    ///so... its either equal or lower
+    ///cannot be equal, but is lexigdfdfasfd the closest match above us
+    ///longer is considered above
     auto it = found_args.upper_bound(name);
 
     if(it == found_args.end())
@@ -527,12 +528,18 @@ bool auto_handler::handle_script_autocomplete(std::vector<interop_char>& in, int
 
     std::string str(pair_its.second, it->first.end());
 
-    str = "`c" + str + "`";
+    if(!tab_pressed)
+    {
+        str = "`c" + str + "`";
 
-    //std::cout << "AC " << it->first << std::endl;
-
-    auto interop = string_to_interop_no_autos(str, false);
-    in.insert(in.end(), interop.begin(), interop.end());
+        auto interop = string_to_interop_no_autos(str, false);
+        in.insert(in.end(), interop.begin(), interop.end());
+    }
+    else
+    {
+        command_str += str;
+        cursor_idx = command_str.size();
+    }
 
     return true;
 }
@@ -695,7 +702,7 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
 void auto_handler::handle_tab(const std::vector<interop_char>& in, int& cursor_idx, int parse_start, const std::vector<autocomplete_args>& found, const specials_status& specials, std::string& command_str, const std::vector<std::string>& to_skip)
 {
-    if(!ONCE_MACRO(sf::Keyboard::Tab) || !window_in_focus)
+    if(!tab_pressed)
         return;
 
     ///so. We've pressed tab

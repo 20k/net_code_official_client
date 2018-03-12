@@ -36,6 +36,8 @@ struct specials_status
 
 struct auto_handler : serialisable
 {
+    bool tab_pressed = false;
+
     bool use_autocomplete = false;
     bool use_autocolour = false;
 
