@@ -531,6 +531,9 @@ bool auto_handler::handle_script_autocomplete(std::vector<interop_char>& in, int
     if(pair_its.second == it->first.end())
         return false;
 
+    /*auto found_it = it->first.find(".");
+    int d2 = std::distance()*/
+
     std::string str(pair_its.second, it->first.end());
 
     if(!tab_pressed)
