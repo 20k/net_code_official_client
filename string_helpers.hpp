@@ -168,7 +168,7 @@ void render_str(sf::RenderWindow& win, const interop_vec_t& chars, vec2f& cpos, 
 
 struct auto_handler;
 
-interop_vec_t string_to_interop(const std::string& str, bool render_specials, auto_handler& auto_handle);
+interop_vec_t string_to_interop(const std::string& str, bool render_specials, auto_handler& auto_handle, bool parse_for_autocompletes = true);
 interop_vec_t string_to_interop_no_autos(const std::string& str, bool render_specials);
 
 inline

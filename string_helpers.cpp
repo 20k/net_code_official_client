@@ -4,7 +4,7 @@
 
 #include <windows.h>
 
-interop_vec_t string_to_interop(const std::string& str, bool render_specials, auto_handler& auto_handle)
+interop_vec_t string_to_interop(const std::string& str, bool render_specials, auto_handler& auto_handle, bool parse_for_autocompletes)
 {
     interop_vec_t chars = build_from_colour_string(str, render_specials);
 
@@ -13,7 +13,7 @@ interop_vec_t string_to_interop(const std::string& str, bool render_specials, au
         chars.pop_back();
     }
 
-    auto_handle.auto_colour(chars);
+    auto_handle.auto_colour(chars, false, parse_for_autocompletes);
 
     //chars.push_back({'\n'});
 
@@ -117,7 +117,7 @@ void render(sf::RenderWindow& win, std::string& command, const std::vector<inter
         specials = false;
     }
 
-    auto icommand = string_to_interop(render_command, specials, auto_handle);
+    auto icommand = string_to_interop(render_command, specials, auto_handle, false);
 
     auto_handle.handle_autocompletes(icommand, cursor_pos_idx, command);
 

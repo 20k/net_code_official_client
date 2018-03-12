@@ -48,7 +48,7 @@ struct auto_handler : serialisable
     std::map<std::string, bool> is_valid;
 
     ///returns autocomplete
-    void auto_colour(std::vector<interop_char>& in, bool colour_special = false);
+    void auto_colour(std::vector<interop_char>& in, bool colour_special = false, bool parse_for_autocompletes = true);
 
     void handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx, std::string& command_str);
 

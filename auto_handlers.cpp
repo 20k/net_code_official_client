@@ -337,7 +337,7 @@ int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out, 
     return rlen - 1;
 }
 
-void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_special)
+void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_special, bool parse_for_autocompletes)
 {
     std::map<std::string, vec3f> cols
     {
@@ -384,6 +384,7 @@ void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_speci
 
     ///find full strings to autocomplete
     ///uses different parsing algorithm to is_valid
+    if(parse_for_autocompletes)
     {
         for(int i=0; i < (int)ret.size(); i++)
         {
