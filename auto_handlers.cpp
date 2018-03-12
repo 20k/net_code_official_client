@@ -183,7 +183,7 @@ int is_any_of(const T& t, const std::vector<interop_char>& c, int idx)
     return -1;
 }
 
-bool until(const std::vector<interop_char>& t, int& idx, int min_len, int max_len, const std::vector<std::string>& c, bool must_be_alpha = true)
+bool until(const std::vector<interop_char>& t, int& idx, int min_len, int max_len, const std::vector<std::string>& c, bool must_be_alpha = true, bool allow_eof = false)
 {
     int len = 0;
 
@@ -191,6 +191,9 @@ bool until(const std::vector<interop_char>& t, int& idx, int min_len, int max_le
 
     while(idx < (int)t.size() && len < max_len && is_any_of(c, t, idx) == -1)
     {
+        if(allow_eof && idx >= t.size())
+            break;
+
         if(must_be_alpha && !isalnum(t[idx].c) && t[idx].c != '_' && is_any_of(c, t, idx) == -1)
         {
             idx = start;
@@ -201,6 +204,9 @@ bool until(const std::vector<interop_char>& t, int& idx, int min_len, int max_le
 
         idx++;
     }
+
+    if(allow_eof && idx >= t.size())
+        return true;
 
     //std::cout << "fidx " << idx << std::endl;
     //std::cout << "flen " << len << std::endl;
@@ -302,18 +308,33 @@ int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out, 
         valid_terminators.push_back("\"");
     }
 
-    if(!until(chs, idx, 1, MAX_ANY_NAME_LEN, valid_terminators))
+    if(!until(chs, idx, 1, MAX_ANY_NAME_LEN, valid_terminators, true, true))
         return 0;
+
+    int mval = std::min(idx, (int)chs.size());
+    idx = mval;
 
     for(int i=start; i < idx && i < (int)chs.size(); i++)
     {
         out.push_back(chs[i].c);
     }
 
-    //std::cout << "fnd " << out << std::endl;
+    int rlen = (idx - start_full_length) + 1;
 
-    ///the +1 is to include the end character
-    return (idx - start_full_length) + 1;
+    if(rlen <= 0)
+        return 0;
+
+    for(auto& i : valid_terminators)
+    {
+        char c = chs[idx].c;
+
+        if(std::string(1, c) == i)
+        {
+            return rlen;
+        }
+    }
+
+    return rlen - 1;
 }
 
 void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_special)
