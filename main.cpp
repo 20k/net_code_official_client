@@ -871,7 +871,7 @@ int main()
 
             if(term.focused && is_local_command(cmd))
             {
-                std::string data = handle_local_command(shared.get_user(), cmd);
+                std::string data = handle_local_command(shared.get_user(), cmd, term.auto_handle);
 
                 term.add_text_from_server(data, chat_win, false);
             }
@@ -937,7 +937,7 @@ int main()
         ///this is inadequate
         ///we need to be able to request multiple scripts at once
         ///and receive multiple as well
-        if(term.auto_handle.found_unprocessed_autocompletes.size() > 0 && request_clock.getElapsedTime().asMilliseconds() > 200)
+        if(term.auto_handle.found_unprocessed_autocompletes.size() > 0 && request_clock.getElapsedTime().asMilliseconds() > 300)
         {
             request_clock.restart();
 

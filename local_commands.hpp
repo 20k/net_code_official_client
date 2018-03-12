@@ -5,6 +5,8 @@
 
 #include <tinydir/tinydir.h>
 
+#include "auto_handler.hpp"
+
 bool is_local_command(const std::string& command)
 {
     if(command == "#")
@@ -16,10 +18,13 @@ bool is_local_command(const std::string& command)
     if(starts_with(command, "#dir"))
         return true;
 
+    if(starts_with(command, "#clear_autos"))
+        return true;
+
     return false;
 }
 
-std::string handle_local_command(const std::string& username, const std::string& command)
+std::string handle_local_command(const std::string& username, const std::string& command, auto_handler& auto_handle)
 {
     if(username == "")
         return "Please log in with user <username>";
@@ -82,6 +87,12 @@ std::string handle_local_command(const std::string& username, const std::string&
     if(starts_with(command, "#dir"))
     {
         ShellExecute(NULL, "open", "scripts", NULL, NULL, SW_SHOWDEFAULT);
+    }
+
+    if(starts_with(command, "#clear_autos"))
+    {
+        auto_handle.found_args.clear();
+        auto_handle.is_valid.clear();
     }
 
     return "";
