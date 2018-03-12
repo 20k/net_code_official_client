@@ -256,7 +256,7 @@ void remove_whitespace(std::vector<interop_char>& t, int& idx)
 
 ///out is the name of the autocomplete to add. If the input is #fs.script.name, we get script.name
 ///returns the full length of #fs.script.name
-int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out)
+int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out, bool allow_extended = false)
 {
     out = std::string();
 
@@ -293,6 +293,14 @@ int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out)
         return 0;
 
     idx++;
+
+    std::vector<std::string> valid_terminators = {";", "(", " ", "\n"};
+
+    ///basically a hack to let #scripts.core() work
+    if(allow_extended)
+    {
+        valid_terminators.push_back("\"");
+    }
 
     if(!until(chs, idx, 1, MAX_ANY_NAME_LEN, {";", "(", " ", "\n"}))
         return 0;
@@ -360,7 +368,7 @@ void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_speci
         {
             std::string out;
 
-            get_autocomplete(ret, i, out);
+            get_autocomplete(ret, i, out, true);
 
             bool exists = found_args.find(out) != found_args.end();
 

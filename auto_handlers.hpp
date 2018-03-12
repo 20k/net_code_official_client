@@ -45,7 +45,6 @@ struct auto_handler
                     const std::vector<std::string>& to_skip);
 
     void clear_internal_state();
-
 };
 
 #endif // AUTO_HANDLERS_HPP_INCLUDED
