@@ -302,7 +302,7 @@ int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out, 
         valid_terminators.push_back("\"");
     }
 
-    if(!until(chs, idx, 1, MAX_ANY_NAME_LEN, {";", "(", " ", "\n"}))
+    if(!until(chs, idx, 1, MAX_ANY_NAME_LEN, valid_terminators))
         return 0;
 
     for(int i=start; i < idx && i < (int)chs.size(); i++)

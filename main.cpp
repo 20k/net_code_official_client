@@ -909,7 +909,11 @@ int main()
             client_poll_clock.restart();
         }
 
-        if(term.auto_handle.found_unprocessed_autocompletes.size() > 0 && request_clock.getElapsedTime().asMilliseconds() > 1000)
+        ///hmm
+        ///this is inadequate
+        ///we need to be able to request multiple scripts at once
+        ///and receive multiple as well
+        if(term.auto_handle.found_unprocessed_autocompletes.size() > 0 && request_clock.getElapsedTime().asMilliseconds() > 200)
         {
             request_clock.restart();
 
@@ -920,9 +924,14 @@ int main()
                 shared.add_back_write(command);
 
                 std::cout << "requesting " << command << std::endl;
+
+                break;
             }
 
-            term.auto_handle.found_unprocessed_autocompletes.clear();
+            if(term.auto_handle.found_unprocessed_autocompletes.size() > 0)
+                term.auto_handle.found_unprocessed_autocompletes.erase(term.auto_handle.found_unprocessed_autocompletes.begin());
+
+            //term.auto_handle.found_unprocessed_autocompletes.clear();
         }
 
         //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
