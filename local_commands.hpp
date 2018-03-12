@@ -24,10 +24,13 @@ bool is_local_command(const std::string& command)
     if(starts_with(command, "#autos_clear"))
         return true;
 
+    if(starts_with(command, "#shutdown"))
+        return true;
+
     return false;
 }
 
-std::string handle_local_command(const std::string& username, const std::string& command, auto_handler& auto_handle)
+std::string handle_local_command(const std::string& username, const std::string& command, auto_handler& auto_handle, bool& should_shutdown)
 {
     if(username == "")
         return "Please log in with user <username>";
@@ -96,6 +99,11 @@ std::string handle_local_command(const std::string& username, const std::string&
     {
         auto_handle.found_args.clear();
         auto_handle.is_valid.clear();
+    }
+
+    if(starts_with(command, "#shutdown"))
+    {
+        should_shutdown = true;
     }
 
     return "";

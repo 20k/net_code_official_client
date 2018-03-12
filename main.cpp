@@ -871,9 +871,16 @@ int main()
 
             if(term.focused && is_local_command(cmd))
             {
-                std::string data = handle_local_command(shared.get_user(), cmd, term.auto_handle);
+                bool should_shutdown = false;
+
+                std::string data = handle_local_command(shared.get_user(), cmd, term.auto_handle, should_shutdown);
 
                 term.add_text_from_server(data, chat_win, false);
+
+                if(should_shutdown)
+                {
+                    running = false;
+                }
             }
 
             serialise sterm;
