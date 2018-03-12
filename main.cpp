@@ -564,6 +564,7 @@ struct terminal : serialisable
             std::string command_str = "command ";
             std::string chat_api = "chat_api ";
             std::string scriptargs = "server_scriptargs ";
+            std::string invalid_str = "server_scriptargs_invalid";
 
             if(starts_with(str, command_str))
             {
@@ -587,7 +588,7 @@ struct terminal : serialisable
                     chat_threads[chnls[i]].chats.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
                 }
 
-                int max_history = 250;
+                int max_history = 100;
 
                 limit_size(text_history, max_history);
 
@@ -601,9 +602,21 @@ struct terminal : serialisable
 
                 return;
             }
+            else if(starts_with(str, invalid_str))
+            {
+                if(starts_with(str, invalid_str + " "))
+                {
+                    std::string script(in.begin() + invalid_str.size() + 1, in.end());
+
+                    if(script.size() > 0)
+                        auto_handle.found_args[script] = {{"", "", false}};
+                }
+
+                return;
+            }
         }
 
-        int max_history = 250;
+        int max_history = 100;
 
         limit_size(text_history, max_history);
 
@@ -923,7 +936,7 @@ int main()
 
                 shared.add_back_write(command);
 
-                std::cout << "requesting " << command << std::endl;
+                //std::cout << "requesting " << command << std::endl;
 
                 break;
             }

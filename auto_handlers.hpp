@@ -12,6 +12,7 @@ struct autocomplete_args
 {
     std::string key;
     std::string arg;
+    bool valid = true;
 };
 
 struct specials_status
