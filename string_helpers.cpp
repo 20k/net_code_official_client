@@ -138,9 +138,9 @@ void render(sf::RenderWindow& win, std::string& command, const std::vector<inter
 
     std::vector<std::vector<formatted_char>> formatted;
 
-    for(auto& i : all_interop)
+    for(int i=min_start; i < (int)all_interop.size(); i++)
     {
-        formatted.push_back(format_characters(i, spos, start, wrap_dim, zero_bound));
+        formatted.push_back(format_characters(all_interop[i], spos, start, wrap_dim, zero_bound));
     }
 
     internally_format(formatted, start);
@@ -148,7 +148,7 @@ void render(sf::RenderWindow& win, std::string& command, const std::vector<inter
     if(focused)
         get_global_copy_handler()->process_formatted(formatted);
 
-    for(int i=min_start; i < (int)formatted.size(); i++)
+    for(int i=0; i < (int)formatted.size(); i++)
     {
         render_formatted_str(win, formatted[i], zero_bound);
     }
