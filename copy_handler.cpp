@@ -94,65 +94,10 @@ void copy_handler::on_lclick_release(vec2f pos)
     //copied = check_formatted_text(formatted, copy_start, pos);
 }
 
-template<typename T>
-T floor_to_multiple(const T& v, const T& multiple)
-{
-    T ret;
-
-    ret = v / multiple;
-
-    ret = floor(ret);
-
-    return ret * multiple;
-}
-
-template<typename T>
-T ceil_to_multiple(const T& v, const T& multiple)
-{
-    T ret;
-
-    ret = v / multiple;
-
-    ret = ceil(ret);
-
-    return ret * multiple;
-}
-
 void copy_handler::on_hold_lclick(sf::RenderWindow& win, vec2f pos)
 {
     held = true;
     copy_end = pos;
-
-    #if 0
-    vec2f p1 = copy_start;
-    vec2f p2 = pos;
-
-    auto [tl, br] = points_to_rect(p1, p2);
-
-    tl = floor_to_multiple(tl, (vec2f){char_inf::cwidth, char_inf::cheight});
-    br = ceil_to_multiple(br, (vec2f){char_inf::cwidth, char_inf::cheight});
-
-    //tl = round_to_multiple()
-
-    /*T ret;
-
-    ret = v / multiple;
-
-    ret = round(ret);
-
-    return ret * multiple;*/
-
-    sf::RectangleShape shape;
-    shape.setPosition({tl.x(), tl.y()});
-
-    vec2f dim = br - tl;
-
-    shape.setSize({dim.x(), dim.y()});
-
-    shape.setFillColor(sf::Color(255, 255, 255, 255));
-
-    win.draw(shape);
-    #endif // 0
 }
 
 void copy_handler::process_formatted(std::vector<std::vector<formatted_char>>& formatted)
