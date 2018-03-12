@@ -134,8 +134,6 @@ void render(sf::RenderWindow& win, std::string& command, const std::vector<inter
             icommand.insert(icommand.begin() + cursor_pos_idx, curs);
     }
 
-    std::cout << "render\n";
-
     all_interop.push_back(icommand);
 
     std::vector<std::vector<formatted_char>> formatted;

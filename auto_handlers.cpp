@@ -311,8 +311,6 @@ int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out, 
     if(!until(chs, idx, 1, MAX_ANY_NAME_LEN, valid_terminators, true, true))
         return 0;
 
-    std::cout << "h2\n";
-
     int mval = std::min(idx, (int)chs.size());
     idx = mval;
 
