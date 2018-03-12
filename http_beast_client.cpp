@@ -149,6 +149,8 @@ void handle_async_write(shared_data* shared, shared_context& ctx)
     }
 
     shared->termination_count++;
+
+    printf("write\n");
 }
 
 void check_auth(shared_data* shared, const std::string& str)
@@ -206,6 +208,8 @@ void handle_async_read(shared_data* shared, shared_context& ctx)
     }
 
     shared->termination_count++;
+
+    printf("read\n");
 }
 
 void watchdog(shared_data* shared, shared_context& ctx)
@@ -251,6 +255,10 @@ void watchdog(shared_data* shared, shared_context& ctx)
     }
 
     shared->termination_count++;
+
+    printf("watchdog\n");
+
+    //ctx.sock->shutdown();
 }
 
 void test_http_client(shared_data& shared)

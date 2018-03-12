@@ -990,7 +990,9 @@ int main()
 
     shared.should_terminate = true;
 
-    while(shared.termination_count != 3) {}
+    sf::sleep(sf::milliseconds(100));
+
+    //while(shared.termination_count != 3) {}
 
     return 0;
 }
