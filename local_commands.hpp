@@ -21,6 +21,9 @@ bool is_local_command(const std::string& command)
     if(starts_with(command, "#clear_autos"))
         return true;
 
+    if(starts_with(command, "#autos_clear"))
+        return true;
+
     return false;
 }
 
@@ -89,7 +92,7 @@ std::string handle_local_command(const std::string& username, const std::string&
         ShellExecute(NULL, "open", "scripts", NULL, NULL, SW_SHOWDEFAULT);
     }
 
-    if(starts_with(command, "#clear_autos"))
+    if(starts_with(command, "#clear_autos") || starts_with(command, "#autos_clear"))
     {
         auto_handle.found_args.clear();
         auto_handle.is_valid.clear();

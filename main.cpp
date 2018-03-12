@@ -926,7 +926,7 @@ int main()
             swindow.save(chat_file);
         }
 
-        if(client_poll_clock.getElapsedTime().asSeconds() > 1)
+        if(client_poll_clock.getElapsedTime().asMilliseconds() > 500)
         {
             shared.add_back_write("client_poll");
 
