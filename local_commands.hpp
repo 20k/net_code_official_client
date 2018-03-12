@@ -5,7 +5,7 @@
 
 #include <tinydir/tinydir.h>
 
-#include "auto_handler.hpp"
+#include "auto_handlers.hpp"
 
 bool is_local_command(const std::string& command)
 {
