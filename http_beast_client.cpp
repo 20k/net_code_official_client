@@ -137,7 +137,10 @@ void handle_async_write(shared_data* shared, shared_context& ctx)
                 next_command = handle_up(shared, next_command);
 
                 if(ctx.sock->write(next_command))
-                    break;
+                {
+                    socket_alive = false;
+                    continue;
+                }
             }
         }
         catch(...)
@@ -192,7 +195,10 @@ void handle_async_read(shared_data* shared, shared_context& ctx)
                 continue;
 
             if(ctx.sock->read(ec))
-                break;
+            {
+                socket_alive = false;
+                continue;
+            }
 
             std::string next_command = ctx.sock->get_read();
 
