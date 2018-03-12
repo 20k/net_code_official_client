@@ -566,7 +566,7 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
         args = found_args[found];
     }
 
-    std::cout << "asize " << args.size() << std::endl;
+    //std::cout << "asize " << args.size() << std::endl;
 
     {
         handle_tab(in, cursor_idx, parse_start, args, specials, command_str, to_skip);
@@ -575,8 +575,8 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
     ///we need to skip constructs here if they're already inserted
     std::string str;
 
-    //if(!specials.has_open_paren)
-    //    str += "`c(";
+    if(!specials.has_open_paren)
+        str += "`c(`";
 
     if(!specials.has_open_curly)
         str += "`c{`";
@@ -651,7 +651,8 @@ void auto_handler::handle_tab(const std::vector<interop_char>& in, int& cursor_i
         command_str.insert(command_str.begin() + parse_start, '(');
 
         cursor_idx = command_str.size();
-        return;
+        parse_start++;
+        //return;
     }
 
     if(!specials.has_open_curly)
