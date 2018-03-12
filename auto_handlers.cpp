@@ -191,7 +191,7 @@ bool until(const std::vector<interop_char>& t, int& idx, int min_len, int max_le
 
     while(idx < (int)t.size() && len < max_len && is_any_of(c, t, idx) == -1)
     {
-        if(allow_eof && idx >= t.size())
+        if(allow_eof && idx >= (int)t.size())
             break;
 
         if(must_be_alpha && !isalnum(t[idx].c) && t[idx].c != '_' && is_any_of(c, t, idx) == -1)
@@ -205,7 +205,7 @@ bool until(const std::vector<interop_char>& t, int& idx, int min_len, int max_le
         idx++;
     }
 
-    if(allow_eof && idx >= t.size())
+    if(allow_eof && idx >= (int)t.size())
         return true;
 
     //std::cout << "fidx " << idx << std::endl;
@@ -262,7 +262,7 @@ void remove_whitespace(std::vector<interop_char>& t, int& idx)
 
 ///out is the name of the autocomplete to add. If the input is #fs.script.name, we get script.name
 ///returns the full length of #fs.script.name
-int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out, bool allow_extended = false)
+int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out, bool& null_terminated, bool allow_extended = false)
 {
     out = std::string();
 
@@ -311,6 +311,8 @@ int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out, 
     if(!until(chs, idx, 1, MAX_ANY_NAME_LEN, valid_terminators, true, true))
         return 0;
 
+    std::cout << "h2\n";
+
     int mval = std::min(idx, (int)chs.size());
     idx = mval;
 
@@ -324,17 +326,17 @@ int get_autocomplete(std::vector<interop_char>& chs, int idx, std::string& out, 
     if(rlen <= 0)
         return 0;
 
-    for(auto& i : valid_terminators)
+
+    if(idx < chs.size())
     {
-        char c = chs[idx].c;
-
-        if(std::string(1, c) == i)
-        {
-            return rlen;
-        }
+        null_terminated = false;
+        return rlen;
     }
-
-    return rlen - 1;
+    else
+    {
+        null_terminated = true;
+        return rlen - 1;
+    }
 }
 
 void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_special, bool parse_for_autocompletes)
@@ -390,7 +392,9 @@ void auto_handler::auto_colour(std::vector<interop_char>& ret, bool colour_speci
         {
             std::string out;
 
-            get_autocomplete(ret, i, out, true);
+            bool null_terminated = false;
+
+            get_autocomplete(ret, i, out, null_terminated, true);
 
             bool exists = found_args.find(out) != found_args.end();
 
@@ -496,6 +500,45 @@ std::vector<std::string> get_skip_argnames(std::vector<interop_char>& in, int pa
     return ret;
 }
 
+bool auto_handler::handle_script_autocomplete(std::vector<interop_char>& in, int& cursor_idx, std::string& command_str, const std::string& name)
+{
+    if(found_args.find(name) != found_args.end())
+        return false;
+
+    ///so... its either equal or lower
+    auto it = found_args.upper_bound(name);
+
+    if(it == found_args.end())
+        return false;
+
+    if(!starts_with(it->first, name))
+        return false;
+
+    auto splits = no_ss_split(name, ".");
+
+    if(splits.size() != 2)
+        return false;
+
+    std::string start = name;
+
+    auto pair_its = std::mismatch(name.begin(), name.end(), it->first.begin(), it->first.end());
+    auto distance = std::distance(name.begin(), pair_its.first);
+
+    if(pair_its.second == it->first.end())
+        return false;
+
+    std::string str(pair_its.second, it->first.end());
+
+    str = "`c" + str + "`";
+
+    //std::cout << "AC " << it->first << std::endl;
+
+    auto interop = string_to_interop_no_autos(str, false);
+    in.insert(in.end(), interop.begin(), interop.end());
+
+    return true;
+}
+
 ///so. We should store an arg offset
 ///then when tab happens, insert the first arg properly
 ///bump the arg offset
@@ -512,19 +555,27 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
     int where = -1;
     int flen = -1;
 
+    bool null_terminated = false;
+
     for(int i=0; i < (int)in.size(); i++)
     {
         std::string out;
 
-        int len = get_autocomplete(in, i, out);
+        bool fnull = false;
+
+        int len = get_autocomplete(in, i, out, fnull, true);
+
+        //if(null_terminated)
+        //    std::cout << "hello\n";
 
         bool exists = found_args.find(out) != found_args.end();
 
-        if(exists)
+        if(exists || (out.size() > 0 && fnull))
         {
             found = out;
             where = i;
             flen = len;
+            null_terminated = fnull;
         }
     }
 
@@ -534,6 +585,9 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
     if(where < 0)
         return;
 
+    //if(null_terminated != 1)
+    //std::cout << "yay " << null_terminated << std::endl;
+
     //if(in.size() != flen)
     //    return;
 
@@ -541,6 +595,18 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
         return;
 
     if(in.back().c == ')' || in.back().c == ';')
+        return;
+
+    if(null_terminated)
+    {
+        ///we return because its too complex to faff about with the parser atm
+        if(handle_script_autocomplete(in, cursor_idx, command_str, found))
+            return;
+    }
+
+    bool exists = found_args.find(found) != found_args.end();
+
+    if(!exists)
         return;
 
     //if(is_valid.find(found) == is_valid.end() || is_valid[found] == false)
