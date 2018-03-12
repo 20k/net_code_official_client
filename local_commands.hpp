@@ -36,7 +36,7 @@ std::string handle_local_command(const std::string& username, const std::string&
             tinydir_file file;
             tinydir_readfile(&dir, &file);
 
-            if(starts_with(file.name, username + "."))
+            if(starts_with(std::string(file.name), username + "."))
             {
                 auto names = no_ss_split(file.name, ".");
 
