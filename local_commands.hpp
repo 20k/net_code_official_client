@@ -30,6 +30,12 @@ bool is_local_command(const std::string& command)
     if(starts_with(command, "#cls"))
         return true;
 
+    if(starts_with(command, "#clear_term"))
+        return true;
+
+    if(starts_with(command, "#clear_chat"))
+        return true;
+
     return false;
 }
 
@@ -113,6 +119,12 @@ std::string handle_local_command(const std::string& username, const std::string&
     {
         term.clear_text();
     }
+
+    if(starts_with(command, "#clear_term"))
+        term.clear_terminal();
+
+    if(starts_with(command, "#clear_chat"))
+        term.clear_chat();
 
     return "";
 }

@@ -377,10 +377,20 @@ struct terminal : serialisable
         //std::cout << "loaded hist " << text_history.size() << std::endl;
     }
 
-    void clear_text()
+    void clear_terminal()
+    {
+        text_history.clear();
+    }
+
+    void clear_chat()
     {
         chat_threads.clear();
-        text_history.clear();
+    }
+
+    void clear_text()
+    {
+        clear_terminal();
+        clear_chat();
     }
 
     terminal()
