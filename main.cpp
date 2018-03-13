@@ -574,6 +574,7 @@ struct terminal : serialisable
             std::string chat_api = "chat_api ";
             std::string scriptargs = "server_scriptargs ";
             std::string invalid_str = "server_scriptargs_invalid";
+            std::string ratelimit_str = "server_scriptargs_ratelimit ";
 
             if(starts_with(str, command_str))
             {
@@ -621,6 +622,17 @@ struct terminal : serialisable
                     {
                         auto_handle.is_valid[script] = false;
                     }
+                }
+
+                return;
+            }
+            else if(starts_with(str, ratelimit_str))
+            {
+                std::string script(in.begin() + ratelimit_str.size(), in.end());
+
+                if(script.size() > 0)
+                {
+                    auto_handle.found_unprocessed_autocompletes.insert(script);
                 }
 
                 return;
