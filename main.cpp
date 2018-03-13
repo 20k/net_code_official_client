@@ -12,7 +12,6 @@
 #include <serialise/serialise.hpp>
 #include <crapmud/shared_data.hpp>
 
-#include "local_commands.hpp"
 #include "auto_handlers.hpp"
 #include "copy_handler.hpp"
 #include "stacktrace.hpp"
@@ -378,6 +377,12 @@ struct terminal : serialisable
         //std::cout << "loaded hist " << text_history.size() << std::endl;
     }
 
+    void clear_text()
+    {
+        chat_threads.clear();
+        text_history.clear();
+    }
+
     terminal()
     {
         font.loadFromFile("VeraMono.ttf");
@@ -647,6 +652,10 @@ struct terminal : serialisable
     }
 };
 
+///ruh roh
+///need to structure this project properly
+#include "local_commands.hpp"
+
 bool is_focused(sf::RenderWindow& win)
 {
     return win.getSystemHandle() == GetFocus();
@@ -885,7 +894,7 @@ int main()
             {
                 bool should_shutdown = false;
 
-                std::string data = handle_local_command(shared.get_user(), cmd, term.auto_handle, should_shutdown);
+                std::string data = handle_local_command(shared.get_user(), cmd, term.auto_handle, should_shutdown, term);
 
                 term.add_text_from_server(data, chat_win, false);
 
