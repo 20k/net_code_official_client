@@ -56,6 +56,7 @@ namespace http = boost::beast::http;    // from <boost/beast/http.hpp>
 std::string handle_up(shared_data* shared, const std::string& unknown_command)
 {
     std::string up = "client_command #up ";
+    std::string up_es6 = "client_command #up_es6 ";
     std::string dry = "client_command #dry ";
 
     std::vector<std::string> strings = no_ss_split(unknown_command, " ");
@@ -67,13 +68,25 @@ std::string handle_up(shared_data* shared, const std::string& unknown_command)
         std::string hardcoded_user = shared->get_user();
 
         std::string diskname = "./scripts/" + hardcoded_user + "." + name + ".js";
+        std::string diskname_es6 = "./scripts/" + hardcoded_user + "." + name + ".es6.js";
 
         std::string comm = up;
 
         if(starts_with(unknown_command, dry))
             comm = dry;
 
-        std::string final_command = comm + name + " " + read_file(diskname);
+        std::string data = "";
+
+        if(file_exists(diskname))
+            data = read_file(diskname);
+
+        if(file_exists(diskname_es6))
+        {
+            data = read_file(diskname_es6);
+            comm = up_es6;
+        }
+
+        std::string final_command = comm + name + " " + data;
 
         return final_command;
     }
