@@ -72,7 +72,6 @@ std::string handle_local_command(const std::string& username, const std::string&
     if(starts_with(command, "#clear_chat"))
         term.clear_chat();
 
-
     if(username == "")
         return "Please log in with user <username>";
 
