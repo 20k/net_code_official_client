@@ -755,6 +755,8 @@ int main()
         if(chat_win.focused)
             to_edit = &chat_win.command;
 
+        bool enter = false;
+
         while(window.pollEvent(event))
         {
             if(event.type == sf::Event::Closed)
@@ -844,6 +846,11 @@ int main()
                         }
                     }
                 }
+
+                if(event.key.code == sf::Keyboard::Return)
+                {
+                    enter = true;
+                }
             }
 
             if(event.type == sf::Event::MouseButtonPressed)
@@ -863,7 +870,7 @@ int main()
             }
         }
 
-        if(ONCE_MACRO(sf::Keyboard::Return) && is_focused(window))
+        if(enter)
         {
             //term.add_to_command('\n');
 
