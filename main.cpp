@@ -815,6 +815,16 @@ int main()
                     to_edit->move_cursor(1);
                 }
 
+                if(event.key.code == sf::Keyboard::Home)
+                {
+                    to_edit->move_cursor(-(int)to_edit->command.size());
+                }
+
+                if(event.key.code == sf::Keyboard::End)
+                {
+                    to_edit->move_cursor(to_edit->command.size());
+                }
+
                 if(event.key.code == sf::Keyboard::Escape)
                 {
                     to_edit->clear_command();
