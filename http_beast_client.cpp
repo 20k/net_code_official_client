@@ -67,8 +67,8 @@ std::string handle_up(shared_data* shared, const std::string& unknown_command)
 
         std::string hardcoded_user = shared->get_user();
 
-        std::string diskname = "./scripts/" + hardcoded_user + "." + name + ".js";
-        std::string diskname_es6 = "./scripts/" + hardcoded_user + "." + name + ".es6.js";
+        std::string diskname = "./scripts/" + hardcoded_user + "." + name + ".es5.js";
+        std::string diskname_es6 = "./scripts/" + hardcoded_user + "." + name + ".js";
 
         std::string comm = up;
 

@@ -97,8 +97,8 @@ std::string handle_local_command(const std::string& username, const std::string&
                 }
                 if(names.size() > 2)
                 {
-                    if(names[2] == "es6")
-                        fname.push_back(names[1] + " [es6]");
+                    if(names[2].size() > 0 && names[2] != "js")
+                        fname.push_back(names[1] + " [" + names[2] + "]");
                     else
                         fname.push_back(names[1]);
                 }
@@ -132,10 +132,10 @@ std::string handle_local_command(const std::string& username, const std::string&
 
         std::string name = fname[1];
 
-        std::string es5_file_name = "scripts/" + username + "." + name + ".js";
-        std::string es6_file_name = "scripts/" + username + "." + name + ".es6.js";
+        std::string es5_file_name = "scripts/" + username + "." + name + ".es5.js";
+        std::string es6_file_name = "scripts/" + username + "." + name + ".js";
 
-        std::string file_name = es5_file_name;
+        std::string file_name = es6_file_name;
 
         ///#edit defaults to opening an es6 file
         ///but defaults to creating an es5 file
@@ -183,8 +183,8 @@ std::string handle_local_command(const std::string& username, const std::string&
 
         std::string name = fname[1];
 
-        std::string es5_file_name = "scripts/" + username + "." + name + ".js";
-        std::string es6_file_name = "scripts/" + username + "." + name + ".es6.js";
+        std::string es5_file_name = "scripts/" + username + "." + name + ".es5.js";
+        std::string es6_file_name = "scripts/" + username + "." + name + ".js";
 
         std::string file_name = es5_file_name;
 
