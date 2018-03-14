@@ -50,6 +50,29 @@ bool is_local_command(const std::string& command)
 
 std::string handle_local_command(const std::string& username, const std::string& command, auto_handler& auto_handle, bool& should_shutdown, terminal& term)
 {
+    if(starts_with(command, "#clear_autos") || starts_with(command, "#autos_clear"))
+    {
+        auto_handle.found_args.clear();
+        auto_handle.is_valid.clear();
+    }
+
+    if(starts_with(command, "#shutdown"))
+    {
+        should_shutdown = true;
+    }
+
+    if(starts_with(command, "#cls"))
+    {
+        term.clear_text();
+    }
+
+    if(starts_with(command, "#clear_term"))
+        term.clear_terminal();
+
+    if(starts_with(command, "#clear_chat"))
+        term.clear_chat();
+
+
     if(username == "")
         return "Please log in with user <username>";
 
@@ -69,9 +92,16 @@ std::string handle_local_command(const std::string& username, const std::string&
             {
                 auto names = no_ss_split(file.name, ".");
 
-                if(names.size() >= 2)
+                if(names.size() == 2)
                 {
                     fname.push_back(names[1]);
+                }
+                if(names.size() > 2)
+                {
+                    if(names[2] == "es6")
+                        fname.push_back(names[1] + " [es6]");
+                    else
+                        fname.push_back(names[1]);
                 }
             }
 
@@ -83,7 +113,13 @@ std::string handle_local_command(const std::string& username, const std::string&
         std::string build;
 
         for(auto& i : fname)
-            build += i + " ";
+            build += i + ", ";
+
+        if(build.size() > 0)
+        {
+            build.pop_back();
+            build.pop_back();
+        }
 
         return build;
     }
@@ -166,28 +202,6 @@ std::string handle_local_command(const std::string& username, const std::string&
     {
         ShellExecute(NULL, "open", "scripts", NULL, NULL, SW_SHOWDEFAULT);
     }
-
-    if(starts_with(command, "#clear_autos") || starts_with(command, "#autos_clear"))
-    {
-        auto_handle.found_args.clear();
-        auto_handle.is_valid.clear();
-    }
-
-    if(starts_with(command, "#shutdown"))
-    {
-        should_shutdown = true;
-    }
-
-    if(starts_with(command, "#cls"))
-    {
-        term.clear_text();
-    }
-
-    if(starts_with(command, "#clear_term"))
-        term.clear_terminal();
-
-    if(starts_with(command, "#clear_chat"))
-        term.clear_chat();
 
     return "";
 }
