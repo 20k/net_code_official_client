@@ -1,0 +1,3 @@
+g++ -shared -fPIC -Wall -Wextra -O3 -Wl,-soname,libduktape.so.202 duktape.c -o libduktape.so.202.20200
+
+ ./tools/configure.py --output-directory c:/duk_fun_2 -DDUK_USE_CPP_EXCEPTIONS -DDUK_USE_FATAL_HANDLER(udata,msg)=do { const char *fatal_msg = (msg); fprintf(stderr, "*** FATAL ERROR: %s\n", fatal_msg ? fatal_msg : "no message"); abort(); } while (0)
