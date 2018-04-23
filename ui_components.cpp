@@ -238,96 +238,6 @@ void terminal::bump_command_to_history()
     command.clear_command();
 }
 
-void terminal::get_chat_api_strs(const std::string& chat_in, std::vector<std::string>& channels, std::vector<std::string>& msgs, std::vector<std::string>& in_channels)
-{
-    std::string chat_api = "chat_api ";
-
-    //std::cout << chat_in << std::endl;
-
-    auto post_intro = chat_in.begin() + chat_api.size();
-
-    auto strs = no_ss_split(chat_in, " ");
-
-    if(strs.size() < 3)
-        return;
-
-    std::string prologue_size = strs[1];
-    std::string num_channels = strs[2];
-
-    int num = atoi(num_channels.c_str());
-    int prologue_bytes = atoi(prologue_size.c_str());
-
-    int base = 3;
-
-    for(int i=0; i < num; i++)
-    {
-        int offset = i + base;
-
-        std::string user_is_in_chan = strs[offset];
-
-        in_channels.push_back(user_is_in_chan);
-
-        //std::cout << user_is_in_chan << " fchan " << std::endl;
-    }
-
-    std::string remaining(post_intro + prologue_bytes + prologue_size.size() + 1, chat_in.end());
-
-    if(remaining.size() > 0 && remaining.front() == ' ')
-        remaining.erase(remaining.begin());
-
-    while(1)
-    {
-        //std::cout << "rem " << remaining << std::endl;
-
-        auto bytes_check = no_ss_split(remaining, " ");
-
-        if(bytes_check.size() == 0)
-            return;
-
-        int next_size = atoi(bytes_check[0].c_str());
-
-        auto it = remaining.begin();
-
-        while(*it != ' ')
-            it++;
-
-        it++;
-
-        if(next_size == 0)
-        {
-            it++;
-
-            if(it >= remaining.end())
-                return;
-
-            remaining = std::string(it, remaining.end());
-
-            continue;
-        }
-
-        std::string total_msg(it, it + next_size);
-
-        auto next_it = it;
-
-        while(*next_it != ' ')
-            next_it++;
-
-        std::string chan(it, next_it);
-
-        next_it++;
-
-        std::string msg(next_it, it + next_size);
-
-        channels.push_back(chan);
-        msgs.push_back(msg);
-
-        if(it + next_size >= remaining.end())
-            return;
-
-        remaining = std::string(it + next_size, remaining.end());
-    }
-}
-
 void terminal::add_text_from_server(const std::string& in, chat_window& chat_win, bool server_command)
 {
     if(in == "")
@@ -360,7 +270,20 @@ void terminal::add_text_from_server(const std::string& in, chat_window& chat_win
 
             std::vector<std::string> in_channels;
 
-            get_chat_api_strs(str, chnls, msgs, in_channels);
+            chat_api_info chat_info = sa_chat_api_to_info(command_info);
+
+            for(int i=0; i < chat_info.num_msgs; i++)
+            {
+                chnls.push_back(c_str_to_cpp(chat_info.msgs[i].channel));
+                msgs.push_back(c_str_to_cpp(chat_info.msgs[i].msg));
+            }
+
+            for(int i=0; i < chat_info.num_in_channels; i++)
+            {
+                in_channels.push_back(c_str_to_cpp(chat_info.in_channels[i].channel));
+            }
+
+            sa_destroy_chat_api_info(chat_info);
 
             chat_win.set_side_channels(in_channels);
 

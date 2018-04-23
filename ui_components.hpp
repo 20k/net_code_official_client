@@ -92,8 +92,6 @@ struct terminal : serialisable
     void render(sf::RenderWindow& win);
     void bump_command_to_history();
 
-    void get_chat_api_strs(const std::string& chat_in, std::vector<std::string>& channels, std::vector<std::string>& msgs, std::vector<std::string>& in_channels);
-
     void add_text_from_server(const std::string& in, chat_window& chat_win, bool server_command = true);
 };
 
