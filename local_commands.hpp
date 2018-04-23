@@ -165,48 +165,4 @@ std::string handle_local_command(const std::string& username, const std::string&
     return "";
 }
 
-inline
-std::string handle_up(c_shared_data shared, const std::string& unknown_command)
-{
-    std::string up = "client_command #up ";
-    std::string up_es6 = "client_command #up_es6 ";
-    std::string dry = "client_command #dry ";
-
-    std::vector<std::string> strings = no_ss_split(unknown_command, " ");
-
-    if((starts_with(unknown_command, up) || starts_with(unknown_command, dry)) && strings.size() == 3)
-    {
-        std::string name = strings[2];
-
-        char* c_user = sd_get_user(shared);
-        std::string hardcoded_user(c_user);
-        free_string(c_user);
-
-        std::string diskname = "./scripts/" + hardcoded_user + "." + name + ".es5.js";
-        std::string diskname_es6 = "./scripts/" + hardcoded_user + "." + name + ".js";
-
-        std::string comm = up;
-
-        if(starts_with(unknown_command, dry))
-            comm = dry;
-
-        std::string data = "";
-
-        if(file_exists(diskname))
-            data = read_file(diskname);
-
-        if(file_exists(diskname_es6))
-        {
-            data = read_file(diskname_es6);
-            comm = up_es6;
-        }
-
-        std::string final_command = comm + name + " " + data;
-
-        return final_command;
-    }
-
-    return unknown_command;
-}
-
 #endif // LOCAL_COMMANDS_HPP_INCLUDED

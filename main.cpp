@@ -276,11 +276,17 @@ int main()
             {
                 if(!sa_is_local_command(term.command.command.c_str()))
                 {
-                    char* server_command = sa_make_generic_server_command(term.command.command.c_str());
+                    char* current_user = sd_get_user(shared);
 
-                    std::string str = handle_up(shared, server_command);
+                    char* up_handled = sa_default_up_handling(current_user, term.command.command.c_str(), "./scripts/");
+
+                    char* server_command = sa_make_generic_server_command(up_handled);
+
+                    std::string str(server_command);
 
                     free_string(server_command);
+                    free_string(up_handled);
+                    free_string(current_user);
 
                     sd_add_back_write(shared, str.c_str());
                 }
