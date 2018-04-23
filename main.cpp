@@ -20,6 +20,7 @@
 #include <libncclient/c_shared_data.h>
 #include <libncclient/c_net_client.h>
 #include <libncclient/nc_util.hpp>
+#include <libncclient/c_server_api.h>
 
 bool is_focused(sf::RenderWindow& win)
 {
@@ -273,9 +274,12 @@ int main()
             {
                 if(!is_local_command(term.command.command))
                 {
-                    std::string str = "client_command " + term.command.command;
+                    /*std::string str = "client_command " + term.command.command;
+                    str = handle_up(shared, str);*/
 
-                    str = handle_up(shared, str);
+                    char* server_command = sa_make_generic_server_command(term.command.command.c_str());
+
+                    std::string str = handle_up(shared, server_command);
 
                     sd_add_back_write(shared, str.c_str());
                 }

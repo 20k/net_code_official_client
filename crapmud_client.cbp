@@ -140,6 +140,10 @@
 				<Linker>
 					<Add option="-O2" />
 				</Linker>
+				<ExtraCommands>
+					<Add before='git submodule foreach &quot;(git checkout master; git pull)&amp;&quot;' />
+					<Mode after="always" />
+				</ExtraCommands>
 			</Target>
 		</Build>
 		<Compiler>
