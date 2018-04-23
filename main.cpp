@@ -274,7 +274,7 @@ int main()
 
             if(term.focused)
             {
-                if(!is_local_command(term.command.command))
+                if(!sa_is_local_command(term.command.command.c_str()))
                 {
                     char* server_command = sa_make_generic_server_command(term.command.command.c_str());
 
@@ -308,7 +308,7 @@ int main()
                 chat_win.command.clear_command();
             }
 
-            if(term.focused && is_local_command(cmd))
+            if(term.focused && sa_is_local_command(cmd.c_str()))
             {
                 bool should_shutdown = false;
 

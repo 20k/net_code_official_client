@@ -8,47 +8,6 @@
 
 #include "auto_handlers.hpp"
 
-bool is_local_command(const std::string& command)
-{
-    if(command == "#")
-        return true;
-
-    if(starts_with(command, "#edit "))
-        return true;
-
-    if(starts_with(command, "#edit_es6 "))
-        return true;
-
-    if(starts_with(command, "#edit_es5 "))
-        return true;
-
-    if(starts_with(command, "#open "))
-        return true;
-
-    if(starts_with(command, "#dir"))
-        return true;
-
-    if(starts_with(command, "#clear_autos"))
-        return true;
-
-    if(starts_with(command, "#autos_clear"))
-        return true;
-
-    if(starts_with(command, "#shutdown"))
-        return true;
-
-    if(starts_with(command, "#cls"))
-        return true;
-
-    if(starts_with(command, "#clear_term"))
-        return true;
-
-    if(starts_with(command, "#clear_chat"))
-        return true;
-
-    return false;
-}
-
 std::string handle_local_command(const std::string& username, const std::string& command, auto_handler& auto_handle, bool& should_shutdown, terminal& term)
 {
     if(starts_with(command, "#clear_autos") || starts_with(command, "#autos_clear"))
