@@ -2,8 +2,6 @@
 #include <SFML/Graphics.hpp>
 #include <vec/vec.hpp>
 
-#include "http_beast_client.hpp"
-
 #include "util.hpp"
 
 #include "colour_interop.hpp"

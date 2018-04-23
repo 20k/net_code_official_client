@@ -183,7 +183,6 @@
 		<Unit filename="deps/serialise/serialise.hpp" />
 		<Unit filename="editable_string.cpp" />
 		<Unit filename="editable_string.hpp" />
-		<Unit filename="http_beast_client.hpp" />
 		<Unit filename="icon.res">
 			<Option target="Deploy" />
 			<Option target="Linux" />
