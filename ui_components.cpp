@@ -414,11 +414,13 @@ void terminal::add_text_from_server(const std::string& in, chat_window& chat_win
         }
         else if(command_info.type == server_command_server_scriptargs_ratelimit)
         {
-            std::string script(in.begin() + ratelimit_str.size(), in.end());
+            std::string name = c_str_consume(sa_server_scriptargs_ratelimit_to_script_name(command_info));
 
-            if(script.size() > 0)
+            std::cout << "rl name " << name << std::endl;
+
+            if(name.size() > 0)
             {
-                auto_handle.found_unprocessed_autocompletes.insert(script);
+                auto_handle.found_unprocessed_autocompletes.insert(name);
             }
         }
         else
