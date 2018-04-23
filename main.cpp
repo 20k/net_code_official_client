@@ -378,7 +378,7 @@ int main()
 
         if(client_poll_clock.getElapsedTime().asMilliseconds() > 500)
         {
-            sd_add_back_write(shared, "client_poll");
+            sa_do_poll_server(shared);
 
             client_poll_clock.restart();
         }
@@ -406,11 +406,7 @@ int main()
 
             for(auto& str : term.auto_handle.found_unprocessed_autocompletes)
             {
-                std::string command = "client_scriptargs " + str;
-
-                sd_add_back_write(shared, command.c_str());
-
-                //std::cout << "requesting " << command << std::endl;
+                sa_do_autocomplete_request(shared, str.c_str());
 
                 break;
             }
