@@ -56,16 +56,6 @@ struct request_holder
     }
 };*/
 
-inline
-std::string read_file_bin(const std::string& file)
-{
-    std::ifstream t(file, std::ios::binary);
-    std::string str((std::istreambuf_iterator<char>(t)),
-                     std::istreambuf_iterator<char>());
-
-    return str;
-}
-
 void test_http_client(c_shared_data shared);
 
 #endif // HTTP_BEAST_CLIENT_HPP_INCLUDED

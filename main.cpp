@@ -6,7 +6,6 @@
 
 #include "util.hpp"
 
-#include <crapmud/script_util_shared.hpp>
 #include "colour_interop.hpp"
 #include "string_helpers.hpp"
 #include <serialise/serialise.hpp>
@@ -21,6 +20,8 @@
 ///need to structure this project properly
 #include "local_commands.hpp"
 #include <libncclient/c_shared_data.h>
+#include <libncclient/c_net_client.h>
+#include <libncclient/nc_util.hpp>
 
 bool is_focused(sf::RenderWindow& win)
 {
@@ -28,6 +29,23 @@ bool is_focused(sf::RenderWindow& win)
 }
 
 #define DMAP(A) key_map[sf::Keyboard::A] = tolower((#A)[0]);
+
+//#define HOST_IP "192.168.0.55"
+#ifdef EXTERN_IP
+#define HOST_IP "77.96.132.101"
+#endif // EXTERN_IP
+
+#ifdef LOCAL_IP
+#define HOST_IP "127.0.0.1"
+#endif // LOCAL_IP
+
+#ifdef EXTERN_IP
+#define HOST_PORT "6760"
+#endif // EXTERN_IP
+
+#ifdef LOCAL_IP
+#define HOST_PORT "6761"
+#endif // LOCAL_IP
 
 ///test new repo
 int main()
@@ -53,7 +71,7 @@ int main()
 
     font.loadFromFile("VeraMono.ttf");
 
-    test_http_client(shared);
+    nc_start(shared, HOST_IP, HOST_PORT);
 
     sf::ContextSettings sett;
     sett.antialiasingLevel = 8;

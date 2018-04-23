@@ -1,7 +1,7 @@
 #ifndef LOCAL_COMMANDS_HPP_INCLUDED
 #define LOCAL_COMMANDS_HPP_INCLUDED
 
-#include <crapmud/script_util_shared.hpp>
+#include <libncclient/nc_util.hpp>
 
 #include <tinydir/tinydir.h>
 

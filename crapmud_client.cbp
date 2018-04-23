@@ -156,23 +156,24 @@
 			<Add option="-lmingw32" />
 			<Add option="-lsfml-graphics" />
 			<Add option="-lsfml-audio" />
-			<Add option="-lsfml-network" />
 			<Add option="-lsfml-window" />
 			<Add option="-lsfml-system" />
 			<Add option="-lfreetype" />
 			<Add option="-lopengl32" />
-			<Add option="-lws2_32" />
 			<Add option="-lflac" />
 			<Add option="-lopenal32" />
 			<Add option="-logg" />
-			<Add option="-lboost_system-mt" />
-			<Add option="-lmswsock" />
 			<Add option="-lole32" />
-			<Add option="-lboost_stacktrace_windbg-mt" />
+			<Add option="-lboost_system-mt" />
 			<Add option="-lboost_filesystem-mt" />
 			<Add option="-ldbgeng" />
+			<Add option="-lboost_stacktrace_windbg-mt" />
 			<Add library="deps/libncclient/libncclient.a" />
 		</Linker>
+		<ExtraCommands>
+			<Add after="copy_dll.bat" />
+			<Mode after="always" />
+		</ExtraCommands>
 		<Unit filename="auto_handlers.cpp" />
 		<Unit filename="auto_handlers.hpp" />
 		<Unit filename="colour_interop.hpp" />
@@ -182,7 +183,6 @@
 		<Unit filename="deps/serialise/serialise.hpp" />
 		<Unit filename="editable_string.cpp" />
 		<Unit filename="editable_string.hpp" />
-		<Unit filename="http_beast_client.cpp" />
 		<Unit filename="http_beast_client.hpp" />
 		<Unit filename="icon.res">
 			<Option target="Deploy" />

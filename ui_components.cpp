@@ -1,6 +1,6 @@
 #include "ui_components.hpp"
 #include "string_helpers.hpp"
-#include <crapmud/script_util_shared.hpp>
+#include <libncclient/nc_util.hpp>
 
 void chat_thread::do_serialise(serialise& s, bool ser)
 {

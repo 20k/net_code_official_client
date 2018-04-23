@@ -1,6 +1,6 @@
 #include "auto_handlers.hpp"
 #include "string_helpers.hpp"
-#include <crapmud/script_util_shared.hpp>
+#include <libncclient/nc_util.hpp>
 #include <SFML/System.hpp>
 #include "util.hpp"
 
