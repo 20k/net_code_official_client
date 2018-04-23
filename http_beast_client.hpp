@@ -8,7 +8,7 @@
 #include <mutex>
 #include <atomic>
 
-struct shared_data;
+#include <libncclient/c_shared_data.h>
 
 /*struct request
 {
@@ -66,6 +66,6 @@ std::string read_file_bin(const std::string& file)
     return str;
 }
 
-void test_http_client(shared_data& shared);
+void test_http_client(c_shared_data shared);
 
 #endif // HTTP_BEAST_CLIENT_HPP_INCLUDED

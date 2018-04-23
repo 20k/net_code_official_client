@@ -10,7 +10,6 @@
 #include "colour_interop.hpp"
 #include "string_helpers.hpp"
 #include <serialise/serialise.hpp>
-#include <crapmud/shared_data.hpp>
 
 #include "auto_handlers.hpp"
 #include "copy_handler.hpp"
@@ -21,6 +20,7 @@
 ///ruh roh
 ///need to structure this project properly
 #include "local_commands.hpp"
+#include <libncclient/c_shared_data.h>
 
 bool is_focused(sf::RenderWindow& win)
 {
@@ -36,13 +36,17 @@ int main()
 
     stack_on_start();
 
-    shared_data shared;
+    c_shared_data shared = sd_alloc();
 
     if(file_exists("key.key"))
     {
-        shared.auth = read_file_bin("key.key");
+        //shared.auth = read_file_bin("key.key");
 
-        std::cout << "loaded auth of " << shared.auth.size() << std::endl;
+        std::string fauth = read_file_bin("key.key");
+
+        sd_set_auth(shared, fauth.c_str());
+
+        std::cout << "loaded auth of " << fauth.size() << std::endl;
 
         //shared.send_auth = true;
     }
@@ -245,21 +249,27 @@ int main()
                 ///NEED TO WAIT FOR SERVER CONFIRMATION
                 if(spl.size() >= 2)
                 {
-                    shared.set_user(spl[1]);
+                    sd_set_user(shared, spl[1].c_str());
                 }
             }
 
             if(term.focused)
             {
                 if(!is_local_command(term.command.command))
-                    shared.add_back_write("client_command " + term.command.command);
+                {
+                    std::string str = "client_command " + term.command.command;
+
+                    sd_add_back_write(shared, str.c_str());
+                }
 
                 term.auto_handle.clear_internal_state();
             }
             else
             {
+                std::string str = "client_chat #hs.msg.send({channel:\"" + chat_win.selected + "\", msg:\"" + chat_win.command.command + "\"})";
+
                 ///TODO
-                shared.add_back_write("client_chat #hs.msg.send({channel:\"" + chat_win.selected + "\", msg:\"" + chat_win.command.command + "\"})");
+                sd_add_back_write(shared, str.c_str());
             }
 
             std::string cmd = term.command.command;
@@ -277,7 +287,9 @@ int main()
             {
                 bool should_shutdown = false;
 
-                std::string data = handle_local_command(shared.get_user(), cmd, term.auto_handle, should_shutdown, term);
+                char* found_user = sd_get_user(shared);
+                std::string data = handle_local_command(std::string(found_user), cmd, term.auto_handle, should_shutdown, term);
+                free_string(found_user);
 
                 term.add_text_from_server(data, chat_win, false);
 
@@ -324,9 +336,13 @@ int main()
             chat_win.process_click(mpos);
         }
 
-        if(shared.has_front_read())
+        if(sd_has_front_read(shared))
         {
-            term.add_text_from_server(shared.get_front_read(), chat_win);
+            char* c_data = sd_get_front_read(shared);
+            std::string fdata(c_data);
+            free_string(c_data);
+
+            term.add_text_from_server(fdata, chat_win);
 
             serialise sterm;
             sterm.handle_serialise(term, true);
@@ -339,7 +355,7 @@ int main()
 
         if(client_poll_clock.getElapsedTime().asMilliseconds() > 500)
         {
-            shared.add_back_write("client_poll");
+            sd_add_back_write(shared, "client_poll");
 
             client_poll_clock.restart();
         }
@@ -356,7 +372,7 @@ int main()
             {
                 std::string command = "client_scriptargs " + str;
 
-                shared.add_back_write(command);
+                sd_add_back_write(shared, command.c_str());
 
                 //std::cout << "requesting " << command << std::endl;
 
@@ -401,7 +417,7 @@ int main()
     swindow.handle_serialise(chat_win, true);
     swindow.save(chat_file);
 
-    shared.should_terminate = true;
+    sd_set_termination(shared);
 
     sf::sleep(sf::milliseconds(100));
 

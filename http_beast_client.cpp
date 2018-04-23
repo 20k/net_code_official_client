@@ -30,7 +30,6 @@
 #include <SFML/System.hpp>
 
 #include <crapmud/script_util_shared.hpp>
-#include <crapmud/shared_data.hpp>
 
 
 //#define HOST_IP "192.168.0.55"
@@ -53,7 +52,7 @@
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 namespace http = boost::beast::http;    // from <boost/beast/http.hpp>
 
-std::string handle_up(shared_data* shared, const std::string& unknown_command)
+std::string handle_up(c_shared_data shared, const std::string& unknown_command)
 {
     std::string up = "client_command #up ";
     std::string up_es6 = "client_command #up_es6 ";
@@ -65,7 +64,9 @@ std::string handle_up(shared_data* shared, const std::string& unknown_command)
     {
         std::string name = strings[2];
 
-        std::string hardcoded_user = shared->get_user();
+        char* c_user = sd_get_user(shared);
+        std::string hardcoded_user(c_user);
+        free_string(c_user);
 
         std::string diskname = "./scripts/" + hardcoded_user + "." + name + ".es5.js";
         std::string diskname_es6 = "./scripts/" + hardcoded_user + "." + name + ".js";
@@ -128,14 +129,14 @@ struct shared_context
     }
 };
 
-void handle_async_write(shared_data* shared, shared_context& ctx)
+void handle_async_write(c_shared_data shared, shared_context& ctx)
 {
     while(1)
     {
         //std::lock_guard<std::mutex> lk(local_mut);
         sf::sleep(sf::milliseconds(8));
 
-        if(shared->should_terminate)
+        if(sd_should_terminate(shared))
             break;
 
         try
@@ -143,9 +144,11 @@ void handle_async_write(shared_data* shared, shared_context& ctx)
             if(!socket_alive)
                 continue;
 
-            if(shared->has_front_write())
+            if(sd_has_front_write(shared))
             {
-                std::string next_command = shared->get_front_write();
+                char* c_write = sd_get_front_write(shared);
+                std::string next_command(c_write);
+                free_string(c_write);
 
                 next_command = handle_up(shared, next_command);
 
@@ -164,12 +167,12 @@ void handle_async_write(shared_data* shared, shared_context& ctx)
         }
     }
 
-    shared->termination_count++;
+    sd_increment_termination_count(shared);
 
     printf("write\n");
 }
 
-void check_auth(shared_data* shared, const std::string& str)
+void check_auth(c_shared_data shared, const std::string& str)
 {
     std::string auth_str = "command ####registered secret ";
 
@@ -182,7 +185,7 @@ void check_auth(shared_data* shared, const std::string& str)
         {
             write_all_bin("key.key", key);
 
-            shared->auth = key;
+            sd_set_auth(shared, key.c_str());
         }
         else
         {
@@ -191,7 +194,7 @@ void check_auth(shared_data* shared, const std::string& str)
     }
 }
 
-void handle_async_read(shared_data* shared, shared_context& ctx)
+void handle_async_read(c_shared_data shared, shared_context& ctx)
 {
     boost::system::error_code ec;
 
@@ -199,7 +202,7 @@ void handle_async_read(shared_data* shared, shared_context& ctx)
     {
         sf::sleep(sf::milliseconds(8));
 
-        if(shared->should_terminate)
+        if(sd_should_terminate(shared))
             break;
 
         try
@@ -216,7 +219,7 @@ void handle_async_read(shared_data* shared, shared_context& ctx)
             std::string next_command = ctx.sock->get_read();
 
             check_auth(shared, next_command);
-            shared->add_back_read(next_command);
+            sd_add_back_read(shared, next_command.c_str());
         }
         catch(...)
         {
@@ -226,19 +229,19 @@ void handle_async_read(shared_data* shared, shared_context& ctx)
         }
     }
 
-    shared->termination_count++;
+    sd_increment_termination_count(shared);
 
     printf("read\n");
 }
 
-void watchdog(shared_data* shared, shared_context& ctx)
+void watchdog(c_shared_data shared, shared_context& ctx)
 {
     while(1)
     {
         if(socket_alive)
             sf::sleep(sf::milliseconds(50));
 
-        if(shared->should_terminate)
+        if(sd_should_terminate(shared))
             break;
 
         while(!socket_alive)
@@ -250,12 +253,17 @@ void watchdog(shared_data* shared, shared_context& ctx)
 
                 std::cout << "Try Reconnect" << std::endl;
 
-                shared->add_back_read("Connecting...");
+                sd_add_back_read(shared, "Connecting...");
 
                 ctx.connect(host, port);
 
-                shared->add_back_read("`LConnected`");
-                shared->add_back_write("client_command auth client " + shared->auth);
+                sd_add_back_read(shared, "`LConnected`");
+
+                char* auth = sd_get_auth(shared);
+                std::string auth_str = "client_command auth client " + std::string(auth);
+                free_string(auth);
+
+                sd_add_back_write(shared, auth_str.c_str());
 
                 socket_alive = true;
 
@@ -263,7 +271,7 @@ void watchdog(shared_data* shared, shared_context& ctx)
             }
             catch(...)
             {
-                shared->add_back_read("`DConnection to the server failed`");
+                sd_add_back_read(shared, "`DConnection to the server failed`");
 
                 std::cout << "Server down" << std::endl;
                 sf::sleep(sf::milliseconds(5000));
@@ -273,18 +281,18 @@ void watchdog(shared_data* shared, shared_context& ctx)
         sf::sleep(sf::milliseconds(8));
     }
 
-    shared->termination_count++;
+    sd_increment_termination_count(shared);
 
     printf("watchdog\n");
 
     //ctx.sock->shutdown();
 }
 
-void test_http_client(shared_data& shared)
+void test_http_client(c_shared_data shared)
 {
     shared_context* ctx = new shared_context();
 
-    std::thread(handle_async_read, &shared, std::ref(*ctx)).detach();
-    std::thread(handle_async_write, &shared, std::ref(*ctx)).detach();
-    std::thread(watchdog, &shared, std::ref(*ctx)).detach();
+    std::thread(handle_async_read, shared, std::ref(*ctx)).detach();
+    std::thread(handle_async_write, shared, std::ref(*ctx)).detach();
+    std::thread(watchdog, shared, std::ref(*ctx)).detach();
 }
