@@ -1,6 +1,8 @@
 #include "ui_components.hpp"
 #include "string_helpers.hpp"
 #include <libncclient/nc_util.hpp>
+#include <libncclient/nc_string_interop.hpp>
+#include <libncclient/c_server_api.h>
 
 void chat_thread::do_serialise(serialise& s, bool ser)
 {
@@ -407,6 +409,8 @@ void terminal::add_text_from_server(const std::string& in, chat_window& chat_win
 
     std::string str = in;
 
+    server_command_info command_info = sa_server_response_to_info(in.c_str(), in.size());
+
     if(server_command)
     {
         std::string command_str = "command ";
@@ -415,9 +419,9 @@ void terminal::add_text_from_server(const std::string& in, chat_window& chat_win
         std::string invalid_str = "server_scriptargs_invalid";
         std::string ratelimit_str = "server_scriptargs_ratelimit ";
 
-        if(starts_with(str, command_str))
+        if(command_info.type == server_command_command)
         {
-            str = std::string(str.begin() + command_str.size(), str.end());
+            str = c_str_consume(sa_command_to_human_readable(command_info));
         }
         else if(starts_with(str, chat_api))
         {
@@ -483,4 +487,6 @@ void terminal::add_text_from_server(const std::string& in, chat_window& chat_win
     limit_size(text_history, max_history);
 
     text_history.push_back(string_to_interop(str, false, auto_handle));
+
+    sa_destroy_server_command_info(command_info);
 }
