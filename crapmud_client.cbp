@@ -194,6 +194,8 @@
 		<Unit filename="stacktrace.hpp" />
 		<Unit filename="string_helpers.cpp" />
 		<Unit filename="string_helpers.hpp" />
+		<Unit filename="ui_components.cpp" />
+		<Unit filename="ui_components.hpp" />
 		<Unit filename="util.hpp" />
 		<Extensions>
 			<code_completion />
