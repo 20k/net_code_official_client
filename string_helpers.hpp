@@ -22,6 +22,7 @@ struct formatted_char
     vec2f internal_pos;
     vec2f render_pos;
     vec4f background_col = {0,0,0,0};
+    bool copyable = true;
 };
 
 #if 0
@@ -195,6 +196,11 @@ std::vector<formatted_char> format_characters(const std::vector<interop_char>& i
 
         formatted_char formatted;
         formatted.ioc = ioc;
+
+        if(ioc.is_cursor)
+        {
+            formatted.copyable = false;
+        }
 
         if(ioc.is_cursor)
         {

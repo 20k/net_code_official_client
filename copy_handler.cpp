@@ -25,6 +25,9 @@ std::string check_formatted_text(std::vector<std::vector<formatted_char>>& forma
     {
         for(formatted_char& chr : i)
         {
+            if(!chr.copyable)
+                continue;
+
             vec2f pos = chr.render_pos;
 
             vec2f p1 = pos;
