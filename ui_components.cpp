@@ -374,8 +374,6 @@ void terminal::add_text_from_server(const std::string& in, chat_window& chat_win
             int max_history = 250;
 
             limit_size(text_history, max_history);
-
-            return;
         }
         else if(command_info.type == server_command_server_scriptargs)
         {
@@ -383,44 +381,36 @@ void terminal::add_text_from_server(const std::string& in, chat_window& chat_win
 
             script_argument_list args = sa_server_scriptargs_to_list(command_info);
 
-            if(args.scriptname == nullptr)
+            if(args.scriptname != nullptr)
             {
-                sa_destroy_script_argument_list(args);
-                return;
+                std::vector<autocomplete_args> auto_args;
+
+                for(int i=0; i < args.num; i++)
+                {
+                    std::string key = c_str_to_cpp(args.args[i].key);
+                    std::string val = c_str_to_cpp(args.args[i].val);
+
+                    auto_args.push_back({key, val});
+                }
+
+                std::string scriptname = c_str_to_cpp(args.scriptname);
+
+                auto_handle.found_args[scriptname] = auto_args;
+                auto_handle.is_valid[scriptname] = true;
             }
-
-            std::vector<autocomplete_args> auto_args;
-
-            for(int i=0; i < args.num; i++)
-            {
-                std::string key = c_str_to_cpp(args.args[i].key);
-                std::string val = c_str_to_cpp(args.args[i].val);
-
-                auto_args.push_back({key, val});
-            }
-
-            std::string scriptname = c_str_to_cpp(args.scriptname);
-
-            auto_handle.found_args[scriptname] = auto_args;
-            auto_handle.is_valid[scriptname] = true;
 
             sa_destroy_script_argument_list(args);
-
-            return;
         }
         else if(command_info.type == server_command_server_scriptargs_invalid)
         {
-            if(starts_with(str, invalid_str + " "))
+            std::cout << "inv " << str << std::endl;
+
+            std::string name = c_str_consume(sa_server_scriptargs_invalid_to_script_name(command_info));
+
+            if(name.size() > 0)
             {
-                std::string script(in.begin() + invalid_str.size() + 1, in.end());
-
-                if(script.size() > 0)
-                {
-                    auto_handle.is_valid[script] = false;
-                }
+                auto_handle.is_valid[name] = false;
             }
-
-            return;
         }
         else if(command_info.type == server_command_server_scriptargs_ratelimit)
         {
@@ -430,8 +420,6 @@ void terminal::add_text_from_server(const std::string& in, chat_window& chat_win
             {
                 auto_handle.found_unprocessed_autocompletes.insert(script);
             }
-
-            return;
         }
         else
         {
