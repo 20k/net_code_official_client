@@ -118,6 +118,8 @@ int main()
 
     sf::Clock request_clock;
 
+    sf::Clock write_clock;
+
     sf::Keyboard key;
     sf::Mouse mouse;
 
@@ -274,12 +276,11 @@ int main()
             {
                 if(!is_local_command(term.command.command))
                 {
-                    /*std::string str = "client_command " + term.command.command;
-                    str = handle_up(shared, str);*/
-
                     char* server_command = sa_make_generic_server_command(term.command.command.c_str());
 
                     std::string str = handle_up(shared, server_command);
+
+                    free_string(server_command);
 
                     sd_add_back_write(shared, str.c_str());
                 }
@@ -288,10 +289,12 @@ int main()
             }
             else
             {
-                std::string str = "client_chat #hs.msg.send({channel:\"" + chat_win.selected + "\", msg:\"" + chat_win.command.command + "\"})";
+                char* chat_command = sa_make_chat_command(chat_win.selected.c_str(), chat_win.command.command.c_str());
 
                 ///TODO
-                sd_add_back_write(shared, str.c_str());
+                sd_add_back_write(shared, chat_command);
+
+                free_string(chat_command);
             }
 
             std::string cmd = term.command.command;
@@ -365,14 +368,6 @@ int main()
             free_string(c_data);
 
             term.add_text_from_server(fdata, chat_win);
-
-            serialise sterm;
-            sterm.handle_serialise(term, true);
-            sterm.save(terminal_file);
-
-            serialise swindow;
-            swindow.handle_serialise(chat_win, true);
-            swindow.save(chat_file);
         }
 
         if(client_poll_clock.getElapsedTime().asMilliseconds() > 500)
@@ -380,6 +375,19 @@ int main()
             sd_add_back_write(shared, "client_poll");
 
             client_poll_clock.restart();
+        }
+
+        if(write_clock.getElapsedTime().asMilliseconds() > 2000)
+        {
+            serialise sterm;
+            sterm.handle_serialise(term, true);
+            sterm.save(terminal_file);
+
+            serialise swindow;
+            swindow.handle_serialise(chat_win, true);
+            swindow.save(chat_file);
+
+            write_clock.restart();
         }
 
         ///hmm
