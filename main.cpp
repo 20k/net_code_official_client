@@ -15,6 +15,7 @@
 #include "auto_handlers.hpp"
 #include "copy_handler.hpp"
 #include "stacktrace.hpp"
+#include "editable_string.hpp"
 
 struct chat_thread : serialisable
 {
@@ -23,117 +24,6 @@ struct chat_thread : serialisable
     virtual void do_serialise(serialise& s, bool ser)
     {
         s.handle_serialise(chats, ser);
-    }
-};
-
-template<typename T>
-void limit_size(T& t, int max_size)
-{
-    while((int)t.size() >= max_size)
-    {
-        t.erase(t.begin());
-    }
-}
-
-struct editable_string : serialisable
-{
-    int cursor_pos_idx = 0;
-    std::string command;
-    std::vector<std::string> command_history;
-    int command_history_idx = 0;
-
-    virtual void do_serialise(serialise& s, bool ser)
-    {
-        s.handle_serialise(cursor_pos_idx, ser);
-        s.handle_serialise(command, ser);
-        s.handle_serialise(command_history, ser);
-        s.handle_serialise(command_history_idx, ser);
-    }
-
-    void add_to_command(char c)
-    {
-        if(cursor_pos_idx >= (int)command.size())
-        {
-            command.push_back(c);
-        }
-        else
-        {
-            command.insert(command.begin() + cursor_pos_idx, c);
-        }
-
-        cursor_pos_idx++;
-    }
-
-    void remove_back()
-    {
-        if(command.size() > 0)
-            command.pop_back();
-    }
-
-    void move_cursor(int dir)
-    {
-        cursor_pos_idx += dir;
-        cursor_pos_idx = clamp(cursor_pos_idx, 0, (int)command.size());
-    }
-
-    void process_backspace()
-    {
-        int to_remove = cursor_pos_idx - 1;
-
-        if(to_remove < 0 || to_remove >= (int)command.size())
-            return;
-
-        command.erase(command.begin() + to_remove);
-
-        cursor_pos_idx--;
-    }
-
-    void process_delete()
-    {
-        int to_remove = cursor_pos_idx;
-
-        if(to_remove < 0 || to_remove >= (int)command.size())
-            return;
-
-        command.erase(command.begin() + to_remove);
-    }
-
-
-    void move_command_history_idx(int dir)
-    {
-        command_history_idx += dir;
-
-        command_history_idx = clamp(command_history_idx, 0, (int)command_history.size());
-
-        if(command_history_idx >= 0 && command_history_idx < (int)command_history.size())
-        {
-            command = command_history[command_history_idx];
-        }
-
-        if(command_history_idx == (int)command_history.size())
-        {
-            ///ideally we'd reset to partially held commands
-            command = "";
-        }
-
-        cursor_pos_idx = command.size();
-    }
-
-    void clear_command()
-    {
-        command = "";
-        command_history_idx = command_history.size();
-        cursor_pos_idx = 0;
-    }
-
-    void push_command_to_history(const std::string& cmd)
-    {
-        int max_command_history = 1000;
-
-        limit_size(command_history, max_command_history);
-
-        command_history.push_back(cmd);
-        command_history_idx = (int)command_history.size();
     }
 };
 
