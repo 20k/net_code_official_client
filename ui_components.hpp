@@ -94,7 +94,6 @@ struct terminal : serialisable
 
     void get_chat_api_strs(const std::string& chat_in, std::vector<std::string>& channels, std::vector<std::string>& msgs, std::vector<std::string>& in_channels);
 
-    void parse_scriptargs(const std::string& in);
     void add_text_from_server(const std::string& in, chat_window& chat_win, bool server_command = true);
 };
 

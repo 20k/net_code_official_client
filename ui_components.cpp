@@ -328,80 +328,6 @@ void terminal::get_chat_api_strs(const std::string& chat_in, std::vector<std::st
     }
 }
 
-void terminal::parse_scriptargs(const std::string& in)
-{
-    std::cout << "pstring " << in << std::endl;
-
-    ///TODO: Make all server/client communication use this format
-    std::string_view view(&in[0]);
-
-    view.remove_prefix(std::min(view.find_first_of(" ")+1, view.size()));
-
-    std::vector<std::string> strings;
-
-    while(view.size() > 0)
-    {
-        auto found = view.find(" ");
-
-        if(found == std::string_view::npos)
-            break;
-
-        std::string_view num(view.data(), found);
-
-        std::string len(num);
-
-        int ilen = stoi(len);
-
-        std::string dat(view.substr(len.size() + 1, ilen));
-
-        strings.push_back(dat);
-
-        ///"len" + " " + len_bytes + " "
-        view.remove_prefix(len.size() + 2 + ilen);
-    }
-
-    if(strings.size() == 0)
-        return;
-
-    std::string scriptname = strings[0];
-
-    strings.erase(strings.begin());
-
-    /*std::cout << "for script " << scriptname << std::endl;
-
-    for(auto& i : strings)
-    {
-        std::cout << i << std::endl;
-    }*/
-
-    std::vector<autocomplete_args> args;
-
-    int len = strings.size();
-
-    if((strings.size() % 2) != 0)
-        return;
-
-    for(int i=0; i < (int)strings.size(); i+=2)
-    {
-        std::string key = strings[i];
-        std::string arg = strings[i + 1];
-
-        args.push_back({key, arg});
-    }
-
-    ///this all fundamentally works
-
-    ///to future james
-    ///dump script in here
-    ///dump args
-    ///when we detect a fullname script in terminal with args, show in gray
-    ///press tab to fill in and jump cursor between args
-    ///to future james again
-    ///gotta hardcode in autocomplete args to trust scripts (limitation of c++ style), maybe some sort of REGISTER_ARGS thing
-    auto_handle.found_args[scriptname] = args;
-    auto_handle.is_valid[scriptname] = true;
-}
-
 void terminal::add_text_from_server(const std::string& in, chat_window& chat_win, bool server_command)
 {
     if(in == "")
@@ -449,9 +375,32 @@ void terminal::add_text_from_server(const std::string& in, chat_window& chat_win
         }
         else if(starts_with(str, scriptargs))
         {
-            //std::cout << str << std::endl;
+            std::cout << str << std::endl;
 
-            parse_scriptargs(str);
+            script_argument_list args = sa_server_scriptargs_to_list(command_info);
+
+            if(args.scriptname == nullptr)
+            {
+                sa_destroy_script_argument_list(args);
+                return;
+            }
+
+            std::vector<autocomplete_args> auto_args;
+
+            for(int i=0; i < args.num; i++)
+            {
+                std::string key = c_str_to_cpp(args.args[i].key);
+                std::string val = c_str_to_cpp(args.args[i].val);
+
+                auto_args.push_back({key, val});
+            }
+
+            std::string scriptname = c_str_to_cpp(args.scriptname);
+
+            auto_handle.found_args[scriptname] = auto_args;
+            auto_handle.is_valid[scriptname] = true;
+
+            sa_destroy_script_argument_list(args);
 
             return;
         }
