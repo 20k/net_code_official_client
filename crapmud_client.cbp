@@ -171,6 +171,7 @@
 			<Add option="-lboost_stacktrace_windbg-mt" />
 			<Add option="-lboost_filesystem-mt" />
 			<Add option="-ldbgeng" />
+			<Add library="deps/libncclient/libncclient.a" />
 		</Linker>
 		<Unit filename="auto_handlers.cpp" />
 		<Unit filename="auto_handlers.hpp" />
