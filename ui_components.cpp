@@ -337,6 +337,8 @@ void terminal::add_text_from_server(const std::string& in, chat_window& chat_win
 
     server_command_info command_info = sa_server_response_to_info(in.c_str(), in.size());
 
+    bool push = false;
+
     if(server_command)
     {
         std::string command_str = "command ";
@@ -348,8 +350,10 @@ void terminal::add_text_from_server(const std::string& in, chat_window& chat_win
         if(command_info.type == server_command_command)
         {
             str = c_str_consume(sa_command_to_human_readable(command_info));
+
+            push = true;
         }
-        else if(starts_with(str, chat_api))
+        else if(command_info.type == server_command_chat_api)
         {
             std::vector<std::string> chnls;
             std::vector<std::string> msgs;
@@ -373,7 +377,7 @@ void terminal::add_text_from_server(const std::string& in, chat_window& chat_win
 
             return;
         }
-        else if(starts_with(str, scriptargs))
+        else if(command_info.type == server_command_server_scriptargs)
         {
             std::cout << str << std::endl;
 
@@ -404,7 +408,7 @@ void terminal::add_text_from_server(const std::string& in, chat_window& chat_win
 
             return;
         }
-        else if(starts_with(str, invalid_str))
+        else if(command_info.type == server_command_server_scriptargs_invalid)
         {
             if(starts_with(str, invalid_str + " "))
             {
@@ -418,7 +422,7 @@ void terminal::add_text_from_server(const std::string& in, chat_window& chat_win
 
             return;
         }
-        else if(starts_with(str, ratelimit_str))
+        else if(command_info.type == server_command_server_scriptargs_ratelimit)
         {
             std::string script(in.begin() + ratelimit_str.size(), in.end());
 
@@ -429,13 +433,20 @@ void terminal::add_text_from_server(const std::string& in, chat_window& chat_win
 
             return;
         }
+        else
+        {
+            push = true;
+        }
     }
 
-    int max_history = 250;
+    if(push)
+    {
+        int max_history = 250;
 
-    limit_size(text_history, max_history);
+        limit_size(text_history, max_history);
 
-    text_history.push_back(string_to_interop(str, false, auto_handle));
+        text_history.push_back(string_to_interop(str, false, auto_handle));
+    }
 
     sa_destroy_server_command_info(command_info);
 }
