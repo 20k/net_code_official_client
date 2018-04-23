@@ -275,6 +275,8 @@ int main()
                 {
                     std::string str = "client_command " + term.command.command;
 
+                    str = handle_up(shared, str);
+
                     sd_add_back_write(shared, str.c_str());
                 }
 
