@@ -300,6 +300,12 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
         }
     }
 
+    for(auto& i : tokens)
+    {
+        if(i.type == token::OPEN_PAREN || i.type == token::CLOSE_PAREN || i.type == token::OPEN_CURLEY || i.type == token::CLOSE_CURLEY || i.type == token::SEMICOLON)
+            ghost_str = "";
+    }
+
     std::map<std::string, std::string> key_to_arg;
 
     std::map<std::string, bool> key_exists_map;
@@ -356,7 +362,7 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
         if(tok.type == token::EXT_NAME && ghost_str != "")
         {
-            //insert_single_ghost(ghost_str, i+1, tokens, in, 0);
+            insert_single_ghost(ghost_str, i+1, tokens, in, 1);
 
             break;
         }
