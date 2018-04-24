@@ -273,6 +273,69 @@ void expect_key_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts)
     discard_whitespace(pos, dat, tok);
 }
 
+bool expect_seclevel(int& pos, data_t dat, token_seq tok)
+{
+    if(!in_bound(pos, dat))
+        return false;
+
+    std::vector<std::string> match
+    {
+        "#fs.",
+        "#hs.",
+        "#ms.",
+        "#ls.",
+        "#ns.",
+        "#s.",
+    };
+
+    std::string as_string;
+
+    for(auto& i : dat)
+    {
+        as_string += i.c;
+    }
+
+    std::string found = "";
+
+    bool any = false;
+
+    for(auto& i : match)
+    {
+        if(as_string.find(i) == std::string::npos)
+            continue;
+
+        found = i;
+
+        any = true;
+        break;
+    }
+
+    if(!any && dat[pos].c == '#')
+    {
+        found = "#";
+        any = true;
+    }
+
+    if(!any)
+        return false;
+
+    tok.push_back(make_tokens(pos, 1, token::HASH, dat));
+    pos++;
+
+    //if(found != "#")
+    {
+        int tlen = (int)found.size() - 1;
+
+        if(tlen < 0)
+            tlen = 0;
+
+        tok.push_back(make_tokens(pos, tlen, token::SECLEVEL, dat));
+        pos += tlen;
+    }
+
+    return true;
+}
+
 std::vector<token_info> tokenise_str(const std::vector<interop_char>& dat, bool insert_ghosts)
 {
     std::vector<token_info> tok;
@@ -281,7 +344,8 @@ std::vector<token_info> tokenise_str(const std::vector<interop_char>& dat, bool 
 
     discard_whitespace(pos, dat, tok);
 
-    if(expect_hash(pos, dat, tok))
+    //if(expect_hash(pos, dat, tok))
+    if(expect_seclevel(pos, dat, tok))
     {
         expect_hostname(pos, dat, tok);
         expect_dot(pos, dat, tok);
@@ -325,6 +389,7 @@ void token_tests()
     std::vector<token::token> expected
     {
         token::HASH,
+        token::SECLEVEL,
         token::HOST_NAME,
         token::DOT,
         token::EXT_NAME,

@@ -11,18 +11,19 @@ namespace token
     enum token
     {
         HASH = 0,
-        HOST_NAME = 1,
-        DOT = 2,
-        EXT_NAME = 3,
-        OPEN_PAREN = 4,
-        OPEN_CURLEY = 5,
-        KEY = 6,
-        COLON = 7,
-        VALUE = 8,
-        COMMA = 9,
-        CLOSE_PAREN = 10,
-        CLOSE_CURLEY = 11,
-        SEMICOLON = 12, ///terminating
+        SECLEVEL = 1,
+        HOST_NAME = 2,
+        DOT = 3,
+        EXT_NAME = 4,
+        OPEN_PAREN = 5,
+        OPEN_CURLEY = 6,
+        KEY = 7,
+        COLON = 8,
+        VALUE = 9,
+        COMMA = 10,
+        CLOSE_PAREN = 11,
+        CLOSE_CURLEY = 12,
+        SEMICOLON = 13, ///terminating
         ERR,
     };
 }
