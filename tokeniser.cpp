@@ -26,10 +26,30 @@ bool expect_seq(int pos, data_t dat, const std::string& str)
     return true;
 }
 
-std::optional<int> expect_until(int pos, data_t dat, const std::vector<char>& c, bool allow_eof = false)
+enum expect_until_modes
 {
+    expect_until_do_none = 0,
+    expect_until_do_eof = 1,
+    expect_until_do_escape = 2,
+};
+
+std::optional<int> expect_until(int pos, data_t dat, const std::vector<char>& c, expect_until_modes mode = expect_until_do_none)
+{
+    bool escaped = false;
+
     for(int i=pos; i < (int)dat.size(); i++)
     {
+        if((mode & expect_until_do_escape) > 0)
+        {
+            if(!escaped && dat[i].c == '\\')
+                escaped = true;
+            else
+                escaped = false;
+
+            if(escaped)
+                continue;
+        }
+
         for(auto& kk : c)
         {
             if(dat[i].c == kk)
@@ -37,7 +57,7 @@ std::optional<int> expect_until(int pos, data_t dat, const std::vector<char>& c,
         }
     }
 
-    if(allow_eof)
+    if((mode & expect_until_do_eof) > 0)
     {
         return (int)dat.size();
     }
@@ -113,7 +133,7 @@ bool expect_key(int& pos, data_t dat, token_seq tok)
 
     ///lots of these cases here are recoverable if we have autocompletes for the value,
     ///eg #script.name({key, -> #script.name({key:"", val:""})
-    std::optional<int> found = expect_until(pos, dat, {'\"', '(', '{', ')', '}', ';', ':', ','}, true);
+    std::optional<int> found = expect_until(pos, dat, {'\"', '(', '{', ')', '}', ';', ':', ','}, expect_until_do_eof);
 
     if(!found.has_value())
         return false;
@@ -127,12 +147,54 @@ bool expect_key(int& pos, data_t dat, token_seq tok)
     return true;
 }
 
+bool expect_value(int& pos, data_t dat, token_seq tok)
+{
+    if(!in_bound(pos, dat))
+        return false;
+
+    bool is_string = false;
+
+    if(dat[pos].c == '\"' || dat[pos].c == '\'')
+    {
+        is_string = true;
+    }
+
+    std::optional<int> found;
+
+    if(is_string)
+    {
+        char start_c = dat[pos].c;
+
+        found = expect_until(pos+1, dat, {start_c}, expect_until_do_escape);
+
+        if(found.has_value())
+        {
+            *found = (*found) + 1;
+        }
+    }
+    else
+    {
+        ///HANDLE NON STRING CASE HERE
+    }
+
+    if(!found.has_value())
+        return false;
+
+    auto fpos = *found;
+    int len = fpos - pos;
+
+    tok.push_back(make_tokens(pos, len, token::VALUE, dat));
+    pos += len;
+
+    return true;
+}
+
 bool expect_extname(int& pos, data_t dat, token_seq tok)
 {
     if(!in_bound(pos, dat))
         return false;
 
-    std::optional<int> found = expect_until(pos, dat, {'\"', '(', '{', ')', '}', ';'}, true);
+    std::optional<int> found = expect_until(pos, dat, {'\"', '(', '{', ')', '}', ';'}, expect_until_do_eof);
 
     if(!found.has_value())
         return false;
@@ -205,6 +267,16 @@ std::vector<token_info> tokenise_str(const std::vector<interop_char>& dat)
         discard_whitespace(pos, dat, tok);
 
         expect_key(pos, dat, tok);
+
+        discard_whitespace(pos, dat, tok);
+
+        expect_single_char(pos, dat, tok, ':', token::COLON);
+
+        discard_whitespace(pos, dat, tok);
+
+        expect_value(pos, dat, tok);
+
+        discard_whitespace(pos, dat, tok);
     }
 
     return tok;
@@ -242,7 +314,7 @@ void token_tests()
     {
         if(tokens[i].type != expected[i])
         {
-            printf("failure at %i\n", i);
+            printf("failure at %i %s\n", i, tokens[i].str.c_str());
         }
         else
         {
