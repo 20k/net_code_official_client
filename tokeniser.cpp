@@ -89,6 +89,22 @@ bool expect_dot(int& pos, data_t dat, token_seq tok)
     return false;
 }
 
+bool expect_single_char(int& pos, data_t dat, token_seq tok, char c, token::token type)
+{
+    if(!in_bound(pos, dat))
+        return false;
+
+    if(dat[pos].c == c)
+    {
+        tok.push_back(make_tokens(pos, 1, type, dat));
+        pos++;
+
+        return true;
+    }
+
+    return false;
+}
+
 bool expect_extname(int& pos, data_t dat, token_seq tok)
 {
     if(!in_bound(pos, dat))
@@ -155,6 +171,9 @@ std::vector<token_info> tokenise_str(const std::vector<interop_char>& dat)
         expect_hostname(pos, dat, tok);
         expect_dot(pos, dat, tok);
         expect_extname(pos, dat, tok);
+
+        expect_single_char(pos, dat, tok, '(', token::OPEN_PAREN);
+        expect_single_char(pos, dat, tok, '{', token::OPEN_CURLEY);
     }
 
     return tok;
