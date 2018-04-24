@@ -105,6 +105,28 @@ bool expect_single_char(int& pos, data_t dat, token_seq tok, char c, token::toke
     return false;
 }
 
+///don't expect keys which are strings
+bool expect_key(int& pos, data_t dat, token_seq tok)
+{
+    if(!in_bound(pos, dat))
+        return false;
+
+    ///lots of these cases here are recoverable if we have autocompletes for the value,
+    ///eg #script.name({key, -> #script.name({key:"", val:""})
+    std::optional<int> found = expect_until(pos, dat, {'\"', '(', '{', ')', '}', ';', ':', ','}, true);
+
+    if(!found.has_value())
+        return false;
+
+    auto fpos = *found;
+    int len = fpos - pos;
+
+    tok.push_back(make_tokens(pos, len, token::KEY, dat));
+    pos += len;
+
+    return true;
+}
+
 bool expect_extname(int& pos, data_t dat, token_seq tok)
 {
     if(!in_bound(pos, dat))
@@ -172,8 +194,17 @@ std::vector<token_info> tokenise_str(const std::vector<interop_char>& dat)
         expect_dot(pos, dat, tok);
         expect_extname(pos, dat, tok);
 
+        discard_whitespace(pos, dat, tok);
+
         expect_single_char(pos, dat, tok, '(', token::OPEN_PAREN);
+
+        discard_whitespace(pos, dat, tok);
+
         expect_single_char(pos, dat, tok, '{', token::OPEN_CURLEY);
+
+        discard_whitespace(pos, dat, tok);
+
+        expect_key(pos, dat, tok);
     }
 
     return tok;
