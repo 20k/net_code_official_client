@@ -26,12 +26,20 @@ bool expect_seq(int pos, data_t dat, const std::string& str)
     return true;
 }
 
-std::optional<int> expect_until(int pos, data_t dat, char c)
+std::optional<int> expect_until(int pos, data_t dat, const std::vector<char>& c, bool allow_eof = false)
 {
     for(int i=pos; i < (int)dat.size(); i++)
     {
-        if(dat[i].c == c)
-            return i;
+        for(auto& kk : c)
+        {
+            if(dat[i].c == kk)
+                return i;
+        }
+    }
+
+    if(allow_eof)
+    {
+        return (int)dat.size();
     }
 
     return std::nullopt;
@@ -57,7 +65,7 @@ token_info make_tokens(int start, int length, token::token type, data_t dat)
     ret.start_pos = start;
     ret.end_pos = start + length;
 
-    for(int i=start; i < start + length; i++)
+    for(int i=start; i < start + length && i < (int)dat.size(); i++)
     {
         ret.str.push_back(dat[i].c);
     }
@@ -67,6 +75,9 @@ token_info make_tokens(int start, int length, token::token type, data_t dat)
 
 bool expect_dot(int& pos, data_t dat, token_seq tok)
 {
+    if(!in_bound(pos, dat))
+        return false;
+
     if(dat[pos].c == '.')
     {
         tok.push_back(make_tokens(pos, 1, token::DOT, dat));
@@ -78,9 +89,28 @@ bool expect_dot(int& pos, data_t dat, token_seq tok)
     return false;
 }
 
+bool expect_extname(int& pos, data_t dat, token_seq tok)
+{
+    if(!in_bound(pos, dat))
+        return false;
+
+    std::optional<int> found = expect_until(pos, dat, {'\"', '(', '{', ')', '}', ';'}, true);
+
+    if(!found.has_value())
+        return false;
+
+    auto fpos = *found;
+    int len = fpos - pos;
+
+    tok.push_back(make_tokens(pos, len, token::EXT_NAME, dat));
+    pos += len;
+
+    return true;
+}
+
 bool expect_hostname(int& pos, data_t dat, token_seq tok)
 {
-    std::optional<int> found = expect_until(pos, dat, '.');
+    std::optional<int> found = expect_until(pos, dat, {'.'});
 
     if(!found.has_value())
         return false;
@@ -96,6 +126,9 @@ bool expect_hostname(int& pos, data_t dat, token_seq tok)
 
 bool expect_hash(int& pos, data_t dat, token_seq tok)
 {
+    if(!in_bound(pos, dat))
+        return false;
+
     std::string expected = "#";
 
     if(expect_seq(pos, dat, expected))
@@ -121,6 +154,7 @@ std::vector<token_info> tokenise_str(const std::vector<interop_char>& dat)
     {
         expect_hostname(pos, dat, tok);
         expect_dot(pos, dat, tok);
+        expect_extname(pos, dat, tok);
     }
 
     return tok;

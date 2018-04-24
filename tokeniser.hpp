@@ -35,6 +35,8 @@ struct token_info
     std::string str;
     int start_pos = 0;
     int end_pos = 0;
+
+    bool ghost = false;
 };
 
 std::vector<token_info> tokenise_str(const std::vector<interop_char>& ichars);
