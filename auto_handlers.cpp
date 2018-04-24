@@ -185,6 +185,9 @@ int insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<std
 
     int char_pos = in.size();
 
+    if(pos > (int)tokens.size())
+        pos = tokens.size();
+
     if(pos < (int)tokens.size())
         char_pos = tokens[pos].start_pos;
 
@@ -425,6 +428,11 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
         }
     }
 
+    if(!once_insert)
+    {
+        insert_kv_ghosts(keys, vals, 999, tokens, in, num_real_args);
+    }
+
     ///ok. now we need to do some parsing of the tokens themselves
     ///need to insert autocomplete args into the tokens
     ///as well as detect args we already have there
@@ -443,6 +451,7 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
     bool keep_inserting = true;
 
     int inserted_to = -1;
+    bool value_inserted = false;
 
     for(int i=0; i < (int)tokens.size(); i++)
     {
@@ -465,16 +474,20 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
             in.insert(in.begin() + full_offset, interop.begin(), interop.end());
 
-            if(tab_pressed && keep_inserting)
+            if(tab_pressed && (keep_inserting || tok.type == token::CLOSE_PAREN || tok.type == token::CLOSE_CURLEY || tok.type == token::OPEN_CURLEY || tok.type == token::OPEN_PAREN))
             {
                 command_str.insert(command_str.begin() + full_no_col_offset, tok.str.begin(), tok.str.end());
 
-                inserted_to = in.size();
+                if(!value_inserted)
+                    inserted_to = full_no_col_offset + tok.str.size();
 
-                if(tok.type == token::VALUE && tok.subtype == token::STRING)
+                if(tok.type == token::VALUE && tok.subtype == token::STRING && !value_inserted)
                 {
                     inserted_to--;
                 }
+
+                if(tok.type == token::VALUE)
+                    value_inserted = true;
             }
 
             if(tok.type == token::VALUE)
@@ -488,7 +501,7 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
             if(tok.start_pos < cursor_idx)
             {
-                cursor_offset++;
+                cursor_offset += tok.str.size();
             }
         }
     }
