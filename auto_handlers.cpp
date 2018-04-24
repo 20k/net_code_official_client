@@ -177,16 +177,18 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
     }
 }
 
-void insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<std::string>& vals, int pos, std::vector<token_info>& tokens, std::vector<interop_char>& in, int num_concrete_args)
+int insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<std::string>& vals, int pos, std::vector<token_info>& tokens, std::vector<interop_char>& in, int num_concrete_args)
 {
     ///should be completely impossible
     if(pos < 0)
-        return;
+        return 0;
 
     int char_pos = in.size();
 
     if(pos < (int)tokens.size())
         char_pos = tokens[pos].start_pos;
+
+    int num = 0;
 
     for(int i=0; i < (int)keys.size(); i++)
     {
@@ -198,6 +200,8 @@ void insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<st
             ///it says comma
             ///but some sort of space ghost has gotten in the works
             tokens.insert(tokens.begin() + pos++, make_ghost_token(char_pos, token::COMMA, ", "));
+
+            num++;
         }
 
         token_info arg_token = make_ghost_token(char_pos, token::KEY, key);
@@ -205,21 +209,39 @@ void insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<st
         token_info val_token = make_ghost_token(char_pos, token::VALUE, val);
         val_token.subtype = token::GENERIC;
 
+        if(val.size() >= 2)
+        {
+            auto tokenise_temp = tokenise_general(string_to_interop_no_autos(val, true));
+
+            if(tokenise_temp.size() > 0 && tokenise_temp[0].type == token::VALUE && tokenise_temp[0].subtype == token::STRING)
+            {
+                val_token.subtype = token::STRING;
+            }
+        }
+
         tokens.insert(tokens.begin() + pos++, arg_token);
         tokens.insert(tokens.begin() + pos++, col_token);
         tokens.insert(tokens.begin() + pos++, val_token);
 
+        num += 3;
+
         if(i != (int)keys.size()-1)
         {
             tokens.insert(tokens.begin() + pos++, make_ghost_token(char_pos, token::COMMA, ", "));
+
+            num++;
         }
     }
+
+    return num;
 }
 
-void insert_single_ghost(const std::string& str, int pos, std::vector<token_info>& tokens, std::vector<interop_char>& in, int ghost_offset)
+int insert_single_ghost(const std::string& str, int pos, std::vector<token_info>& tokens, std::vector<interop_char>& in, int ghost_offset)
 {
     if(pos < 0)
-        return;
+        return 0;
+
+    int num = 0;
 
     int char_pos = in.size();
 
@@ -229,6 +251,9 @@ void insert_single_ghost(const std::string& str, int pos, std::vector<token_info
     token_info val_token = make_ghost_token(char_pos, token::VALUE, str);
 
     tokens.insert(tokens.begin() + pos, val_token);
+    num++;
+
+    return num;
 }
 
     /*auto it = found_args.upper_bound(name);
@@ -361,29 +386,42 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
         vals.push_back(key_to_arg[i.first]);
     }
 
+    /*if(keys.size() > 1)
+    {
+        keys.resize(1);
+        vals.resize(1);
+    }*/
+
+    bool once_insert = false;
+
     for(int i=0; i < (int)tokens.size(); i++)
     {
         token_info& tok = tokens[i];
 
         if(tok.type == token::EXT_NAME && ghost_str != "")
         {
-            insert_single_ghost(ghost_str, i+1, tokens, in, 1);
+            int add = insert_single_ghost(ghost_str, i+1, tokens, in, 1);
 
-            break;
+            i += add;
+            continue;
         }
 
-        if(tok.type == token::CLOSE_PAREN)
+        if(tok.type == token::CLOSE_PAREN && !once_insert)
         {
-            insert_kv_ghosts(keys, vals, i, tokens, in, num_real_args);
+            int add = insert_kv_ghosts(keys, vals, i, tokens, in, num_real_args);
 
-            break;
+            i += add;
+            once_insert = true;
+            continue;
         }
 
-        if(tok.type == token::CLOSE_CURLEY)
+        if(tok.type == token::CLOSE_CURLEY && !once_insert)
         {
-            insert_kv_ghosts(keys, vals, i, tokens, in, num_real_args);
+            int add = insert_kv_ghosts(keys, vals, i, tokens, in, num_real_args);
 
-            break;
+            i += add;
+            once_insert = true;
+            continue;
         }
     }
 
@@ -401,6 +439,10 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
     int in_offset = 0;
     int no_col_offset = 0;
+
+    bool keep_inserting = true;
+
+    int inserted_to = -1;
 
     for(int i=0; i < (int)tokens.size(); i++)
     {
@@ -423,10 +465,23 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
             in.insert(in.begin() + full_offset, interop.begin(), interop.end());
 
-            if(tab_pressed)
+            if(tab_pressed && keep_inserting)
             {
                 command_str.insert(command_str.begin() + full_no_col_offset, tok.str.begin(), tok.str.end());
+
+                inserted_to = in.size();
+
+                if(tok.type == token::VALUE && tok.subtype == token::STRING)
+                {
+                    inserted_to--;
+                }
             }
+
+            if(tok.type == token::VALUE)
+                keep_inserting = false;
+
+            if(tok.type == token::OPEN_CURLEY)
+                keep_inserting = false;
 
             in_offset += interop.size();
             no_col_offset += tok.str.size();
@@ -438,10 +493,18 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
         }
     }
 
+    if(inserted_to == -1)
+        inserted_to = in.size();
+
     if(tab_pressed)
     {
         cursor_offset = 0;
-        cursor_idx = in.size();
+        //cursor_idx = in.size();
+
+        if(inserted_to > (int)in.size())
+            inserted_to = in.size();
+
+        cursor_idx = inserted_to;
     }
 }
 
