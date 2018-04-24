@@ -187,7 +187,18 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
         return;
 
     if(found_args.find(script_name) == found_args.end())
+    {
+        if(tab_pressed && command_str.size() != 0 && command_str.back() != ')')
+        {
+            command_str += "()";
+
+            in = string_to_interop_no_autos(command_str, false);
+
+            cursor_idx = in.size();
+        }
+
         return;
+    }
 
     ///ok. now we need to do some parsing of the tokens themselves
     ///need to insert autocomplete args into the tokens
