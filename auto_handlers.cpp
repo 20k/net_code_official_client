@@ -105,17 +105,20 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
     {
         std::vector<token_info> tokens = tokenise_general(in);
 
-        for(auto& i : tokens)
+        for(token_info& i : tokens)
         {
-            //std::cout << "hi t " << i.type << std::endl;;
-
-            //{std::cout << "istr " << i.str << " itype " << i.type << std::endl;
-
             if(valid_colourings.find(i.type) != valid_colourings.end())
             {
                 for(int kk=i.start_pos; kk < i.end_pos; kk++)
                 {
                     in[kk].col = cols[i.str];
+                }
+            }
+            else if(i.type == token::VALUE && (i.subtype == token::STRING || i.subtype == token::NUMBER))
+            {
+                for(int kk=i.start_pos; kk < i.end_pos; kk++)
+                {
+                    in[kk].col = value_col;
                 }
             }
         }

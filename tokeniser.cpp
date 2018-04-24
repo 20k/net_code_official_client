@@ -223,9 +223,26 @@ bool expect_value(int& pos, data_t dat, token_seq tok)
 
         found = expect_until(pos, dat, {}, (expect_until_modes)(expect_until_do_eof | expect_until_is_not_name));
 
+        ///validate number properly
         if(found.has_value())
         {
-            subtype = token::NUMBER;
+            subtype = token::GENERIC;
+
+            bool all_numeric = true;
+
+            for(int i=pos; i < *found; i++)
+            {
+                if(!isdigit(dat[i].c))
+                {
+                    all_numeric = false;
+                    break;
+                }
+            }
+
+            if(all_numeric)
+            {
+                subtype = token::NUMBER;
+            }
         }
     }
 
@@ -449,7 +466,7 @@ std::vector<token_info> tokenise_general(const std::vector<interop_char>& dat)
 
         if(expect_seclevel(pos, dat, tok))
         {
-            //tokenise_function_internal(pos, dat, tok, false);
+            tokenise_function_internal(pos, dat, tok, false);
             any |= true;
             continue;
         }

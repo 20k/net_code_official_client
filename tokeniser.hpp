@@ -33,6 +33,7 @@ namespace token
     {
         NUMBER,
         STRING,
+        GENERIC,
         KEYWORD,
         NONE,
     };
