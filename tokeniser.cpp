@@ -51,21 +51,14 @@ std::optional<int> expect_until(int pos, data_t dat, const std::vector<char>& c,
                 escaped = false;
 
             if(escaped)
+            {
+                i++;
                 continue;
+            }
         }
 
         if((mode & expect_until_is_not_name) > 0)
         {
-            /*if(i == pos && isalpha(dat[i].c))
-            {
-                ascii_start = true;
-            }
-
-            if(i == pos && !isalpha(dat[i].c))
-            {
-                return std::nullopt;
-            }*/
-
             if(i == pos && !is_valid_name_character(dat[i].c, true))
                 return std::nullopt;
 
