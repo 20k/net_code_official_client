@@ -196,6 +196,7 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
     cursor_offset = 0;
 
     int in_offset = 0;
+    int no_col_offset = 0;
 
     for(int i=0; i < (int)tokens.size(); i++)
     {
@@ -208,12 +209,23 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
             auto interop = string_to_interop_no_autos(ex_str, false);
 
             int full_offset = tok.start_pos + in_offset;
+            int full_no_col_offset = tok.start_pos + no_col_offset;
 
             if(full_offset > in.size())
                 full_offset = in.size();
 
+            if(full_no_col_offset > command_str.size())
+                full_no_col_offset = command_str.size();
+
             in.insert(in.begin() + full_offset, interop.begin(), interop.end());
+
+            if(tab_pressed)
+            {
+                command_str.insert(command_str.begin() + full_no_col_offset, tok.str.begin(), tok.str.end());
+            }
+
             in_offset += interop.size();
+            no_col_offset += tok.str.size();
 
             if(tok.start_pos < cursor_idx)
             {
