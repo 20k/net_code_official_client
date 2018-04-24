@@ -329,6 +329,9 @@ bool expect_seclevel(int& pos, data_t dat, token_seq tok)
         "#s.",
     };
 
+    if(dat[pos].c != '#')
+        return false;
+
     std::string found;
     bool any = false;
 
