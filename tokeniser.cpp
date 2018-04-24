@@ -71,6 +71,9 @@ std::optional<int> expect_until(int pos, data_t dat, const std::vector<char>& c,
             if(dat[i].c == kk)
                 return i;
         }
+
+        if(dat[i].c == '\n')
+            return std::nullopt;
     }
 
     if((mode & expect_until_do_eof) > 0)
@@ -83,7 +86,7 @@ std::optional<int> expect_until(int pos, data_t dat, const std::vector<char>& c,
 
 bool is_whitespace(int pos, data_t dat)
 {
-    return isspace(dat[pos].c);
+    return isspace(dat[pos].c) && dat[pos].c != '\n';
 }
 
 void discard_whitespace(int& pos, data_t dat, token_seq tok)
@@ -260,7 +263,7 @@ bool expect_extname(int& pos, data_t dat, token_seq tok)
     if(!in_bound(pos, dat))
         return false;
 
-    std::optional<int> found = expect_until(pos, dat, {'\"', '(', '{', ')', '}', ';', ' '}, expect_until_do_eof);
+    std::optional<int> found = expect_until(pos, dat, {'\"', '(', '{', ')', '}', ';', ' ', '\n'}, expect_until_do_eof);
 
     if(!found.has_value())
         return false;
@@ -452,6 +455,11 @@ std::vector<token_info> tokenise_general(const std::vector<interop_char>& dat)
     for(; pos < (int)dat.size();)
     {
         bool any = false;
+
+        /*while(dat[pos].c == '\n' && pos < (int)dat.size())
+        {
+            pos++;
+        }*/
 
         discard_whitespace(pos, dat, tok);
 

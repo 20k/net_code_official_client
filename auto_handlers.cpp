@@ -129,9 +129,10 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
             }
             else if(i.type == token::VALUE && (i.subtype == token::STRING || i.subtype == token::NUMBER))
             {
-                colour_interop(in, i.start_pos, i.end_pos, value_col);
+                if(use_autocolour || i.subtype == token::NUMBER)
+                    colour_interop(in, i.start_pos, i.end_pos, value_col);
             }
-            else if(use_autocolour && i.type == token::VALUE && i.subtype == token::GENERIC)
+            else if(use_autocolour && i.type == token::VALUE && i.subtype == token::GENERIC && use_autocolour)
             {
                 for(auto& ss : generic_keywords)
                 {
@@ -146,109 +147,34 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
 
         if(parse_for_autocompletes)
         {
+            for(int kk=0; kk < (int)tokens.size() - 3; kk++)
+            {
+                if(tokens[kk].type == token::HOST_NAME && tokens[kk+1].type == token::DOT && tokens[kk+2].type == token::EXT_NAME)
+                {
+                    std::string str = tokens[kk].str + "." + tokens[kk+2].str;
 
+                    bool exists = found_args.find(str) != found_args.end();
+
+                    if(str.size() != 0 && !exists)
+                    {
+                        //std::cout << "fauto " << str << std::endl;
+
+                        found_unprocessed_autocompletes.insert(str);
+                    }
+                }
+            }
+
+            /*for(auto& kk : tokens)
+            {
+                std::cout << "toke " << kk.str << " type " << kk.type << std::endl;
+            }*/
         }
 
         for(auto& kk : tokens)
         {
             i += kk.str.size();
         }
-
-        /*if(parse_for_autocompletes)
-        {
-            for(int i=0; i < (int)ret.size(); i++)
-            {
-                /*std::string out;
-
-                bool null_terminated = false;
-
-                get_autocomplete(ret, i, out, null_terminated, true);
-
-                bool exists = found_args.find(out) != found_args.end();
-
-                if(out.size() != 0 && !exists)
-                {
-                    found_unprocessed_autocompletes.insert(out);
-                }
-            }
-        }*/
     }
-
-    #if 0
-    std::map<std::string, vec3f> cols
-    {
-        {"#fs.", {60, 255, 60}},
-        {"#hs.", {255, 255, 40}},
-        {"#ms.", {255, 140, 40}},
-        {"#ls.", {255, 20, 20}},
-        {"#ns.", {255, 20, 255}},
-    };
-
-    vec3f pale_blue = {120, 120, 255};
-    vec3f pale_red = {255, 60, 60};
-
-    cols["{"] = pale_red;
-    cols["}"] = pale_red;
-    cols["["] = pale_red;
-    cols["]"] = pale_red;
-
-    //if(colour_special)
-    if(use_autocolour)
-    {
-        cols["function?"] = pale_blue;
-        cols["while?"] = pale_blue;
-        cols["for?"] = pale_blue;
-        cols["if?"] = pale_blue;
-        cols["return?"] = pale_blue;
-        cols[";"] = pale_red;
-    }
-
-    for(auto& i : cols)
-    {
-        for(int kk=0; kk < (int)ret.size(); kk++)
-            interop_colour(ret, kk, i.first, i.second);
-    }
-
-    vec3f value_col = {100, 206, 209};
-
-    interop_colour_numbers(ret, value_col);
-
-    if(!use_autocolour)
-        return;
-
-    interop_colour_string(ret, value_col);
-
-    ///find full strings to autocomplete
-    ///uses different parsing algorithm to is_valid
-    if(parse_for_autocompletes)
-    {
-        for(int i=0; i < (int)ret.size(); i++)
-        {
-            /*std::string out;
-
-            bool null_terminated = false;
-
-            get_autocomplete(ret, i, out, null_terminated, true);
-
-            bool exists = found_args.find(out) != found_args.end();
-
-            if(out.size() != 0 && !exists)
-            {
-                found_unprocessed_autocompletes.insert(out);
-            }*/
-
-            std::vector<token_info> tokens = tokenise_str(in, false);
-
-            for(token_info& tok : tokens)
-            {
-
-            }
-        }
-    }
-
-    //std::vector<token_info> tokens = tokenise_str(in, false);
-    #endif // 0
-
 }
 
 #if 0
