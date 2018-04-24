@@ -13,6 +13,7 @@
 #include "stacktrace.hpp"
 #include "editable_string.hpp"
 #include "ui_components.hpp"
+#include "tokeniser.hpp"
 
 ///ruh roh
 ///need to structure this project properly
@@ -53,6 +54,8 @@ int main()
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
     stack_on_start();
+
+    token_tests();
 
     c_shared_data shared = sd_alloc();
 
