@@ -27,6 +27,7 @@ namespace token
         OPEN_SQUARE = 14,
         CLOSE_SQUARE = 15,
         QUOTE = 16,
+        SPACE = 17,
         ERR,
     };
 

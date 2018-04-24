@@ -191,6 +191,25 @@ int insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<std
     if(pos < (int)tokens.size())
         char_pos = tokens[pos].start_pos;
 
+    bool insert_front = num_concrete_args > 0;
+    bool insert_space = false;
+
+    int lpos = pos - 1;
+
+    if(lpos >= 0)
+    {
+        if(tokens[lpos].type == token::COMMA)
+        {
+            insert_front = false;
+
+            token_info& ctoken = tokens[lpos];
+            int spos = ctoken.start_pos + 1;
+
+            if(ctoken.str.size() == 1 && ((spos < (int)in.size() && in[spos].c != ' ') || spos >= (int)in.size()))
+                insert_space = true;
+        }
+    }
+
     int num = 0;
 
     for(int i=0; i < (int)keys.size(); i++)
@@ -198,13 +217,25 @@ int insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<std
         std::string key = keys[i];
         std::string val = vals[i];
 
-        if(num_concrete_args > 0)
+        if(insert_front)
         {
             ///it says comma
             ///but some sort of space ghost has gotten in the works
             tokens.insert(tokens.begin() + pos++, make_ghost_token(char_pos, token::COMMA, ", "));
 
             num++;
+
+            insert_front = false;
+        }
+
+        ///INSERT SPACE GHOST
+        if(insert_space)
+        {
+            tokens.insert(tokens.begin() + pos++, make_ghost_token(char_pos, token::SPACE, " "));
+
+            num++;
+
+            insert_space = false;
         }
 
         token_info arg_token = make_ghost_token(char_pos, token::KEY, key);
@@ -336,6 +367,7 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
                 continue;
 
             ghost_str = "";
+            break;
         }
     }
 
