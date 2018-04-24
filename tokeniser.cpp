@@ -139,10 +139,15 @@ bool expect_dot(int& pos, data_t dat, token_seq tok)
     return false;
 }
 
-bool expect_single_char(int& pos, data_t dat, token_seq tok, char c, token::token type, bool insert_ghosts)
+bool expect_single_char(int& pos, data_t dat, token_seq tok, char c, token::token type, bool insert_ghosts, int ghost_offset)
 {
     if(!in_bound(pos, dat))
+    {
+        if(insert_ghosts)
+            tok.push_back(make_ghost_token(pos + ghost_offset, type, std::string(1, c)));
+
         return false;
+    }
 
     if(dat[pos].c == c)
     {
@@ -154,7 +159,7 @@ bool expect_single_char(int& pos, data_t dat, token_seq tok, char c, token::toke
 
     if(insert_ghosts)
     {
-        tok.push_back(make_ghost_token(pos, type, std::string(1, c)));
+        tok.push_back(make_ghost_token(pos + ghost_offset, type, std::string(1, c)));
     }
 
     return false;
@@ -311,18 +316,22 @@ bool expect_hash(int& pos, data_t dat, token_seq tok)
     return false;
 }
 
-void expect_key_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts)
+bool expect_key_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts)
 {
-    expect_key(pos, dat, tok);
+    bool success = true;
+
+    success &= expect_key(pos, dat, tok);
     discard_whitespace(pos, dat, tok);
 
-    expect_single_char(pos, dat, tok, ':', token::COLON, insert_ghosts);
+    expect_single_char(pos, dat, tok, ':', token::COLON, success, 0);
     discard_whitespace(pos, dat, tok);
 
     //std::cout << "fnd df " << found << std::endl;
 
-    expect_value(pos, dat, tok);
+    success &= expect_value(pos, dat, tok);
     discard_whitespace(pos, dat, tok);
+
+    return success;
 }
 
 bool expect_seclevel(int& pos, data_t dat, token_seq tok)
@@ -409,24 +418,31 @@ void tokenise_function_internal(int& pos, data_t dat, token_seq tok, bool insert
     expect_extname(pos, dat, tok);
     discard_whitespace(pos, dat, tok);
 
-    expect_single_char(pos, dat, tok, '(', token::OPEN_PAREN, insert_ghosts);
+    expect_single_char(pos, dat, tok, '(', token::OPEN_PAREN, insert_ghosts, 0);
     discard_whitespace(pos, dat, tok);
 
-    expect_single_char(pos, dat, tok, '{', token::OPEN_CURLEY, insert_ghosts);
+    expect_single_char(pos, dat, tok, '{', token::OPEN_CURLEY, insert_ghosts, 0);
     discard_whitespace(pos, dat, tok);
 
-    expect_key_value(pos, dat, tok, insert_ghosts);
+    bool success = true;
 
-    while(expect_single_char(pos, dat, tok, ',', token::COMMA, false))
+    if(pos < dat.size())
     {
-        discard_whitespace(pos, dat, tok);
-        expect_key_value(pos, dat, tok, insert_ghosts);
+        success = expect_key_value(pos, dat, tok, insert_ghosts);
+
+        while(expect_single_char(pos, dat, tok, ',', token::COMMA, false, 0))
+        {
+            discard_whitespace(pos, dat, tok);
+            success = expect_key_value(pos, dat, tok, insert_ghosts);
+        }
     }
 
-    expect_single_char(pos, dat, tok, '}', token::CLOSE_CURLEY, insert_ghosts);
+    //std::cout << "success " << success << std::endl;
+
+    expect_single_char(pos, dat, tok, '}', token::CLOSE_CURLEY, success, 1);
     discard_whitespace(pos, dat, tok);
 
-    expect_single_char(pos, dat, tok, ')', token::CLOSE_PAREN, insert_ghosts);
+    expect_single_char(pos, dat, tok, ')', token::CLOSE_PAREN, success, 1);
     discard_whitespace(pos, dat, tok);
 }
 
@@ -472,12 +488,12 @@ std::vector<token_info> tokenise_general(const std::vector<interop_char>& dat)
 
         any |= expect_value(pos, dat, tok);
 
-        any |= expect_single_char(pos, dat, tok, '(', token::OPEN_PAREN, false);
-        any |= expect_single_char(pos, dat, tok, ')', token::CLOSE_PAREN, false);
-        any |= expect_single_char(pos, dat, tok, '{', token::OPEN_CURLEY, false);
-        any |= expect_single_char(pos, dat, tok, '}', token::CLOSE_CURLEY, false);
-        any |= expect_single_char(pos, dat, tok, '[', token::OPEN_SQUARE, false);
-        any |= expect_single_char(pos, dat, tok, ']', token::CLOSE_SQUARE, false);
+        any |= expect_single_char(pos, dat, tok, '(', token::OPEN_PAREN, false, 0);
+        any |= expect_single_char(pos, dat, tok, ')', token::CLOSE_PAREN, false, 0);
+        any |= expect_single_char(pos, dat, tok, '{', token::OPEN_CURLEY, false, 0);
+        any |= expect_single_char(pos, dat, tok, '}', token::CLOSE_CURLEY, false, 0);
+        any |= expect_single_char(pos, dat, tok, '[', token::OPEN_SQUARE, false, 0);
+        any |= expect_single_char(pos, dat, tok, ']', token::CLOSE_SQUARE, false, 0);
 
         if(!any)
             pos++;

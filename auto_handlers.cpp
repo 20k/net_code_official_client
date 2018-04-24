@@ -185,7 +185,13 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
     std::vector<token_info> tokens = tokenise_function(in, true);
 
-    std::string rebuilt;
+    std::string script_name = tokens_to_full_script(tokens);
+
+    if(script_name == "")
+        return;
+
+    if(found_args.find(script_name) == found_args.end())
+        return;
 
     cursor_offset = 0;
 
@@ -201,7 +207,12 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
             auto interop = string_to_interop_no_autos(ex_str, false);
 
-            in.insert(in.begin() + tok.start_pos + in_offset, interop.begin(), interop.end());
+            int full_offset = tok.start_pos + in_offset;
+
+            if(full_offset > in.size())
+                full_offset = in.size();
+
+            in.insert(in.begin() + full_offset, interop.begin(), interop.end());
             in_offset += interop.size();
 
             if(tok.start_pos < cursor_idx)
