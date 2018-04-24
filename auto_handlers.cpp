@@ -57,6 +57,20 @@ void interop_colour(std::vector<interop_char>& chs, int idx, const std::string& 
     }
 }
 
+inline
+void colour_interop(std::vector<interop_char>& in, int start, int fin, vec3f col)
+{
+    for(int kk=start; kk < fin; kk++)
+    {
+        if(kk < 0)
+            continue;
+        if(kk >= (int)in.size())
+            return;
+
+        in[kk].col = col;
+    }
+}
+
 void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_special, bool parse_for_autocompletes)
 {
     std::map<std::string, vec3f> cols
@@ -78,14 +92,16 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
     cols["["] = pale_red;
     cols["]"] = pale_red;
 
+    std::map<std::string, vec3f> generic_keywords;
+
     if(use_autocolour)
     {
-        cols["function?"] = pale_blue;
-        cols["while?"] = pale_blue;
-        cols["for?"] = pale_blue;
-        cols["if?"] = pale_blue;
-        cols["return?"] = pale_blue;
-        cols[";"] = pale_red;
+        generic_keywords["function"] = pale_blue;
+        generic_keywords["while"] = pale_blue;
+        generic_keywords["for"] = pale_blue;
+        generic_keywords["if"] = pale_blue;
+        generic_keywords["return"] = pale_blue;
+        generic_keywords[";"] = pale_red;
     }
 
     std::set<token::token> valid_colourings
@@ -109,19 +125,53 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
         {
             if(valid_colourings.find(i.type) != valid_colourings.end())
             {
-                for(int kk=i.start_pos; kk < i.end_pos; kk++)
-                {
-                    in[kk].col = cols[i.str];
-                }
+                colour_interop(in, i.start_pos, i.end_pos, cols[i.str]);
             }
             else if(i.type == token::VALUE && (i.subtype == token::STRING || i.subtype == token::NUMBER))
             {
-                for(int kk=i.start_pos; kk < i.end_pos; kk++)
+                colour_interop(in, i.start_pos, i.end_pos, value_col);
+            }
+            else if(use_autocolour && i.type == token::VALUE && i.subtype == token::GENERIC)
+            {
+                for(auto& ss : generic_keywords)
                 {
-                    in[kk].col = value_col;
+                    if(ss.first == i.str)
+                    {
+                        colour_interop(in, i.start_pos, i.end_pos, ss.second);
+                        break;
+                    }
                 }
             }
         }
+
+        if(parse_for_autocompletes)
+        {
+
+        }
+
+        for(auto& kk : tokens)
+        {
+            i += kk.str.size();
+        }
+
+        /*if(parse_for_autocompletes)
+        {
+            for(int i=0; i < (int)ret.size(); i++)
+            {
+                /*std::string out;
+
+                bool null_terminated = false;
+
+                get_autocomplete(ret, i, out, null_terminated, true);
+
+                bool exists = found_args.find(out) != found_args.end();
+
+                if(out.size() != 0 && !exists)
+                {
+                    found_unprocessed_autocompletes.insert(out);
+                }
+            }
+        }*/
     }
 
     #if 0
