@@ -181,6 +181,9 @@ bool expect_key(int& pos, data_t dat, token_seq tok)
     auto fpos = *found;
     int len = fpos - pos;
 
+    if(len <= 0)
+        return false;
+
     tok.push_back(make_tokens(pos, len, token::KEY, dat));
     pos += len;
 
