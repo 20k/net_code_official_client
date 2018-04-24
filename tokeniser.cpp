@@ -175,6 +175,7 @@ bool expect_value(int& pos, data_t dat, token_seq tok)
     else
     {
         ///HANDLE NON STRING CASE HERE
+        found = expect_until(pos, dat, {')', '}', ';', ':', ','}, expect_until_do_eof);
     }
 
     if(!found.has_value())
@@ -297,7 +298,7 @@ void token_tests()
 {
     std::cout << "token testing\n";
 
-    std::string base_str = "#scripts.core({user:\"hello\", doot:\"doot\"});";
+    std::string base_str = "#scripts.core({user:\"hello\", doot:\"doot\",asdf:93});";
 
     std::vector<interop_char> chars = build_from_colour_string(base_str, false);
 
@@ -311,6 +312,10 @@ void token_tests()
         token::EXT_NAME,
         token::OPEN_PAREN,
         token::OPEN_CURLEY,
+        token::KEY,
+        token::COLON,
+        token::VALUE,
+        token::COMMA,
         token::KEY,
         token::COLON,
         token::VALUE,
