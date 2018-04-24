@@ -21,6 +21,7 @@
 #include <libncclient/c_net_client.h>
 #include <libncclient/nc_util.hpp>
 #include <libncclient/c_server_api.h>
+#include <libncclient/nc_string_interop.hpp>
 
 bool is_focused(sf::RenderWindow& win)
 {
@@ -61,7 +62,7 @@ int main()
 
         std::string fauth = read_file_bin("key.key");
 
-        sd_set_auth(shared, fauth.c_str());
+        sd_set_auth(shared, make_view(fauth));
 
         std::cout << "loaded auth of " << fauth.size() << std::endl;
 
@@ -268,7 +269,7 @@ int main()
                 ///NEED TO WAIT FOR SERVER CONFIRMATION
                 if(spl.size() >= 2)
                 {
-                    sd_set_user(shared, spl[1].c_str());
+                    sd_set_user(shared, make_view(spl[1]));
                 }
             }
 
@@ -276,19 +277,19 @@ int main()
             {
                 if(!sa_is_local_command(term.command.command.c_str()))
                 {
-                    char* current_user = sd_get_user(shared);
+                    sized_string current_user = sd_get_user(shared);
 
-                    char* up_handled = sa_default_up_handling(current_user, term.command.command.c_str(), "./scripts/");
+                    char* up_handled = sa_default_up_handling(current_user.str, term.command.command.c_str(), "./scripts/");
 
                     char* server_command = sa_make_generic_server_command(up_handled);
 
-                    std::string str(server_command);
+                    std::string str = c_str_to_cpp(server_command);
 
                     free_string(server_command);
                     free_string(up_handled);
-                    free_string(current_user);
+                    free_sized_string(current_user);
 
-                    sd_add_back_write(shared, str.c_str());
+                    sd_add_back_write(shared, make_view(str));
                 }
 
                 term.auto_handle.clear_internal_state();
@@ -298,7 +299,7 @@ int main()
                 char* chat_command = sa_make_chat_command(chat_win.selected.c_str(), chat_win.command.command.c_str());
 
                 ///TODO
-                sd_add_back_write(shared, chat_command);
+                sd_add_back_write(shared, make_view_from_raw(chat_command));
 
                 free_string(chat_command);
             }
@@ -318,9 +319,9 @@ int main()
             {
                 bool should_shutdown = false;
 
-                char* found_user = sd_get_user(shared);
-                std::string data = handle_local_command(std::string(found_user), cmd, term.auto_handle, should_shutdown, term);
-                free_string(found_user);
+                sized_string found_user = sd_get_user(shared);
+                std::string data = handle_local_command(c_str_sized_to_cpp(found_user), cmd, term.auto_handle, should_shutdown, term);
+                free_sized_string(found_user);
 
                 term.add_text_from_server(data, chat_win, false);
 
@@ -369,9 +370,9 @@ int main()
 
         if(sd_has_front_read(shared))
         {
-            char* c_data = sd_get_front_read(shared);
-            std::string fdata(c_data);
-            free_string(c_data);
+            sized_string c_data = sd_get_front_read(shared);
+            std::string fdata = c_str_sized_to_cpp(c_data);
+            free_sized_string(c_data);
 
             term.add_text_from_server(fdata, chat_win);
         }
