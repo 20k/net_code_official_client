@@ -205,10 +205,6 @@ void insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<st
         token_info val_token = make_ghost_token(char_pos, token::VALUE, val);
         val_token.subtype = token::GENERIC;
 
-        //tokens.push_back(arg_token);
-        //tokens.push_back(col_token);
-        //tokens.push_back(val_token);
-
         tokens.insert(tokens.begin() + pos++, arg_token);
         tokens.insert(tokens.begin() + pos++, col_token);
         tokens.insert(tokens.begin() + pos++, val_token);
@@ -216,8 +212,6 @@ void insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<st
         if(i != (int)keys.size()-1)
         {
             tokens.insert(tokens.begin() + pos++, make_ghost_token(char_pos, token::COMMA, ", "));
-
-            //tokens.push_back(make_ghost_token(char_pos, token::COMMA, ", "));
         }
     }
 }
