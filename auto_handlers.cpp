@@ -387,7 +387,13 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
     std::vector<autocomplete_args> my_args;
 
     if(found_args.find(script_name) != found_args.end())
+    {
         my_args = found_args[script_name];
+    }
+    else if(found_args.find(script_name + ghost_str) != found_args.end())
+    {
+        my_args = found_args[script_name + ghost_str];
+    }
 
     for(auto& i : my_args)
     {
@@ -460,9 +466,16 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
         }
     }
 
+    //std::cout << "once " << once_insert << std::endl;
+
     if(!once_insert)
     {
         insert_kv_ghosts(keys, vals, 999, tokens, in, num_real_args);
+
+        for(auto& i : keys)
+        {
+            std::cout << "key " << i << std::endl;
+        }
     }
 
     ///ok. now we need to do some parsing of the tokens themselves
