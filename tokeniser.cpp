@@ -1,6 +1,7 @@
 #include "colour_interop.hpp"
 #include "tokeniser.hpp"
 #include <optional>
+#include <libncclient/nc_util.hpp>
 
 using data_t = const std::vector<interop_char>&;
 using token_seq = std::vector<token_info>&;
@@ -31,11 +32,14 @@ enum expect_until_modes
     expect_until_do_none = 0,
     expect_until_do_eof = 1,
     expect_until_do_escape = 2,
+    expect_until_is_not_name = 4,
 };
 
 std::optional<int> expect_until(int pos, data_t dat, const std::vector<char>& c, expect_until_modes mode = expect_until_do_none)
 {
     bool escaped = false;
+
+    bool ascii_start = false;
 
     for(int i=pos; i < (int)dat.size(); i++)
     {
@@ -48,6 +52,27 @@ std::optional<int> expect_until(int pos, data_t dat, const std::vector<char>& c,
 
             if(escaped)
                 continue;
+        }
+
+        if((mode & expect_until_is_not_name) > 0)
+        {
+            /*if(i == pos && isalpha(dat[i].c))
+            {
+                ascii_start = true;
+            }
+
+            if(i == pos && !isalpha(dat[i].c))
+            {
+                return std::nullopt;
+            }*/
+
+            if(i == pos && !is_valid_name_character(dat[i].c, true))
+                return std::nullopt;
+
+            if(i != pos && !is_valid_name_character(dat[i].c, true))
+            {
+                return i;
+            }
         }
 
         for(auto& kk : c)
@@ -194,7 +219,9 @@ bool expect_value(int& pos, data_t dat, token_seq tok)
     else
     {
         ///HANDLE NON STRING CASE HERE
-        found = expect_until(pos, dat, {')', '}', ';', ':', ',', ' '}, expect_until_do_eof);
+        //found = expect_until(pos, dat, {')', '}', ';', ':', ',', ' '}, expect_until_do_eof);
+
+        found = expect_until(pos, dat, {}, (expect_until_modes)(expect_until_do_eof | expect_until_is_not_name));
 
         if(found.has_value())
         {
