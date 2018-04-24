@@ -529,3 +529,10 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
         cursor_idx = inserted_to;
     }
 }
+
+void auto_handler::do_serialise(serialise& s, bool ser)
+{
+    s.handle_serialise(found_unprocessed_autocompletes, ser);
+    s.handle_serialise(found_args, ser);
+    s.handle_serialise(is_valid, ser);
+}
