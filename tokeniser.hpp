@@ -10,19 +10,19 @@ namespace token
 {
     enum token
     {
-        HASH,
-        HOST_NAME,
-        DOT,
-        EXT_NAME,
-        OPEN_PAREN,
-        OPEN_CURLEY,
-        KEY,
-        COLON,
-        VALUE,
-        COMMA,
-        CLOSE_PAREN,
-        CLOSE_CURLEY,
-        SEMICOLON, ///terminating
+        HASH = 0,
+        HOST_NAME = 1,
+        DOT = 2,
+        EXT_NAME = 3,
+        OPEN_PAREN = 4,
+        OPEN_CURLEY = 5,
+        KEY = 6,
+        COLON = 7,
+        VALUE = 8,
+        COMMA = 9,
+        CLOSE_PAREN = 10,
+        CLOSE_CURLEY = 11,
+        SEMICOLON = 12, ///terminating
         ERR,
     };
 }
@@ -39,7 +39,7 @@ struct token_info
     bool ghost = false;
 };
 
-std::vector<token_info> tokenise_str(const std::vector<interop_char>& ichars);
+std::vector<token_info> tokenise_str(const std::vector<interop_char>& ichars, bool insert_ghosts);
 
 void token_tests();
 

@@ -93,6 +93,17 @@ token_info make_tokens(int start, int length, token::token type, data_t dat)
     return ret;
 }
 
+token_info make_ghost_token(int start, token::token type, const std::string& chars)
+{
+    token_info ret;
+    ret.type = type;
+    ret.start_pos = start;
+    ret.str = chars;
+    ret.ghost = true;
+
+    return ret;
+}
+
 bool expect_dot(int& pos, data_t dat, token_seq tok)
 {
     if(!in_bound(pos, dat))
@@ -109,7 +120,7 @@ bool expect_dot(int& pos, data_t dat, token_seq tok)
     return false;
 }
 
-bool expect_single_char(int& pos, data_t dat, token_seq tok, char c, token::token type)
+bool expect_single_char(int& pos, data_t dat, token_seq tok, char c, token::token type, bool insert_ghosts)
 {
     if(!in_bound(pos, dat))
         return false;
@@ -120,6 +131,11 @@ bool expect_single_char(int& pos, data_t dat, token_seq tok, char c, token::toke
         pos++;
 
         return true;
+    }
+
+    if(insert_ghosts)
+    {
+        tok.push_back(make_ghost_token(pos, type, std::string(1, c)));
     }
 
     return false;
@@ -243,19 +259,21 @@ bool expect_hash(int& pos, data_t dat, token_seq tok)
     return false;
 }
 
-void expect_key_value(int& pos, data_t dat, token_seq tok)
+void expect_key_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts)
 {
     expect_key(pos, dat, tok);
     discard_whitespace(pos, dat, tok);
 
-    expect_single_char(pos, dat, tok, ':', token::COLON);
+    bool found = expect_single_char(pos, dat, tok, ':', token::COLON, insert_ghosts);
     discard_whitespace(pos, dat, tok);
+
+    std::cout << "fnd df " << found << std::endl;
 
     expect_value(pos, dat, tok);
     discard_whitespace(pos, dat, tok);
 }
 
-std::vector<token_info> tokenise_str(const std::vector<interop_char>& dat)
+std::vector<token_info> tokenise_str(const std::vector<interop_char>& dat, bool insert_ghosts)
 {
     std::vector<token_info> tok;
 
@@ -270,24 +288,24 @@ std::vector<token_info> tokenise_str(const std::vector<interop_char>& dat)
         expect_extname(pos, dat, tok);
         discard_whitespace(pos, dat, tok);
 
-        expect_single_char(pos, dat, tok, '(', token::OPEN_PAREN);
+        expect_single_char(pos, dat, tok, '(', token::OPEN_PAREN, insert_ghosts);
         discard_whitespace(pos, dat, tok);
 
-        expect_single_char(pos, dat, tok, '{', token::OPEN_CURLEY);
+        expect_single_char(pos, dat, tok, '{', token::OPEN_CURLEY, insert_ghosts);
         discard_whitespace(pos, dat, tok);
 
-        expect_key_value(pos, dat, tok);
+        expect_key_value(pos, dat, tok, insert_ghosts);
 
-        while(expect_single_char(pos, dat, tok, ',', token::COMMA))
+        while(expect_single_char(pos, dat, tok, ',', token::COMMA, false))
         {
             discard_whitespace(pos, dat, tok);
-            expect_key_value(pos, dat, tok);
+            expect_key_value(pos, dat, tok, insert_ghosts);
         }
 
-        expect_single_char(pos, dat, tok, '}', token::CLOSE_CURLEY);
+        expect_single_char(pos, dat, tok, '}', token::CLOSE_CURLEY, insert_ghosts);
         discard_whitespace(pos, dat, tok);
 
-        expect_single_char(pos, dat, tok, ')', token::CLOSE_PAREN);
+        expect_single_char(pos, dat, tok, ')', token::CLOSE_PAREN, insert_ghosts);
         discard_whitespace(pos, dat, tok);
     }
 
@@ -302,7 +320,7 @@ void token_tests()
 
     std::vector<interop_char> chars = build_from_colour_string(base_str, false);
 
-    std::vector<token_info> tokens = tokenise_str(chars);
+    std::vector<token_info> tokens = tokenise_str(chars, true);
 
     std::vector<token::token> expected
     {
@@ -334,11 +352,11 @@ void token_tests()
     {
         if(tokens[i].type != expected[i])
         {
-            printf("failure at %i %s\n", i, tokens[i].str.c_str());
+            printf("failure at %i %i %i %s\n", i, tokens[i].type, expected[i], tokens[i].str.c_str());
         }
         else
         {
-            printf("success at %i %s\n", i, tokens[i].str.c_str());
+            printf("success at %i %i %i %s\n", i, tokens[i].type, expected[i], tokens[i].str.c_str());
         }
     }
 
