@@ -303,7 +303,12 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
     for(auto& i : tokens)
     {
         if(i.type == token::OPEN_PAREN || i.type == token::CLOSE_PAREN || i.type == token::OPEN_CURLEY || i.type == token::CLOSE_CURLEY || i.type == token::SEMICOLON)
+        {
+            if(i.ghost)
+                continue;
+
             ghost_str = "";
+        }
     }
 
     std::map<std::string, std::string> key_to_arg;
