@@ -216,6 +216,37 @@ void insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<st
     }
 }
 
+    /*auto it = found_args.upper_bound(name);
+
+    if(it == found_args.end() || !starts_with(it->first, name))
+    {
+        if(tab_pressed)
+        {
+            command_str += "()";
+            cursor_idx = command_str.size();
+        }
+
+        return false;
+    }
+
+    auto splits = no_ss_split(name, ".");
+
+    if(splits.size() != 2)
+        return false;
+
+    std::string start = name;
+
+    auto pair_its = std::mismatch(name.begin(), name.end(), it->first.begin(), it->first.end());
+    auto distance = std::distance(name.begin(), pair_its.first);
+
+    if(pair_its.second == it->first.end())
+        return false;
+
+    std::string str(pair_its.second, it->first.end());*/
+
+//bool auto_handler::handle_script_autocomplete(std::vector<interop_char>& in, int& cursor_idx, std::string& command_str, const std::string& name);
+
+
 void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx, int& cursor_offset, std::string& command_str)
 {
     std::vector<token_info> tokens = tokenise_function(in, true);
@@ -225,7 +256,9 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
     if(script_name == "")
         return;
 
-    if(found_args.find(script_name) == found_args.end())
+    auto it = found_args.upper_bound(script_name);
+
+    if(it == found_args.end() || !starts_with(it->first, script_name))
     {
         if(tab_pressed && command_str.size() != 0 && command_str.back() != ')')
         {
@@ -237,6 +270,19 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
         }
 
         return;
+    }
+
+    std::string ghost_str;
+
+    if(found_args.find(script_name) == found_args.end())
+    {
+        auto pair_its = std::mismatch(script_name.begin(), script_name.end(), it->first.begin(), it->first.end());
+
+        if(pair_its.second != it->first.end())
+        {
+            ghost_str = std::string(pair_its.second, it->first.end());
+            //std::cout << "ghost " << ghost_str << " fullname " << script_name << " lookup " << it->first << std::endl;
+        }
     }
 
     std::map<std::string, std::string> key_to_arg;
@@ -252,7 +298,10 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
         }
     }
 
-    std::vector<autocomplete_args> my_args = found_args[script_name];
+    std::vector<autocomplete_args> my_args;
+
+    if(found_args.find(script_name) != found_args.end())
+        my_args = found_args[script_name];
 
     for(auto& i : my_args)
     {
@@ -292,7 +341,7 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
         if(tok.type == token::CLOSE_PAREN)
         {
-            insert_kv_ghosts(keys, vals, i, tokens, in);
+            insert_kv_ghosts(keys, vals, i, tokens, in, num_real_args);
 
             break;
         }
