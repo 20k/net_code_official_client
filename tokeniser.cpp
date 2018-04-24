@@ -456,7 +456,7 @@ void tokenise_function_internal(int& pos, data_t dat, token_seq tok, bool insert
 
     bool suppress = false;
 
-    if(tok.size() > 0 && tok.back().ghost)
+    if(tok.size() > 0 && tok.back().ghost && (tok.back().type != token::OPEN_PAREN && tok.back().type != token::OPEN_CURLEY))
     {
         suppress = true;
     }
