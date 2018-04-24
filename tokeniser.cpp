@@ -329,20 +329,31 @@ bool expect_seclevel(int& pos, data_t dat, token_seq tok)
         "#s.",
     };
 
-    std::string as_string;
-
-    for(auto& i : dat)
-    {
-        as_string += i.c;
-    }
-
-    std::string found = "";
-
+    std::string found;
     bool any = false;
 
     for(auto& i : match)
     {
-        if(as_string.find(i) == std::string::npos)
+        bool all = true;
+
+        for(int kk = 0; kk < (int)i.size(); kk++)
+        {
+            int offset = kk + pos;
+
+            if(offset >= dat.size())
+            {
+                all = false;
+                break;
+            }
+
+            if(i[kk] != dat[offset].c)
+            {
+                all = false;
+                break;
+            }
+        }
+
+        if(!all)
             continue;
 
         found = i;
@@ -365,7 +376,7 @@ bool expect_seclevel(int& pos, data_t dat, token_seq tok)
 
     //if(found != "#")
     {
-        int tlen = (int)found.size() - 1;
+        int tlen = ((int)found.size()) - 1;
 
         if(tlen < 0)
             tlen = 0;
@@ -433,10 +444,12 @@ std::vector<token_info> tokenise_general(const std::vector<interop_char>& dat)
 
         discard_whitespace(pos, dat, tok);
 
-        /*if(expect_seclevel(pos, dat, tok))
+        if(expect_seclevel(pos, dat, tok))
         {
-            tokenise_function_internal(pos, dat, tok, false);
-        }*/
+            //tokenise_function_internal(pos, dat, tok, false);
+            any |= true;
+            continue;
+        }
 
         any |= expect_value(pos, dat, tok);
 
