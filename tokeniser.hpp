@@ -56,6 +56,8 @@ std::vector<token_info> tokenise_function(const std::vector<interop_char>& ichar
 std::vector<token_info> tokenise_general(const std::vector<interop_char>& ichars);
 std::string tokens_to_full_script(const std::vector<token_info>& tokens);
 
+token_info make_ghost_token(int start, token::token type, const std::string& chars);
+
 void token_tests();
 
 #endif // TOKENISER_HPP_INCLUDED

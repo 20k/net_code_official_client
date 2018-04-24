@@ -177,6 +177,51 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
     }
 }
 
+void insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<std::string>& vals, int pos, std::vector<token_info>& tokens, std::vector<interop_char>& in, int num_concrete_args)
+{
+    ///should be completely impossible
+    if(pos < 0)
+        return;
+
+    int char_pos = in.size();
+
+    if(pos < (int)tokens.size())
+        char_pos = tokens[pos].start_pos - 1;
+
+    for(int i=0; i < (int)keys.size(); i++)
+    {
+        std::string key = keys[i];
+        std::string val = vals[i];
+
+        if(num_concrete_args > 0)
+        {
+            ///it says comma
+            ///but some sort of space ghost has gotten in the works
+            tokens.insert(tokens.begin() + pos++, make_ghost_token(char_pos, token::COMMA, ", "));
+        }
+
+        token_info arg_token = make_ghost_token(char_pos, token::KEY, key);
+        token_info col_token = make_ghost_token(char_pos, token::COLON, ":");
+        token_info val_token = make_ghost_token(char_pos, token::VALUE, val);
+        val_token.subtype = token::GENERIC;
+
+        //tokens.push_back(arg_token);
+        //tokens.push_back(col_token);
+        //tokens.push_back(val_token);
+
+        tokens.insert(tokens.begin() + pos++, arg_token);
+        tokens.insert(tokens.begin() + pos++, col_token);
+        tokens.insert(tokens.begin() + pos++, val_token);
+
+        if(i != (int)keys.size()-1)
+        {
+            tokens.insert(tokens.begin() + pos++, make_ghost_token(char_pos, token::COMMA, ", "));
+
+            //tokens.push_back(make_ghost_token(char_pos, token::COMMA, ", "));
+        }
+    }
+}
+
 void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx, int& cursor_offset, std::string& command_str)
 {
     std::vector<token_info> tokens = tokenise_function(in, true);
@@ -198,6 +243,72 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
         }
 
         return;
+    }
+
+    std::map<std::string, std::string> key_to_arg;
+
+    std::map<std::string, bool> key_exists_map;
+    std::map<std::string, bool> value_exists_map; ///so we can type user: + [tab] -> user:"|"
+
+    for(int i=0; i<(int)tokens.size(); i++)
+    {
+        if(tokens[i].type == token::KEY)
+        {
+            key_exists_map[tokens[i].str] = true;
+        }
+    }
+
+    std::vector<autocomplete_args> my_args = found_args[script_name];
+
+    for(auto& i : my_args)
+    {
+        key_to_arg[i.key] = i.arg;
+    }
+
+    int num_real_args = 0;
+
+    std::map<std::string, bool> should_ghost;
+
+    for(auto& i : my_args)
+    {
+        should_ghost[i.key] = true;
+    }
+
+    for(auto& i : key_exists_map)
+    {
+        should_ghost[i.first] = false;
+        num_real_args++;
+    }
+
+    std::vector<std::string> keys;
+    std::vector<std::string> vals;
+
+    for(auto& i : should_ghost)
+    {
+        if(!i.second)
+            continue;
+
+        keys.push_back(i.first);
+        vals.push_back(key_to_arg[i.first]);
+    }
+
+    for(int i=0; i < (int)tokens.size(); i++)
+    {
+        token_info& tok = tokens[i];
+
+        if(tok.type == token::CLOSE_PAREN)
+        {
+            insert_kv_ghosts(keys, vals, i, tokens, in);
+
+            break;
+        }
+
+        if(tok.type == token::CLOSE_CURLEY)
+        {
+            insert_kv_ghosts(keys, vals, i, tokens, in, num_real_args);
+
+            break;
+        }
     }
 
     ///ok. now we need to do some parsing of the tokens themselves
@@ -228,10 +339,10 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
             int full_offset = tok.start_pos + in_offset;
             int full_no_col_offset = tok.start_pos + no_col_offset;
 
-            if(full_offset > in.size())
+            if(full_offset > (int)in.size())
                 full_offset = in.size();
 
-            if(full_no_col_offset > command_str.size())
+            if(full_no_col_offset > (int)command_str.size())
                 full_no_col_offset = command_str.size();
 
             in.insert(in.begin() + full_offset, interop.begin(), interop.end());
