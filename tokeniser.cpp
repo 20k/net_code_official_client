@@ -345,7 +345,7 @@ bool expect_key_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts)
 
     //std::cout << "fnd df " << found << std::endl;
 
-    success &= expect_value(pos, dat, tok, insert_ghosts, 1);
+    success &= expect_value(pos, dat, tok, insert_ghosts, 0);
     discard_whitespace(pos, dat, tok);
 
     return success;
@@ -435,10 +435,10 @@ void tokenise_function_internal(int& pos, data_t dat, token_seq tok, bool insert
     expect_extname(pos, dat, tok);
     discard_whitespace(pos, dat, tok);
 
-    expect_single_char(pos, dat, tok, '(', token::OPEN_PAREN, insert_ghosts, 0);
+    bool opening_paren = expect_single_char(pos, dat, tok, '(', token::OPEN_PAREN, insert_ghosts, 0);
     discard_whitespace(pos, dat, tok);
 
-    expect_single_char(pos, dat, tok, '{', token::OPEN_CURLEY, insert_ghosts, 0);
+    bool opening_bracket = expect_single_char(pos, dat, tok, '{', token::OPEN_CURLEY, insert_ghosts, 0);
     discard_whitespace(pos, dat, tok);
 
     bool success = true;
@@ -454,12 +454,19 @@ void tokenise_function_internal(int& pos, data_t dat, token_seq tok, bool insert
         }
     }
 
+    bool suppress = false;
+
+    if(tok.size() > 0 && tok.back().ghost)
+    {
+        suppress = true;
+    }
+
     //std::cout << "success " << success << std::endl;
 
-    expect_single_char(pos, dat, tok, '}', token::CLOSE_CURLEY, success, 1);
+    expect_single_char(pos, dat, tok, '}', token::CLOSE_CURLEY, (success || opening_bracket) && !suppress, 0);
     discard_whitespace(pos, dat, tok);
 
-    expect_single_char(pos, dat, tok, ')', token::CLOSE_PAREN, success, 1);
+    expect_single_char(pos, dat, tok, ')', token::CLOSE_PAREN, (success || opening_paren) && !suppress, 0);
     discard_whitespace(pos, dat, tok);
 }
 
