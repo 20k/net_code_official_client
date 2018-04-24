@@ -26,6 +26,7 @@ namespace token
         SEMICOLON = 13, ///terminating
         OPEN_SQUARE = 14,
         CLOSE_SQUARE = 15,
+        QUOTE = 16,
         ERR,
     };
 

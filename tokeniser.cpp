@@ -187,7 +187,7 @@ bool expect_key(int& pos, data_t dat, token_seq tok)
     return true;
 }
 
-bool expect_value(int& pos, data_t dat, token_seq tok)
+bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int ghost_offset)
 {
     if(!in_bound(pos, dat))
         return false;
@@ -213,6 +213,20 @@ bool expect_value(int& pos, data_t dat, token_seq tok)
         {
             *found = (*found) + 1;
             subtype = token::STRING;
+        }
+        else
+        {
+            if(insert_ghosts)
+            {
+                auto test = expect_until(pos+1, dat, {'\n'}, expect_until_do_eof);
+
+                if(test.has_value())
+                {
+                    auto token = make_ghost_token(*test + ghost_offset, token::QUOTE, std::string(1, start_c));
+
+                    tok.push_back(token);
+                }
+            }
         }
     }
     else
@@ -328,7 +342,7 @@ bool expect_key_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts)
 
     //std::cout << "fnd df " << found << std::endl;
 
-    success &= expect_value(pos, dat, tok);
+    success &= expect_value(pos, dat, tok, insert_ghosts, 1);
     discard_whitespace(pos, dat, tok);
 
     return success;
@@ -426,7 +440,7 @@ void tokenise_function_internal(int& pos, data_t dat, token_seq tok, bool insert
 
     bool success = true;
 
-    if(pos < dat.size())
+    if(pos < (int)dat.size())
     {
         success = expect_key_value(pos, dat, tok, insert_ghosts);
 
@@ -486,7 +500,7 @@ std::vector<token_info> tokenise_general(const std::vector<interop_char>& dat)
             continue;
         }
 
-        any |= expect_value(pos, dat, tok);
+        any |= expect_value(pos, dat, tok, false, 0);
 
         any |= expect_single_char(pos, dat, tok, '(', token::OPEN_PAREN, false, 0);
         any |= expect_single_char(pos, dat, tok, ')', token::CLOSE_PAREN, false, 0);
