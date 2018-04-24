@@ -245,7 +245,7 @@ void terminal::add_text_from_server(const std::string& in, chat_window& chat_win
 
     std::string str = in;
 
-    server_command_info command_info = sa_server_response_to_info(in.c_str(), in.size());
+    server_command_info command_info = sa_server_response_to_info(make_view(in));
 
     bool push = false;
 
@@ -274,13 +274,13 @@ void terminal::add_text_from_server(const std::string& in, chat_window& chat_win
 
             for(int i=0; i < chat_info.num_msgs; i++)
             {
-                chnls.push_back(c_str_to_cpp(chat_info.msgs[i].channel));
-                msgs.push_back(c_str_to_cpp(chat_info.msgs[i].msg));
+                chnls.push_back(c_str_sized_to_cpp(chat_info.msgs[i].channel));
+                msgs.push_back(c_str_sized_to_cpp(chat_info.msgs[i].msg));
             }
 
             for(int i=0; i < chat_info.num_in_channels; i++)
             {
-                in_channels.push_back(c_str_to_cpp(chat_info.in_channels[i].channel));
+                in_channels.push_back(c_str_sized_to_cpp(chat_info.in_channels[i].channel));
             }
 
             sa_destroy_chat_api_info(chat_info);
@@ -304,19 +304,19 @@ void terminal::add_text_from_server(const std::string& in, chat_window& chat_win
 
             script_argument_list args = sa_server_scriptargs_to_list(command_info);
 
-            if(args.scriptname != nullptr)
+            if(args.scriptname.str != nullptr && args.scriptname.num > 0)
             {
                 std::vector<autocomplete_args> auto_args;
 
                 for(int i=0; i < args.num; i++)
                 {
-                    std::string key = c_str_to_cpp(args.args[i].key);
-                    std::string val = c_str_to_cpp(args.args[i].val);
+                    std::string key = c_str_sized_to_cpp(args.args[i].key);
+                    std::string val = c_str_sized_to_cpp(args.args[i].val);
 
                     auto_args.push_back({key, val});
                 }
 
-                std::string scriptname = c_str_to_cpp(args.scriptname);
+                std::string scriptname = c_str_sized_to_cpp(args.scriptname);
 
                 auto_handle.found_args[scriptname] = auto_args;
                 auto_handle.is_valid[scriptname] = true;

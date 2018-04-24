@@ -275,18 +275,18 @@ int main()
 
             if(term.focused)
             {
-                if(!sa_is_local_command(term.command.command.c_str()))
+                if(!sa_is_local_command(make_view(term.command.command)))
                 {
                     sized_string current_user = sd_get_user(shared);
 
-                    char* up_handled = sa_default_up_handling(current_user.str, term.command.command.c_str(), "./scripts/");
+                    sized_string up_handled = sa_default_up_handling(make_view(current_user), make_view(term.command.command), make_view_from_raw("./scripts/"));
 
-                    char* server_command = sa_make_generic_server_command(up_handled);
+                    sized_string server_command = sa_make_generic_server_command(make_view(up_handled));
 
-                    std::string str = c_str_to_cpp(server_command);
+                    std::string str = c_str_sized_to_cpp(server_command);
 
-                    free_string(server_command);
-                    free_string(up_handled);
+                    free_sized_string(server_command);
+                    free_sized_string(up_handled);
                     free_sized_string(current_user);
 
                     sd_add_back_write(shared, make_view(str));
@@ -296,12 +296,12 @@ int main()
             }
             else
             {
-                char* chat_command = sa_make_chat_command(chat_win.selected.c_str(), chat_win.command.command.c_str());
+                sized_string chat_command = sa_make_chat_command(make_view(chat_win.selected), make_view(chat_win.command.command));
 
                 ///TODO
-                sd_add_back_write(shared, make_view_from_raw(chat_command));
+                sd_add_back_write(shared, make_view(chat_command));
 
-                free_string(chat_command);
+                free_sized_string(chat_command);
             }
 
             std::string cmd = term.command.command;
@@ -315,7 +315,7 @@ int main()
                 chat_win.command.clear_command();
             }
 
-            if(term.focused && sa_is_local_command(cmd.c_str()))
+            if(term.focused && sa_is_local_command(make_view(cmd)))
             {
                 bool should_shutdown = false;
 
@@ -407,7 +407,7 @@ int main()
 
             for(auto& str : term.auto_handle.found_unprocessed_autocompletes)
             {
-                sa_do_autocomplete_request(shared, str.c_str());
+                sa_do_autocomplete_request(shared, make_view(str));
 
                 break;
             }
