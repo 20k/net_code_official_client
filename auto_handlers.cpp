@@ -179,10 +179,6 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
 
 void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx, int& cursor_offset, std::string& command_str)
 {
-    /*auto interop = string_to_interop_no_autos(str, false);
-
-    in.insert(in.end(), interop.begin(), interop.end());*/
-
     std::vector<token_info> tokens = tokenise_function(in, true);
 
     std::string script_name = tokens_to_full_script(tokens);
@@ -192,6 +188,16 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
     if(found_args.find(script_name) == found_args.end())
         return;
+
+    ///ok. now we need to do some parsing of the tokens themselves
+    ///need to insert autocomplete args into the tokens
+    ///as well as detect args we already have there
+
+    ///core goals:
+    ///pressing tab inserts one arg at a time and moves cursor there
+    ///after autocompleting a string jumps into string
+    ///after autocompleting a value jumps to the end of the value
+    ///pressing tab cycles between args
 
     cursor_offset = 0;
 
