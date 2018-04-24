@@ -177,6 +177,41 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
     }
 }
 
+void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx, int& cursor_offset, std::string& command_str)
+{
+    /*auto interop = string_to_interop_no_autos(str, false);
+
+    in.insert(in.end(), interop.begin(), interop.end());*/
+
+    std::vector<token_info> tokens = tokenise_function(in, true);
+
+    std::string rebuilt;
+
+    cursor_offset = 0;
+
+    int in_offset = 0;
+
+    for(int i=0; i < (int)tokens.size(); i++)
+    {
+        token_info& tok = tokens[i];
+
+        if(tok.ghost)
+        {
+            std::string ex_str = "`c" + tok.str + "`";
+
+            auto interop = string_to_interop_no_autos(ex_str, false);
+
+            in.insert(in.begin() + tok.start_pos + in_offset, interop.begin(), interop.end());
+            in_offset += interop.size();
+
+            if(tok.start_pos < cursor_idx)
+            {
+                cursor_offset++;
+            }
+        }
+    }
+}
+
 #if 0
 bool strip_input(std::string& in)
 {

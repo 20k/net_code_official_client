@@ -119,19 +119,23 @@ void render(sf::RenderWindow& win, std::string& command, const std::vector<inter
 
     auto icommand = string_to_interop(render_command, specials, auto_handle, false);
 
-    //auto_handle.handle_autocompletes(icommand, cursor_pos_idx, command);
+    int cursor_offset = 0;
+
+    auto_handle.handle_autocompletes(icommand, cursor_pos_idx, cursor_offset, command);
 
     interop_char curs;
     curs.col = {255, 255, 255};
     curs.c = '|';
     curs.is_cursor = true;
 
+    int curs_cur = cursor_pos_idx + cursor_offset;
+
     if(focused)
     {
-        if(cursor_pos_idx >= (int)icommand.size())
+        if(curs_cur >= (int)icommand.size())
             icommand.push_back(curs);
-        else if(cursor_pos_idx >= 0 && cursor_pos_idx < (int)icommand.size())
-            icommand.insert(icommand.begin() + cursor_pos_idx, curs);
+        else if(curs_cur >= 0 && curs_cur < (int)icommand.size())
+            icommand.insert(icommand.begin() + curs_cur, curs);
     }
 
     all_interop.push_back(icommand);

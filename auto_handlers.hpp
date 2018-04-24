@@ -50,7 +50,7 @@ struct auto_handler : serialisable
     ///returns autocomplete
     void auto_colour(std::vector<interop_char>& in, bool colour_special = false, bool parse_for_autocompletes = true);
 
-    void handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx, std::string& command_str);
+    void handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx, int& cursor_offset, std::string& command_str);
 
     /*bool handle_script_autocomplete(std::vector<interop_char>& in, int& cursor_idx, std::string& command_str, const std::string& name);
 
