@@ -119,7 +119,7 @@ void render(sf::RenderWindow& win, std::string& command, const std::vector<inter
 
     auto icommand = string_to_interop(render_command, specials, auto_handle, false);
 
-    auto_handle.handle_autocompletes(icommand, cursor_pos_idx, command);
+    //auto_handle.handle_autocompletes(icommand, cursor_pos_idx, command);
 
     interop_char curs;
     curs.col = {255, 255, 255};

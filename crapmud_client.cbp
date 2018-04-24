@@ -165,6 +165,7 @@
 			<Add option="-fexceptions" />
 			<Add option="-Wno-narrowing" />
 			<Add option="-std=gnu++1z" />
+			<Add option="-Werror=return-type" />
 			<Add option="-DNET_CLIENT" />
 			<Add option="-DNO_COMPRESSION" />
 			<Add option="-DBOOST_STACKTRACE_USE_WINDBG" />
@@ -213,6 +214,8 @@
 		<Unit filename="stacktrace.hpp" />
 		<Unit filename="string_helpers.cpp" />
 		<Unit filename="string_helpers.hpp" />
+		<Unit filename="tokeniser.cpp" />
+		<Unit filename="tokeniser.hpp" />
 		<Unit filename="ui_components.cpp" />
 		<Unit filename="ui_components.hpp" />
 		<Unit filename="util.hpp" />

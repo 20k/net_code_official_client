@@ -43,8 +43,6 @@ struct auto_handler : serialisable
 
     bool window_in_focus = false;
 
-    int internal_state = 0;
-
     std::set<std::string> found_unprocessed_autocompletes;
     std::map<std::string, std::vector<autocomplete_args>> found_args;
     std::map<std::string, bool> is_valid;
@@ -54,13 +52,11 @@ struct auto_handler : serialisable
 
     void handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx, std::string& command_str);
 
-    bool handle_script_autocomplete(std::vector<interop_char>& in, int& cursor_idx, std::string& command_str, const std::string& name);
+    /*bool handle_script_autocomplete(std::vector<interop_char>& in, int& cursor_idx, std::string& command_str, const std::string& name);
 
     void handle_tab(const std::vector<interop_char>& in, int& cursor_idx, int parse_start,
                     const std::vector<autocomplete_args>& found, const specials_status& specials, std::string& command_str,
-                    const std::vector<std::string>& to_skip);
-
-    void clear_internal_state();
+                    const std::vector<std::string>& to_skip);*/
 
     virtual void do_serialise(serialise& s, bool ser) override;
 };

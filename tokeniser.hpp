@@ -24,14 +24,24 @@ namespace token
         CLOSE_PAREN = 11,
         CLOSE_CURLEY = 12,
         SEMICOLON = 13, ///terminating
+        OPEN_SQUARE = 14,
+        CLOSE_SQUARE = 15,
         ERR,
     };
-}
 
+    enum token_subtype
+    {
+        NUMBER,
+        STRING,
+        KEYWORD,
+        NONE,
+    };
+}
 
 struct token_info
 {
     token::token type = token::ERR;
+    token::token_subtype subtype = token::NONE;
 
     std::string str;
     int start_pos = 0;
@@ -40,7 +50,9 @@ struct token_info
     bool ghost = false;
 };
 
-std::vector<token_info> tokenise_str(const std::vector<interop_char>& ichars, bool insert_ghosts);
+std::vector<token_info> tokenise_function(const std::vector<interop_char>& ichars, bool insert_ghosts);
+std::vector<token_info> tokenise_general(const std::vector<interop_char>& ichars);
+std::string tokens_to_full_script(const std::vector<token_info>& tokens);
 
 void token_tests();
 

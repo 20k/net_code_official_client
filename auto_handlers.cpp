@@ -3,7 +3,202 @@
 #include <libncclient/nc_util.hpp>
 #include <SFML/System.hpp>
 #include "util.hpp"
+#include "tokeniser.hpp"
 
+bool strip_input(std::string& in)
+{
+    bool found = false;
+
+    while(in.size() > 0 && in.back() == '?')
+    {
+        in.pop_back();
+        found = true;
+    }
+
+    return found;
+}
+
+bool interop_starts_with(const std::vector<interop_char>& chs, int idx, const std::string& str)
+{
+    if(idx < 0 || idx + (int)str.size() > (int)chs.size())
+        return false;
+
+    int offset = 0;
+
+    for(int i=idx; i < idx + (int)str.size(); i++)
+    {
+        if(str[offset] == '?' && isalpha(chs[i].c))
+            return false;
+
+        if(str[offset] != '?' && chs[i].c != str[offset])
+            return false;
+
+        offset++;
+    }
+
+    return true;
+}
+
+void interop_colour(std::vector<interop_char>& chs, int idx, const std::string& str, vec3f col)
+{
+    if(!interop_starts_with(chs, idx, str))
+        return;
+
+    std::string op = str;
+
+    strip_input(op);
+
+    for(int i=idx; i < idx + (int)op.size() && i < (int)chs.size(); i++)
+    {
+        if(chs[i].coloured)
+            continue;
+
+        chs[i].col = col;
+    }
+}
+
+void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_special, bool parse_for_autocompletes)
+{
+    std::map<std::string, vec3f> cols
+    {
+        {"fs.", {60, 255, 60}},
+        {"hs.", {255, 255, 40}},
+        {"ms.", {255, 140, 40}},
+        {"ls.", {255, 20, 20}},
+        {"ns.", {255, 20, 255}},
+        {"s.", {255, 20, 255}},
+        {"", {255, 20, 255}},
+    };
+
+    vec3f pale_blue = {120, 120, 255};
+    vec3f pale_red = {255, 60, 60};
+
+    cols["{"] = pale_red;
+    cols["}"] = pale_red;
+    cols["["] = pale_red;
+    cols["]"] = pale_red;
+
+    if(use_autocolour)
+    {
+        cols["function?"] = pale_blue;
+        cols["while?"] = pale_blue;
+        cols["for?"] = pale_blue;
+        cols["if?"] = pale_blue;
+        cols["return?"] = pale_blue;
+        cols[";"] = pale_red;
+    }
+
+    std::set<token::token> valid_colourings
+    {
+        token::SECLEVEL,
+        //token::OPEN_PAREN,
+        token::OPEN_CURLEY,
+        //token::CLOSE_PAREN,
+        token::CLOSE_CURLEY,
+        token::OPEN_SQUARE,
+        token::CLOSE_SQUARE,
+    };
+
+    vec3f value_col = {100, 206, 209};
+
+    for(int i=0; i < (int)in.size(); i++)
+    {
+        std::vector<token_info> tokens = tokenise_general(in);
+
+        for(auto& i : tokens)
+        {
+            //std::cout << "hi t " << i.type << std::endl;;
+
+            //{std::cout << "istr " << i.str << " itype " << i.type << std::endl;
+
+            if(valid_colourings.find(i.type) != valid_colourings.end())
+            {
+                for(int kk=i.start_pos; kk < i.end_pos; kk++)
+                {
+                    in[kk].col = cols[i.str];
+                }
+            }
+        }
+    }
+
+    #if 0
+    std::map<std::string, vec3f> cols
+    {
+        {"#fs.", {60, 255, 60}},
+        {"#hs.", {255, 255, 40}},
+        {"#ms.", {255, 140, 40}},
+        {"#ls.", {255, 20, 20}},
+        {"#ns.", {255, 20, 255}},
+    };
+
+    vec3f pale_blue = {120, 120, 255};
+    vec3f pale_red = {255, 60, 60};
+
+    cols["{"] = pale_red;
+    cols["}"] = pale_red;
+    cols["["] = pale_red;
+    cols["]"] = pale_red;
+
+    //if(colour_special)
+    if(use_autocolour)
+    {
+        cols["function?"] = pale_blue;
+        cols["while?"] = pale_blue;
+        cols["for?"] = pale_blue;
+        cols["if?"] = pale_blue;
+        cols["return?"] = pale_blue;
+        cols[";"] = pale_red;
+    }
+
+    for(auto& i : cols)
+    {
+        for(int kk=0; kk < (int)ret.size(); kk++)
+            interop_colour(ret, kk, i.first, i.second);
+    }
+
+    vec3f value_col = {100, 206, 209};
+
+    interop_colour_numbers(ret, value_col);
+
+    if(!use_autocolour)
+        return;
+
+    interop_colour_string(ret, value_col);
+
+    ///find full strings to autocomplete
+    ///uses different parsing algorithm to is_valid
+    if(parse_for_autocompletes)
+    {
+        for(int i=0; i < (int)ret.size(); i++)
+        {
+            /*std::string out;
+
+            bool null_terminated = false;
+
+            get_autocomplete(ret, i, out, null_terminated, true);
+
+            bool exists = found_args.find(out) != found_args.end();
+
+            if(out.size() != 0 && !exists)
+            {
+                found_unprocessed_autocompletes.insert(out);
+            }*/
+
+            std::vector<token_info> tokens = tokenise_str(in, false);
+
+            for(token_info& tok : tokens)
+            {
+
+            }
+        }
+    }
+
+    //std::vector<token_info> tokens = tokenise_str(in, false);
+    #endif // 0
+
+}
+
+#if 0
 bool strip_input(std::string& in)
 {
     bool found = false;
@@ -789,6 +984,7 @@ void auto_handler::clear_internal_state()
 {
     internal_state = 0;
 }
+#endif // 0
 
 void auto_handler::do_serialise(serialise& s, bool ser)
 {

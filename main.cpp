@@ -179,15 +179,11 @@ int main()
                 if(event.key.code == sf::Keyboard::Up)
                 {
                     to_edit->move_command_history_idx(-1);
-
-                    term.auto_handle.clear_internal_state();
                 }
 
                 if(event.key.code == sf::Keyboard::Down)
                 {
                     to_edit->move_command_history_idx(1);
-
-                    term.auto_handle.clear_internal_state();
                 }
 
                 if(event.key.code == sf::Keyboard::Left)
@@ -213,8 +209,6 @@ int main()
                 if(event.key.code == sf::Keyboard::Escape)
                 {
                     to_edit->clear_command();
-
-                    term.auto_handle.clear_internal_state();
                 }
 
                 if(event.key.code == sf::Keyboard::V)
@@ -294,8 +288,6 @@ int main()
 
                     sd_add_back_write(shared, make_view(str));
                 }
-
-                term.auto_handle.clear_internal_state();
             }
             else
             {
@@ -421,7 +413,7 @@ int main()
             //term.auto_handle.found_unprocessed_autocompletes.clear();
         }
 
-        //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
+        std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
 
         term.auto_handle.window_in_focus = is_focused(window);
         chat_win.auto_handle.window_in_focus = is_focused(window);

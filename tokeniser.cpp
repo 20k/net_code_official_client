@@ -149,7 +149,7 @@ bool expect_key(int& pos, data_t dat, token_seq tok)
 
     ///lots of these cases here are recoverable if we have autocompletes for the value,
     ///eg #script.name({key, -> #script.name({key:"", val:""})
-    std::optional<int> found = expect_until(pos, dat, {'\"', '(', '{', ')', '}', ';', ':', ','}, expect_until_do_eof);
+    std::optional<int> found = expect_until(pos, dat, {'\"', '(', '{', ')', '}', ';', ':', ',', ' '}, expect_until_do_eof);
 
     if(!found.has_value())
         return false;
@@ -177,6 +177,8 @@ bool expect_value(int& pos, data_t dat, token_seq tok)
 
     std::optional<int> found;
 
+    token::token_subtype subtype = token::NONE;
+
     if(is_string)
     {
         char start_c = dat[pos].c;
@@ -186,12 +188,18 @@ bool expect_value(int& pos, data_t dat, token_seq tok)
         if(found.has_value())
         {
             *found = (*found) + 1;
+            subtype = token::STRING;
         }
     }
     else
     {
         ///HANDLE NON STRING CASE HERE
-        found = expect_until(pos, dat, {')', '}', ';', ':', ','}, expect_until_do_eof);
+        found = expect_until(pos, dat, {')', '}', ';', ':', ',', ' '}, expect_until_do_eof);
+
+        if(found.has_value())
+        {
+            subtype = token::NUMBER;
+        }
     }
 
     if(!found.has_value())
@@ -200,7 +208,13 @@ bool expect_value(int& pos, data_t dat, token_seq tok)
     auto fpos = *found;
     int len = fpos - pos;
 
-    tok.push_back(make_tokens(pos, len, token::VALUE, dat));
+    if(len == 0)
+        return false;
+
+    auto token = make_tokens(pos, len, token::VALUE, dat);
+    token.subtype = subtype;
+
+    tok.push_back(token);
     pos += len;
 
     return true;
@@ -211,7 +225,7 @@ bool expect_extname(int& pos, data_t dat, token_seq tok)
     if(!in_bound(pos, dat))
         return false;
 
-    std::optional<int> found = expect_until(pos, dat, {'\"', '(', '{', ')', '}', ';'}, expect_until_do_eof);
+    std::optional<int> found = expect_until(pos, dat, {'\"', '(', '{', ')', '}', ';', ' '}, expect_until_do_eof);
 
     if(!found.has_value())
         return false;
@@ -267,7 +281,7 @@ void expect_key_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts)
     bool found = expect_single_char(pos, dat, tok, ':', token::COLON, insert_ghosts);
     discard_whitespace(pos, dat, tok);
 
-    std::cout << "fnd df " << found << std::endl;
+    //std::cout << "fnd df " << found << std::endl;
 
     expect_value(pos, dat, tok);
     discard_whitespace(pos, dat, tok);
@@ -336,7 +350,35 @@ bool expect_seclevel(int& pos, data_t dat, token_seq tok)
     return true;
 }
 
-std::vector<token_info> tokenise_str(const std::vector<interop_char>& dat, bool insert_ghosts)
+void tokenise_function_internal(int& pos, data_t dat, token_seq tok, bool insert_ghosts)
+{
+    expect_hostname(pos, dat, tok);
+    expect_dot(pos, dat, tok);
+    expect_extname(pos, dat, tok);
+    discard_whitespace(pos, dat, tok);
+
+    expect_single_char(pos, dat, tok, '(', token::OPEN_PAREN, insert_ghosts);
+    discard_whitespace(pos, dat, tok);
+
+    expect_single_char(pos, dat, tok, '{', token::OPEN_CURLEY, insert_ghosts);
+    discard_whitespace(pos, dat, tok);
+
+    expect_key_value(pos, dat, tok, insert_ghosts);
+
+    while(expect_single_char(pos, dat, tok, ',', token::COMMA, false))
+    {
+        discard_whitespace(pos, dat, tok);
+        expect_key_value(pos, dat, tok, insert_ghosts);
+    }
+
+    expect_single_char(pos, dat, tok, '}', token::CLOSE_CURLEY, insert_ghosts);
+    discard_whitespace(pos, dat, tok);
+
+    expect_single_char(pos, dat, tok, ')', token::CLOSE_PAREN, insert_ghosts);
+    discard_whitespace(pos, dat, tok);
+}
+
+std::vector<token_info> tokenise_function(const std::vector<interop_char>& dat, bool insert_ghosts)
 {
     std::vector<token_info> tok;
 
@@ -347,33 +389,76 @@ std::vector<token_info> tokenise_str(const std::vector<interop_char>& dat, bool 
     //if(expect_hash(pos, dat, tok))
     if(expect_seclevel(pos, dat, tok))
     {
-        expect_hostname(pos, dat, tok);
-        expect_dot(pos, dat, tok);
-        expect_extname(pos, dat, tok);
-        discard_whitespace(pos, dat, tok);
-
-        expect_single_char(pos, dat, tok, '(', token::OPEN_PAREN, insert_ghosts);
-        discard_whitespace(pos, dat, tok);
-
-        expect_single_char(pos, dat, tok, '{', token::OPEN_CURLEY, insert_ghosts);
-        discard_whitespace(pos, dat, tok);
-
-        expect_key_value(pos, dat, tok, insert_ghosts);
-
-        while(expect_single_char(pos, dat, tok, ',', token::COMMA, false))
-        {
-            discard_whitespace(pos, dat, tok);
-            expect_key_value(pos, dat, tok, insert_ghosts);
-        }
-
-        expect_single_char(pos, dat, tok, '}', token::CLOSE_CURLEY, insert_ghosts);
-        discard_whitespace(pos, dat, tok);
-
-        expect_single_char(pos, dat, tok, ')', token::CLOSE_PAREN, insert_ghosts);
-        discard_whitespace(pos, dat, tok);
+        tokenise_function_internal(pos, dat, tok, insert_ghosts);
     }
 
     return tok;
+}
+
+std::vector<token_info> tokenise_general(const std::vector<interop_char>& dat)
+{
+    std::vector<token_info> tok;
+    int pos = 0;
+
+    for(int pos=0; pos < (int)dat.size();)
+    {
+        bool any = false;
+
+        discard_whitespace(pos, dat, tok);
+
+        /*if(expect_seclevel(pos, dat, tok))
+        {
+            tokenise_function_internal(pos, dat, tok, false);
+        }*/
+
+        any |= expect_value(pos, dat, tok);
+
+        any |= expect_single_char(pos, dat, tok, '(', token::OPEN_PAREN, false);
+        any |= expect_single_char(pos, dat, tok, ')', token::CLOSE_PAREN, false);
+        any |= expect_single_char(pos, dat, tok, '{', token::OPEN_CURLEY, false);
+        any |= expect_single_char(pos, dat, tok, '}', token::CLOSE_CURLEY, false);
+        any |= expect_single_char(pos, dat, tok, '[', token::OPEN_SQUARE, false);
+        any |= expect_single_char(pos, dat, tok, ']', token::CLOSE_SQUARE, false);
+
+        if(!any)
+            pos++;
+    }
+
+    return tok;
+}
+
+bool has_token(token::token type, const std::vector<token_info>& tokens)
+{
+    for(auto& i : tokens)
+    {
+        if(type == i.type)
+            return true;
+    }
+
+    return false;
+}
+
+token_info get_token(token::token type, const std::vector<token_info>& tokens)
+{
+    token_info ret;
+
+    for(auto& i : tokens)
+    {
+        if(type == i.type)
+            return i;
+    }
+
+    return ret;
+}
+
+std::string tokens_to_full_script(const std::vector<token_info>& tokens)
+{
+    bool valid = has_token(token::HOST_NAME, tokens) && has_token(token::DOT, tokens) && has_token(token::EXT_NAME, tokens);
+
+    if(!valid)
+        return "";
+
+    return get_token(token::HOST_NAME, tokens).str + get_token(token::DOT, tokens).str + get_token(token::EXT_NAME, tokens).str;
 }
 
 void token_tests()
@@ -384,7 +469,7 @@ void token_tests()
 
     std::vector<interop_char> chars = build_from_colour_string(base_str, false);
 
-    std::vector<token_info> tokens = tokenise_str(chars, true);
+    std::vector<token_info> tokens = tokenise_function(chars, true);
 
     std::vector<token::token> expected
     {
