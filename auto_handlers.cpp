@@ -251,7 +251,7 @@ int insert_single_ghost(const std::string& str, int pos, std::vector<token_info>
     if(pos < (int)tokens.size())
         char_pos = tokens[pos].start_pos - 1 + ghost_offset;
 
-    token_info val_token = make_ghost_token(char_pos, token::VALUE, str);
+    token_info val_token = make_ghost_token(char_pos, token::EXT_NAME, str);
 
     tokens.insert(tokens.begin() + pos, val_token);
     num++;
