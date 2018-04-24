@@ -65,6 +65,19 @@ token_info make_tokens(int start, int length, token::token type, data_t dat)
     return ret;
 }
 
+bool expect_dot(int& pos, data_t dat, token_seq tok)
+{
+    if(dat[pos].c == '.')
+    {
+        tok.push_back(make_tokens(pos, 1, token::DOT, dat));
+        pos++;
+
+        return true;
+    }
+
+    return false;
+}
+
 bool expect_hostname(int& pos, data_t dat, token_seq tok)
 {
     std::optional<int> found = expect_until(pos, dat, '.');
@@ -76,6 +89,7 @@ bool expect_hostname(int& pos, data_t dat, token_seq tok)
     int str_len = dot_pos - pos;
 
     tok.push_back(make_tokens(pos, str_len, token::HOST_NAME, dat));
+    pos += str_len;
 
     return true;
 }
@@ -87,7 +101,6 @@ bool expect_hash(int& pos, data_t dat, token_seq tok)
     if(expect_seq(pos, dat, expected))
     {
         tok.push_back(make_tokens(pos, expected.size(), token::HASH, dat));
-
         pos += expected.size();
 
         return true;
@@ -107,6 +120,7 @@ std::vector<token_info> tokenise_str(const std::vector<interop_char>& dat)
     if(expect_hash(pos, dat, tok))
     {
         expect_hostname(pos, dat, tok);
+        expect_dot(pos, dat, tok);
     }
 
     return tok;
