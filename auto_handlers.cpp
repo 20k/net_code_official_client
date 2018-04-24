@@ -296,7 +296,7 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
     auto it = found_args.upper_bound(script_name);
 
-    if(it == found_args.end() || !starts_with(it->first, script_name))
+    if((it == found_args.end() || !starts_with(it->first, script_name)) && found_args.find(script_name) == found_args.end())
     {
         if(tab_pressed && command_str.size() != 0 && command_str.back() != ')')
         {
