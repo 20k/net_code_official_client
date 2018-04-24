@@ -39,8 +39,6 @@ std::optional<int> expect_until(int pos, data_t dat, const std::vector<char>& c,
 {
     bool escaped = false;
 
-    bool ascii_start = false;
-
     for(int i=pos; i < (int)dat.size(); i++)
     {
         if((mode & expect_until_do_escape) > 0)
@@ -315,7 +313,7 @@ void expect_key_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts)
     expect_key(pos, dat, tok);
     discard_whitespace(pos, dat, tok);
 
-    bool found = expect_single_char(pos, dat, tok, ':', token::COLON, insert_ghosts);
+    expect_single_char(pos, dat, tok, ':', token::COLON, insert_ghosts);
     discard_whitespace(pos, dat, tok);
 
     //std::cout << "fnd df " << found << std::endl;
@@ -353,7 +351,7 @@ bool expect_seclevel(int& pos, data_t dat, token_seq tok)
         {
             int offset = kk + pos;
 
-            if(offset >= dat.size())
+            if(offset >= (int)dat.size())
             {
                 all = false;
                 break;
@@ -451,7 +449,7 @@ std::vector<token_info> tokenise_general(const std::vector<interop_char>& dat)
     std::vector<token_info> tok;
     int pos = 0;
 
-    for(int pos=0; pos < (int)dat.size();)
+    for(; pos < (int)dat.size();)
     {
         bool any = false;
 
