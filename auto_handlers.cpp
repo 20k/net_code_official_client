@@ -523,7 +523,7 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
             {
                 command_str.insert(command_str.begin() + full_no_col_offset, tok.str.begin(), tok.str.end());
 
-                if(!value_inserted)
+                if(!value_inserted && keep_inserting)
                     inserted_to = full_no_col_offset + tok.str.size();
 
                 if(tok.type == token::VALUE && tok.subtype == token::STRING && !value_inserted)
