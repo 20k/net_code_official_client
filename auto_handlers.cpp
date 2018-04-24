@@ -435,11 +435,6 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
     if(!once_insert)
     {
         insert_kv_ghosts(keys, vals, 999, tokens, in, num_real_args);
-
-        for(auto& i : keys)
-        {
-            std::cout << "key " << i << std::endl;
-        }
     }
 
     ///ok. now we need to do some parsing of the tokens themselves
