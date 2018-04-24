@@ -233,6 +233,12 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
             }
         }
     }
+
+    if(tab_pressed)
+    {
+        cursor_offset = 0;
+        cursor_idx = in.size();
+    }
 }
 
 #if 0
