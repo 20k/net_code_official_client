@@ -242,6 +242,18 @@ bool expect_hash(int& pos, data_t dat, token_seq tok)
     return false;
 }
 
+void expect_key_value(int& pos, data_t dat, token_seq tok)
+{
+    expect_key(pos, dat, tok);
+    discard_whitespace(pos, dat, tok);
+
+    expect_single_char(pos, dat, tok, ':', token::COLON);
+    discard_whitespace(pos, dat, tok);
+
+    expect_value(pos, dat, tok);
+    discard_whitespace(pos, dat, tok);
+}
+
 std::vector<token_info> tokenise_str(const std::vector<interop_char>& dat)
 {
     std::vector<token_info> tok;
@@ -255,27 +267,26 @@ std::vector<token_info> tokenise_str(const std::vector<interop_char>& dat)
         expect_hostname(pos, dat, tok);
         expect_dot(pos, dat, tok);
         expect_extname(pos, dat, tok);
-
         discard_whitespace(pos, dat, tok);
 
         expect_single_char(pos, dat, tok, '(', token::OPEN_PAREN);
-
         discard_whitespace(pos, dat, tok);
 
         expect_single_char(pos, dat, tok, '{', token::OPEN_CURLEY);
-
         discard_whitespace(pos, dat, tok);
 
-        expect_key(pos, dat, tok);
+        expect_key_value(pos, dat, tok);
 
+        while(expect_single_char(pos, dat, tok, ',', token::COMMA))
+        {
+            discard_whitespace(pos, dat, tok);
+            expect_key_value(pos, dat, tok);
+        }
+
+        expect_single_char(pos, dat, tok, '}', token::CLOSE_CURLEY);
         discard_whitespace(pos, dat, tok);
 
-        expect_single_char(pos, dat, tok, ':', token::COLON);
-
-        discard_whitespace(pos, dat, tok);
-
-        expect_value(pos, dat, tok);
-
+        expect_single_char(pos, dat, tok, ')', token::CLOSE_PAREN);
         discard_whitespace(pos, dat, tok);
     }
 
@@ -286,7 +297,7 @@ void token_tests()
 {
     std::cout << "token testing\n";
 
-    std::string base_str = "#scripts.core({user:\"hello\"});";
+    std::string base_str = "#scripts.core({user:\"hello\", doot:\"doot\"});";
 
     std::vector<interop_char> chars = build_from_colour_string(base_str, false);
 
@@ -300,6 +311,10 @@ void token_tests()
         token::EXT_NAME,
         token::OPEN_PAREN,
         token::OPEN_CURLEY,
+        token::KEY,
+        token::COLON,
+        token::VALUE,
+        token::COMMA,
         token::KEY,
         token::COLON,
         token::VALUE,
