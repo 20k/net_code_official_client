@@ -449,6 +449,8 @@ int main()
 
     sf::sleep(sf::milliseconds(100));
 
+    CoUninitialize();
+
     //while(shared.termination_count != 3) {}
 
     return 0;
