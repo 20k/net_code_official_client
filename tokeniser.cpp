@@ -190,7 +190,7 @@ bool expect_key(int& pos, data_t dat, token_seq tok)
     return true;
 }
 
-bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int ghost_offset)
+bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int ghost_offset, bool lax_value_strictness)
 {
     if(!in_bound(pos, dat))
         return false;
@@ -237,7 +237,10 @@ bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int g
         ///HANDLE NON STRING CASE HERE
         //found = expect_until(pos, dat, {')', '}', ';', ':', ',', ' '}, expect_until_do_eof);
 
-        found = expect_until(pos, dat, {}, (expect_until_modes)(expect_until_do_eof | expect_until_is_not_name));
+        if(!lax_value_strictness)
+            found = expect_until(pos, dat, {}, (expect_until_modes)(expect_until_do_eof | expect_until_is_not_name));
+        else
+            found = expect_until(pos, dat, {')', '}', ';', ':', ',', ' '}, expect_until_do_eof);
 
         ///validate number properly
         if(found.has_value())
@@ -333,7 +336,7 @@ bool expect_hash(int& pos, data_t dat, token_seq tok)
     return false;
 }
 
-bool expect_key_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts)
+bool expect_key_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, bool lax_value_strictness)
 {
     bool success = true;
 
@@ -345,7 +348,7 @@ bool expect_key_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts)
 
     //std::cout << "fnd df " << found << std::endl;
 
-    success &= expect_value(pos, dat, tok, insert_ghosts, 0);
+    success &= expect_value(pos, dat, tok, insert_ghosts, 0, lax_value_strictness);
     discard_whitespace(pos, dat, tok);
 
     return success;
@@ -428,7 +431,7 @@ bool expect_seclevel(int& pos, data_t dat, token_seq tok)
     return true;
 }
 
-void tokenise_function_internal(int& pos, data_t dat, token_seq tok, bool insert_ghosts)
+void tokenise_function_internal(int& pos, data_t dat, token_seq tok, bool insert_ghosts, bool lax_value_strictness)
 {
     expect_hostname(pos, dat, tok);
     expect_dot(pos, dat, tok);
@@ -445,12 +448,12 @@ void tokenise_function_internal(int& pos, data_t dat, token_seq tok, bool insert
 
     if(pos < (int)dat.size())
     {
-        success = expect_key_value(pos, dat, tok, insert_ghosts);
+        success = expect_key_value(pos, dat, tok, insert_ghosts, lax_value_strictness);
 
         while(expect_single_char(pos, dat, tok, ',', token::COMMA, false, 0))
         {
             discard_whitespace(pos, dat, tok);
-            success = expect_key_value(pos, dat, tok, insert_ghosts);
+            success = expect_key_value(pos, dat, tok, insert_ghosts, lax_value_strictness);
         }
     }
 
@@ -481,7 +484,7 @@ std::vector<token_info> tokenise_function(const std::vector<interop_char>& dat, 
     //if(expect_hash(pos, dat, tok))
     if(expect_seclevel(pos, dat, tok))
     {
-        tokenise_function_internal(pos, dat, tok, insert_ghosts);
+        tokenise_function_internal(pos, dat, tok, insert_ghosts, true);
     }
 
     return tok;
@@ -505,12 +508,12 @@ std::vector<token_info> tokenise_general(const std::vector<interop_char>& dat)
 
         if(expect_seclevel(pos, dat, tok))
         {
-            tokenise_function_internal(pos, dat, tok, false);
+            tokenise_function_internal(pos, dat, tok, false, false);
             any |= true;
             continue;
         }
 
-        any |= expect_value(pos, dat, tok, false, 0);
+        any |= expect_value(pos, dat, tok, false, 0, false);
 
         any |= expect_single_char(pos, dat, tok, '(', token::OPEN_PAREN, false, 0);
         any |= expect_single_char(pos, dat, tok, ')', token::CLOSE_PAREN, false, 0);
