@@ -126,7 +126,7 @@ void chat_window::render_side_attachment(sf::RenderWindow& win)
             win.draw(shape);
         }
 
-        auto ichars = string_to_interop(side_buttons[i].txt, false, auto_handle);
+        auto ichars = string_to_interop_no_autos(side_buttons[i].txt, false);
 
         render_str(win, ichars, current_pos, start_pos, start_pos + side_dim, border_size);
 
