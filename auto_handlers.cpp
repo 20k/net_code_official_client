@@ -382,13 +382,13 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
     std::vector<std::string> keys;
     std::vector<std::string> vals;
 
-    for(auto& i : should_ghost)
+    for(auto& arg : my_args)
     {
-        if(!i.second)
+        if(!should_ghost[arg.key])
             continue;
 
-        keys.push_back(i.first);
-        vals.push_back(key_to_arg[i.first]);
+        keys.push_back(arg.key);
+        vals.push_back(arg.arg);
     }
 
     /*if(keys.size() > 1)
