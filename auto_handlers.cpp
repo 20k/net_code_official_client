@@ -5,58 +5,6 @@
 #include "util.hpp"
 #include "tokeniser.hpp"
 
-bool strip_input(std::string& in)
-{
-    bool found = false;
-
-    while(in.size() > 0 && in.back() == '?')
-    {
-        in.pop_back();
-        found = true;
-    }
-
-    return found;
-}
-
-bool interop_starts_with(const std::vector<interop_char>& chs, int idx, const std::string& str)
-{
-    if(idx < 0 || idx + (int)str.size() > (int)chs.size())
-        return false;
-
-    int offset = 0;
-
-    for(int i=idx; i < idx + (int)str.size(); i++)
-    {
-        if(str[offset] == '?' && isalpha(chs[i].c))
-            return false;
-
-        if(str[offset] != '?' && chs[i].c != str[offset])
-            return false;
-
-        offset++;
-    }
-
-    return true;
-}
-
-void interop_colour(std::vector<interop_char>& chs, int idx, const std::string& str, vec3f col)
-{
-    if(!interop_starts_with(chs, idx, str))
-        return;
-
-    std::string op = str;
-
-    strip_input(op);
-
-    for(int i=idx; i < idx + (int)op.size() && i < (int)chs.size(); i++)
-    {
-        if(chs[i].coloured)
-            continue;
-
-        chs[i].col = col;
-    }
-}
-
 inline
 void colour_interop(std::vector<interop_char>& in, int start, int fin, vec3f col)
 {
