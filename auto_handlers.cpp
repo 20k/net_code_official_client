@@ -67,6 +67,9 @@ void colour_interop(std::vector<interop_char>& in, int start, int fin, vec3f col
         if(kk >= (int)in.size())
             return;
 
+        if(in[kk].coloured)
+            continue;
+
         in[kk].col = col;
     }
 }
