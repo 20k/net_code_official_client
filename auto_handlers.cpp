@@ -335,8 +335,6 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
         }
     }
 
-    std::map<std::string, std::string> key_to_arg;
-
     std::map<std::string, bool> key_exists_map;
     std::map<std::string, bool> value_exists_map; ///so we can type user: + [tab] -> user:"|"
 
@@ -357,11 +355,6 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
     else if(found_args.find(script_name + ghost_str) != found_args.end())
     {
         my_args = found_args[script_name + ghost_str];
-    }
-
-    for(auto& i : my_args)
-    {
-        key_to_arg[i.key] = i.arg;
     }
 
     int num_real_args = 0;
