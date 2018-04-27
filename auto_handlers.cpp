@@ -281,6 +281,19 @@ void handle_tab_cycling(auto_handler& auto_handle, const std::vector<token_info>
             break;
         }
     }
+
+    if(key_starts.size() == 0)
+    {
+        for(int i=0; i < (int)tokens.size(); i++)
+        {
+            const token_info& i1 = tokens[i];
+
+            if(i1.type == token::CLOSE_CURLEY)
+            {
+                cursor_idx = i1.start_pos;
+            }
+        }
+    }
 }
 
 void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx, int& cursor_offset, std::string& command_str)
