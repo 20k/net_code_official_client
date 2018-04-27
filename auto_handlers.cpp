@@ -236,6 +236,53 @@ int insert_single_ghost(const std::string& str, int pos, std::vector<token_info>
     return num;
 }
 
+void handle_tab_cycling(auto_handler& auto_handle, const std::vector<token_info>& tokens, std::vector<interop_char>& in, int& cursor_idx, int& cursor_offset)
+{
+    if(!auto_handle.tab_pressed)
+        return;
+
+    cursor_offset = 0;
+
+    std::vector<int> key_starts;
+    std::vector<int> key_mvs;
+    std::vector<int> is_string;
+
+    for(int i=0; i < (int)tokens.size(); i++)
+    {
+        const token_info& i1 = tokens[i];
+
+        if(i1.type == token::VALUE)
+        {
+            key_starts.push_back(i1.start_pos);
+            key_mvs.push_back(i1.end_pos);
+            is_string.push_back(i1.subtype == token::STRING);
+        }
+    }
+
+    for(int i=0; i < (int)key_starts.size(); i++)
+    {
+        int next = (i + 1) % (int)key_starts.size();
+
+        if(cursor_idx >= key_starts[i] && cursor_idx < key_starts[next])
+        {
+            cursor_idx = key_mvs[next] - is_string[next];
+            break;
+        }
+
+        if(cursor_idx >= key_starts[i] && next < i)
+        {
+            cursor_idx = key_mvs[next] - is_string[next];
+            break;
+        }
+
+        if(i == 0 && cursor_idx < key_starts[i])
+        {
+            cursor_idx = key_mvs[i] - is_string[i];
+            break;
+        }
+    }
+}
+
 void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx, int& cursor_offset, std::string& command_str)
 {
     std::vector<token_info> tokens = tokenise_function(in, true);
@@ -401,12 +448,16 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
     int inserted_to = -1;
     bool value_inserted = false;
 
+    bool any_ghosts_inserted = false;
+
     for(int i=0; i < (int)tokens.size(); i++)
     {
         token_info& tok = tokens[i];
 
         if(tok.ghost)
         {
+            any_ghosts_inserted = true;
+
             std::string ex_str = "`c" + tok.str + "`";
 
             auto interop = string_to_interop_no_autos(ex_str, false);
@@ -459,13 +510,20 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
     if(tab_pressed)
     {
-        cursor_offset = 0;
-        //cursor_idx = in.size();
+        if(any_ghosts_inserted)
+        {
+            cursor_offset = 0;
+            //cursor_idx = in.size();
 
-        if(inserted_to > (int)in.size())
-            inserted_to = in.size();
+            if(inserted_to > (int)in.size())
+                inserted_to = in.size();
 
-        cursor_idx = inserted_to;
+            cursor_idx = inserted_to;
+        }
+        else
+        {
+            handle_tab_cycling(*this, tokens, in, cursor_idx, cursor_offset);
+        }
     }
 }
 
