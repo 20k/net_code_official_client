@@ -221,7 +221,25 @@ bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int g
         {
             if(insert_ghosts)
             {
+                ///if lax value strictness
+                ///and insert ghosts
+                ///should look for }) sequence and stop there if its at the end of the line
+                ///bit of a hack but should work 99.9% of the time
+                ///just check if dat.back and dat.back-1 are the correct characters
+                ///and test index is > dat.back-1
+                ///and if it is set it to be before back-1
                 auto test = expect_until(pos+1, dat, {'\n'}, expect_until_do_eof);
+
+                if(test.has_value() && lax_value_strictness && (int)dat.size() > 2)
+                {
+                    int len = dat.size();
+
+                    ///input ends with })
+                    if(dat[len-1].c == ')' && dat[len-2].c == '}')
+                    {
+                        *test = len-2;
+                    }
+                }
 
                 if(test.has_value())
                 {
