@@ -351,6 +351,10 @@ void terminal::add_text_from_server(const std::string& in, chat_window& chat_win
             push = true;
         }
     }
+    else
+    {
+        push = true;
+    }
 
     if(push)
     {
