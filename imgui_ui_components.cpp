@@ -7,7 +7,7 @@
 #include "ui_components.hpp"
 #include "copy_handler.hpp"
 
-void scrollbar_hack::do_hack(sf::RenderWindow& win, int approx_num)
+void scrollbar_hack::do_hack(sf::RenderWindow& win, int approx_num, bool set_scrollbar)
 {
     /*float base_y = win.getSize().y;
 
@@ -24,11 +24,31 @@ void scrollbar_hack::do_hack(sf::RenderWindow& win, int approx_num)
         ImGui::Text("Invis");
     }*/
 
-    ImGui::BeginChild("right_child", ImVec2(0,0));
+    ImGui::BeginChild("right_child", ImVec2(0,0), false, ImGuiWindowFlags_NoScrollWithMouse);
 
     for(int i=0; i < approx_num; i++)
     {
         ImGui::Text("\n");
+    }
+
+    if(set_scrollbar)
+    {
+        ///scrolled is lines above 0
+        float scrolled_frac = scrolled / approx_num;
+        float ivscrolled = 1.f - scrolled_frac;
+
+        ImGui::SetScrollY(ivscrolled * ImGui::GetScrollMaxY());
+    }
+
+    output_scroll_frac = ImGui::GetScrollY() / ImGui::GetScrollMaxY();
+
+    if(ImGui::IsMouseDown(0) && ImGui::IsWindowFocused())
+    {
+        scrolling = true;
+    }
+    else
+    {
+        scrolling = false;
     }
 
     ImGui::EndChild();
@@ -298,10 +318,13 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
     ImGui::BeginChild("left_sub", ImVec2(win.getSize().x - 25, 0.f), false, ImGuiWindowFlags_NoScrollbar);
 
-    if(ImGui::IsWindowHovered())
+    bool set_scroll = false;
+
+    if(ImGui::IsWindowHovered() && scroll_hack.scrolled_this_frame != 0)
     {
         scroll_hack.scrolled += scroll_hack.scrolled_this_frame;
         scroll_hack.scrolled_this_frame = 0.f;
+        set_scroll = true;
     }
 
     auto wrap_dim = ImGui::GetWindowSize();
@@ -374,7 +397,12 @@ void terminal_imgui::render(sf::RenderWindow& win)
     ImGui::SameLine(0.f, 0.f);
 
     ///rough
-    scroll_hack.do_hack(win, all_interop.size() + 1);
+    scroll_hack.do_hack(win, all_interop.size() + 1, set_scroll);
+
+    if(scroll_hack.scrolling)
+    {
+        scroll_hack.scrolled = (1.f - scroll_hack.output_scroll_frac) * (all_interop.size() + 1.f);
+    }
 
     ImGui::End();
 

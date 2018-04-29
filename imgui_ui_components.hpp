@@ -15,7 +15,12 @@ struct scrollbar_hack
     float scrolled = 0;
     float scrolled_this_frame = 0.f;
 
-    void do_hack(sf::RenderWindow& win, int approx_num);
+    float output_scroll_frac = 0.f;
+
+    bool scrolling = false;
+    bool should_update_scroll = false;
+
+    void do_hack(sf::RenderWindow& win, int approx_num, bool set_scrollbar);
 };
 
 struct terminal_imgui : serialisable
