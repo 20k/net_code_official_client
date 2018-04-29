@@ -113,6 +113,8 @@ struct FreeTypeTest
     // Call to draw interface
     void ShowFreetypeOptionsWindow()
     {
+        //ImGui::SetNextWindowFocus();
+
         ImGui::Begin("FreeType Options");
         ImGui::ShowFontSelector("Fonts");
         WantRebuild |= ImGui::RadioButton("FreeType", (int*)&BuildMode, FontBuildMode_FreeType);
@@ -427,11 +429,11 @@ int main()
 
         //ImGui::NewFrame();
 
-        ImGui::Begin("Test");
+        /*ImGui::Begin("Test");
 
         ImGui::Text("Hello");
 
-        ImGui::End();
+        ImGui::End();*/
 
         ImGui::ShowDemoWindow(nullptr);
 
@@ -635,7 +637,7 @@ int main()
 
         sf::sleep(sf::milliseconds(4));
 
-        char_inf::cwidth = ImGui::CalcTextSize("A").x;
+        char_inf::cwidth = ImGui::CalcTextSize("A").x + char_inf::extra_glyph_spacing;
         char_inf::cheight = ImGui::CalcTextSize("A").y;
     }
 

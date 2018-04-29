@@ -254,6 +254,8 @@ void internally_format(std::vector<std::vector<formatted_char>>& chars, vec2f st
         for(formatted_char& i : k)
         {
             i.render_pos = i.internal_pos + (vec2f){0, -greatest_y + start.y() - char_inf::cheight};
+
+            i.render_pos = round(i.render_pos);
         }
     }
 }

@@ -57,9 +57,10 @@ struct render_command
     render_instruction type = imgui_text;
     std::string str;
     vec3f col;
+    vec2f absolute_pos;
 };
 
-void render_copy_aware(sf::RenderWindow& win, vec3f col, const std::string& str, vec2f start_pos, vec2f end_pos)
+void render_copy_aware(sf::RenderWindow& win, vec3f col, const std::string& str, vec2f start_pos, vec2f end_pos, vec2f render_pos)
 {
     int cutoff_point = -1;
 
@@ -73,7 +74,7 @@ void render_copy_aware(sf::RenderWindow& win, vec3f col, const std::string& str,
     copy_handler* handle = get_global_copy_handler();
     bool is_inside = handle->char_is_within_select_box(start_pos);
 
-    for(int i=0; i < str.size(); i++)
+    for(int i=0; i < (int)str.size(); i++)
     {
         float ffrac = (float)i / (float)str.size();
 
@@ -106,19 +107,32 @@ void render_copy_aware(sf::RenderWindow& win, vec3f col, const std::string& str,
         cols.push_back(cur_str);
     }
 
+    vec2f c_pos = render_pos;
+
     for(int i=0; i < (int)cols.size(); i++)
     {
         vec3f ccol = cols[i].second;
         const std::string& cstr = cols[i].first;
 
+        ImGui::SetCursorScreenPos(ImVec2(c_pos.x(), c_pos.y()));
+
         ImGui::TextColored(ImVec4(ccol.x()/255.f, ccol.y()/255.f, ccol.z()/255.f, 1.f), cstr.c_str());
+
+        c_pos.x() += cstr.size() * char_inf::cwidth;
 
         if(i != (int)cols.size() - 1)
             ImGui::SameLine(0, char_inf::extra_glyph_spacing);
     }
 }
 
-void imgui_render_str(sf::RenderWindow& win, const std::vector<interop_char>& text, std::vector<std::vector<formatted_char>>& formatted_text)
+void render_copy_blind(vec3f col, const std::string& str, vec2f render_pos)
+{
+    ImGui::SetCursorScreenPos(ImVec2(render_pos.x(), render_pos.y()));
+
+    ImGui::TextColored(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
+}
+
+void imgui_render_str(sf::RenderWindow& win, const std::vector<formatted_char>& text, std::vector<std::vector<formatted_char>>& formatted_text)
 {
     copy_handler* handle = get_global_copy_handler();
 
@@ -126,18 +140,28 @@ void imgui_render_str(sf::RenderWindow& win, const std::vector<interop_char>& te
 
     render_command current;
 
-    for(const interop_char& fchar : text)
+    bool restart = true;
+
+    for(const formatted_char& fchar : text)
     {
-        if(fchar.col != current.col || fchar.c == '\n')
+        if(restart)
         {
-            if(current.str.size() > 0 && fchar.c != '\n')
+            current.absolute_pos = fchar.render_pos;
+            restart = false;
+        }
+
+        if(fchar.ioc.col != current.col || fchar.ioc.c == '\n' || fchar.render_pos.y() != current.absolute_pos.y())
+        {
+            restart = true;
+
+            if(current.str.size() > 0 && fchar.ioc.c != '\n')
             {
                 current.type = imgui_text;
                 commands.push_back(current);
                 current = render_command();
             }
 
-            if(fchar.c == '\n')
+            if(fchar.ioc.c == '\n' || fchar.render_pos.y() != current.absolute_pos.y())
             {
                 if(current.str.size() > 0)
                 {
@@ -149,12 +173,18 @@ void imgui_render_str(sf::RenderWindow& win, const std::vector<interop_char>& te
                 render_command next;
                 next.type = newline;
                 commands.push_back(next);
-                continue;
+                //continue;
             }
         }
 
-        current.col = fchar.col;
-        current.str += fchar.c;
+        if(restart)
+        {
+            current.absolute_pos = fchar.render_pos;
+            restart = false;
+        }
+
+        current.col = fchar.ioc.col;
+        current.str += fchar.ioc.c;
     }
 
     if(current.str.size() > 0)
@@ -179,28 +209,33 @@ void imgui_render_str(sf::RenderWindow& win, const std::vector<interop_char>& te
 
         if(next.type == newline)
         {
-            ImGui::Text("\n");
+            //ImGui::Text("\n");
             continue;
         }
 
+        vec2f pos = next.absolute_pos;
         std::string str = next.str;
         vec3f col = next.col;
 
-        auto spos = ImGui::GetCursorScreenPos();
+        //auto spos = ImGui::GetCursorScreenPos();
+
+        auto spos = pos;
 
         ///need to predict here if the text is hilighted or not
         ///then if it is, replace spaces with "-" and colour blue
         float width = ImGui::CalcTextSize(str.c_str(), nullptr, false, win.getSize().x).x;
 
         if(handle->held)
-            render_copy_aware(win, col, str, (vec2f){spos.x, spos.y}, (vec2f){spos.x, spos.y} + (vec2f){width, 0.f});
+            render_copy_aware(win, col, str, spos, (vec2f){spos.x(), spos.y()} + (vec2f){width, 0.f}, pos);
         else
-            ImGui::TextColored(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
+            render_copy_blind(col, str, pos);
 
-        float x_start = spos.x;
-        float x_end = spos.x + width;
+        //std::cout << "pos " << pos << std::endl;
 
-        float y_coord = spos.y;
+        float x_start = spos.x();
+        float x_end = spos.x() + width;
+
+        float y_coord = spos.y();
 
         for(int ccount = 0; ccount < (int)str.size(); ccount++)
         {
@@ -232,7 +267,7 @@ void terminal_imgui::render(sf::RenderWindow& win)
     ImGui::SetNextWindowPos(ImVec2(0,0));
     ImGui::SetNextWindowSize(ImVec2(win.getSize().x, win.getSize().y));
 
-    ImGui::Begin("asdf", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+    ImGui::Begin("asdf1", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
     auto wrap_dim = ImGui::GetWindowSize();
     auto start = ImGui::GetWindowPos();
@@ -256,8 +291,12 @@ void terminal_imgui::render(sf::RenderWindow& win)
         formatted.push_back(format_characters(text_history[i], current, {start.x, start.y}, (vec2f){wrap_dim.x, wrap_dim.y}, 0.f));
     }
 
-    internally_format(formatted, {start.x, start.y});
+    internally_format(formatted, {start.x, start.y + ImGui::GetWindowHeight()});
 
+    for(auto& i : formatted)
+    {
+        imgui_render_str(win, i, formatted_text);
+    }
 
     #if 0
     //printf("scr %f %f\n", ImGui::GetScrollY(), ImGui::GetScrollMaxY());
