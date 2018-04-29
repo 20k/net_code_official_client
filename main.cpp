@@ -433,11 +433,18 @@ int main()
 
         ImGui::End();
 
+        ImGui::ShowDemoWindow(nullptr);
+
         freetype_test.ShowFreetypeOptionsWindow();
 
         if(enter)
         {
             //term.add_to_command('\n');
+
+            if(term.focused)
+            {
+                term.consider_resetting_scrollbar = true;
+            }
 
             if(!chat_win.focused)
                 to_edit->command = strip_whitespace(to_edit->command);
@@ -627,6 +634,9 @@ int main()
         window.clear(sf::Color(30, 30, 30));
 
         sf::sleep(sf::milliseconds(4));
+
+        char_inf::cwidth = ImGui::CalcTextSize("A").x;
+        char_inf::cheight = ImGui::CalcTextSize("A").y;
     }
 
     serialise sterm;

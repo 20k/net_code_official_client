@@ -15,6 +15,9 @@ struct terminal_imgui : serialisable
 
     std::map<std::string, chat_thread> chat_threads;
 
+    bool consider_resetting_scrollbar = false;
+    bool locked_to_bottom = false;
+    bool lock_next_frame = true;
     bool focused = true;
     editable_string command;
 

@@ -232,9 +232,38 @@ void terminal_imgui::render(sf::RenderWindow& win)
     ImGui::SetNextWindowPos(ImVec2(0,0));
     ImGui::SetNextWindowSize(ImVec2(win.getSize().x, win.getSize().y));
 
-    ImGui::Begin("asdf", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoTitleBar);
+    ImGui::Begin("asdf", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
 
-    std::cout << "thistory " << text_history.size() << std::endl;
+    auto wrap_dim = ImGui::GetWindowSize();
+    auto start = ImGui::GetWindowPos();
+
+    wrap_dim.x += start.x;
+    wrap_dim.y += start.y;
+
+    vec2f current = {start.x, start.y};
+
+    int vertical_columns = ceil((float)wrap_dim.y / char_inf::cheight);
+
+    int min_start = (int)text_history.size() - vertical_columns;
+
+    if(min_start < 0)
+        min_start = 0;
+
+    std::vector<std::vector<formatted_char>> formatted;
+
+    for(int i=min_start; i < (int)text_history.size(); i++)
+    {
+        formatted.push_back(format_characters(text_history[i], current, {start.x, start.y}, (vec2f){wrap_dim.x, wrap_dim.y}, 0.f));
+    }
+
+    internally_format(formatted, {start.x, start.y});
+
+
+    #if 0
+    //printf("scr %f %f\n", ImGui::GetScrollY(), ImGui::GetScrollMaxY());
+    //std::cout << "locked " << locked_to_bottom << std::endl;
+
+    //std::cout << "thistory " << text_history.size() << std::endl;
 
     for(int i=0; i < (int)text_history.size(); i++)
     {
@@ -245,6 +274,37 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
     imgui_render_str(win, interop_cmd, formatted_text);
 
+    //if(consider_resetting_scrollbar && locked_to_bottom || lock_next_frame)
+    {
+        //if(lock_next_frame)
+            ImGui::SetScrollHere();
+            //ImGui::SetScrollY(ImGui::GetScrollMaxY());
+
+        //lock_next_frame = false;
+
+        //if(consider_resetting_scrollbar && locked_to_bottom)
+        //    lock_next_frame = true;
+
+        /*float yscroll = ImGui::GetScrollY();
+
+        float diff = fabs(yscroll - ImGui::GetScrollMaxY());
+
+        std::cout << "diff " << diff << std::endl;
+
+        if(diff < 20)
+        {
+            ImGui::SetScrollY(999999);
+        }*/
+
+        consider_resetting_scrollbar = false;
+
+        std::cout << "reset\n";
+    }
+
+    //ImGui::SetScrollHere();
+
+    locked_to_bottom = ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 10;
+    #endif // 0
     ImGui::End();
 
     handle->process_formatted(formatted_text);
@@ -381,6 +441,7 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
         text_history.push_back(string_to_interop(str, false, auto_handle));
 
         limit_size(text_history, max_history);
+        consider_resetting_scrollbar = true;
     }
 
     sa_destroy_server_command_info(command_info);
