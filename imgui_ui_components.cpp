@@ -7,6 +7,33 @@
 #include "ui_components.hpp"
 #include "copy_handler.hpp"
 
+void scrollbar_hack::do_hack(sf::RenderWindow& win, int approx_num)
+{
+    /*float base_y = win.getSize().y;
+
+    float my_y = base_y - scrolled * char_inf::cheight;
+
+    float max_y = base_y - approx_num * char_inf::cheight;
+
+    if(max_y < -char_inf::cheight)
+    {
+        std::cout << "hack at " << max_y << std::endl;
+
+        //ImGui::SetCursorScreenPos(ImVec2(0.f, max_y));
+        ImGui::SetCursorPos(ImVec2(0, max_y));
+        ImGui::Text("Invis");
+    }*/
+
+    ImGui::BeginChild("right_child", ImVec2(0,0));
+
+    for(int i=0; i < approx_num; i++)
+    {
+        ImGui::Text("\n");
+    }
+
+    ImGui::EndChild();
+}
+
 void terminal_imgui::do_serialise(serialise& s, bool ser)
 {
     if(ser == false)
@@ -269,6 +296,8 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
     ImGui::Begin("asdf1", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
+    ImGui::BeginChild("left_sub", ImVec2(win.getSize().y - 25, 0.f), false, ImGuiWindowFlags_NoScrollbar);
+
     auto wrap_dim = ImGui::GetWindowSize();
     auto start = ImGui::GetWindowPos();
 
@@ -331,6 +360,13 @@ void terminal_imgui::render(sf::RenderWindow& win)
     {
         imgui_render_str(win, i, formatted_text);
     }
+
+    ImGui::EndChild();
+
+    ImGui::SameLine(0.f, 0.f);
+
+    ///rough
+    scroll_hack.do_hack(win, all_interop.size() + 1);
 
     ImGui::End();
 

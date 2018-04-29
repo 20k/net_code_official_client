@@ -9,8 +9,17 @@
 struct chat_thread;
 struct chat_window;
 
+struct scrollbar_hack
+{
+    ///lines above bottom
+    float scrolled = 0;
+
+    void do_hack(sf::RenderWindow& win, int approx_num);
+};
+
 struct terminal_imgui : serialisable
 {
+    scrollbar_hack scroll_hack;
     std::vector<interop_vec_t> text_history;
 
     std::map<std::string, chat_thread> chat_threads;
