@@ -296,7 +296,13 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
     ImGui::Begin("asdf1", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
-    ImGui::BeginChild("left_sub", ImVec2(win.getSize().y - 25, 0.f), false, ImGuiWindowFlags_NoScrollbar);
+    ImGui::BeginChild("left_sub", ImVec2(win.getSize().x - 25, 0.f), false, ImGuiWindowFlags_NoScrollbar);
+
+    if(ImGui::IsWindowHovered())
+    {
+        scroll_hack.scrolled += scroll_hack.scrolled_this_frame;
+        scroll_hack.scrolled_this_frame = 0.f;
+    }
 
     auto wrap_dim = ImGui::GetWindowSize();
     auto start = ImGui::GetWindowPos();
@@ -309,6 +315,8 @@ void terminal_imgui::render(sf::RenderWindow& win)
     int vertical_columns = ceil((float)wrap_dim.y / char_inf::cheight);
 
     int min_start = (int)text_history.size() - vertical_columns;
+
+    min_start = min_start - scroll_hack.scrolled;
 
     if(min_start < 0)
         min_start = 0;
@@ -354,7 +362,7 @@ void terminal_imgui::render(sf::RenderWindow& win)
         formatted.push_back(format_characters(all_interop[i], current, {start.x, start.y}, (vec2f){wrap_dim.x, wrap_dim.y}, 0.f));
     }
 
-    internally_format(formatted, {start.x, start.y + ImGui::GetWindowHeight()});
+    internally_format(formatted, {start.x, start.y + ImGui::GetWindowHeight()}, scroll_hack.scrolled * char_inf::cheight);
 
     for(auto& i : formatted)
     {

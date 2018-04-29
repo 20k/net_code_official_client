@@ -13,6 +13,7 @@ struct scrollbar_hack
 {
     ///lines above bottom
     float scrolled = 0;
+    float scrolled_this_frame = 0.f;
 
     void do_hack(sf::RenderWindow& win, int approx_num);
 };

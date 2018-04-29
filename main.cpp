@@ -326,6 +326,8 @@ int main()
 
         bool enter = false;
 
+        float mouse_delta = 0.f;
+
         while(window.pollEvent(event))
         {
             ImGui::SFML::ProcessEvent(event);
@@ -433,7 +435,14 @@ int main()
                     get_global_copy_handler()->on_lclick_release({event.mouseButton.x, event.mouseButton.y});
                 }
             }
+
+            if(event.type == sf::Event::MouseWheelScrolled)
+            {
+                mouse_delta += event.mouseWheelScroll.delta;
+            }
         }
+
+        term.scroll_hack.scrolled_this_frame = mouse_delta;
 
         ImGui::SFML::Update(window,  imgui_delta.restart());
 
