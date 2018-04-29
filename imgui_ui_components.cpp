@@ -1,0 +1,317 @@
+#include "imgui_ui_components.hpp"
+#include <imgui/imgui.h>
+#include "string_helpers.hpp"
+#include <libncclient/nc_util.hpp>
+#include <libncclient/nc_string_interop.hpp>
+#include <libncclient/c_server_api.h>
+#include "ui_components.hpp"
+#include "copy_handler.hpp"
+
+void terminal_imgui::do_serialise(serialise& s, bool ser)
+{
+    if(ser == false)
+    {
+        auto_handle.found_unprocessed_autocompletes.clear();
+        auto_handle.found_args.clear();
+        auto_handle.is_valid.clear();
+    }
+
+    s.handle_serialise(text_history, ser);
+    s.handle_serialise(chat_threads, ser);
+    s.handle_serialise(command, ser);
+    s.handle_serialise_no_clear(auto_handle, ser);
+
+    //std::cout << "loaded hist " << text_history.size() << std::endl;
+}
+
+void terminal_imgui::clear_terminal()
+{
+    text_history.clear();
+}
+
+void terminal_imgui::clear_chat()
+{
+    chat_threads.clear();
+}
+
+void terminal_imgui::clear_text()
+{
+    clear_terminal();
+    clear_chat();
+}
+
+terminal_imgui::terminal_imgui()
+{
+    auto_handle.use_autocomplete = true;
+    auto_handle.use_autocolour = true;
+}
+
+enum render_instruction
+{
+    imgui_text,
+    newline,
+};
+
+struct render_command
+{
+    render_instruction type = imgui_text;
+    std::string str;
+    vec3f col;
+};
+
+void terminal_imgui::render(sf::RenderWindow& win)
+{
+    copy_handler* handle = get_global_copy_handler();
+
+    std::vector<std::vector<formatted_char>> formatted_text;
+
+    ImGui::Begin("Test", nullptr, ImGuiWindowFlags_NoCollapse);
+
+    for(int i=0; i < (int)text_history.size(); i++)
+    {
+        /*std::vector<std::pair<std::string, vec3f>> scols;
+
+        vec3f current_col = {0,0,0};
+        std::string str;
+
+        for(auto& k : text_history[i])
+        {
+            if(k.col != current_col || k.c == '\n')
+            {
+                if(str.size() > 0)
+                {
+                    scols.push_back({str, current_col});
+                    str = "";
+                }
+            }
+
+            current_col = k.col;
+            str += k.c;
+        }
+
+        if(str.size() > 0)
+        {
+            scols.push_back({str, current_col});
+        }
+
+        //for(auto& k : scols)
+        for(int kk=0; kk < (int)scols.size(); kk++)
+        {
+            auto var = scols[kk];
+
+            auto spos = ImGui::GetCursorScreenPos();
+
+            ImGui::TextColored(ImVec4(var.second.x()/255.f, var.second.y()/255.f, var.second.z()/255.f, 1.f), var.first.c_str());
+
+            auto epos = ImGui::GetCursorScreenPos();
+
+            if(kk != (int)scols.size() - 1 && var.first.back() != '\n')
+                ImGui::SameLine(0.f, 0.f);
+        }*/
+
+        std::vector<render_command> commands;
+
+        render_command current;
+
+        for(interop_char& fchar : text_history[i])
+        {
+            if(fchar.col != current.col || fchar.c == '\n')
+            {
+                if(current.str.size() > 0 && fchar.c != '\n')
+                {
+                    current.type = imgui_text;
+                    commands.push_back(current);
+                    current = render_command();
+                }
+
+                if(fchar.c == '\n')
+                {
+                    if(current.str.size() > 0)
+                    {
+                        current.type = imgui_text;
+                        commands.push_back(current);
+                        current = render_command();
+                    }
+
+                    render_command next;
+                    next.type = newline;
+                    commands.push_back(next);
+                    continue;
+                }
+            }
+
+            current.col = fchar.col;
+            current.str += fchar.c;
+        }
+
+        if(current.str.size() > 0)
+        {
+            commands.push_back(current);
+        }
+
+        for(int kk=0; kk < (int)commands.size(); kk++)
+        {
+            render_command& next = commands[kk];
+
+            if(next.type == newline)
+            {
+                ImGui::Text("\n");
+                continue;
+            }
+
+            std::string str = next.str;
+            vec3f col = next.col;
+
+            ImGui::TextColored(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
+
+            if(kk != (int)commands.size()-1)
+            {
+                ImGui::SameLine(0,0);
+            }
+        }
+
+        //ImGui::Text(str.c_str());
+    }
+
+    ImGui::End();
+
+
+
+    //::render(win, command.command, text_history, command.cursor_pos_idx, {0.f, win.getSize().y}, {(int)win.getSize().x - char_inf::cwbuf, win.getSize().y}, -char_inf::cheight, auto_handle, focused);
+}
+
+void terminal_imgui::bump_command_to_history()
+{
+    text_history.push_back(string_to_interop(command.command, true, auto_handle));
+    command.clear_command();
+}
+
+void terminal_imgui::add_text_from_server(const std::string& in, chat_window& chat_win, bool server_command)
+{
+    if(in == "")
+        return;
+
+    std::string str = in;
+
+    server_command_info command_info = sa_server_response_to_info(make_view(in));
+
+    bool push = false;
+
+    if(server_command)
+    {
+        std::string command_str = "command ";
+        std::string chat_api = "chat_api ";
+        std::string scriptargs = "server_scriptargs ";
+        std::string invalid_str = "server_scriptargs_invalid";
+        std::string ratelimit_str = "server_scriptargs_ratelimit ";
+
+        if(command_info.type == server_command_command)
+        {
+            str = c_str_consume(sa_command_to_human_readable(command_info));
+
+            push = true;
+        }
+        else if(command_info.type == server_command_chat_api)
+        {
+            std::vector<std::string> chnls;
+            std::vector<std::string> msgs;
+
+            std::vector<std::string> in_channels;
+
+            chat_api_info chat_info = sa_chat_api_to_info(command_info);
+
+            for(int i=0; i < chat_info.num_msgs; i++)
+            {
+                chnls.push_back(c_str_sized_to_cpp(chat_info.msgs[i].channel));
+                msgs.push_back(c_str_sized_to_cpp(chat_info.msgs[i].msg));
+            }
+
+            for(int i=0; i < chat_info.num_in_channels; i++)
+            {
+                in_channels.push_back(c_str_sized_to_cpp(chat_info.in_channels[i].channel));
+            }
+
+            sa_destroy_chat_api_info(chat_info);
+
+            chat_win.set_side_channels(in_channels);
+
+            for(int i=0; i < (int)chnls.size(); i++)
+            {
+                text_history.push_back(string_to_interop(msgs[i] + "\n", false, chat_win.auto_handle));
+
+                chat_threads[chnls[i]].chats.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
+            }
+
+            int max_history = 250;
+
+            limit_size(text_history, max_history);
+        }
+        else if(command_info.type == server_command_server_scriptargs)
+        {
+            std::cout << str << std::endl;
+
+            script_argument_list args = sa_server_scriptargs_to_list(command_info);
+
+            if(args.scriptname.str != nullptr && args.scriptname.num > 0)
+            {
+                std::vector<autocomplete_args> auto_args;
+
+                for(int i=0; i < args.num; i++)
+                {
+                    std::string key = c_str_sized_to_cpp(args.args[i].key);
+                    std::string val = c_str_sized_to_cpp(args.args[i].val);
+
+                    auto_args.push_back({key, val});
+                }
+
+                std::string scriptname = c_str_sized_to_cpp(args.scriptname);
+
+                auto_handle.found_args[scriptname] = auto_args;
+                auto_handle.is_valid[scriptname] = true;
+            }
+
+            sa_destroy_script_argument_list(args);
+        }
+        else if(command_info.type == server_command_server_scriptargs_invalid)
+        {
+            std::cout << "inv " << str << std::endl;
+
+            std::string name = c_str_consume(sa_server_scriptargs_invalid_to_script_name(command_info));
+
+            if(name.size() > 0)
+            {
+                auto_handle.is_valid[name] = false;
+            }
+        }
+        else if(command_info.type == server_command_server_scriptargs_ratelimit)
+        {
+            std::string name = c_str_consume(sa_server_scriptargs_ratelimit_to_script_name(command_info));
+
+            std::cout << "rl name " << name << std::endl;
+
+            if(name.size() > 0)
+            {
+                auto_handle.found_unprocessed_autocompletes.insert(name);
+            }
+        }
+        else
+        {
+            push = true;
+        }
+    }
+    else
+    {
+        push = true;
+    }
+
+    if(push)
+    {
+        int max_history = 250;
+
+        limit_size(text_history, max_history);
+
+        text_history.push_back(string_to_interop(str, false, auto_handle));
+    }
+
+    sa_destroy_server_command_info(command_info);
+}
