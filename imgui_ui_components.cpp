@@ -131,12 +131,12 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
             auto spos = ImGui::GetCursorScreenPos();
 
+            ///need to predict here if the text is hilighted or not
+            ///then if it is, replace spaces with "-" and colour blue
+
             ImGui::TextColored(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
 
-            //if(kk != (int)commands.size()-1)
-            {
-                ImGui::SameLine(0,0);
-            }
+            ImGui::SameLine(0,0);
 
             auto epos = ImGui::GetCursorScreenPos();
 
@@ -147,7 +147,7 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
             float y_coord = spos.y;
 
-            for(int ccount = 0; ccount < str.size(); ccount++)
+            for(int ccount = 0; ccount < (int)str.size(); ccount++)
             {
                 float ffrac = (float)ccount / (float)str.size();
 
