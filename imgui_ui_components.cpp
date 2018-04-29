@@ -316,7 +316,7 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
     ImGui::Begin("asdf1", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
-    ImGui::BeginChild("left_sub", ImVec2(win.getSize().x - 25, 0.f), false, ImGuiWindowFlags_NoScrollbar);
+    ImGui::BeginChild("left_sub", ImVec2(win.getSize().x - 40, 0.f), false, ImGuiWindowFlags_NoScrollbar);
 
     bool set_scroll = false;
 
