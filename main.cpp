@@ -25,6 +25,7 @@
 #include <libncclient/nc_string_interop.hpp>
 
 #include <imgui/imgui.h>
+#include <imgui/imgui_internal.h>
 #include <imgui-sfml/imgui-SFML.h>
 #include <imgui/misc/freetype/imgui_freetype.h>
 
@@ -52,9 +53,142 @@ bool is_focused(sf::RenderWindow& win)
 #define HOST_PORT "6761"
 #endif // LOCAL_IP
 
+void update_font_texture_safe()
+{
+    static sf::Texture texture;
+
+    ImGuiIO& io = ImGui::GetIO();
+    unsigned char* pixels;
+    int width, height;
+
+    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+
+    texture.create(width, height);
+    texture.update(pixels);
+
+    io.Fonts->TexID = (void*)texture.getNativeHandle();
+}
+
+struct FreeTypeTest
+{
+    enum FontBuildMode
+    {
+        FontBuildMode_FreeType,
+        FontBuildMode_Stb,
+    };
+
+    FontBuildMode BuildMode;
+    bool          WantRebuild;
+    float         FontsMultiply;
+    unsigned int  FontsFlags;
+
+    FreeTypeTest()
+    {
+        BuildMode = FontBuildMode_FreeType;
+        WantRebuild = true;
+        FontsMultiply = 1.0f;
+        FontsFlags = 0;
+    }
+
+    // Call _BEFORE_ NewFrame()
+    bool UpdateRebuild()
+    {
+        if (!WantRebuild)
+            return false;
+        ImGuiIO& io = ImGui::GetIO();
+        for (int n = 0; n < io.Fonts->Fonts.Size; n++)
+        {
+            //io.Fonts->Fonts[n]->ConfigData->RasterizerMultiply = FontsMultiply;
+            //io.Fonts->Fonts[n]->ConfigData->RasterizerFlags = (BuildMode == FontBuildMode_FreeType) ? FontsFlags : 0x00;
+        }
+        if (BuildMode == FontBuildMode_FreeType)
+            ImGuiFreeType::BuildFontAtlas(io.Fonts, FontsFlags);
+        else if (BuildMode == FontBuildMode_Stb)
+            io.Fonts->Build();
+        WantRebuild = false;
+        return true;
+    }
+
+    // Call to draw interface
+    void ShowFreetypeOptionsWindow()
+    {
+        ImGui::Begin("FreeType Options");
+        ImGui::ShowFontSelector("Fonts");
+        WantRebuild |= ImGui::RadioButton("FreeType", (int*)&BuildMode, FontBuildMode_FreeType);
+        ImGui::SameLine();
+        WantRebuild |= ImGui::RadioButton("Stb (Default)", (int*)&BuildMode, FontBuildMode_Stb);
+        WantRebuild |= ImGui::DragFloat("Multiply", &FontsMultiply, 0.001f, 0.0f, 2.0f);
+        if (BuildMode == FontBuildMode_FreeType)
+        {
+            WantRebuild |= ImGui::CheckboxFlags("NoHinting",     &FontsFlags, ImGuiFreeType::NoHinting);
+            WantRebuild |= ImGui::CheckboxFlags("NoAutoHint",    &FontsFlags, ImGuiFreeType::NoAutoHint);
+            WantRebuild |= ImGui::CheckboxFlags("ForceAutoHint", &FontsFlags, ImGuiFreeType::ForceAutoHint);
+            WantRebuild |= ImGui::CheckboxFlags("LightHinting",  &FontsFlags, ImGuiFreeType::LightHinting);
+            WantRebuild |= ImGui::CheckboxFlags("MonoHinting",   &FontsFlags, ImGuiFreeType::MonoHinting);
+            WantRebuild |= ImGui::CheckboxFlags("Bold",          &FontsFlags, ImGuiFreeType::Bold);
+            WantRebuild |= ImGui::CheckboxFlags("Oblique",       &FontsFlags, ImGuiFreeType::Oblique);
+        }
+        ImGui::End();
+    }
+};
+
+void test()
+{
+    sf::RenderWindow window(sf::VideoMode(800, 600), "hi");
+
+    ImGui::SFML::Init(window, false);
+
+    ImGuiIO& io = ImGui::GetIO();
+    //io.Fonts->AddFontDefault();
+    ImFont* font = io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 13.f);
+
+    ImGuiFreeType::BuildFontAtlas(io.Fonts, 0);
+
+    assert(font != nullptr);
+    update_font_texture_safe();
+
+    //assert(font->ConfigData.size() != 0);
+
+    FreeTypeTest test;
+    test.WantRebuild = false;
+
+    sf::Clock imgui_delta;
+
+    while(1)
+    {
+        if(test.UpdateRebuild())
+        {
+            update_font_texture_safe();
+        }
+
+        sf::Event event;
+
+        while(window.pollEvent(event))
+        {
+            ImGui::SFML::ProcessEvent(event);
+        }
+
+        ImGui::SFML::Update(window,  imgui_delta.restart());
+
+        ImGui::Begin("Hi");
+
+        ImGui::Text("Test");
+
+        ImGui::End();
+
+        test.ShowFreetypeOptionsWindow();
+
+        ImGui::SFML::Render(window);
+        window.display();
+        window.clear();
+    }
+}
+
 ///test new repo
 int main()
 {
+    //test();
+
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
     stack_on_start();
@@ -85,7 +219,33 @@ int main()
 
     sf::RenderWindow window;
     window.create(sf::VideoMode(1200,600), "Crapmud", sf::Style::Default, sett);
-    ImGui::SFML::Init(window);
+
+    ImGui::SFML::Init(window, false);
+
+    ImFontConfig font_cfg;
+    font_cfg.GlyphExtraSpacing = ImVec2(1, 0);
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.Fonts->AddFontDefault();
+    io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 13.f, &font_cfg);
+
+    //ImGuiFreeType::BuildFontAtlas(io.Fonts, 0);
+    //ImGui::SFML::UpdateFontTexture();
+
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(30/255.f, 30/255.f, 30/255.f, 255/255.f));
+
+    /*ImGuiIO& io = ImGui::GetIO();
+    io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 13.f);
+    io.Fonts->AddFontDefault();*/
+
+    FreeTypeTest freetype_test;
+    //freetype_test.WantRebuild = false;
+
+    /*// see ImGuiFreeType::RasterizationFlags
+    unsigned int flags = ImGuiFreeType::LightHinting;
+    ImGuiFreeType::BuildFontAtlas(io.Fonts, flags);
+    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);*/
+
 
     terminal term;
     chat_window chat_win;
@@ -140,6 +300,11 @@ int main()
 
     while(running)
     {
+        if(freetype_test.UpdateRebuild())
+        {
+            update_font_texture_safe();
+        }
+
         editable_string* to_edit = &term.command;
 
         if(chat_win.focused)
@@ -258,11 +423,15 @@ int main()
 
         ImGui::SFML::Update(window,  imgui_delta.restart());
 
+        //ImGui::NewFrame();
+
         ImGui::Begin("Test");
 
         ImGui::Text("Hello");
 
         ImGui::End();
+
+        freetype_test.ShowFreetypeOptionsWindow();
 
         if(enter)
         {
