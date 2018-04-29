@@ -24,6 +24,10 @@
 #include <libncclient/c_server_api.h>
 #include <libncclient/nc_string_interop.hpp>
 
+#include <imgui/imgui.h>
+#include <imgui-sfml/imgui-SFML.h>
+#include <imgui/misc/freetype/imgui_freetype.h>
+
 bool is_focused(sf::RenderWindow& win)
 {
     return win.getSystemHandle() == GetFocus();
@@ -81,6 +85,7 @@ int main()
 
     sf::RenderWindow window;
     window.create(sf::VideoMode(1200,600), "Crapmud", sf::Style::Default, sett);
+    ImGui::SFML::Init(window);
 
     terminal term;
     chat_window chat_win;
@@ -127,6 +132,8 @@ int main()
     sf::Keyboard key;
     sf::Mouse mouse;
 
+    sf::Clock imgui_delta;
+
     //double diff_s = 0.f;
 
     bool running = true;
@@ -142,6 +149,8 @@ int main()
 
         while(window.pollEvent(event))
         {
+            ImGui::SFML::ProcessEvent(event);
+
             if(event.type == sf::Event::Closed)
             {
                 running = false;
@@ -246,6 +255,14 @@ int main()
                 }
             }
         }
+
+        ImGui::SFML::Update(window,  imgui_delta.restart());
+
+        ImGui::Begin("Test");
+
+        ImGui::Text("Hello");
+
+        ImGui::End();
 
         if(enter)
         {
@@ -431,6 +448,7 @@ int main()
             get_global_copy_handler()->held = false;
         }
 
+        ImGui::SFML::Render(window);
         window.display();
         window.clear(sf::Color(30, 30, 30));
 

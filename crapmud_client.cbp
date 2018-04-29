@@ -170,6 +170,9 @@
 			<Add option="-DNO_COMPRESSION" />
 			<Add option="-DBOOST_STACKTRACE_USE_WINDBG" />
 			<Add directory="deps" />
+			<Add directory="deps/imgui" />
+			<Add directory="deps/freetype" />
+			<Add directory="deps/freetype/include" />
 		</Compiler>
 		<Linker>
 			<Add option="-lmingw32" />
@@ -182,12 +185,13 @@
 			<Add option="-lflac" />
 			<Add option="-lopenal32" />
 			<Add option="-logg" />
-			<Add option="-lole32" />
 			<Add option="-lboost_system-mt" />
 			<Add option="-lboost_filesystem-mt" />
+			<Add option="-lole32" />
 			<Add option="-ldbgeng" />
 			<Add option="-lboost_stacktrace_windbg-mt" />
 			<Add library="deps/libncclient/libncclient.a" />
+			<Add library="deps/freetype/win64/libfreetype.a" />
 		</Linker>
 		<ExtraCommands>
 			<Add after="copy_dll.bat" />
@@ -198,6 +202,13 @@
 		<Unit filename="colour_interop.hpp" />
 		<Unit filename="copy_handler.cpp" />
 		<Unit filename="copy_handler.hpp" />
+		<Unit filename="deps/imgui-sfml/imgui-SFML.cpp" />
+		<Unit filename="deps/imgui-sfml/imgui-SFML.h" />
+		<Unit filename="deps/imgui/imgui.cpp" />
+		<Unit filename="deps/imgui/imgui.h" />
+		<Unit filename="deps/imgui/imgui_draw.cpp" />
+		<Unit filename="deps/imgui/misc/freetype/imgui_freetype.cpp" />
+		<Unit filename="deps/imgui/misc/freetype/imgui_freetype.h" />
 		<Unit filename="deps/serialise/serialise.cpp" />
 		<Unit filename="deps/serialise/serialise.hpp" />
 		<Unit filename="editable_string.cpp" />
