@@ -248,8 +248,8 @@ int main()
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);*/
 
 
-    terminal_imgui test_imgui_term;
-    terminal term;
+    terminal_imgui term;
+    //terminal term;
     chat_window chat_win;
 
     sf::Event event;
@@ -606,11 +606,11 @@ int main()
         term.auto_handle.window_in_focus = is_focused(window);
         chat_win.auto_handle.window_in_focus = is_focused(window);
 
-        test_imgui_term.text_history = term.text_history;
+        //test_imgui_term.text_history = term.text_history;
 
-        test_imgui_term.render(window);
+        //test_imgui_term.render(window);
         term.render(window);
-        chat_win.render(window, term.chat_threads);
+        //chat_win.render(window, term.chat_threads);
 
         term.auto_handle.tab_pressed = ONCE_MACRO(sf::Keyboard::Tab) && is_focused(window);
 

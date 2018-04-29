@@ -7,8 +7,9 @@
 #include <tinydir/tinydir.h>
 
 #include "auto_handlers.hpp"
+#include "imgui_ui_components.hpp"
 
-std::string handle_local_command(const std::string& username, const std::string& command, auto_handler& auto_handle, bool& should_shutdown, terminal& term)
+std::string handle_local_command(const std::string& username, const std::string& command, auto_handler& auto_handle, bool& should_shutdown, terminal_imgui& term)
 {
     if(starts_with(command, "#clear_autos") || starts_with(command, "#autos_clear"))
     {

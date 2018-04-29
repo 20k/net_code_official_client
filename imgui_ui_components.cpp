@@ -59,7 +59,7 @@ struct render_command
     vec3f col;
 };
 
-void render_copy_aware(vec3f col, const std::string& str, vec2f start_pos, vec2f end_pos)
+void render_copy_aware(sf::RenderWindow& win, vec3f col, const std::string& str, vec2f start_pos, vec2f end_pos)
 {
     int cutoff_point = -1;
 
@@ -91,7 +91,12 @@ void render_copy_aware(vec3f col, const std::string& str, vec2f start_pos, vec2f
         cur_str.first.push_back(str[i]);
 
         if(currently_inside)
+        {
             cur_str.second = {80, 80, 255};
+
+            if(cur_str.first.back() == ' ')
+                cur_str.first.back() = '-';
+        }
         else
             cur_str.second = col;
     }
@@ -101,9 +106,6 @@ void render_copy_aware(vec3f col, const std::string& str, vec2f start_pos, vec2f
         cols.push_back(cur_str);
     }
 
-    //ImGui::BeginGroup();
-
-    //for(auto& i : cols)
     for(int i=0; i < (int)cols.size(); i++)
     {
         vec3f ccol = cols[i].second;
@@ -114,10 +116,111 @@ void render_copy_aware(vec3f col, const std::string& str, vec2f start_pos, vec2f
         if(i != (int)cols.size() - 1)
             ImGui::SameLine(0, char_inf::extra_glyph_spacing);
     }
+}
 
-    //ImGui::EndGroup();
+void imgui_render_str(sf::RenderWindow& win, const std::vector<interop_char>& text, std::vector<std::vector<formatted_char>>& formatted_text)
+{
+    copy_handler* handle = get_global_copy_handler();
 
-    //ImGui::TextColored(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
+    std::vector<render_command> commands;
+
+    render_command current;
+
+    for(const interop_char& fchar : text)
+    {
+        if(fchar.col != current.col || fchar.c == '\n')
+        {
+            if(current.str.size() > 0 && fchar.c != '\n')
+            {
+                current.type = imgui_text;
+                commands.push_back(current);
+                current = render_command();
+            }
+
+            if(fchar.c == '\n')
+            {
+                if(current.str.size() > 0)
+                {
+                    current.type = imgui_text;
+                    commands.push_back(current);
+                    current = render_command();
+                }
+
+                render_command next;
+                next.type = newline;
+                commands.push_back(next);
+                continue;
+            }
+        }
+
+        current.col = fchar.col;
+        current.str += fchar.c;
+    }
+
+    if(current.str.size() > 0)
+    {
+        commands.push_back(current);
+    }
+
+    if(commands.size() == 0)
+    {
+        render_command next;
+        next.type = newline;
+        commands.push_back(next);
+    }
+
+    formatted_text.emplace_back();
+
+    std::vector<formatted_char>& chars = formatted_text.back();
+
+    for(int kk=0; kk < (int)commands.size(); kk++)
+    {
+        render_command& next = commands[kk];
+
+        if(next.type == newline)
+        {
+            ImGui::Text("\n");
+            continue;
+        }
+
+        std::string str = next.str;
+        vec3f col = next.col;
+
+        auto spos = ImGui::GetCursorScreenPos();
+
+        ///need to predict here if the text is hilighted or not
+        ///then if it is, replace spaces with "-" and colour blue
+        float width = ImGui::CalcTextSize(str.c_str(), nullptr, false, win.getSize().x).x;
+
+        if(handle->held)
+            render_copy_aware(win, col, str, (vec2f){spos.x, spos.y}, (vec2f){spos.x, spos.y} + (vec2f){width, 0.f});
+        else
+            ImGui::TextColored(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
+
+        float x_start = spos.x;
+        float x_end = spos.x + width;
+
+        float y_coord = spos.y;
+
+        for(int ccount = 0; ccount < (int)str.size(); ccount++)
+        {
+            float ffrac = (float)ccount / (float)str.size();
+
+            formatted_char chr;
+            chr.ioc.c = str[ccount];
+
+            chr.render_pos.y() = y_coord;
+            chr.render_pos.x() = ffrac * x_end + (1.f - ffrac) * x_start;
+
+            chars.push_back(chr);
+        }
+
+        /*if(kk == (int)commands.size()-1)
+            ImGui::NewLine();*/
+
+        if(kk != (int)commands.size()-1)
+            ImGui::SameLine(0, char_inf::extra_glyph_spacing);
+    }
 }
 
 void terminal_imgui::render(sf::RenderWindow& win)
@@ -126,131 +229,23 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
     std::vector<std::vector<formatted_char>> formatted_text;
 
-    ImGui::Begin("yaer", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs);
+    ImGui::SetNextWindowPos(ImVec2(0,0));
+    ImGui::SetNextWindowSize(ImVec2(win.getSize().x, win.getSize().y));
+
+    ImGui::Begin("asdf", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoTitleBar);
 
     for(int i=0; i < (int)text_history.size(); i++)
     {
-        std::vector<render_command> commands;
-
-        render_command current;
-
-        for(interop_char& fchar : text_history[i])
-        {
-            if(fchar.col != current.col || fchar.c == '\n')
-            {
-                if(current.str.size() > 0 && fchar.c != '\n')
-                {
-                    current.type = imgui_text;
-                    commands.push_back(current);
-                    current = render_command();
-                }
-
-                if(fchar.c == '\n')
-                {
-                    if(current.str.size() > 0)
-                    {
-                        current.type = imgui_text;
-                        commands.push_back(current);
-                        current = render_command();
-                    }
-
-                    render_command next;
-                    next.type = newline;
-                    commands.push_back(next);
-                    continue;
-                }
-            }
-
-            current.col = fchar.col;
-            current.str += fchar.c;
-
-            /*if(fchar.c == '\n')
-            {
-                render_command next;
-                next.type = newline;
-                commands.push_back(next);
-            }
-            else
-            {
-                current.type = imgui_text;
-                commands.push_back(current);
-                current = render_command();
-            }*/
-        }
-
-        if(current.str.size() > 0)
-        {
-            commands.push_back(current);
-        }
-
-        if(commands.size() == 0)
-            continue;
-
-        formatted_text.emplace_back();
-
-        std::vector<formatted_char>& chars = formatted_text.back();
-
-        for(int kk=0; kk < (int)commands.size(); kk++)
-        {
-            render_command& next = commands[kk];
-
-            if(next.type == newline)
-            {
-                ImGui::Text("\n");
-                continue;
-            }
-
-            std::string str = next.str;
-            vec3f col = next.col;
-
-            auto spos = ImGui::GetCursorScreenPos();
-
-            ///need to predict here if the text is hilighted or not
-            ///then if it is, replace spaces with "-" and colour blue
-
-            if(handle->held)
-                render_copy_aware(col, str, (vec2f){spos.x, spos.y}, (vec2f){spos.x, spos.y} + (vec2f){char_inf::cwidth * str.size(), 0.f});
-            else
-                ImGui::TextColored(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
-
-            ImGui::SameLine(0,char_inf::extra_glyph_spacing);
-
-            auto epos = ImGui::GetCursorScreenPos();
-
-            float x_start = spos.x;
-            float x_end = epos.x;
-
-            //printf("start %f end %f\n", x_start, x_end);
-
-            float y_coord = spos.y;
-
-            for(int ccount = 0; ccount < (int)str.size(); ccount++)
-            {
-                float ffrac = (float)ccount / (float)str.size();
-
-                formatted_char chr;
-                chr.ioc.c = str[ccount];
-
-                chr.render_pos.y() = y_coord;
-                chr.render_pos.x() = ffrac * x_end + (1.f - ffrac) * x_start;
-
-                chars.push_back(chr);
-            }
-
-            if(kk == (int)commands.size()-1)
-                ImGui::NewLine();
-        }
-
-        //ImGui::Text(str.c_str());
+        imgui_render_str(win, text_history[i], formatted_text);
     }
+
+    auto interop_cmd = string_to_interop_no_autos(command.command, true);
+
+    imgui_render_str(win, interop_cmd, formatted_text);
 
     ImGui::End();
 
-
-    //std::cout << "hi there\n";
     handle->process_formatted(formatted_text);
-
-    //::render(win, command.command, text_history, command.cursor_pos_idx, {0.f, win.getSize().y}, {(int)win.getSize().x - char_inf::cwbuf, win.getSize().y}, -char_inf::cheight, auto_handle, focused);
 }
 
 void terminal_imgui::bump_command_to_history()
