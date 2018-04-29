@@ -25,12 +25,24 @@ void button::do_serialise(serialise& s, bool ser)
     s.handle_serialise(dim, ser);
 }
 
+
+
 void chat_window::do_serialise(serialise& s, bool ser)
 {
     s.handle_serialise(render_start, ser);
     s.handle_serialise(side_buttons, ser);
     s.handle_serialise(selected, ser);
     s.handle_serialise(command, ser);
+}
+
+void vertical_scrollbar::render(sf::RenderWindow& win, vec2f pos)
+{
+
+}
+
+void vertical_scrollbar::do_serialise(serialise& s, bool ser)
+{
+    s.handle_serialise(current_viewed_line_number, ser);
 }
 
 sf::Color chat_window::get_frame_col()

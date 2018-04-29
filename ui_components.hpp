@@ -28,6 +28,18 @@ struct button : serialisable
     virtual void do_serialise(serialise& s, bool ser);
 };
 
+struct vertical_scrollbar : serialisable
+{
+    float scrollbar_width = 5.f;
+    float scroll_element_height = 5.f;
+
+    ///so at 0 we're viewing the very bottom line, further up we're viewing higher lines
+    int current_viewed_line_number = 0;
+
+    void render(sf::RenderWindow& win, vec2f pos);
+    virtual void do_serialise(serialise& s, bool ser);
+};
+
 struct chat_window : serialisable
 {
     vec2f render_start = {0,0};
