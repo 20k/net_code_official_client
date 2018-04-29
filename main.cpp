@@ -28,6 +28,7 @@
 #include <imgui/imgui_internal.h>
 #include <imgui-sfml/imgui-SFML.h>
 #include <imgui/misc/freetype/imgui_freetype.h>
+#include "imgui_ui_components.hpp"
 
 bool is_focused(sf::RenderWindow& win)
 {
@@ -140,7 +141,7 @@ void test()
 
     ImGuiIO& io = ImGui::GetIO();
     //io.Fonts->AddFontDefault();
-    ImFont* font = io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 13.f);
+    ImFont* font = io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 14.f);
 
     ImGuiFreeType::BuildFontAtlas(io.Fonts, 0);
 
@@ -227,7 +228,7 @@ int main()
 
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontDefault();
-    io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 13.f, &font_cfg);
+    io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 14.f, &font_cfg);
 
     //ImGuiFreeType::BuildFontAtlas(io.Fonts, 0);
     //ImGui::SFML::UpdateFontTexture();
@@ -247,6 +248,7 @@ int main()
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);*/
 
 
+    terminal_imgui test_imgui_term;
     terminal term;
     chat_window chat_win;
 
@@ -604,6 +606,9 @@ int main()
         term.auto_handle.window_in_focus = is_focused(window);
         chat_win.auto_handle.window_in_focus = is_focused(window);
 
+        test_imgui_term.text_history = term.text_history;
+
+        test_imgui_term.render(window);
         term.render(window);
         chat_win.render(window, term.chat_threads);
 
