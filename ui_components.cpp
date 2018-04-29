@@ -25,8 +25,6 @@ void button::do_serialise(serialise& s, bool ser)
     s.handle_serialise(dim, ser);
 }
 
-
-
 void chat_window::do_serialise(serialise& s, bool ser)
 {
     s.handle_serialise(render_start, ser);
