@@ -65,50 +65,10 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
     std::vector<std::vector<formatted_char>> formatted_text;
 
-    ImGui::Begin("Test", nullptr, ImGuiWindowFlags_NoCollapse);
+    ImGui::Begin("yaer", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs);
 
     for(int i=0; i < (int)text_history.size(); i++)
     {
-        /*std::vector<std::pair<std::string, vec3f>> scols;
-
-        vec3f current_col = {0,0,0};
-        std::string str;
-
-        for(auto& k : text_history[i])
-        {
-            if(k.col != current_col || k.c == '\n')
-            {
-                if(str.size() > 0)
-                {
-                    scols.push_back({str, current_col});
-                    str = "";
-                }
-            }
-
-            current_col = k.col;
-            str += k.c;
-        }
-
-        if(str.size() > 0)
-        {
-            scols.push_back({str, current_col});
-        }
-
-        //for(auto& k : scols)
-        for(int kk=0; kk < (int)scols.size(); kk++)
-        {
-            auto var = scols[kk];
-
-            auto spos = ImGui::GetCursorScreenPos();
-
-            ImGui::TextColored(ImVec4(var.second.x()/255.f, var.second.y()/255.f, var.second.z()/255.f, 1.f), var.first.c_str());
-
-            auto epos = ImGui::GetCursorScreenPos();
-
-            if(kk != (int)scols.size() - 1 && var.first.back() != '\n')
-                ImGui::SameLine(0.f, 0.f);
-        }*/
-
         std::vector<render_command> commands;
 
         render_command current;
@@ -149,6 +109,13 @@ void terminal_imgui::render(sf::RenderWindow& win)
             commands.push_back(current);
         }
 
+        if(commands.size() == 0)
+            continue;
+
+        formatted_text.emplace_back();
+
+        std::vector<formatted_char>& chars = formatted_text.back();
+
         for(int kk=0; kk < (int)commands.size(); kk++)
         {
             render_command& next = commands[kk];
@@ -162,12 +129,39 @@ void terminal_imgui::render(sf::RenderWindow& win)
             std::string str = next.str;
             vec3f col = next.col;
 
+            auto spos = ImGui::GetCursorScreenPos();
+
             ImGui::TextColored(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
 
-            if(kk != (int)commands.size()-1)
+            //if(kk != (int)commands.size()-1)
             {
                 ImGui::SameLine(0,0);
             }
+
+            auto epos = ImGui::GetCursorScreenPos();
+
+            float x_start = spos.x;
+            float x_end = epos.x;
+
+            //printf("start %f end %f\n", x_start, x_end);
+
+            float y_coord = spos.y;
+
+            for(int ccount = 0; ccount < str.size(); ccount++)
+            {
+                float ffrac = (float)ccount / (float)str.size();
+
+                formatted_char chr;
+                chr.ioc.c = str[ccount];
+
+                chr.render_pos.y() = y_coord;
+                chr.render_pos.x() = ffrac * x_end + (1.f - ffrac) * x_start;
+
+                chars.push_back(chr);
+            }
+
+            if(kk == (int)commands.size()-1)
+                ImGui::NewLine();
         }
 
         //ImGui::Text(str.c_str());
@@ -176,6 +170,8 @@ void terminal_imgui::render(sf::RenderWindow& win)
     ImGui::End();
 
 
+    std::cout << "hi there\n";
+    handle->process_formatted(formatted_text);
 
     //::render(win, command.command, text_history, command.cursor_pos_idx, {0.f, win.getSize().y}, {(int)win.getSize().x - char_inf::cwbuf, win.getSize().y}, -char_inf::cheight, auto_handle, focused);
 }

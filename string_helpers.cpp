@@ -149,8 +149,8 @@ void render(sf::RenderWindow& win, std::string& command, const std::vector<inter
 
     internally_format(formatted, start);
 
-    if(focused)
-        get_global_copy_handler()->process_formatted(formatted);
+    /*if(focused)
+        get_global_copy_handler()->process_formatted(formatted);*/
 
     for(int i=0; i < (int)formatted.size(); i++)
     {
