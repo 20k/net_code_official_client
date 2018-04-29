@@ -13,7 +13,6 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-Og" />
 					<Add option="-g" />
 					<Add option="-DLOCAL_IP" />
 				</Compiler>
@@ -206,6 +205,7 @@
 		<Unit filename="deps/imgui-sfml/imgui-SFML.h" />
 		<Unit filename="deps/imgui/imgui.cpp" />
 		<Unit filename="deps/imgui/imgui.h" />
+		<Unit filename="deps/imgui/imgui_demo.cpp" />
 		<Unit filename="deps/imgui/imgui_draw.cpp" />
 		<Unit filename="deps/imgui/misc/freetype/imgui_freetype.cpp" />
 		<Unit filename="deps/imgui/misc/freetype/imgui_freetype.h" />
@@ -219,6 +219,8 @@
 			<Option target="DeployTest" />
 			<Option target="DeployTestSubmodules" />
 		</Unit>
+		<Unit filename="imgui_ui_components.cpp" />
+		<Unit filename="imgui_ui_components.hpp" />
 		<Unit filename="local_commands.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="stacktrace.cpp" />
