@@ -234,6 +234,8 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
     ImGui::Begin("asdf", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoTitleBar);
 
+    std::cout << "thistory " << text_history.size() << std::endl;
+
     for(int i=0; i < (int)text_history.size(); i++)
     {
         imgui_render_str(win, text_history[i], formatted_text);
@@ -376,9 +378,9 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
     {
         int max_history = 250;
 
-        limit_size(text_history, max_history);
-
         text_history.push_back(string_to_interop(str, false, auto_handle));
+
+        limit_size(text_history, max_history);
     }
 
     sa_destroy_server_command_info(command_info);
