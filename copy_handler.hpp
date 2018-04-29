@@ -29,6 +29,8 @@ struct copy_handler
     void process_formatted(std::vector<std::vector<formatted_char>>& chars);
 
     void tick(vec2f pos);
+
+    bool char_is_within_select_box(vec2f pos);
 };
 
 extern copy_handler global_copy_handler;

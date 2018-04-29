@@ -59,6 +59,67 @@ struct render_command
     vec3f col;
 };
 
+void render_copy_aware(vec3f col, const std::string& str, vec2f start_pos, vec2f end_pos)
+{
+    int cutoff_point = -1;
+
+    std::vector<std::pair<std::string, vec3f>> cols;
+
+    std::pair<std::string, vec3f> cur_str;
+
+    if(str.size() == 0)
+        return;
+
+    copy_handler* handle = get_global_copy_handler();
+    bool is_inside = handle->char_is_within_select_box(start_pos);
+
+    for(int i=0; i < str.size(); i++)
+    {
+        float ffrac = (float)i / (float)str.size();
+
+        vec2f pos = mix(start_pos, end_pos, ffrac);
+
+        bool currently_inside = handle->char_is_within_select_box(pos);
+
+        if(currently_inside != is_inside)
+        {
+            cols.push_back(cur_str);
+            cur_str = decltype(cur_str)();
+            is_inside = currently_inside;
+        }
+
+        cur_str.first.push_back(str[i]);
+
+        if(currently_inside)
+            cur_str.second = {80, 80, 255};
+        else
+            cur_str.second = col;
+    }
+
+    if(cur_str.first.size() > 0)
+    {
+        cols.push_back(cur_str);
+    }
+
+    //ImGui::BeginGroup();
+
+    //for(auto& i : cols)
+    for(int i=0; i < (int)cols.size(); i++)
+    {
+        vec3f ccol = cols[i].second;
+        const std::string& cstr = cols[i].first;
+
+        ImGui::TextColored(ImVec4(ccol.x()/255.f, ccol.y()/255.f, ccol.z()/255.f, 1.f), cstr.c_str());
+
+        if(i != (int)cols.size() - 1)
+            ImGui::SameLine(0, char_inf::extra_glyph_spacing);
+    }
+
+    //ImGui::EndGroup();
+
+    //ImGui::TextColored(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
+}
+
 void terminal_imgui::render(sf::RenderWindow& win)
 {
     copy_handler* handle = get_global_copy_handler();
@@ -102,6 +163,19 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
             current.col = fchar.col;
             current.str += fchar.c;
+
+            /*if(fchar.c == '\n')
+            {
+                render_command next;
+                next.type = newline;
+                commands.push_back(next);
+            }
+            else
+            {
+                current.type = imgui_text;
+                commands.push_back(current);
+                current = render_command();
+            }*/
         }
 
         if(current.str.size() > 0)
@@ -134,9 +208,12 @@ void terminal_imgui::render(sf::RenderWindow& win)
             ///need to predict here if the text is hilighted or not
             ///then if it is, replace spaces with "-" and colour blue
 
-            ImGui::TextColored(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
+            if(handle->held)
+                render_copy_aware(col, str, (vec2f){spos.x, spos.y}, (vec2f){spos.x, spos.y} + (vec2f){char_inf::cwidth * str.size(), 0.f});
+            else
+                ImGui::TextColored(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
 
-            ImGui::SameLine(0,0);
+            ImGui::SameLine(0,char_inf::extra_glyph_spacing);
 
             auto epos = ImGui::GetCursorScreenPos();
 
@@ -170,7 +247,7 @@ void terminal_imgui::render(sf::RenderWindow& win)
     ImGui::End();
 
 
-    std::cout << "hi there\n";
+    //std::cout << "hi there\n";
     handle->process_formatted(formatted_text);
 
     //::render(win, command.command, text_history, command.cursor_pos_idx, {0.f, win.getSize().y}, {(int)win.getSize().x - char_inf::cwbuf, win.getSize().y}, -char_inf::cheight, auto_handle, focused);

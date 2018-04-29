@@ -14,6 +14,8 @@ namespace char_inf
     inline int cwbuf = 4;
 
     inline int font_size = 12;
+
+    inline float extra_glyph_spacing = 1;
 }
 
 struct formatted_char

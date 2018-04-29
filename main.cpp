@@ -224,7 +224,7 @@ int main()
     ImGui::SFML::Init(window, false);
 
     ImFontConfig font_cfg;
-    font_cfg.GlyphExtraSpacing = ImVec2(1, 0);
+    font_cfg.GlyphExtraSpacing = ImVec2(char_inf::extra_glyph_spacing, 0);
 
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontDefault();
@@ -601,7 +601,7 @@ int main()
             //term.auto_handle.found_unprocessed_autocompletes.clear();
         }
 
-        //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
+        std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
 
         term.auto_handle.window_in_focus = is_focused(window);
         chat_win.auto_handle.window_in_focus = is_focused(window);

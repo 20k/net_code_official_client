@@ -1,5 +1,6 @@
 #include "copy_handler.hpp"
 #include "string_helpers.hpp"
+#include <vec/vec.hpp>
 
 copy_handler global_copy_handler;
 
@@ -75,6 +76,22 @@ std::string check_formatted_text(std::vector<std::vector<formatted_char>>& forma
     }
 
     return ret;
+}
+
+bool copy_handler::char_is_within_select_box(vec2f pos)
+{
+    if(!held)
+        return false;
+
+    if((copy_end - copy_start).length() < MIN_SELECT_DISTANCE)
+        return false;
+
+    vec2f p1 = pos;
+    vec2f p2 = pos + (vec2f){char_inf::cwidth, char_inf::cheight};
+
+    auto [tl, br] = points_to_rect(copy_start, copy_end);
+
+    return rect_intersect(p1, p2, tl, br);
 }
 
 void copy_handler::on_lclick(vec2f pos)
