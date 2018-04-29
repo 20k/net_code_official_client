@@ -34,6 +34,7 @@ struct terminal_imgui : serialisable
     bool locked_to_bottom = false;
     bool lock_next_frame = true;
     bool focused = true;
+    bool reset_scrollbar = true;
     editable_string command;
 
     auto_handler auto_handle;

@@ -32,6 +32,39 @@ interop_vec_t string_to_interop_no_autos(const std::string& str, bool render_spe
     return chars;
 }
 
+void de_newline(std::vector<interop_vec_t>& vec)
+{
+    auto in = vec;
+
+    std::vector<interop_vec_t> rep;
+
+    for(std::vector<interop_char>& vecs : in)
+    {
+        interop_vec_t cur;
+
+        for(interop_char& chr : vecs)
+        {
+            if(chr.c == '\n')
+            {
+                rep.push_back(cur);
+                cur = decltype(cur)();
+                continue;
+            }
+            else
+            {
+                cur.push_back(chr);
+            }
+        }
+
+        if(cur.size() > 0)
+        {
+            rep.push_back(cur);
+        }
+    }
+
+    vec = rep;
+}
+
 void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& chars, float zero_bound)
 {
     copy_handler* global_copy = get_global_copy_handler();

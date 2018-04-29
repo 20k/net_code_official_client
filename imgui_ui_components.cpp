@@ -397,7 +397,7 @@ void terminal_imgui::render(sf::RenderWindow& win)
     ImGui::SameLine(0.f, 0.f);
 
     ///rough
-    scroll_hack.do_hack(win, all_interop.size() + 1, set_scroll);
+    scroll_hack.do_hack(win, all_interop.size() + 1, true);
 
     if(scroll_hack.scrolling)
     {
@@ -409,10 +409,15 @@ void terminal_imgui::render(sf::RenderWindow& win)
     handle->process_formatted(formatted_text);
 }
 
+#define MAX_TEXT_HISTORY 250
+
 void terminal_imgui::bump_command_to_history()
 {
     text_history.push_back(string_to_interop(command.command, true, auto_handle));
     command.clear_command();
+
+    limit_size(text_history, MAX_TEXT_HISTORY);
+    de_newline(text_history);
 }
 
 void terminal_imgui::add_text_from_server(const std::string& in, chat_window& chat_win, bool server_command)
@@ -471,9 +476,8 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
                 chat_threads[chnls[i]].chats.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
             }
 
-            int max_history = 250;
-
-            limit_size(text_history, max_history);
+            limit_size(text_history, MAX_TEXT_HISTORY);
+            de_newline(text_history);
         }
         else if(command_info.type == server_command_server_scriptargs)
         {
@@ -535,12 +539,12 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
 
     if(push)
     {
-        int max_history = 250;
-
         text_history.push_back(string_to_interop(str, false, auto_handle));
 
-        limit_size(text_history, max_history);
+        limit_size(text_history, MAX_TEXT_HISTORY);
         consider_resetting_scrollbar = true;
+
+        de_newline(text_history);
     }
 
     sa_destroy_server_command_info(command_info);

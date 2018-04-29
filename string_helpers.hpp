@@ -173,6 +173,7 @@ struct auto_handler;
 
 interop_vec_t string_to_interop(const std::string& str, bool render_specials, auto_handler& auto_handle, bool parse_for_autocompletes = true);
 interop_vec_t string_to_interop_no_autos(const std::string& str, bool render_specials);
+void de_newline(std::vector<interop_vec_t>& vec);
 
 inline
 std::vector<formatted_char> format_characters(const std::vector<interop_char>& interop, vec2f& cpos, vec2f start, vec2f wrap_dim, float up_cutoff)
