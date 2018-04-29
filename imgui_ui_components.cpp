@@ -286,9 +286,43 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
     std::vector<std::vector<formatted_char>> formatted;
 
-    for(int i=min_start; i < (int)text_history.size(); i++)
+    auto all_interop = text_history;
+
+    std::string render_command = command.command;
+    bool specials = true;
+
+    if(render_command == "")
     {
-        formatted.push_back(format_characters(text_history[i], current, {start.x, start.y}, (vec2f){wrap_dim.x, wrap_dim.y}, 0.f));
+        render_command = "`bType something here...`";
+        specials = false;
+    }
+
+    auto icommand = string_to_interop(render_command, specials, auto_handle, false);
+
+    int cursor_offset = 0;
+
+    auto_handle.handle_autocompletes(icommand, command.cursor_pos_idx, cursor_offset, command.command);
+
+    interop_char curs;
+    curs.col = {255, 255, 255};
+    curs.c = '|';
+    curs.is_cursor = true;
+
+    int curs_cur = command.cursor_pos_idx + cursor_offset;
+
+    if(focused)
+    {
+        if(curs_cur >= (int)icommand.size())
+            icommand.push_back(curs);
+        else if(curs_cur >= 0 && curs_cur < (int)icommand.size())
+            icommand.insert(icommand.begin() + curs_cur, curs);
+    }
+
+    all_interop.push_back(icommand);
+
+    for(int i=min_start; i < (int)all_interop.size(); i++)
+    {
+        formatted.push_back(format_characters(all_interop[i], current, {start.x, start.y}, (vec2f){wrap_dim.x, wrap_dim.y}, 0.f));
     }
 
     internally_format(formatted, {start.x, start.y + ImGui::GetWindowHeight()});
@@ -298,52 +332,6 @@ void terminal_imgui::render(sf::RenderWindow& win)
         imgui_render_str(win, i, formatted_text);
     }
 
-    #if 0
-    //printf("scr %f %f\n", ImGui::GetScrollY(), ImGui::GetScrollMaxY());
-    //std::cout << "locked " << locked_to_bottom << std::endl;
-
-    //std::cout << "thistory " << text_history.size() << std::endl;
-
-    for(int i=0; i < (int)text_history.size(); i++)
-    {
-        imgui_render_str(win, text_history[i], formatted_text);
-    }
-
-    auto interop_cmd = string_to_interop_no_autos(command.command, true);
-
-    imgui_render_str(win, interop_cmd, formatted_text);
-
-    //if(consider_resetting_scrollbar && locked_to_bottom || lock_next_frame)
-    {
-        //if(lock_next_frame)
-            ImGui::SetScrollHere();
-            //ImGui::SetScrollY(ImGui::GetScrollMaxY());
-
-        //lock_next_frame = false;
-
-        //if(consider_resetting_scrollbar && locked_to_bottom)
-        //    lock_next_frame = true;
-
-        /*float yscroll = ImGui::GetScrollY();
-
-        float diff = fabs(yscroll - ImGui::GetScrollMaxY());
-
-        std::cout << "diff " << diff << std::endl;
-
-        if(diff < 20)
-        {
-            ImGui::SetScrollY(999999);
-        }*/
-
-        consider_resetting_scrollbar = false;
-
-        std::cout << "reset\n";
-    }
-
-    //ImGui::SetScrollHere();
-
-    locked_to_bottom = ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 10;
-    #endif // 0
     ImGui::End();
 
     handle->process_formatted(formatted_text);

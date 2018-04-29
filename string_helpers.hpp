@@ -219,6 +219,18 @@ std::vector<formatted_char> format_characters(const std::vector<interop_char>& i
         ret.push_back(formatted);
     }
 
+    if(interop.size() == 0)
+    {
+        formatted_char formatted;
+        formatted.ioc.c = ' ';
+        formatted.ioc.col = {255, 255, 255};
+
+        formatted.internal_pos = pos;
+        formatted.copyable = true;
+
+        ret.push_back(formatted);
+    }
+
     return ret;
 }
 

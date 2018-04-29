@@ -237,6 +237,16 @@ int main()
 
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(30/255.f, 30/255.f, 30/255.f, 255/255.f));
 
+    ImGuiStyle& style = ImGui::GetStyle();
+
+    style.FrameRounding = 2;
+    style.WindowRounding = 2;
+    style.ChildRounding = 2;
+    style.ChildBorderSize = 0;
+    style.FrameBorderSize = 0;
+    style.PopupBorderSize = 0;
+    style.WindowBorderSize = 0;
+
     /*ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 13.f);
     io.Fonts->AddFontDefault();*/
@@ -435,7 +445,7 @@ int main()
 
         ImGui::End();*/
 
-        ImGui::ShowDemoWindow(nullptr);
+        //ImGui::ShowDemoWindow(nullptr);
 
         freetype_test.ShowFreetypeOptionsWindow();
 
