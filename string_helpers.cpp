@@ -34,6 +34,8 @@ interop_vec_t string_to_interop_no_autos(const std::string& str, bool render_spe
 
 void de_newline(std::vector<interop_vec_t>& vec)
 {
+    return;
+
     auto in = vec;
 
     std::vector<interop_vec_t> rep;
@@ -46,6 +48,13 @@ void de_newline(std::vector<interop_vec_t>& vec)
         {
             if(chr.c == '\n')
             {
+                if(cur.size() == 0)
+                {
+                    interop_char chr;
+                    chr.c = ' ';
+                    cur.push_back(chr);
+                }
+
                 rep.push_back(cur);
                 cur = decltype(cur)();
                 continue;
@@ -73,14 +82,14 @@ void de_newline(std::vector<interop_vec_t>& vec)
         }
     }
 
-    /*if(vec.size() ==0)
+    if(vec.size() == 0)
     {
         interop_char tmp;
         tmp.c = ' ';
         tmp.col = {255, 255, 255};
 
-        rep.push_back(tmp);
-    }*/
+        rep.push_back({tmp});
+    }
 
     vec = rep;
 }
