@@ -82,6 +82,8 @@ struct FreeTypeTest
     float         FontsMultiply;
     unsigned int  FontsFlags;
 
+    bool is_open = false;
+
     FreeTypeTest()
     {
         BuildMode = FontBuildMode_FreeType;
@@ -112,9 +114,10 @@ struct FreeTypeTest
     // Call to draw interface
     void ShowFreetypeOptionsWindow()
     {
-        //ImGui::SetNextWindowFocus();
+        if(!is_open)
+            return;
 
-        ImGui::Begin("FreeType Options");
+        ImGui::Begin("FreeType Options", &is_open);
         ImGui::ShowFontSelector("Fonts");
         WantRebuild |= ImGui::RadioButton("FreeType", (int*)&BuildMode, FontBuildMode_FreeType);
         ImGui::SameLine();
@@ -411,6 +414,11 @@ int main()
                             to_edit->add_to_command(i);
                         }
                     }
+                }
+
+                if(event.key.code == sf::Keyboard::F1)
+                {
+                    freetype_test.is_open = !freetype_test.is_open;
                 }
 
                 if(event.key.code == sf::Keyboard::Return)
