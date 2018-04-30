@@ -59,19 +59,9 @@ struct chat_thread : serialisable
     virtual void do_serialise(serialise& s, bool ser);
 };
 
-struct button : serialisable
+struct new_button
 {
     std::string txt;
-    bool is_selected = false;
-
-    vec2f pos;
-    vec2f dim;
-
-    button();
-    button(const std::string& txt, bool is_selected = false);
-
-    bool within(vec2f mpos);
-    virtual void do_serialise(serialise& s, bool ser);
 };
 
 struct chat_window : serialisable
@@ -85,11 +75,18 @@ struct chat_window : serialisable
 
     vec2f side_dim = {100, dim.y()};
 
-    std::vector<button> side_buttons
+    /*std::vector<button> side_buttons
     {
         {"0000"},
         {"7001"},
         {"memes"}
+    };*/
+
+    std::vector<std::string> side_buttons
+    {
+        "0000",
+        "7001",
+        "memes"
     };
 
     std::string selected = "0000";

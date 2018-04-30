@@ -278,8 +278,8 @@ int main()
     DMAP(V);DMAP(W);DMAP(X);
     DMAP(Y);DMAP(Z);
 
-    std::string terminal_file = "./terminal_v3.txt";
-    std::string chat_file = "./chat_v3.txt";
+    std::string terminal_file = "./terminal_v5.txt";
+    std::string chat_file = "./chat_v5.txt";
 
     if(file_exists(terminal_file))
     {
@@ -560,7 +560,7 @@ int main()
         if(mouse.isButtonPressed(sf::Mouse::Left) && is_focused(window))
             get_global_copy_handler()->on_hold_lclick(window,  vpos);
 
-        if(ONCE_MACRO(sf::Mouse::Left) && is_focused(window))
+        /*if(ONCE_MACRO(sf::Mouse::Left) && is_focused(window))
         {
             auto ppos = mouse.getPosition(window);
 
@@ -577,8 +577,8 @@ int main()
                 term.focused = true;
             }
 
-            chat_win.process_click(mpos);
-        }
+            //chat_win.process_click(mpos);
+        }*/
 
         if(sd_has_front_read(shared))
         {

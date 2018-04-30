@@ -305,11 +305,11 @@ void imgui_render_str(const std::vector<formatted_char>& text, std::vector<std::
     }
 }
 
-void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, std::vector<std::vector<formatted_char>>& formatted_text)
+void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, std::vector<std::vector<formatted_char>>& formatted_text, float extra_shrink = 0)
 {
     float overall_width = ImGui::GetWindowWidth();
 
-    ImGui::BeginChild("left_sub", ImVec2(overall_width - 40, 0.f), false, ImGuiWindowFlags_NoScrollbar);
+    ImGui::BeginChild("left_sub", ImVec2(overall_width - 40 - extra_shrink, 0.f), false, ImGuiWindowFlags_NoScrollbar);
 
     bool set_scroll = false;
 
@@ -396,7 +396,6 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
     {
         scroll_hack.scrolled = (1.f - scroll_hack.output_scroll_frac) * (all_interop.size() + 1.f);
     }
-
 }
 
 void terminal_imgui::render(sf::RenderWindow& win)
@@ -409,6 +408,8 @@ void terminal_imgui::render(sf::RenderWindow& win)
     ImGui::SetNextWindowSize(ImVec2(win.getSize().x, win.getSize().y));
 
     ImGui::Begin("asdf1", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
+
+    focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
     render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, text_history, auto_handle, formatted_text);
 
@@ -571,23 +572,6 @@ void chat_window::do_serialise(serialise& s, bool ser)
     s.handle_serialise(command, ser);
 }
 
-button::button() {}
-button::button(const std::string& txt, bool is_selected) : txt(txt), is_selected(is_selected) {}
-
-bool button::within(vec2f mpos)
-{
-    return mpos.x() >= pos.x() && mpos.y() >= pos.y() && mpos.x() < pos.x() + dim.x() && mpos.y() < pos.y() + dim.y();
-}
-
-void button::do_serialise(serialise& s, bool ser)
-{
-    s.handle_serialise(txt, ser);
-    s.handle_serialise(is_selected, ser);
-    s.handle_serialise(pos, ser);
-    s.handle_serialise(dim, ser);
-}
-
-
 sf::Color chat_window::get_frame_col()
 {
     return sf::Color(frame_col.x()*255.f, frame_col.y()*255.f, frame_col.z()*255.f, 255);
@@ -600,7 +584,7 @@ sf::Color chat_window::get_highlight_col()
 
 void chat_window::tick()
 {
-    for(auto& i : side_buttons)
+    /*for(auto& i : side_buttons)
     {
         if(i.txt == selected)
         {
@@ -610,7 +594,7 @@ void chat_window::tick()
         {
             i.is_selected = false;
         }
-    }
+    }*/
 }
 
 void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads)
@@ -628,7 +612,23 @@ void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_threa
 
     ImGui::Begin(chat_str.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_ResizeFromAnySide);
 
-    render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.chats, auto_handle, formatted);
+    focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+
+    ImGui::BeginChild("left_selector", ImVec2(80, 0));
+
+    for(auto& i : side_buttons)
+    {
+        if(ImGui::Button(i.c_str(), ImVec2(60, 0)))
+        {
+            selected = i;
+        }
+    }
+
+    ImGui::EndChild();
+
+    ImGui::SameLine(0, 0);
+
+    render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.chats, auto_handle, formatted, 80);
 
     ImGui::End();
 
@@ -655,6 +655,7 @@ void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_threa
     render_side_attachment(win);*/
 }
 
+#if 0
 void chat_window::render_side_attachment(sf::RenderWindow& win)
 {
     vec2f side_pos = {render_start.x() - side_dim.x() - border_size, render_start.y()};
@@ -699,7 +700,9 @@ void chat_window::render_side_attachment(sf::RenderWindow& win)
         current_pos.y() += char_inf::cheight;
     }
 }
+#endif // 0
 
+#if 0
 void chat_window::process_click(vec2f pos)
 {
     bool any = false;
@@ -729,6 +732,7 @@ void chat_window::process_click(vec2f pos)
         }
     }
 }
+#endif // 0
 
 bool chat_window::within(vec2f pos)
 {
@@ -745,9 +749,11 @@ void chat_window::set_side_channels(const std::vector<std::string>& sides)
 
     for(auto& i : sides)
     {
-        if(i == selected)
-            side_buttons.push_back({i, true});
-        else
+        /*if(i == selected)
             side_buttons.push_back({i});
+        else
+            side_buttons.push_back({i});*/
+
+        side_buttons.push_back(i);
     }
 }
