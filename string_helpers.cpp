@@ -62,6 +62,26 @@ void de_newline(std::vector<interop_vec_t>& vec)
         }
     }
 
+    for(auto& i : rep)
+    {
+        if(i.size() == 0)
+        {
+            interop_char chr;
+            chr.c = ' ';
+
+            i.push_back(chr);
+        }
+    }
+
+    /*if(vec.size() ==0)
+    {
+        interop_char tmp;
+        tmp.c = ' ';
+        tmp.col = {255, 255, 255};
+
+        rep.push_back(tmp);
+    }*/
+
     vec = rep;
 }
 
