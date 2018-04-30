@@ -307,8 +307,6 @@ void imgui_render_str(const std::vector<formatted_char>& text, std::vector<std::
 
 void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, std::vector<std::vector<formatted_char>>& formatted_text)
 {
-    ImGui::Begin("asdf1", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
-
     float overall_width = ImGui::GetWindowWidth();
 
     ImGui::BeginChild("left_sub", ImVec2(overall_width - 40, 0.f), false, ImGuiWindowFlags_NoScrollbar);
@@ -399,7 +397,6 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
         scroll_hack.scrolled = (1.f - scroll_hack.output_scroll_frac) * (all_interop.size() + 1.f);
     }
 
-    ImGui::End();
 }
 
 void terminal_imgui::render(sf::RenderWindow& win)
@@ -411,7 +408,11 @@ void terminal_imgui::render(sf::RenderWindow& win)
     ImGui::SetNextWindowPos(ImVec2(0,0));
     ImGui::SetNextWindowSize(ImVec2(win.getSize().x, win.getSize().y));
 
+    ImGui::Begin("asdf1", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
+
     render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, text_history, auto_handle, formatted_text);
+
+    ImGui::End();
 
     handle->process_formatted(formatted_text);
 }
@@ -555,4 +556,198 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
     }
 
     sa_destroy_server_command_info(command_info);
+}
+
+void chat_thread::do_serialise(serialise& s, bool ser)
+{
+    s.handle_serialise(chats, ser);
+}
+
+void chat_window::do_serialise(serialise& s, bool ser)
+{
+    s.handle_serialise(render_start, ser);
+    s.handle_serialise(side_buttons, ser);
+    s.handle_serialise(selected, ser);
+    s.handle_serialise(command, ser);
+}
+
+button::button() {}
+button::button(const std::string& txt, bool is_selected) : txt(txt), is_selected(is_selected) {}
+
+bool button::within(vec2f mpos)
+{
+    return mpos.x() >= pos.x() && mpos.y() >= pos.y() && mpos.x() < pos.x() + dim.x() && mpos.y() < pos.y() + dim.y();
+}
+
+void button::do_serialise(serialise& s, bool ser)
+{
+    s.handle_serialise(txt, ser);
+    s.handle_serialise(is_selected, ser);
+    s.handle_serialise(pos, ser);
+    s.handle_serialise(dim, ser);
+}
+
+
+sf::Color chat_window::get_frame_col()
+{
+    return sf::Color(frame_col.x()*255.f, frame_col.y()*255.f, frame_col.z()*255.f, 255);
+}
+
+sf::Color chat_window::get_highlight_col()
+{
+    return sf::Color(70, 70, 70, 255);
+}
+
+void chat_window::tick()
+{
+    for(auto& i : side_buttons)
+    {
+        if(i.txt == selected)
+        {
+            i.is_selected = true;
+        }
+        else
+        {
+            i.is_selected = false;
+        }
+    }
+}
+
+void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads)
+{
+    std::vector<std::vector<formatted_char>> formatted;
+
+    chat_thread& thread = threads[selected];
+
+    if(!focus_once)
+        ImGui::SetNextWindowFocus();
+
+    focus_once = true;
+
+    std::string chat_str = selected + "###chat_window";
+
+    ImGui::Begin(chat_str.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_ResizeFromAnySide);
+
+    render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.chats, auto_handle, formatted);
+
+    ImGui::End();
+
+    /*vec2f swidth = {win.getSize().x, win.getSize().y};
+
+    vec2f render_pos = (vec2f) {swidth.x() - dim.x() - border_size, border_size};
+    render_start = render_pos;
+
+    sf::RectangleShape shape;
+
+    shape.setSize({dim.x(), dim.y()});
+    shape.setOutlineColor(get_frame_col());
+    shape.setOutlineThickness(border_size);
+    shape.setFillColor(sf::Color(30,30,30,255));
+
+    shape.setPosition(render_pos.x(), render_pos.y());
+
+    win.draw(shape);
+
+    chat_thread& thread = threads[selected];
+
+    ::render(win, command.command, thread.chats, command.cursor_pos_idx, {render_pos.x(), dim.y()}, {(int)win.getSize().x - char_inf::cwbuf/2.f - border_size, win.getSize().y}, border_size, auto_handle, focused);
+
+    render_side_attachment(win);*/
+}
+
+void chat_window::render_side_attachment(sf::RenderWindow& win)
+{
+    vec2f side_pos = {render_start.x() - side_dim.x() - border_size, render_start.y()};
+
+    sf::RectangleShape shape;
+
+    shape.setSize({side_dim.x(), side_dim.y()});
+    shape.setOutlineColor(get_frame_col());
+    shape.setOutlineThickness(border_size);
+    shape.setFillColor(sf::Color(30, 30, 30, 255));
+
+    shape.setPosition(side_pos.x(), side_pos.y());
+
+    win.draw(shape);
+
+    vec2f start_pos = {side_pos.x() + char_inf::cwbuf, side_pos.y() + char_inf::cheight/4.f};
+    vec2f current_pos = start_pos;
+
+    for(int i=0; i < (int)side_buttons.size(); i++)
+    {
+        side_buttons[i].pos = current_pos;
+        side_buttons[i].dim = {side_dim.x(), char_inf::cheight};
+
+        if(side_buttons[i].is_selected)
+        {
+            sf::RectangleShape shape;
+            shape.setPosition({current_pos.x() - char_inf::cwbuf, current_pos.y()});
+            shape.setFillColor(get_highlight_col());
+
+            vec2f cdim = side_buttons[i].dim;
+            //cdim.x() -= char_inf::cwbuf;
+
+            shape.setSize({cdim.x(), cdim.y()});
+
+            win.draw(shape);
+        }
+
+        auto ichars = string_to_interop_no_autos(side_buttons[i].txt, false);
+
+        render_str(win, ichars, current_pos, start_pos, start_pos + side_dim, border_size);
+
+        current_pos.y() += char_inf::cheight;
+    }
+}
+
+void chat_window::process_click(vec2f pos)
+{
+    bool any = false;
+
+    for(button& b : side_buttons)
+    {
+        if(b.within(pos))
+        {
+            any = true;
+            break;
+        }
+    }
+
+    if(!any)
+        return;
+
+    for(button& b : side_buttons)
+    {
+        if(b.within(pos))
+        {
+            selected = b.txt;
+            b.is_selected = true;
+        }
+        else
+        {
+            b.is_selected = false;
+        }
+    }
+}
+
+bool chat_window::within(vec2f pos)
+{
+    vec2f tl = render_start - side_dim;
+    vec2f br = render_start + (vec2f) {dim.x(), dim.y()};
+
+    return pos.x() >= tl.x() && pos.y() >= tl.y() &&
+           pos.x() < br.x() && pos.y() < br.y();
+}
+
+void chat_window::set_side_channels(const std::vector<std::string>& sides)
+{
+    side_buttons.clear();
+
+    for(auto& i : sides)
+    {
+        if(i == selected)
+            side_buttons.push_back({i, true});
+        else
+            side_buttons.push_back({i});
+    }
 }

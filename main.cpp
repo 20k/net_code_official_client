@@ -443,6 +443,7 @@ int main()
         }
 
         term.scroll_hack.scrolled_this_frame = mouse_delta;
+        chat_win.scroll_hack.scrolled_this_frame = mouse_delta;
 
         ImGui::SFML::Update(window,  imgui_delta.restart());
 
@@ -638,7 +639,7 @@ int main()
 
         //test_imgui_term.render(window);
         term.render(window);
-        //chat_win.render(window, term.chat_threads);
+        chat_win.render(window, term.chat_threads);
 
         term.auto_handle.tab_pressed = ONCE_MACRO(sf::Keyboard::Tab) && is_focused(window);
 
