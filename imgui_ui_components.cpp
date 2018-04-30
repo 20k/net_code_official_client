@@ -254,7 +254,7 @@ void imgui_render_str(const std::vector<formatted_char>& text, std::vector<std::
         ///then if it is, replace spaces with "-" and colour blue
         float width = ImGui::CalcTextSize(str.c_str(), nullptr, false, window_width).x;
 
-        if(handle->held)
+        if(handle->held && ImGui::IsWindowFocused())
             render_copy_aware(col, str, spos, (vec2f){spos.x(), spos.y()} + (vec2f){width, 0.f}, pos);
         else
             render_copy_blind(col, str, pos);
@@ -287,7 +287,7 @@ void imgui_render_str(const std::vector<formatted_char>& text, std::vector<std::
     }
 }
 
-void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, std::vector<std::vector<formatted_char>>& formatted_text, float extra_shrink = 0)
+bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, std::vector<std::vector<formatted_char>>& formatted_text, float extra_shrink = 0)
 {
     float overall_width = ImGui::GetWindowWidth();
 
@@ -403,6 +403,8 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
         imgui_render_str(i, formatted_text, ImGui::GetWindowWidth());
     }
 
+    bool text_area_focused = ImGui::IsWindowFocused();
+
     ImGui::EndChild();
 
     ImGui::SameLine(0.f, 0.f);
@@ -414,6 +416,8 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
     {
         scroll_hack.scrolled = (1.f - scroll_hack.output_scroll_frac) * (total_lines + 1.f);
     }
+
+    return text_area_focused;
 }
 
 void terminal_imgui::render(sf::RenderWindow& win)
@@ -429,11 +433,11 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
     focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
-    render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, text_history, auto_handle, formatted_text);
+    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, text_history, auto_handle, formatted_text);
 
     ImGui::End();
 
-    if(focused)
+    if(focused && child_focused)
         handle->process_formatted(formatted_text);
 }
 
@@ -641,11 +645,11 @@ void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_threa
 
     ImGui::SameLine(0, 0);
 
-    render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.chats, auto_handle, formatted, 80);
+    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.chats, auto_handle, formatted, 80);
 
     ImGui::End();
 
-    if(focused)
+    if(focused && child_focused)
         handle->process_formatted(formatted);
 }
 
