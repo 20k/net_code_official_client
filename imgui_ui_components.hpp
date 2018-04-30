@@ -20,7 +20,7 @@ struct scrollbar_hack
     bool scrolling = false;
     bool should_update_scroll = false;
 
-    void do_hack(sf::RenderWindow& win, int approx_num, bool set_scrollbar);
+    void do_hack(int approx_num, bool set_scrollbar);
 };
 
 struct terminal_imgui : serialisable

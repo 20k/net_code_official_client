@@ -7,7 +7,7 @@
 #include "ui_components.hpp"
 #include "copy_handler.hpp"
 
-void scrollbar_hack::do_hack(sf::RenderWindow& win, int approx_num, bool set_scrollbar)
+void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar)
 {
     /*float base_y = win.getSize().y;
 
@@ -107,7 +107,7 @@ struct render_command
     vec2f absolute_pos;
 };
 
-void render_copy_aware(sf::RenderWindow& win, vec3f col, const std::string& str, vec2f start_pos, vec2f end_pos, vec2f render_pos)
+void render_copy_aware(vec3f col, const std::string& str, vec2f start_pos, vec2f end_pos, vec2f render_pos)
 {
     int cutoff_point = -1;
 
@@ -179,7 +179,7 @@ void render_copy_blind(vec3f col, const std::string& str, vec2f render_pos)
     ImGui::TextColored(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
 }
 
-void imgui_render_str(sf::RenderWindow& win, const std::vector<formatted_char>& text, std::vector<std::vector<formatted_char>>& formatted_text)
+void imgui_render_str(const std::vector<formatted_char>& text, std::vector<std::vector<formatted_char>>& formatted_text, float window_width)
 {
     copy_handler* handle = get_global_copy_handler();
 
@@ -270,10 +270,10 @@ void imgui_render_str(sf::RenderWindow& win, const std::vector<formatted_char>& 
 
         ///need to predict here if the text is hilighted or not
         ///then if it is, replace spaces with "-" and colour blue
-        float width = ImGui::CalcTextSize(str.c_str(), nullptr, false, win.getSize().x).x;
+        float width = ImGui::CalcTextSize(str.c_str(), nullptr, false, window_width).x;
 
         if(handle->held)
-            render_copy_aware(win, col, str, spos, (vec2f){spos.x(), spos.y()} + (vec2f){width, 0.f}, pos);
+            render_copy_aware(col, str, spos, (vec2f){spos.x(), spos.y()} + (vec2f){width, 0.f}, pos);
         else
             render_copy_blind(col, str, pos);
 
@@ -305,18 +305,13 @@ void imgui_render_str(sf::RenderWindow& win, const std::vector<formatted_char>& 
     }
 }
 
-void terminal_imgui::render(sf::RenderWindow& win)
+void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, std::vector<std::vector<formatted_char>>& formatted_text)
 {
-    copy_handler* handle = get_global_copy_handler();
-
-    std::vector<std::vector<formatted_char>> formatted_text;
-
-    ImGui::SetNextWindowPos(ImVec2(0,0));
-    ImGui::SetNextWindowSize(ImVec2(win.getSize().x, win.getSize().y));
-
     ImGui::Begin("asdf1", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
-    ImGui::BeginChild("left_sub", ImVec2(win.getSize().x - 40, 0.f), false, ImGuiWindowFlags_NoScrollbar);
+    float overall_width = ImGui::GetWindowWidth();
+
+    ImGui::BeginChild("left_sub", ImVec2(overall_width - 40, 0.f), false, ImGuiWindowFlags_NoScrollbar);
 
     bool set_scroll = false;
 
@@ -348,7 +343,7 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
     auto all_interop = text_history;
 
-    std::string render_command = command.command;
+    std::string render_command = command;
     bool specials = true;
 
     if(render_command == "")
@@ -361,16 +356,16 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
     int cursor_offset = 0;
 
-    auto_handle.handle_autocompletes(icommand, command.cursor_pos_idx, cursor_offset, command.command);
+    auto_handle.handle_autocompletes(icommand, cursor_pos_idx, cursor_offset, command);
 
     interop_char curs;
     curs.col = {255, 255, 255};
     curs.c = '|';
     curs.is_cursor = true;
 
-    int curs_cur = command.cursor_pos_idx + cursor_offset;
+    int curs_cur = cursor_pos_idx + cursor_offset;
 
-    if(focused)
+    if(ImGui::IsWindowFocused())
     {
         if(curs_cur >= (int)icommand.size())
             icommand.push_back(curs);
@@ -389,7 +384,7 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
     for(auto& i : formatted)
     {
-        imgui_render_str(win, i, formatted_text);
+        imgui_render_str(i, formatted_text, ImGui::GetWindowWidth());
     }
 
     ImGui::EndChild();
@@ -397,7 +392,7 @@ void terminal_imgui::render(sf::RenderWindow& win)
     ImGui::SameLine(0.f, 0.f);
 
     ///rough
-    scroll_hack.do_hack(win, all_interop.size() + 1, true);
+    scroll_hack.do_hack(all_interop.size() + 1, true);
 
     if(scroll_hack.scrolling)
     {
@@ -405,6 +400,18 @@ void terminal_imgui::render(sf::RenderWindow& win)
     }
 
     ImGui::End();
+}
+
+void terminal_imgui::render(sf::RenderWindow& win)
+{
+    copy_handler* handle = get_global_copy_handler();
+
+    std::vector<std::vector<formatted_char>> formatted_text;
+
+    ImGui::SetNextWindowPos(ImVec2(0,0));
+    ImGui::SetNextWindowSize(ImVec2(win.getSize().x, win.getSize().y));
+
+    render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, text_history, auto_handle, formatted_text);
 
     handle->process_formatted(formatted_text);
 }
