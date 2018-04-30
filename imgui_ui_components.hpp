@@ -75,13 +75,6 @@ struct chat_window : serialisable
 
     vec2f side_dim = {100, dim.y()};
 
-    /*std::vector<button> side_buttons
-    {
-        {"0000"},
-        {"7001"},
-        {"memes"}
-    };*/
-
     std::vector<std::string> side_buttons
     {
         "0000",
