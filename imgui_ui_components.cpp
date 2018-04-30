@@ -309,7 +309,7 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 {
     float overall_width = ImGui::GetWindowWidth();
 
-    ImGui::BeginChild("left_sub", ImVec2(overall_width - 40 - extra_shrink, 0.f), false, ImGuiWindowFlags_NoScrollbar);
+    ImGui::BeginChild("left_sub", ImVec2(overall_width - 40 - extra_shrink, 0.f), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove);
 
     bool set_scroll = false;
 
