@@ -441,7 +441,7 @@ void terminal_imgui::render(sf::RenderWindow& win)
         handle->process_formatted(formatted_text);
 }
 
-#define MAX_TEXT_HISTORY 325
+#define MAX_TEXT_HISTORY 200
 
 void terminal_imgui::bump_command_to_history()
 {

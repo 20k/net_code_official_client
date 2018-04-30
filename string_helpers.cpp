@@ -34,6 +34,8 @@ interop_vec_t string_to_interop_no_autos(const std::string& str, bool render_spe
 
 void de_newline(std::vector<interop_vec_t>& vec)
 {
+    return;
+
     auto in = vec;
 
     std::vector<interop_vec_t> rep;
