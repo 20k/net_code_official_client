@@ -101,8 +101,6 @@ struct chat_window : serialisable
 
     void render_side_attachment(sf::RenderWindow& win);
 
-    void process_click(vec2f pos);
-
     void set_side_channels(const std::vector<std::string>& sides);
 };
 
