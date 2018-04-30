@@ -578,6 +578,8 @@ void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_threa
     if(!focus_once)
         ImGui::SetNextWindowFocus();
 
+    ImGui::SetNextWindowSize(ImVec2(dim.x(), dim.y()), ImGuiCond_FirstUseEver);
+
     focus_once = true;
 
     std::string chat_str = selected + "###chat_window";
