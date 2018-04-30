@@ -176,11 +176,42 @@ interop_vec_t string_to_interop_no_autos(const std::string& str, bool render_spe
 void de_newline(std::vector<interop_vec_t>& vec);
 
 inline
-std::vector<formatted_char> format_characters(const std::vector<interop_char>& interop, vec2f& cpos, vec2f start, vec2f wrap_dim, float up_cutoff)
+void get_height(const std::vector<interop_char>& interop, vec2f cpos, vec2f start, vec2f wrap_dim, int& lines, int last_lines)
+{
+    lines = 1;
+
+    vec2f pos = cpos;
+    pos.x() = start.x() + char_inf::cwbuf;
+    pos.y() += char_inf::cheight;
+
+    for(const auto& i : interop)
+    {
+        if((pos.x() >= wrap_dim.x() - char_inf::cwbuf || i.c == '\n') && !i.is_cursor)
+        {
+            pos.y() += char_inf::cheight;
+            pos.x() = start.x() + char_inf::cwbuf;
+            lines++;
+        }
+
+        if(i.c == '\n')
+            continue;
+
+        if(!i.is_cursor)
+            pos.x() += char_inf::cwidth;
+    }
+
+    //pos.y() -= (last_lines) * char_inf::cheight + lines * char_inf::cheight;
+}
+
+///so new plan
+///we want to format forward, but then afterwards
+///move all the characters up by the height of the entire block
+inline
+std::vector<formatted_char> format_characters(const std::vector<interop_char>& interop, vec2f cpos, vec2f start, vec2f wrap_dim, int lines, int last_lines)
 {
     std::vector<formatted_char> ret;
 
-    vec2f& pos = cpos;
+    vec2f pos = cpos;
     pos.x() = start.x() + char_inf::cwbuf;
     pos.y() += char_inf::cheight;
 
@@ -232,6 +263,13 @@ std::vector<formatted_char> format_characters(const std::vector<interop_char>& i
         ret.push_back(formatted);
     }
 
+    /*for(formatted_char& i : ret)
+    {
+        i.internal_pos.y() -= (last_lines) * char_inf::cheight + lines * char_inf::cheight;
+    }*/
+
+    //pos.y() -= (last_lines) * char_inf::cheight + lines * char_inf::cheight;
+
     return ret;
 }
 
@@ -253,20 +291,20 @@ float get_greatest_y(std::vector<formatted_char>& chars)
 }
 
 inline
-void internally_format(std::vector<std::vector<formatted_char>>& chars, vec2f start, float scroll_offset = 0.f)
+void internally_format(std::vector<std::vector<formatted_char>>& chars, vec2f start, float scroll_offset, float y_end)
 {
-    float greatest_y = 0;
+    /*float greatest_y = 0;
 
     for(auto& i : chars)
     {
         greatest_y = std::max(get_greatest_y(i), greatest_y);
-    }
+    }*/
 
     for(auto& k : chars)
     {
         for(formatted_char& i : k)
         {
-            i.render_pos = i.internal_pos + (vec2f){0, -greatest_y + start.y() - char_inf::cheight * 1.5f + scroll_offset};
+            i.render_pos = i.internal_pos + (vec2f){0, -y_end + start.y() - char_inf::cheight * 1.5f + scroll_offset};
 
             i.render_pos = round(i.render_pos);
         }

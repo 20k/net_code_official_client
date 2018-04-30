@@ -85,6 +85,7 @@ void de_newline(std::vector<interop_vec_t>& vec)
     vec = rep;
 }
 
+#if 0
 void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& chars, float zero_bound)
 {
     copy_handler* global_copy = get_global_copy_handler();
@@ -143,7 +144,9 @@ void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& ch
         win.draw(txt);
     }
 }
+#endif // 0
 
+#if 0
 void render(sf::RenderWindow& win, std::string& command, const std::vector<interop_vec_t>& text_history,
             int& cursor_pos_idx, vec2f start, vec2f wrap_dim, float zero_bound,
             auto_handler& auto_handle, bool focused)
@@ -210,6 +213,7 @@ void render(sf::RenderWindow& win, std::string& command, const std::vector<inter
         render_formatted_str(win, formatted[i], zero_bound);
     }
 }
+#endif // 0
 
 std::string get_clipboard_contents()
 {
