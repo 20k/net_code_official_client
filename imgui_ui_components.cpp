@@ -352,23 +352,12 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     all_interop.push_back(icommand);
 
-    ///the problem is that we're formatting from top down
-    ///we need to format bottom up
-    /*for(int i=min_start; i < (int)all_interop.size(); i++)
-    {
-        formatted.push_back();
-    }*/
-
-    int num_lines = 0;
     int max_lines = vertical_columns;
 
     int last_lines = 0;
     int total_lines = 0;
 
-    //int start_line_offset = scroll_hack.scrolled;
     int current_line = 0;
-
-    std::cout << "viewing " << scroll_hack.scrolled << std::endl;
 
     for(auto& i : all_interop)
     {
@@ -380,15 +369,11 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
         total_lines += found_line;
     }
 
-    float inverse_scroll_start = total_lines - 1 - scroll_hack.scrolled;
+    float inverse_scroll_start = total_lines + 0 - scroll_hack.scrolled;
 
     float terminating_line = inverse_scroll_start;
-    float terminating_y = 0;
+    float terminating_y = inverse_scroll_start * char_inf::cheight + start.y;
 
-    if(total_lines > 0)
-        terminating_y = inverse_scroll_start * char_inf::cheight;
-
-    //for(int i=(int)all_interop.size()-1; i >= 0; i--)
     for(int i=0; i < (int)all_interop.size(); i++)
     {
         int found_lines = 0;
@@ -398,12 +383,6 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
         int min_bound = inverse_scroll_start - vertical_columns;
         int max_bound = inverse_scroll_start;
 
-        if(i == (int)all_interop.size()-1)
-        {
-            printf("min %i max %i scroll %f current_line %i\n", min_bound, max_bound, inverse_scroll_start, current_line);
-        }
-
-        //if(current_line >= inverse_scroll_start - found_lines && current_line < inverse_scroll_start + vertical_columns + found_lines)
         if(current_line + found_lines >= min_bound && current_line < max_bound)
         {
             auto current_interop = format_characters(all_interop[i], current, {start.x, start.y}, (vec2f){wrap_dim.x, wrap_dim.y}, found_lines, last_lines);
@@ -413,25 +392,9 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
         current.y() += found_lines * char_inf::cheight;
 
-        //current.y() -= found_lines * char_inf::cheight;
-        //current.y() -= last_lines * char_inf::cheight + found_lines * char_inf::cheight;
-
         last_lines = found_lines;
         current_line += found_lines;
     }
-
-    /*for(int i=(int)all_interop.size()-1; i >= min_start; i--)
-    {
-        int found_lines = 0;
-
-        auto current_interop = format_characters(all_interop[i], current, {start.x, start.y}, (vec2f){wrap_dim.x, wrap_dim.y}, 0.f, found_lines, last_lines);
-
-        formatted.push_back(current_interop);
-
-        total_lines += found_lines;
-    }*/
-
-    //std::reverse(formatted.begin(), formatted.end());
 
     internally_format(formatted, {start.x, start.y + ImGui::GetWindowHeight()}, 0*scroll_hack.scrolled * char_inf::cheight, terminating_y);
 
@@ -449,7 +412,7 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     if(scroll_hack.scrolling)
     {
-        scroll_hack.scrolled = (1.f - scroll_hack.output_scroll_frac) * (all_interop.size() + 1.f);
+        scroll_hack.scrolled = (1.f - scroll_hack.output_scroll_frac) * (total_lines + 1.f);
     }
 }
 
