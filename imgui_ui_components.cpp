@@ -371,7 +371,7 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     float inverse_scroll_start = total_lines + 0 - scroll_hack.scrolled;
 
-    float terminating_line = inverse_scroll_start;
+    //float terminating_line = inverse_scroll_start;
     float terminating_y = inverse_scroll_start * char_inf::cheight + start.y;
 
     for(int i=0; i < (int)all_interop.size(); i++)
