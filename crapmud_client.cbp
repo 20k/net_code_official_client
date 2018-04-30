@@ -229,8 +229,6 @@
 		<Unit filename="string_helpers.hpp" />
 		<Unit filename="tokeniser.cpp" />
 		<Unit filename="tokeniser.hpp" />
-		<Unit filename="ui_components.cpp" />
-		<Unit filename="ui_components.hpp" />
 		<Unit filename="util.hpp" />
 		<Extensions>
 			<code_completion />

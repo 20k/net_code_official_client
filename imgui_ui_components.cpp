@@ -4,26 +4,10 @@
 #include <libncclient/nc_util.hpp>
 #include <libncclient/nc_string_interop.hpp>
 #include <libncclient/c_server_api.h>
-#include "ui_components.hpp"
 #include "copy_handler.hpp"
 
 void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar)
 {
-    /*float base_y = win.getSize().y;
-
-    float my_y = base_y - scrolled * char_inf::cheight;
-
-    float max_y = base_y - approx_num * char_inf::cheight;
-
-    if(max_y < -char_inf::cheight)
-    {
-        std::cout << "hack at " << max_y << std::endl;
-
-        //ImGui::SetCursorScreenPos(ImVec2(0.f, max_y));
-        ImGui::SetCursorPos(ImVec2(0, max_y));
-        ImGui::Text("Invis");
-    }*/
-
     ImGui::BeginChild("right_child", ImVec2(0,0), false, ImGuiWindowFlags_NoScrollWithMouse);
 
     for(int i=0; i < approx_num; i++)
@@ -109,8 +93,6 @@ struct render_command
 
 void render_copy_aware(vec3f col, const std::string& str, vec2f start_pos, vec2f end_pos, vec2f render_pos)
 {
-    int cutoff_point = -1;
-
     std::vector<std::pair<std::string, vec3f>> cols;
 
     std::pair<std::string, vec3f> cur_str;
@@ -311,13 +293,10 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     ImGui::BeginChild("left_sub", ImVec2(overall_width - 40 - extra_shrink, 0.f), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove);
 
-    bool set_scroll = false;
-
     if(ImGui::IsWindowHovered() && scroll_hack.scrolled_this_frame != 0)
     {
         scroll_hack.scrolled += scroll_hack.scrolled_this_frame;
         scroll_hack.scrolled_this_frame = 0.f;
-        set_scroll = true;
     }
 
     auto wrap_dim = ImGui::GetWindowSize();
@@ -585,17 +564,7 @@ sf::Color chat_window::get_highlight_col()
 
 void chat_window::tick()
 {
-    /*for(auto& i : side_buttons)
-    {
-        if(i.txt == selected)
-        {
-            i.is_selected = true;
-        }
-        else
-        {
-            i.is_selected = false;
-        }
-    }*/
+
 }
 
 void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads)
@@ -637,116 +606,6 @@ void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_threa
 
     if(focused)
         handle->process_formatted(formatted);
-
-    /*vec2f swidth = {win.getSize().x, win.getSize().y};
-
-    vec2f render_pos = (vec2f) {swidth.x() - dim.x() - border_size, border_size};
-    render_start = render_pos;
-
-    sf::RectangleShape shape;
-
-    shape.setSize({dim.x(), dim.y()});
-    shape.setOutlineColor(get_frame_col());
-    shape.setOutlineThickness(border_size);
-    shape.setFillColor(sf::Color(30,30,30,255));
-
-    shape.setPosition(render_pos.x(), render_pos.y());
-
-    win.draw(shape);
-
-    chat_thread& thread = threads[selected];
-
-    ::render(win, command.command, thread.chats, command.cursor_pos_idx, {render_pos.x(), dim.y()}, {(int)win.getSize().x - char_inf::cwbuf/2.f - border_size, win.getSize().y}, border_size, auto_handle, focused);
-
-    render_side_attachment(win);*/
-}
-
-#if 0
-void chat_window::render_side_attachment(sf::RenderWindow& win)
-{
-    vec2f side_pos = {render_start.x() - side_dim.x() - border_size, render_start.y()};
-
-    sf::RectangleShape shape;
-
-    shape.setSize({side_dim.x(), side_dim.y()});
-    shape.setOutlineColor(get_frame_col());
-    shape.setOutlineThickness(border_size);
-    shape.setFillColor(sf::Color(30, 30, 30, 255));
-
-    shape.setPosition(side_pos.x(), side_pos.y());
-
-    win.draw(shape);
-
-    vec2f start_pos = {side_pos.x() + char_inf::cwbuf, side_pos.y() + char_inf::cheight/4.f};
-    vec2f current_pos = start_pos;
-
-    for(int i=0; i < (int)side_buttons.size(); i++)
-    {
-        side_buttons[i].pos = current_pos;
-        side_buttons[i].dim = {side_dim.x(), char_inf::cheight};
-
-        if(side_buttons[i].is_selected)
-        {
-            sf::RectangleShape shape;
-            shape.setPosition({current_pos.x() - char_inf::cwbuf, current_pos.y()});
-            shape.setFillColor(get_highlight_col());
-
-            vec2f cdim = side_buttons[i].dim;
-            //cdim.x() -= char_inf::cwbuf;
-
-            shape.setSize({cdim.x(), cdim.y()});
-
-            win.draw(shape);
-        }
-
-        auto ichars = string_to_interop_no_autos(side_buttons[i].txt, false);
-
-        render_str(win, ichars, current_pos, start_pos, start_pos + side_dim, border_size);
-
-        current_pos.y() += char_inf::cheight;
-    }
-}
-#endif // 0
-
-#if 0
-void chat_window::process_click(vec2f pos)
-{
-    bool any = false;
-
-    for(button& b : side_buttons)
-    {
-        if(b.within(pos))
-        {
-            any = true;
-            break;
-        }
-    }
-
-    if(!any)
-        return;
-
-    for(button& b : side_buttons)
-    {
-        if(b.within(pos))
-        {
-            selected = b.txt;
-            b.is_selected = true;
-        }
-        else
-        {
-            b.is_selected = false;
-        }
-    }
-}
-#endif // 0
-
-bool chat_window::within(vec2f pos)
-{
-    vec2f tl = render_start - side_dim;
-    vec2f br = render_start + (vec2f) {dim.x(), dim.y()};
-
-    return pos.x() >= tl.x() && pos.y() >= tl.y() &&
-           pos.x() < br.x() && pos.y() < br.y();
 }
 
 void chat_window::set_side_channels(const std::vector<std::string>& sides)
@@ -755,11 +614,6 @@ void chat_window::set_side_channels(const std::vector<std::string>& sides)
 
     for(auto& i : sides)
     {
-        /*if(i == selected)
-            side_buttons.push_back({i});
-        else
-            side_buttons.push_back({i});*/
-
         side_buttons.push_back(i);
     }
 }

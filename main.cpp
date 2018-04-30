@@ -12,7 +12,6 @@
 #include "copy_handler.hpp"
 #include "stacktrace.hpp"
 #include "editable_string.hpp"
-#include "ui_components.hpp"
 #include "tokeniser.hpp"
 
 ///ruh roh
@@ -447,14 +446,6 @@ int main()
 
         ImGui::SFML::Update(window,  imgui_delta.restart());
 
-        //ImGui::NewFrame();
-
-        /*ImGui::Begin("Test");
-
-        ImGui::Text("Hello");
-
-        ImGui::End();*/
-
         //ImGui::ShowDemoWindow(nullptr);
 
         freetype_test.ShowFreetypeOptionsWindow();
@@ -559,26 +550,6 @@ int main()
 
         if(mouse.isButtonPressed(sf::Mouse::Left) && is_focused(window))
             get_global_copy_handler()->on_hold_lclick(window,  vpos);
-
-        /*if(ONCE_MACRO(sf::Mouse::Left) && is_focused(window))
-        {
-            auto ppos = mouse.getPosition(window);
-
-            vec2f mpos = {ppos.x, ppos.y};
-
-            if(chat_win.within(mpos))
-            {
-                chat_win.focused = true;
-                term.focused = false;
-            }
-            else
-            {
-                chat_win.focused = false;
-                term.focused = true;
-            }
-
-            //chat_win.process_click(mpos);
-        }*/
 
         if(sd_has_front_read(shared))
         {

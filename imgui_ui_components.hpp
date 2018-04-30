@@ -110,8 +110,6 @@ struct chat_window : serialisable
 
     void process_click(vec2f pos);
 
-    bool within(vec2f pos);
-
     void set_side_channels(const std::vector<std::string>& sides);
 };
 
