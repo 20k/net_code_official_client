@@ -66,7 +66,7 @@ void update_font_texture_safe()
     texture.create(width, height);
     texture.update(pixels);
 
-    io.Fonts->TexID = (void*)texture.getNativeHandle();
+    io.Fonts->TexID = reinterpret_cast<void*>(texture.getNativeHandle());
 }
 
 struct FreeTypeTest
@@ -87,7 +87,7 @@ struct FreeTypeTest
         BuildMode = FontBuildMode_FreeType;
         WantRebuild = true;
         FontsMultiply = 1.0f;
-        FontsFlags = 0;
+        FontsFlags = ImGuiFreeType::ForceAutoHint | ImGuiFreeType::MonoHinting;
     }
 
     // Call _BEFORE_ NewFrame()
