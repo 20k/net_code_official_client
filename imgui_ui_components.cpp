@@ -622,6 +622,7 @@ void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_threa
         ImGui::SetNextWindowFocus();
 
     ImGui::SetNextWindowSize(ImVec2(dim.x(), dim.y()), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(ImVec2(win.getSize().x - dim.x() * 1.08f, ImGuiCond_FirstUseEver));
 
     focus_once = true;
 
