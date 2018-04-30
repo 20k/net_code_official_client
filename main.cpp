@@ -69,74 +69,58 @@ void update_font_texture_safe()
     io.Fonts->TexID = reinterpret_cast<void*>(texture.getNativeHandle());
 }
 
-struct FreeTypeTest
+struct font_selector
 {
-    enum FontBuildMode
-    {
-        FontBuildMode_FreeType,
-        FontBuildMode_Stb,
-    };
-
-    FontBuildMode BuildMode;
-    bool          WantRebuild;
-    float         FontsMultiply;
-    unsigned int  FontsFlags;
+    bool wants_rebuild = true;
+    float fonts_multiply = 1.f;
+    unsigned int fonts_flags = ImGuiFreeType::ForceAutoHint | ImGuiFreeType::MonoHinting;
 
     bool is_open = false;
 
-    FreeTypeTest()
-    {
-        BuildMode = FontBuildMode_FreeType;
-        WantRebuild = true;
-        FontsMultiply = 1.0f;
-        FontsFlags = ImGuiFreeType::ForceAutoHint | ImGuiFreeType::MonoHinting;
-    }
-
     // Call _BEFORE_ NewFrame()
-    bool UpdateRebuild()
+    bool update_rebuild()
     {
-        if (!WantRebuild)
+        if (!wants_rebuild)
             return false;
+
         ImGuiIO& io = ImGui::GetIO();
+
         for (int n = 0; n < io.Fonts->Fonts.Size; n++)
         {
             //io.Fonts->Fonts[n]->ConfigData->RasterizerMultiply = FontsMultiply;
-            //io.Fonts->Fonts[n]->ConfigData->RasterizerFlags = (BuildMode == FontBuildMode_FreeType) ? FontsFlags : 0x00;
+            //io.Fonts->Fonts[n]->ConfigData->RasterizerFlags = (BuildMode == FontBuildMode_FreeType) ? fonts_flags : 0x00;
         }
-        if (BuildMode == FontBuildMode_FreeType)
-            ImGuiFreeType::BuildFontAtlas(io.Fonts, FontsFlags);
-        else if (BuildMode == FontBuildMode_Stb)
-            io.Fonts->Build();
-        WantRebuild = false;
+
+        ImGuiFreeType::BuildFontAtlas(io.Fonts, fonts_flags);
+
+        wants_rebuild = false;
         return true;
     }
 
     // Call to draw interface
-    void ShowFreetypeOptionsWindow()
+    void render()
     {
         if(!is_open)
             return;
 
         ImGui::Begin("FreeType Options", &is_open);
         ImGui::ShowFontSelector("Fonts");
-        WantRebuild |= ImGui::RadioButton("FreeType", (int*)&BuildMode, FontBuildMode_FreeType);
-        ImGui::SameLine();
-        WantRebuild |= ImGui::RadioButton("Stb (Default)", (int*)&BuildMode, FontBuildMode_Stb);
-        WantRebuild |= ImGui::DragFloat("Multiply", &FontsMultiply, 0.001f, 0.0f, 2.0f);
-        if (BuildMode == FontBuildMode_FreeType)
-        {
-            WantRebuild |= ImGui::CheckboxFlags("NoHinting",     &FontsFlags, ImGuiFreeType::NoHinting);
-            WantRebuild |= ImGui::CheckboxFlags("NoAutoHint",    &FontsFlags, ImGuiFreeType::NoAutoHint);
-            WantRebuild |= ImGui::CheckboxFlags("ForceAutoHint", &FontsFlags, ImGuiFreeType::ForceAutoHint);
-            WantRebuild |= ImGui::CheckboxFlags("LightHinting",  &FontsFlags, ImGuiFreeType::LightHinting);
-            WantRebuild |= ImGui::CheckboxFlags("MonoHinting",   &FontsFlags, ImGuiFreeType::MonoHinting);
-            WantRebuild |= ImGui::CheckboxFlags("Bold",          &FontsFlags, ImGuiFreeType::Bold);
-            WantRebuild |= ImGui::CheckboxFlags("Oblique",       &FontsFlags, ImGuiFreeType::Oblique);
-        }
+
+        wants_rebuild |= ImGui::DragFloat("Multiply", &fonts_multiply, 0.001f, 0.0f, 2.0f);
+
+        wants_rebuild |= ImGui::CheckboxFlags("NoHinting",     &fonts_flags, ImGuiFreeType::NoHinting);
+        wants_rebuild |= ImGui::CheckboxFlags("NoAutoHint",    &fonts_flags, ImGuiFreeType::NoAutoHint);
+        wants_rebuild |= ImGui::CheckboxFlags("ForceAutoHint", &fonts_flags, ImGuiFreeType::ForceAutoHint);
+        wants_rebuild |= ImGui::CheckboxFlags("LightHinting",  &fonts_flags, ImGuiFreeType::LightHinting);
+        wants_rebuild |= ImGui::CheckboxFlags("MonoHinting",   &fonts_flags, ImGuiFreeType::MonoHinting);
+        wants_rebuild |= ImGui::CheckboxFlags("Bold",          &fonts_flags, ImGuiFreeType::Bold);
+        wants_rebuild |= ImGui::CheckboxFlags("Oblique",       &fonts_flags, ImGuiFreeType::Oblique);
+
         ImGui::End();
     }
 };
 
+#ifdef FONT_TEST
 void test()
 {
     sf::RenderWindow window(sf::VideoMode(800, 600), "hi");
@@ -154,14 +138,14 @@ void test()
 
     //assert(font->ConfigData.size() != 0);
 
-    FreeTypeTest test;
-    test.WantRebuild = false;
+    font_selector font_select;
+    font_select.WantRebuild = false;
 
     sf::Clock imgui_delta;
 
     while(1)
     {
-        if(test.UpdateRebuild())
+        if(font_select.UpdateRebuild())
         {
             update_font_texture_safe();
         }
@@ -181,13 +165,14 @@ void test()
 
         ImGui::End();
 
-        test.ShowFreetypeOptionsWindow();
+        font_select.ShowFreetypeOptionsWindow();
 
         ImGui::SFML::Render(window);
         window.display();
         window.clear();
     }
 }
+#endif // FONT_TEST
 
 ///test new repo
 int main()
@@ -253,17 +238,9 @@ int main()
     io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 13.f);
     io.Fonts->AddFontDefault();*/
 
-    FreeTypeTest freetype_test;
-    //freetype_test.WantRebuild = false;
-
-    /*// see ImGuiFreeType::RasterizationFlags
-    unsigned int flags = ImGuiFreeType::LightHinting;
-    ImGuiFreeType::BuildFontAtlas(io.Fonts, flags);
-    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);*/
-
+    font_selector font_select;
 
     terminal_imgui term;
-    //terminal term;
     chat_window chat_win;
 
     sf::Event event;
@@ -316,7 +293,7 @@ int main()
 
     while(running)
     {
-        if(freetype_test.UpdateRebuild())
+        if(font_select.update_rebuild())
         {
             update_font_texture_safe();
         }
@@ -418,7 +395,7 @@ int main()
 
                 if(event.key.code == sf::Keyboard::F1)
                 {
-                    freetype_test.is_open = !freetype_test.is_open;
+                    font_select.is_open = !font_select.is_open;
                 }
 
                 if(event.key.code == sf::Keyboard::Return)
@@ -456,7 +433,7 @@ int main()
 
         //ImGui::ShowDemoWindow(nullptr);
 
-        freetype_test.ShowFreetypeOptionsWindow();
+        font_select.render();
 
         if(enter)
         {
