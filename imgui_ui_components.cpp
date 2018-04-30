@@ -415,7 +415,8 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
     ImGui::End();
 
-    handle->process_formatted(formatted_text);
+    if(focused)
+        handle->process_formatted(formatted_text);
 }
 
 #define MAX_TEXT_HISTORY 250
@@ -599,6 +600,8 @@ void chat_window::tick()
 
 void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads)
 {
+    copy_handler* handle = get_global_copy_handler();
+
     std::vector<std::vector<formatted_char>> formatted;
 
     chat_thread& thread = threads[selected];
@@ -631,6 +634,9 @@ void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_threa
     render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.chats, auto_handle, formatted, 80);
 
     ImGui::End();
+
+    if(focused)
+        handle->process_formatted(formatted);
 
     /*vec2f swidth = {win.getSize().x, win.getSize().y};
 
