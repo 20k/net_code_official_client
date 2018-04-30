@@ -228,8 +228,8 @@ int main()
     font_cfg.GlyphExtraSpacing = ImVec2(char_inf::extra_glyph_spacing, 0);
 
     ImGuiIO& io = ImGui::GetIO();
-    io.Fonts->AddFontDefault();
     io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 14.f, &font_cfg);
+    io.Fonts->AddFontDefault();
 
     //ImGuiFreeType::BuildFontAtlas(io.Fonts, 0);
     //ImGui::SFML::UpdateFontTexture();
