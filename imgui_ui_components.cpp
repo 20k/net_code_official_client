@@ -441,7 +441,7 @@ void terminal_imgui::render(sf::RenderWindow& win)
         handle->process_formatted(formatted_text);
 }
 
-#define MAX_TEXT_HISTORY 500
+#define MAX_TEXT_HISTORY 325
 
 void terminal_imgui::bump_command_to_history()
 {
@@ -622,7 +622,7 @@ void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_threa
         ImGui::SetNextWindowFocus();
 
     ImGui::SetNextWindowSize(ImVec2(dim.x(), dim.y()), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowPos(ImVec2(win.getSize().x - dim.x() * 1.08f, ImGuiCond_FirstUseEver));
+    //ImGui::SetNextWindowPos(ImVec2(win.getSize().x - dim.x() * 1.08f, ImGuiCond_FirstUseEver));
 
     focus_once = true;
 
@@ -658,8 +658,25 @@ void chat_window::set_side_channels(const std::vector<std::string>& sides)
 {
     side_buttons.clear();
 
+    bool any = false;
+
     for(auto& i : sides)
     {
         side_buttons.push_back(i);
+
+        if(i == selected)
+        {
+            any = true;
+        }
+    }
+
+    if(!any && side_buttons.size() > 0)
+    {
+        selected = side_buttons.front();
+    }
+
+    if(!any && side_buttons.size() == 0)
+    {
+        selected = "No channels";
     }
 }
