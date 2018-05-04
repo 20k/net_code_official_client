@@ -75,7 +75,8 @@
 				<Compiler>
 					<Add option="-pg" />
 					<Add option="-g" />
-					<Add option="-no-pie" />
+					<Add option="-fno-pie" />
+					<Add option="-O0" />
 					<Add option="-DEXTERN_IP" />
 				</Compiler>
 				<Linker>
