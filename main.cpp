@@ -285,6 +285,10 @@ int main()
 
     sf::Clock imgui_delta;
 
+    #ifdef TESTING
+    std::vector<std::string> api_calls;
+    #endif // TESTING
+
     //double diff_s = 0.f;
 
     bool running = true;
@@ -526,6 +530,17 @@ int main()
             swindow.save(chat_file);
         }
 
+        #ifdef TESTING
+        ImGui::Begin("Debug_window");
+
+        for(auto& i : api_calls)
+        {
+            ImGui::Text(i.c_str());
+        }
+
+        ImGui::End();
+        #endif // TESTING
+
         chat_win.tick();
 
         auto sf_mpos = mouse.getPosition(window);
@@ -539,6 +554,10 @@ int main()
             sized_string c_data = sd_get_front_read(shared);
             std::string fdata = c_str_sized_to_cpp(c_data);
             free_sized_string(c_data);
+
+            #ifdef TESTING
+            api_calls.push_back(fdata);
+            #endif // TESTING
 
             term.add_text_from_server(fdata, chat_win);
         }

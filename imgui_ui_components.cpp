@@ -484,6 +484,8 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
 
             std::vector<std::string> in_channels;
 
+            std::vector<std::string> tell_msgs;
+
             chat_api_info chat_info = sa_chat_api_to_info(command_info);
 
             for(int i=0; i < chat_info.num_msgs; i++)
@@ -497,6 +499,11 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
                 in_channels.push_back(c_str_sized_to_cpp(chat_info.in_channels[i].channel));
             }
 
+            for(int i=0; i < chat_info.num_tells; i++)
+            {
+                tell_msgs.push_back(c_str_sized_to_cpp(chat_info.tells[i].msg));
+            }
+
             sa_destroy_chat_api_info(chat_info);
 
             chat_win.set_side_channels(in_channels);
@@ -506,6 +513,11 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
                 text_history.push_back(string_to_interop(msgs[i] + "\n", false, chat_win.auto_handle));
 
                 chat_threads[chnls[i]].chats.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
+            }
+
+            for(auto& i : tell_msgs)
+            {
+                text_history.push_back(string_to_interop_no_autos(i + "\n", false));
             }
 
             limit_size(text_history, MAX_TEXT_HISTORY);
