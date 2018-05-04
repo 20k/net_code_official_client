@@ -17,10 +17,8 @@
 ///ruh roh
 ///need to structure this project properly
 #include "local_commands.hpp"
-#include <libncclient/c_shared_data.h>
-#include <libncclient/c_net_client.h>
+#include <libncclient/c_all.h>
 #include <libncclient/nc_util.hpp>
-#include <libncclient/c_server_api.h>
 #include <libncclient/nc_string_interop.hpp>
 
 #include <imgui/imgui.h>
