@@ -6,6 +6,16 @@
 #include <libncclient/c_server_api.h>
 #include "copy_handler.hpp"
 
+namespace ImGuiX
+{
+    void TextColoredUnformatted(const ImVec4& col, const char* text)
+    {
+        ImGui::PushStyleColor(ImGuiCol_Text, col);
+        ImGui::TextUnformatted(text);
+        ImGui::PopStyleColor();
+    }
+}
+
 void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar)
 {
     ImGui::BeginChild("right_child", ImVec2(0,0), false, ImGuiWindowFlags_NoScrollWithMouse);
@@ -145,7 +155,7 @@ void render_copy_aware(vec3f col, const std::string& str, vec2f start_pos, vec2f
 
         ImGui::SetCursorScreenPos(ImVec2(c_pos.x(), c_pos.y()));
 
-        ImGui::TextColored(ImVec4(ccol.x()/255.f, ccol.y()/255.f, ccol.z()/255.f, 1.f), cstr.c_str());
+        ImGuiX::TextColoredUnformatted(ImVec4(ccol.x()/255.f, ccol.y()/255.f, ccol.z()/255.f, 1.f), cstr.c_str());
 
         c_pos.x() += cstr.size() * char_inf::cwidth;
 
@@ -158,7 +168,7 @@ void render_copy_blind(vec3f col, const std::string& str, vec2f render_pos)
 {
     ImGui::SetCursorScreenPos(ImVec2(render_pos.x(), render_pos.y()));
 
-    ImGui::TextColored(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
+    ImGuiX::TextColoredUnformatted(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
 }
 
 void imgui_render_str(const std::vector<formatted_char>& text, std::vector<std::vector<formatted_char>>& formatted_text, float window_width)
