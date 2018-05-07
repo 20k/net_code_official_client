@@ -280,6 +280,28 @@ bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int g
             {
                 subtype = token::NUMBER;
             }
+
+            std::vector<std::string> booleans
+            {
+                "true",
+                "false",
+            };
+
+            std::string fstr;
+
+            for(int i=pos; i < *found; i++)
+            {
+                fstr += dat[i].c;
+            }
+
+            for(auto& i : booleans)
+            {
+                if(i == fstr)
+                {
+                    subtype = token::BOOLEAN;
+                    break;
+                }
+            }
         }
     }
 

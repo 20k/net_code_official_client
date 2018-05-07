@@ -80,9 +80,9 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
             {
                 colour_interop(in, i.start_pos, i.end_pos, cols[i.str]);
             }
-            else if(i.type == token::VALUE && (i.subtype == token::STRING || i.subtype == token::NUMBER))
+            else if(i.type == token::VALUE && (i.subtype == token::STRING || i.subtype == token::NUMBER || i.subtype == token::BOOLEAN))
             {
-                if(use_autocolour || i.subtype == token::NUMBER)
+                if(use_autocolour || i.subtype == token::NUMBER || i.subtype == token::BOOLEAN)
                     colour_interop(in, i.start_pos, i.end_pos, value_col);
             }
             else if(use_autocolour && i.type == token::VALUE && i.subtype == token::GENERIC && use_autocolour)

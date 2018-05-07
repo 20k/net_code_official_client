@@ -37,6 +37,7 @@ namespace token
         STRING,
         GENERIC,
         KEYWORD,
+        BOOLEAN,
         NONE,
     };
 }
