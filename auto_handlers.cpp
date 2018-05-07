@@ -66,7 +66,9 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
         token::CLOSE_SQUARE,
     };
 
-    vec3f value_col = {100, 206, 209};
+    vec3f value_col = {8, 143, 242};
+    //vec3f value_col = {100, 206, 209};
+    vec3f key_col = {243, 166, 3};
 
     for(int i=0; i < (int)in.size(); i++)
     {
@@ -93,6 +95,10 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
                         break;
                     }
                 }
+            }
+            else if(i.type == token::KEY)
+            {
+                colour_interop(in, i.start_pos, i.end_pos, key_col);
             }
         }
 
