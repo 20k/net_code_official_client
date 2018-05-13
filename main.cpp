@@ -206,7 +206,7 @@ int main()
     sett.antialiasingLevel = 8;
 
     sf::RenderWindow window;
-    window.create(sf::VideoMode(1200,600), "Crapmud", sf::Style::Default, sett);
+    window.create(sf::VideoMode(1200,600), "net_code_", sf::Style::Default, sett);
 
     ImGui::SFML::Init(window, false);
 
