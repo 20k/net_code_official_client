@@ -297,7 +297,7 @@ void imgui_render_str(const std::vector<formatted_char>& text, std::vector<std::
     }
 }
 
-bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, std::vector<std::vector<formatted_char>>& formatted_text, float extra_shrink = 0)
+bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<history_string>& text_history, auto_handler& auto_handle, std::vector<std::vector<formatted_char>>& formatted_text, float extra_shrink = 0)
 {
     float overall_width = ImGui::GetWindowWidth();
 
@@ -360,9 +360,13 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
             icommand.insert(icommand.begin() + curs_cur, curs);
     }
 
-    all_interop.push_back(icommand);
+    history_string command_history;
+    command_history.id = -1;
+    command_history.str = icommand;
 
-    int max_lines = vertical_columns;
+    all_interop.push_back(command_history);
+
+    //int max_lines = vertical_columns;
 
     int last_lines = 0;
     int total_lines = 0;
@@ -374,7 +378,7 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
         int found_line = 0;
         int empty_last = 0;
 
-        get_height(i, current, {start.x, start.y}, {wrap_dim.x, wrap_dim.y}, found_line, empty_last);
+        get_height(i.str, current, {start.x, start.y}, {wrap_dim.x, wrap_dim.y}, found_line, empty_last);
 
         total_lines += found_line;
     }
@@ -388,14 +392,14 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
     {
         int found_lines = 0;
 
-        get_height(all_interop[i], current, {start.x, start.y}, {wrap_dim.x, wrap_dim.y}, found_lines, last_lines);
+        get_height(all_interop[i].str, current, {start.x, start.y}, {wrap_dim.x, wrap_dim.y}, found_lines, last_lines);
 
         int min_bound = inverse_scroll_start - vertical_columns;
         int max_bound = inverse_scroll_start;
 
         if(current_line + found_lines >= min_bound && current_line < max_bound)
         {
-            auto current_interop = format_characters(all_interop[i], current, {start.x, start.y}, (vec2f){wrap_dim.x, wrap_dim.y}, found_lines, last_lines);
+            auto current_interop = format_characters(all_interop[i].str, current, {start.x, start.y}, (vec2f){wrap_dim.x, wrap_dim.y}, found_lines, last_lines);
 
             formatted.push_back(current_interop);
         }
@@ -455,11 +459,11 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
 void terminal_imgui::bump_command_to_history()
 {
-    text_history.push_back(string_to_interop(command.command, true, auto_handle));
+    text_history.push_back({-1, string_to_interop(command.command, true, auto_handle)});
     command.clear_command();
 
     limit_size(text_history, MAX_TEXT_HISTORY);
-    de_newline(text_history);
+    //de_newline(text_history);
 }
 
 void terminal_imgui::add_text_from_server(const std::string& in, chat_window& chat_win, bool server_command)
@@ -486,6 +490,34 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
             str = c_str_consume(sa_command_to_human_readable(command_info));
 
             push = true;
+        }
+        else if(command_info.type == server_command_command_realtime)
+        {
+            realtime_info info = sa_command_realtime_to_info(command_info);
+
+            std::string fstr = c_str_sized_to_cpp(info.msg);
+            int id = info.id;
+
+            int last = text_history.size();
+
+            bool found = false;
+
+            for(int i=last-1; i >= 0; i--)
+            {
+                if(text_history[i].id == id)
+                {
+                    text_history[i].str = string_to_interop_no_autos(fstr, false);
+                    found = true;
+                    break;
+                }
+            }
+
+            if(!found)
+            {
+                text_history.push_back({id, string_to_interop_no_autos(fstr, false)});
+            }
+
+            sa_destroy_realtime_info(info);
         }
         else if(command_info.type == server_command_chat_api)
         {
@@ -520,18 +552,18 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
 
             for(int i=0; i < (int)chnls.size(); i++)
             {
-                text_history.push_back(string_to_interop(msgs[i] + "\n", false, chat_win.auto_handle));
+                text_history.push_back({-1, string_to_interop(msgs[i] + "\n", false, chat_win.auto_handle)});
 
-                chat_threads[chnls[i]].chats.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
+                chat_threads[chnls[i]].chats.push_back({-1, string_to_interop(msgs[i], false, chat_win.auto_handle)});
             }
 
             for(auto& i : tell_msgs)
             {
-                text_history.push_back(string_to_interop_no_autos(i + "\n", false));
+                text_history.push_back({-1, string_to_interop_no_autos(i + "\n", false)});
             }
 
             limit_size(text_history, MAX_TEXT_HISTORY);
-            de_newline(text_history);
+            //de_newline(text_history);
         }
         else if(command_info.type == server_command_server_scriptargs)
         {
@@ -593,12 +625,12 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
 
     if(push)
     {
-        text_history.push_back(string_to_interop(str, false, auto_handle));
+        text_history.push_back({-1, string_to_interop(str, false, auto_handle)});
 
         limit_size(text_history, MAX_TEXT_HISTORY);
         consider_resetting_scrollbar = true;
 
-        de_newline(text_history);
+        //de_newline(text_history);
     }
 
     sa_destroy_server_command_info(command_info);
