@@ -603,7 +603,7 @@ int main()
             //term.auto_handle.found_unprocessed_autocompletes.clear();
         }
 
-        if(key.isKeyPressed(sf::Keyboard::LControl) && ONCE_MACRO(sf::Keyboard::C))
+        if(term.focused && key.isKeyPressed(sf::Keyboard::LControl) && ONCE_MACRO(sf::Keyboard::C))
         {
             sa_do_terminate_script(shared);
         }
