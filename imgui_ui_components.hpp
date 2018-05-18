@@ -28,6 +28,7 @@ struct realtime_script_run
     sf::Clock last_message;
 
     interop_vec_t parsed_data;
+    bool focused = false;
 };
 
 struct terminal_imgui : serialisable
@@ -60,6 +61,9 @@ struct terminal_imgui : serialisable
     void bump_command_to_history();
 
     void add_text_from_server(const std::string& in, chat_window& chat_win, bool server_command = true);
+
+    ///returns -1 on none
+    int get_id_of_focused_realtime_window();
 };
 
 struct chat_thread : serialisable

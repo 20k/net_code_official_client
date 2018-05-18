@@ -291,6 +291,8 @@ int main()
 
     //double diff_s = 0.f;
 
+    editable_string realtime_shim;
+
     bool running = true;
 
     while(running)
@@ -300,10 +302,15 @@ int main()
             update_font_texture_safe();
         }
 
+        realtime_shim.clear_command();
+
         editable_string* to_edit = &term.command;
 
         if(chat_win.focused)
             to_edit = &chat_win.command;
+
+        if(term.get_id_of_focused_realtime_window() != -1)
+            to_edit = &realtime_shim;
 
         bool enter = false;
 
@@ -402,7 +409,8 @@ int main()
 
                 if(event.key.code == sf::Keyboard::Return)
                 {
-                    enter = true;
+                    if(to_edit != &realtime_shim)
+                        enter = true;
                 }
             }
 
@@ -426,6 +434,15 @@ int main()
             {
                 mouse_delta += event.mouseWheelScroll.delta;
             }
+        }
+
+        if(term.get_id_of_focused_realtime_window() != -1)
+        {
+            ///pipe keys to server
+            ///todo make enter work
+
+            sa_do_send_keystrokes_to_script(shared, term.get_id_of_focused_realtime_window(), make_view(to_edit->command));
+            to_edit->clear_command();
         }
 
         term.scroll_hack.scrolled_this_frame = mouse_delta;

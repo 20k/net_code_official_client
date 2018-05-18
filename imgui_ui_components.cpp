@@ -461,7 +461,16 @@ void terminal_imgui::render_realtime_windows()
 
         std::string str = std::to_string(i.first);
 
-        ImGui::Begin(str.c_str(), nullptr);
+        std::string title_str = str;
+
+        if(run.focused)
+        {
+            title_str += " (Capturing Keystrokes)";
+        }
+
+        ImGui::Begin((title_str + "###" + str).c_str(), nullptr);
+
+        run.focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
         int cpos = -1;
         std::string cmd = " ";
@@ -470,6 +479,17 @@ void terminal_imgui::render_realtime_windows()
 
         ImGui::End();
     }
+}
+
+int terminal_imgui::get_id_of_focused_realtime_window()
+{
+    for(auto& i : realtime_script_windows)
+    {
+        if(i.second.focused)
+            return i.first;
+    }
+
+    return -1;
 }
 
 #define MAX_TEXT_HISTORY 200
