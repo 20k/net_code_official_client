@@ -436,7 +436,7 @@ int main()
             }
         }
 
-        if(term.get_id_of_focused_realtime_window() != -1)
+        if(term.get_id_of_focused_realtime_window() != -1 && to_edit->command.size() > 0)
         {
             ///pipe keys to server
             ///todo make enter work
