@@ -451,6 +451,27 @@ void terminal_imgui::render(sf::RenderWindow& win)
         handle->process_formatted(formatted_text);
 }
 
+void terminal_imgui::render_realtime_windows()
+{
+    for(auto& i : realtime_script_windows)
+    {
+        realtime_script_run& run = i.second;
+
+        std::vector<std::vector<formatted_char>> formatted_text;
+
+        std::string str = std::to_string(i.first);
+
+        ImGui::Begin(str.c_str(), nullptr);
+
+        int cpos = -1;
+        std::string cmd = " ";
+
+        render_handle_imgui(scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, formatted_text);
+
+        ImGui::End();
+    }
+}
+
 #define MAX_TEXT_HISTORY 200
 
 void terminal_imgui::bump_command_to_history()

@@ -617,6 +617,7 @@ int main()
 
         //test_imgui_term.render(window);
         term.render(window);
+        term.render_realtime_windows();
         chat_win.render(window, term.chat_threads);
 
         term.auto_handle.tab_pressed = ONCE_MACRO(sf::Keyboard::Tab) && is_focused(window);

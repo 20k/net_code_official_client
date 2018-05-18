@@ -56,6 +56,7 @@ struct terminal_imgui : serialisable
 
     terminal_imgui();
     void render(sf::RenderWindow& win);
+    void render_realtime_windows();
     void bump_command_to_history();
 
     void add_text_from_server(const std::string& in, chat_window& chat_win, bool server_command = true);
