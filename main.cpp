@@ -627,7 +627,7 @@ int main()
             //term.auto_handle.found_unprocessed_autocompletes.clear();
         }
 
-        if(term.focused && key.isKeyPressed(sf::Keyboard::LControl) && ONCE_MACRO(sf::Keyboard::C))
+        if((term.focused || term.get_id_of_focused_realtime_window() != 1) && key.isKeyPressed(sf::Keyboard::LControl) && ONCE_MACRO(sf::Keyboard::C))
         {
             sa_do_terminate_script(shared);
         }
