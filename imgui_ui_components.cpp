@@ -362,7 +362,7 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     all_interop.push_back(icommand);
 
-    int max_lines = vertical_columns;
+    //int max_lines = vertical_columns;
 
     int last_lines = 0;
     int total_lines = 0;
@@ -486,6 +486,15 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
             str = c_str_consume(sa_command_to_human_readable(command_info));
 
             push = true;
+        }
+        else if(command_info.type == server_command_command_realtime)
+        {
+            realtime_info info = sa_command_realtime_to_info(command_info);
+
+            realtime_script_windows[info.id].last_message.restart();
+            realtime_script_windows[info.id].parsed_data = string_to_interop_no_autos(c_str_sized_to_cpp(info.msg), false);
+
+            sa_destroy_realtime_info(info);
         }
         else if(command_info.type == server_command_chat_api)
         {

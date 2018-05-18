@@ -23,12 +23,21 @@ struct scrollbar_hack
     void do_hack(int approx_num, bool set_scrollbar);
 };
 
+struct realtime_script_run
+{
+    sf::Clock last_message;
+
+    interop_vec_t parsed_data;
+};
+
 struct terminal_imgui : serialisable
 {
     scrollbar_hack scroll_hack;
     std::vector<interop_vec_t> text_history;
 
     std::map<std::string, chat_thread> chat_threads;
+
+    std::map<int, realtime_script_run> realtime_script_windows;
 
     bool consider_resetting_scrollbar = false;
     bool locked_to_bottom = false;
