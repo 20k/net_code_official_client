@@ -411,6 +411,8 @@ int main()
                 {
                     if(to_edit != &realtime_shim)
                         enter = true;
+                    else
+                        to_edit->add_to_command('\n');
                 }
             }
 
