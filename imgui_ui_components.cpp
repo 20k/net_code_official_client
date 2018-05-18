@@ -475,7 +475,7 @@ void terminal_imgui::render_realtime_windows()
         int cpos = -1;
         std::string cmd = " ";
 
-        render_handle_imgui(scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, formatted_text);
+        render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, formatted_text);
 
         ImGui::End();
     }

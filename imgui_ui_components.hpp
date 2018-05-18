@@ -29,6 +29,7 @@ struct realtime_script_run
 
     interop_vec_t parsed_data;
     bool focused = false;
+    scrollbar_hack scroll_hack;
 };
 
 struct terminal_imgui : serialisable

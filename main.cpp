@@ -450,6 +450,11 @@ int main()
         term.scroll_hack.scrolled_this_frame = mouse_delta;
         chat_win.scroll_hack.scrolled_this_frame = mouse_delta;
 
+        for(auto& i : term.realtime_script_windows)
+        {
+            i.second.scroll_hack.scrolled_this_frame = mouse_delta;
+        }
+
         ImGui::SFML::Update(window,  imgui_delta.restart());
 
         //ImGui::ShowDemoWindow(nullptr);
