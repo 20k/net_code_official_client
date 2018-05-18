@@ -603,6 +603,11 @@ int main()
             //term.auto_handle.found_unprocessed_autocompletes.clear();
         }
 
+        if(key.isKeyPressed(sf::Keyboard::LControl) && ONCE_MACRO(sf::Keyboard::C))
+        {
+            sa_do_terminate_script(shared);
+        }
+
         //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
 
         term.auto_handle.window_in_focus = is_focused(window);
