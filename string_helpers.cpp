@@ -32,7 +32,6 @@ interop_vec_t string_to_interop_no_autos(const std::string& str, bool render_spe
     return chars;
 }
 
-#if 0
 void de_newline(std::vector<interop_vec_t>& vec)
 {
     return;
@@ -98,34 +97,6 @@ void de_newline(std::vector<interop_vec_t>& vec)
     }
 
     vec = rep;
-}
-#endif // 0
-
-void get_height(const interop_vec_t& interop, vec2f cpos, vec2f start, vec2f wrap_dim, int& lines, int last_lines)
-{
-    lines = 1;
-
-    vec2f pos = cpos;
-    pos.x() = start.x() + char_inf::cwbuf;
-    pos.y() += char_inf::cheight;
-
-    for(const auto& i : interop)
-    {
-        if((pos.x() >= wrap_dim.x() - char_inf::cwbuf || i.c == '\n') && !i.is_cursor)
-        {
-            pos.y() += char_inf::cheight;
-            pos.x() = start.x() + char_inf::cwbuf;
-            lines++;
-        }
-
-        if(i.c == '\n')
-            continue;
-
-        if(!i.is_cursor)
-            pos.x() += char_inf::cwidth;
-    }
-
-    //pos.y() -= (last_lines) * char_inf::cheight + lines * char_inf::cheight;
 }
 
 #if 0

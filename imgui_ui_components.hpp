@@ -23,26 +23,10 @@ struct scrollbar_hack
     void do_hack(int approx_num, bool set_scrollbar);
 };
 
-struct history_string : serialisable
-{
-    int id = -1;
-    interop_vec_t str;
-
-    history_string(){}
-    history_string(int pid, const interop_vec_t& pstr) : id(pid), str(pstr) {}
-
-    virtual void do_serialise(serialise& s, bool ser) override
-    {
-        s.handle_serialise(str, ser);
-        s.handle_serialise(id, ser);
-    }
-};
-
 struct terminal_imgui : serialisable
 {
     scrollbar_hack scroll_hack;
-    std::vector<history_string> text_history;
-    //std::vector<interop_vec_t> text_history;
+    std::vector<interop_vec_t> text_history;
 
     std::map<std::string, chat_thread> chat_threads;
 
@@ -70,7 +54,7 @@ struct terminal_imgui : serialisable
 
 struct chat_thread : serialisable
 {
-    std::vector<history_string> chats;
+    std::vector<interop_vec_t> chats;
 
     virtual void do_serialise(serialise& s, bool ser);
 };

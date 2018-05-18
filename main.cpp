@@ -255,7 +255,7 @@ int main()
     DMAP(V);DMAP(W);DMAP(X);
     DMAP(Y);DMAP(Z);
 
-    std::string terminal_file = "./terminal_v6.txt";
+    std::string terminal_file = "./terminal_v5.txt";
     std::string chat_file = "./chat_v5.txt";
 
     if(file_exists(terminal_file))

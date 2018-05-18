@@ -173,9 +173,35 @@ struct auto_handler;
 
 interop_vec_t string_to_interop(const std::string& str, bool render_specials, auto_handler& auto_handle, bool parse_for_autocompletes = true);
 interop_vec_t string_to_interop_no_autos(const std::string& str, bool render_specials);
-//void de_newline(std::vector<history_string>& vec);
+void de_newline(std::vector<interop_vec_t>& vec);
 
-void get_height(const interop_vec_t& interop, vec2f cpos, vec2f start, vec2f wrap_dim, int& lines, int last_lines);
+inline
+void get_height(const std::vector<interop_char>& interop, vec2f cpos, vec2f start, vec2f wrap_dim, int& lines, int last_lines)
+{
+    lines = 1;
+
+    vec2f pos = cpos;
+    pos.x() = start.x() + char_inf::cwbuf;
+    pos.y() += char_inf::cheight;
+
+    for(const auto& i : interop)
+    {
+        if((pos.x() >= wrap_dim.x() - char_inf::cwbuf || i.c == '\n') && !i.is_cursor)
+        {
+            pos.y() += char_inf::cheight;
+            pos.x() = start.x() + char_inf::cwbuf;
+            lines++;
+        }
+
+        if(i.c == '\n')
+            continue;
+
+        if(!i.is_cursor)
+            pos.x() += char_inf::cwidth;
+    }
+
+    //pos.y() -= (last_lines) * char_inf::cheight + lines * char_inf::cheight;
+}
 
 ///so new plan
 ///we want to format forward, but then afterwards
