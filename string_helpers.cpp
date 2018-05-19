@@ -13,7 +13,8 @@ interop_vec_t string_to_interop(const std::string& str, bool render_specials, au
         chars.pop_back();
     }
 
-    auto_handle.auto_colour(chars, false, parse_for_autocompletes);
+    if(str.size() < 2000)
+        auto_handle.auto_colour(chars, false, parse_for_autocompletes);
 
     //chars.push_back({'\n'});
 
