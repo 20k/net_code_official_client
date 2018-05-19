@@ -480,6 +480,8 @@ void terminal_imgui::render_realtime_windows(int& was_closed_id)
         if(!run.open)
             continue;
 
+        ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiCond_Appearing);
+
         ImGui::Begin((title_str + "###" + str).c_str(), &run.open);
 
         run.focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
