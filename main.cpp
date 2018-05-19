@@ -639,10 +639,17 @@ int main()
 
         //test_imgui_term.text_history = term.text_history;
 
+        bool was_closed = false;
+
         //test_imgui_term.render(window);
         term.render(window);
-        term.render_realtime_windows();
+        term.render_realtime_windows(was_closed);
         chat_win.render(window, term.chat_threads);
+
+        if(was_closed)
+        {
+            sa_do_terminate_script(shared);
+        }
 
         term.auto_handle.tab_pressed = ONCE_MACRO(sf::Keyboard::Tab) && is_focused(window);
 

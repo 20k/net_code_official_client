@@ -451,8 +451,10 @@ void terminal_imgui::render(sf::RenderWindow& win)
         handle->process_formatted(formatted_text);
 }
 
-void terminal_imgui::render_realtime_windows()
+void terminal_imgui::render_realtime_windows(bool& was_closed)
 {
+    was_closed = false;
+
     for(auto& i : realtime_script_windows)
     {
         realtime_script_run& run = i.second;
@@ -468,7 +470,17 @@ void terminal_imgui::render_realtime_windows()
             title_str += " (Capturing Keystrokes)";
         }
 
-        ImGui::Begin((title_str + "###" + str).c_str(), nullptr);
+        if(run.was_open && !run.open)
+        {
+            run.was_open = false;
+
+            was_closed = true;
+        }
+
+        if(!run.open)
+            continue;
+
+        ImGui::Begin((title_str + "###" + str).c_str(), &run.open);
 
         run.focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
@@ -485,7 +497,7 @@ int terminal_imgui::get_id_of_focused_realtime_window()
 {
     for(auto& i : realtime_script_windows)
     {
-        if(i.second.focused)
+        if(i.second.focused && i.second.open)
             return i.first;
     }
 
