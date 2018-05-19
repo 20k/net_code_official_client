@@ -451,9 +451,9 @@ void terminal_imgui::render(sf::RenderWindow& win)
         handle->process_formatted(formatted_text);
 }
 
-void terminal_imgui::render_realtime_windows(bool& was_closed)
+void terminal_imgui::render_realtime_windows(int& was_closed_id)
 {
-    was_closed = false;
+    was_closed_id = -1;
 
     for(auto& i : realtime_script_windows)
     {
@@ -474,7 +474,7 @@ void terminal_imgui::render_realtime_windows(bool& was_closed)
         {
             run.was_open = false;
 
-            was_closed = true;
+            was_closed_id = i.first;
         }
 
         if(!run.open)

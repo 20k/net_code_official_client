@@ -629,7 +629,7 @@ int main()
 
         if((term.focused || term.get_id_of_focused_realtime_window() != 1) && key.isKeyPressed(sf::Keyboard::LControl) && ONCE_MACRO(sf::Keyboard::C))
         {
-            sa_do_terminate_script(shared);
+            sa_do_terminate_all_scripts(shared);
         }
 
         //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
@@ -639,16 +639,16 @@ int main()
 
         //test_imgui_term.text_history = term.text_history;
 
-        bool was_closed = false;
+        int was_closed_id = -1;
 
         //test_imgui_term.render(window);
         term.render(window);
-        term.render_realtime_windows(was_closed);
+        term.render_realtime_windows(was_closed_id);
         chat_win.render(window, term.chat_threads);
 
-        if(was_closed)
+        if(was_closed_id != -1)
         {
-            sa_do_terminate_script(shared);
+            sa_do_terminate_script(shared, was_closed_id);
         }
 
         term.auto_handle.tab_pressed = ONCE_MACRO(sf::Keyboard::Tab) && is_focused(window);
