@@ -455,6 +455,8 @@ void terminal_imgui::render_realtime_windows(int& was_closed_id)
 {
     was_closed_id = -1;
 
+    copy_handler* handle = get_global_copy_handler();
+
     for(auto& i : realtime_script_windows)
     {
         realtime_script_run& run = i.second;
@@ -489,7 +491,10 @@ void terminal_imgui::render_realtime_windows(int& was_closed_id)
         int cpos = -1;
         std::string cmd = " ";
 
-        render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, formatted_text);
+        bool child_focused = render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, formatted_text);
+
+        if(run.focused && child_focused)
+            handle->process_formatted(formatted_text);
 
         ImGui::End();
     }
