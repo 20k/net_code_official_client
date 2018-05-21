@@ -45,6 +45,7 @@ std::string make_lower(std::string in)
 }
 
 #define DMAP(A) key_map[sf::Keyboard::A] = make_lower((#A));
+#define SMAP(A, S) key_map[sf::Keyboard::A] = make_lower((#S));
 
 //#define HOST_IP "192.168.0.55"
 #ifdef EXTERN_IP
@@ -266,6 +267,45 @@ int main()
     DMAP(S);DMAP(T);DMAP(U);
     DMAP(V);DMAP(W);DMAP(X);
     DMAP(Y);DMAP(Z);
+
+    SMAP(Return, return);
+    SMAP(BackSpace, backspace);
+    SMAP(Delete, delete);
+
+    SMAP(Insert,insert);
+    SMAP(Tab, tab);
+    SMAP(Delete, delete);
+
+    SMAP(Up, up);
+    SMAP(Down, down);
+    SMAP(Right, right);
+    SMAP(Left, left);
+    SMAP(Home, home);
+    SMAP(End, end);
+    SMAP(PageUp, pageup);
+    SMAP(PageDown, pagedown);
+
+    SMAP(Space, space);
+
+    SMAP(Num1, 1);
+    SMAP(Num2, 2);
+    SMAP(Num3, 3);
+    SMAP(Num4, 4);
+    SMAP(Num5, 5);
+    SMAP(Num6, 6);
+    SMAP(Num7, 7);
+    SMAP(Num8, 8);
+    SMAP(Num9, 9);
+    SMAP(Num0, 0);
+
+    SMAP(LShift, lshift);
+    SMAP(RShift, rshift);
+    SMAP(LControl, lctrl);
+    SMAP(RControl, rctrl);
+    SMAP(LAlt, lalt);
+    SMAP(RAlt, ralt);
+
+    SMAP(Escape, escape);
 
     std::string terminal_file = "./terminal_v5.txt";
     std::string chat_file = "./chat_v5.txt";
