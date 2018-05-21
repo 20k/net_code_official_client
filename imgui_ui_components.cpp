@@ -482,7 +482,10 @@ void terminal_imgui::render_realtime_windows(int& was_closed_id)
         if(!run.open)
             continue;
 
-        ImGui::SetNextWindowSize(ImVec2(run.dim.x(), run.dim.y()), ImGuiCond_Always);
+        if(run.set_size)
+            ImGui::SetNextWindowSize(ImVec2(run.dim.x(), run.dim.y()), ImGuiCond_Always);
+
+        run.set_size = false;
 
         ImGui::Begin((title_str + "###" + str).c_str(), &run.open);
 
@@ -577,10 +580,12 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
                 if(info.height < 5)
                     info.height = 5;
 
-                if(info.width > 70)
-                    info.width = 70;
-                if(info.height > 70)
-                    info.height = 70;
+                if(info.width > 300)
+                    info.width = 300;
+                if(info.height > 300)
+                    info.height = 300;
+
+                realtime_script_windows[info.id].set_size = true;
 
                 int rwidth = info.width * char_inf::cwidth;
                 int rheight = info.height * char_inf::cheight;

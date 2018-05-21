@@ -34,6 +34,7 @@ struct realtime_script_run
     bool was_open = true;
 
     vec2f dim = {300, 300};
+    bool set_size = true;
 };
 
 struct terminal_imgui : serialisable
