@@ -540,7 +540,7 @@ int main()
             }
         }
 
-        if(term.get_id_of_focused_realtime_window() != -1 && realtime_str.size() > 0)
+        if(term.get_id_of_focused_realtime_window() != -1 && (realtime_str.size() > 0 || on_pressed.size() > 0 || on_released.size() > 0))
         {
             sized_view* view = new sized_view[realtime_str.size()];
             sized_view* pressed_view = new sized_view[on_pressed.size()];
@@ -550,12 +550,14 @@ int main()
             {
                 view[i] = make_view(realtime_str[i]);
 
-                std::cout << realtime_str[i] << std::endl;
+                //std::cout << realtime_str[i] << std::endl;
             }
 
             for(int i=0; i < (int)on_pressed.size(); i++)
             {
                 pressed_view[i] = make_view(on_pressed[i]);
+
+                //std::cout << "pressed " << on_pressed[i] << std::endl;
             }
 
             for(int i=0; i < (int)on_released.size(); i++)
