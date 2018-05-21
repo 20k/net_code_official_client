@@ -26,6 +26,7 @@
 #include <imgui-sfml/imgui-SFML.h>
 #include <imgui/misc/freetype/imgui_freetype.h>
 #include "imgui_ui_components.hpp"
+#include <json/json.hpp>
 
 bool is_focused(sf::RenderWindow& win)
 {
@@ -257,6 +258,7 @@ int main()
 
     std::string terminal_file = "./terminal_v5.txt";
     std::string chat_file = "./chat_v5.txt";
+    std::string general_file = "./window.txt";
 
     if(file_exists(terminal_file))
     {
@@ -270,6 +272,25 @@ int main()
         serialise swindow;
         swindow.load(chat_file);
         swindow.handle_serialise(chat_win, false);
+    }
+
+    if(file_exists(general_file))
+    {
+        using nlohmann::json;
+
+        std::string str = read_file_bin(general_file);
+
+        try
+        {
+            json j;
+            j = json::parse(str);
+
+            if(j.find("width_px") != j.end() && j.find("height_px") != j.end())
+            {
+                window.setSize(sf::Vector2u((int)j["width_px"], (int)j["height_px"]));
+            }
+        }
+        catch(...){}
     }
 
     sf::Clock render_clock;
@@ -340,6 +361,18 @@ int main()
             {
                 window.setSize({event.size.width, event.size.height});
                 window.setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));
+
+                try
+                {
+                    using nlohmann::json;
+
+                    json j;
+                    j["width_px"] = event.size.width;
+                    j["height_px"] = event.size.height;
+
+                    write_all_bin(general_file, j.dump());
+                }
+                catch(...){}
             }
 
             if(event.type == sf::Event::KeyPressed)
