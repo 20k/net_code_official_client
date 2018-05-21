@@ -28,9 +28,9 @@
 #include "imgui_ui_components.hpp"
 #include <json/json.hpp>
 
-bool is_focused(sf::RenderWindow& win)
+bool is_focused(bool in_focus)
 {
-    return win.getSystemHandle() == GetFocus();
+    return in_focus;
 }
 
 std::string make_lower(std::string in)
@@ -369,6 +369,7 @@ int main()
     std::vector<std::string> on_released;
 
     bool running = true;
+    bool focused = true;
 
     while(running)
     {
@@ -397,6 +398,11 @@ int main()
         while(window.pollEvent(event))
         {
             ImGui::SFML::ProcessEvent(event);
+
+            if(event.type == sf::Event::GainedFocus)
+                focused = true;
+            if(event.type == sf::Event::LostFocus)
+                focused = false;
 
             if(event.type == sf::Event::Closed)
             {
@@ -493,7 +499,7 @@ int main()
 
                 if(event.key.code == sf::Keyboard::V)
                 {
-                    if(key.isKeyPressed(sf::Keyboard::LControl) && is_focused(window))
+                    if(key.isKeyPressed(sf::Keyboard::LControl) && is_focused(focused))
                     {
                         std::string add_text = get_clipboard_contents();
 
@@ -703,7 +709,7 @@ int main()
         auto sf_mpos = mouse.getPosition(window);
         vec2f vpos = {sf_mpos.x, sf_mpos.y};
 
-        if(mouse.isButtonPressed(sf::Mouse::Left) && is_focused(window))
+        if(mouse.isButtonPressed(sf::Mouse::Left) && is_focused(focused))
             get_global_copy_handler()->on_hold_lclick(window,  vpos);
 
         if(sd_has_front_read(shared))
@@ -760,15 +766,15 @@ int main()
             //term.auto_handle.found_unprocessed_autocompletes.clear();
         }
 
-        if((term.focused || term.get_id_of_focused_realtime_window() != 1) && key.isKeyPressed(sf::Keyboard::LControl) && ONCE_MACRO(sf::Keyboard::C))
+        if((term.focused || term.get_id_of_focused_realtime_window() != 1) && is_focused(focused) && key.isKeyPressed(sf::Keyboard::LControl) && ONCE_MACRO(sf::Keyboard::C))
         {
             sa_do_terminate_all_scripts(shared);
         }
 
         //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
 
-        term.auto_handle.window_in_focus = is_focused(window);
-        chat_win.auto_handle.window_in_focus = is_focused(window);
+        term.auto_handle.window_in_focus = is_focused(focused);
+        chat_win.auto_handle.window_in_focus = is_focused(focused);
 
         //test_imgui_term.text_history = term.text_history;
 
@@ -784,7 +790,7 @@ int main()
             sa_do_terminate_script(shared, was_closed_id);
         }
 
-        term.auto_handle.tab_pressed = ONCE_MACRO(sf::Keyboard::Tab) && is_focused(window);
+        term.auto_handle.tab_pressed = ONCE_MACRO(sf::Keyboard::Tab) && is_focused(focused);
 
         ///this is a hack to fix the fact that sometimes
         ///click input doesn't make clean click/release pairs
