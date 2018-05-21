@@ -527,13 +527,15 @@ int main()
             }
         }
 
-        if(term.get_id_of_focused_realtime_window() != -1 && to_edit->command.size() > 0)
+        if(term.get_id_of_focused_realtime_window() != -1 && realtime_str.size() > 0)
         {
             sized_view* view = new sized_view[realtime_str.size()];
 
             for(int i=0; i < (int)realtime_str.size(); i++)
             {
                 view[i] = make_view(realtime_str[i]);
+
+                std::cout << realtime_str[i] << std::endl;
             }
 
             ///pipe keys to server
