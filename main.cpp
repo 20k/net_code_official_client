@@ -45,7 +45,7 @@ std::string make_lower(std::string in)
 }
 
 #define DMAP(A) key_map[sf::Keyboard::A] = make_lower((#A));
-#define SMAP(A, S) key_map[sf::Keyboard::A] = make_lower((#S));
+#define SMAP(A, S) key_map[sf::Keyboard::A] = ((#S));
 
 //#define HOST_IP "192.168.0.55"
 #ifdef EXTERN_IP
@@ -364,6 +364,7 @@ int main()
     //double diff_s = 0.f;
 
     editable_string realtime_shim;
+    std::string realtime_str;
 
     bool running = true;
 
@@ -375,6 +376,7 @@ int main()
         }
 
         realtime_shim.clear_command();
+        realtime_str.clear();
 
         editable_string* to_edit = &term.command;
 
@@ -428,6 +430,9 @@ int main()
 
             if(event.type == sf::Event::KeyPressed)
             {
+                if(key_map.find(event.key.code) != key_map.end())
+                    realtime_str += key_map[event.key.code];
+
                 if(event.key.code == sf::Keyboard::BackSpace)
                 {
                     to_edit->process_backspace();
@@ -526,9 +531,8 @@ int main()
         {
             ///pipe keys to server
             ///todo make enter work
-
-            sa_do_send_keystrokes_to_script(shared, term.get_id_of_focused_realtime_window(), make_view(to_edit->command));
-            to_edit->clear_command();
+            sa_do_send_keystrokes_to_script(shared, term.get_id_of_focused_realtime_window(), make_view(realtime_str));
+            realtime_str.clear();
         }
 
         term.scroll_hack.scrolled_this_frame = mouse_delta;
