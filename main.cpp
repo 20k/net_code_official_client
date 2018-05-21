@@ -365,6 +365,8 @@ int main()
 
     editable_string realtime_shim;
     std::vector<std::string> realtime_str;
+    std::vector<std::string> on_pressed;
+    std::vector<std::string> on_released;
 
     bool running = true;
 
@@ -377,6 +379,8 @@ int main()
 
         realtime_shim.clear_command();
         realtime_str.clear();
+        on_pressed.clear();
+        on_released.clear();
 
         editable_string* to_edit = &term.command;
 
@@ -428,10 +432,19 @@ int main()
                 catch(...){}
             }
 
+            if(event.type == sf::Event::KeyReleased)
+            {
+                if(key_map.find(event.key.code) != key_map.end())
+                    on_released.push_back(key_map[event.key.code]);
+            }
+
             if(event.type == sf::Event::KeyPressed)
             {
                 if(key_map.find(event.key.code) != key_map.end())
                     realtime_str.push_back(key_map[event.key.code]);
+
+                if(key_map.find(event.key.code) != key_map.end())
+                    on_pressed.push_back(key_map[event.key.code]);
 
                 if(event.key.code == sf::Keyboard::BackSpace)
                 {
@@ -530,6 +543,8 @@ int main()
         if(term.get_id_of_focused_realtime_window() != -1 && realtime_str.size() > 0)
         {
             sized_view* view = new sized_view[realtime_str.size()];
+            sized_view* pressed_view = new sized_view[on_pressed.size()];
+            sized_view* released_view = new sized_view[on_released.size()];
 
             for(int i=0; i < (int)realtime_str.size(); i++)
             {
@@ -538,12 +553,29 @@ int main()
                 std::cout << realtime_str[i] << std::endl;
             }
 
+            for(int i=0; i < (int)on_pressed.size(); i++)
+            {
+                pressed_view[i] = make_view(on_pressed[i]);
+            }
+
+            for(int i=0; i < (int)on_released.size(); i++)
+            {
+                released_view[i] = make_view(on_released[i]);
+            }
+
             ///pipe keys to server
             ///todo make enter work
-            sa_do_send_keystrokes_to_script(shared, term.get_id_of_focused_realtime_window(), view, realtime_str.size());
+            sa_do_send_keystrokes_to_script(shared, term.get_id_of_focused_realtime_window(),
+                                            view, realtime_str.size(),
+                                            pressed_view, on_pressed.size(),
+                                            released_view, on_released.size());
 
             delete [] view;
+            delete [] pressed_view;
+            delete [] released_view;
             realtime_str.clear();
+            on_pressed.clear();
+            on_released.clear();
         }
 
         term.scroll_hack.scrolled_this_frame = mouse_delta;
