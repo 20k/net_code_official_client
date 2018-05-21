@@ -32,6 +32,8 @@ struct realtime_script_run
     scrollbar_hack scroll_hack;
     bool open = true;
     bool was_open = true;
+
+    vec2f dim = {300, 300};
 };
 
 struct terminal_imgui : serialisable

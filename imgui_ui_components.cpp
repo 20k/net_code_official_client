@@ -482,7 +482,7 @@ void terminal_imgui::render_realtime_windows(int& was_closed_id)
         if(!run.open)
             continue;
 
-        ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiCond_Appearing);
+        ImGui::SetNextWindowSize(ImVec2(run.dim.x(), run.dim.y()), ImGuiCond_Always);
 
         ImGui::Begin((title_str + "###" + str).c_str(), &run.open);
 
@@ -553,7 +553,7 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
 
             realtime_script_windows[info.id].last_message.restart();
 
-            if(!info.should_close)
+            if(!info.should_close && info.msg.num > 0)
                 realtime_script_windows[info.id].parsed_data = string_to_interop_no_autos(c_str_sized_to_cpp(info.msg), false);
 
             if(info.should_close)
@@ -568,6 +568,25 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
                         run.open = false;
                     }
                 }
+            }
+
+            if(info.width != 0 && info.height != 0)
+            {
+                if(info.width < 5)
+                    info.width = 5;
+                if(info.height < 5)
+                    info.height = 5;
+
+                if(info.width > 70)
+                    info.width = 70;
+                if(info.height > 70)
+                    info.height = 70;
+
+                int rwidth = info.width * char_inf::cwidth;
+                int rheight = info.height * char_inf::cheight;
+
+                realtime_script_windows[info.id].dim.x() = rwidth;
+                realtime_script_windows[info.id].dim.y() = rheight;
             }
 
             sa_destroy_realtime_info(info);
