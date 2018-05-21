@@ -364,7 +364,7 @@ int main()
     //double diff_s = 0.f;
 
     editable_string realtime_shim;
-    std::string realtime_str;
+    std::vector<std::string> realtime_str;
 
     bool running = true;
 
@@ -431,7 +431,7 @@ int main()
             if(event.type == sf::Event::KeyPressed)
             {
                 if(key_map.find(event.key.code) != key_map.end())
-                    realtime_str += key_map[event.key.code];
+                    realtime_str.push_back(key_map[event.key.code]);
 
                 if(event.key.code == sf::Keyboard::BackSpace)
                 {
@@ -529,9 +529,18 @@ int main()
 
         if(term.get_id_of_focused_realtime_window() != -1 && to_edit->command.size() > 0)
         {
+            sized_view* view = new sized_view[realtime_str.size()];
+
+            for(int i=0; i < (int)realtime_str.size(); i++)
+            {
+                view[i] = make_view(realtime_str[i]);
+            }
+
             ///pipe keys to server
             ///todo make enter work
-            sa_do_send_keystrokes_to_script(shared, term.get_id_of_focused_realtime_window(), make_view(realtime_str));
+            sa_do_send_keystrokes_to_script(shared, term.get_id_of_focused_realtime_window(), view, realtime_str.size());
+
+            delete [] view;
             realtime_str.clear();
         }
 
