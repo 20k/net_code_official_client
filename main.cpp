@@ -33,7 +33,18 @@ bool is_focused(sf::RenderWindow& win)
     return win.getSystemHandle() == GetFocus();
 }
 
-#define DMAP(A) key_map[sf::Keyboard::A] = tolower((#A)[0]);
+std::string make_lower(std::string in)
+{
+    for(auto& i : in)
+    {
+        if(isalpha(i))
+            i = tolower(i);
+    }
+
+    return in;
+}
+
+#define DMAP(A) key_map[sf::Keyboard::A] = make_lower((#A));
 
 //#define HOST_IP "192.168.0.55"
 #ifdef EXTERN_IP
@@ -244,7 +255,7 @@ int main()
 
     sf::Event event;
 
-    std::map<sf::Keyboard::Key, char> key_map;
+    std::map<sf::Keyboard::Key, std::string> key_map;
 
     DMAP(A);DMAP(B);DMAP(C);
     DMAP(D);DMAP(E);DMAP(F);
