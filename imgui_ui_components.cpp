@@ -552,7 +552,23 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
             realtime_info info = sa_command_realtime_to_info(command_info);
 
             realtime_script_windows[info.id].last_message.restart();
-            realtime_script_windows[info.id].parsed_data = string_to_interop_no_autos(c_str_sized_to_cpp(info.msg), false);
+
+            if(!info.should_close)
+                realtime_script_windows[info.id].parsed_data = string_to_interop_no_autos(c_str_sized_to_cpp(info.msg), false);
+
+            if(info.should_close)
+            {
+                for(auto& i : realtime_script_windows)
+                {
+                    int id = i.first;
+                    realtime_script_run& run = i.second;
+
+                    if(id == info.id)
+                    {
+                        run.open = false;
+                    }
+                }
+            }
 
             sa_destroy_realtime_info(info);
         }
