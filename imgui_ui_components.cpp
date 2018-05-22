@@ -509,7 +509,7 @@ void terminal_imgui::render_realtime_windows(c_shared_data data, int& was_closed
             run.should_send_new_size = true;
         }
 
-        if(run.should_send_new_size && run.last_resize.getElapsedTime().asSeconds() > 1)
+        if(run.should_send_new_size && run.last_resize.getElapsedTime().asSeconds() >= 1)
         {
             sa_do_send_script_info(data, i.first, run.current_dim.x() / char_inf::cheight, run.current_dim.y() / char_inf::cwidth);
 
