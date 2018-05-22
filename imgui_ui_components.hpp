@@ -5,6 +5,7 @@
 #include "colour_interop.hpp"
 #include "editable_string.hpp"
 #include "auto_handlers.hpp"
+#include <libncclient/c_shared_data.h>
 
 struct chat_thread;
 struct chat_window;
@@ -35,6 +36,10 @@ struct realtime_script_run
 
     vec2f dim = {300, 300};
     bool set_size = true;
+
+    vec2i current_dim = {0, 0};
+    bool should_send_new_size = false;
+    sf::Clock last_resize;
 };
 
 struct terminal_imgui : serialisable
@@ -63,7 +68,7 @@ struct terminal_imgui : serialisable
 
     terminal_imgui();
     void render(sf::RenderWindow& win);
-    void render_realtime_windows(int& was_closed_id);
+    void render_realtime_windows(c_shared_data data, int& was_closed_id);
     void bump_command_to_history();
 
     void add_text_from_server(const std::string& in, chat_window& chat_win, bool server_command = true);

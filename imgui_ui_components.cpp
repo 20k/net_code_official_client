@@ -451,7 +451,7 @@ void terminal_imgui::render(sf::RenderWindow& win)
         handle->process_formatted(formatted_text);
 }
 
-void terminal_imgui::render_realtime_windows(int& was_closed_id)
+void terminal_imgui::render_realtime_windows(c_shared_data data, int& was_closed_id)
 {
     was_closed_id = -1;
 
@@ -498,6 +498,24 @@ void terminal_imgui::render_realtime_windows(int& was_closed_id)
 
         if(run.focused && child_focused)
             handle->process_formatted(formatted_text);
+
+        ImVec2 window_size = ImGui::GetWindowSize();
+
+        vec2i last_dim = run.current_dim;
+        run.current_dim = {window_size.x, window_size.y};
+
+        if(run.current_dim.x() != last_dim.x() || run.current_dim.y() != last_dim.y())
+        {
+            run.should_send_new_size = true;
+        }
+
+        if(run.should_send_new_size && run.last_resize.getElapsedTime().asSeconds() > 1)
+        {
+            sa_do_send_script_info(data, i.first, run.current_dim.x() / char_inf::cheight, run.current_dim.y() / char_inf::cwidth);
+
+            run.last_resize.restart();
+            run.should_send_new_size = false;
+        }
 
         ImGui::End();
     }

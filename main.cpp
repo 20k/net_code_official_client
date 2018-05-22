@@ -782,7 +782,7 @@ int main()
 
         //test_imgui_term.render(window);
         term.render(window);
-        term.render_realtime_windows(was_closed_id);
+        term.render_realtime_windows(shared, was_closed_id);
         chat_win.render(window, term.chat_threads);
 
         if(was_closed_id != -1)
