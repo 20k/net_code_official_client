@@ -357,6 +357,9 @@ int main()
 
     sf::Clock imgui_delta;
 
+    sf::Clock mouse_clock;
+    float mouse_send_time_ms = 8;
+
     #ifdef TESTING
     std::vector<std::string> api_calls;
     #endif // TESTING
@@ -370,6 +373,8 @@ int main()
 
     bool running = true;
     bool focused = true;
+
+    double script_mousewheel_delta = 0.;
 
     while(running)
     {
@@ -543,6 +548,7 @@ int main()
             if(event.type == sf::Event::MouseWheelScrolled)
             {
                 mouse_delta += event.mouseWheelScroll.delta;
+                script_mousewheel_delta += event.mouseWheelScroll.delta;
             }
         }
 
@@ -584,6 +590,23 @@ int main()
             realtime_str.clear();
             on_pressed.clear();
             on_released.clear();
+        }
+
+        if(term.get_id_of_focused_realtime_window() != -1 && mouse_clock.getElapsedTime().asMicroseconds() / 1000. >= mouse_send_time_ms)
+        {
+            mouse_clock.restart();
+
+            sf::Mouse mouse;
+
+            auto vmouse = mouse.getPosition(window);
+
+            vec2f mpos = {vmouse.x, vmouse.y};
+
+            mpos = mpos - term.realtime_script_windows[term.get_id_of_focused_realtime_window()].current_pos;
+
+            mpos = mpos / (vec2f){char_inf::cwidth, char_inf::cheight};
+
+            sa_do_update_mouse_to_script(shared, term.get_id_of_focused_realtime_window(), 0.f, script_mousewheel_delta, mpos.x(), mpos.y());
         }
 
         term.scroll_hack.scrolled_this_frame = mouse_delta;

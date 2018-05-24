@@ -37,6 +37,7 @@ struct realtime_script_run
     vec2f dim = {300, 300};
     bool set_size = true;
 
+    vec2f current_pos = {0,0};
     vec2i current_dim = {0, 0};
     bool should_send_new_size = false;
     sf::Clock last_resize;

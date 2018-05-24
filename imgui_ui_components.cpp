@@ -469,7 +469,7 @@ void terminal_imgui::render_realtime_windows(c_shared_data data, int& was_closed
 
         if(run.focused)
         {
-            title_str += " (Capturing Keystrokes)";
+            title_str += " (Capturing Input)";
         }
 
         if(run.was_open && !run.open)
@@ -516,6 +516,10 @@ void terminal_imgui::render_realtime_windows(c_shared_data data, int& was_closed
             run.last_resize.restart();
             run.should_send_new_size = false;
         }
+
+        auto my_pos = ImGui::GetWindowPos();
+
+        run.current_pos = {my_pos.x, my_pos.y};
 
         ImGui::End();
     }
