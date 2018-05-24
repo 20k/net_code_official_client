@@ -513,7 +513,12 @@ void terminal_imgui::render_realtime_windows(c_shared_data data, int& was_closed
 
         if(run.should_send_new_size && run.last_resize.getElapsedTime().asSeconds() >= 1)
         {
-            sa_do_send_script_info(data, i.first, run.current_dim.x() / char_inf::cheight, run.current_dim.y() / char_inf::cwidth);
+            vec2f br_absolute = run.current_pos + (vec2f){run.current_dim.x(), run.current_dim.y()};
+            vec2f relative_dim = br_absolute - run.current_tl_cursor_pos;
+
+            vec2f dim = relative_dim;
+
+            sa_do_send_script_info(data, i.first, (dim.x() / char_inf::cwidth) - 5, dim.y() / char_inf::cheight);
 
             run.last_resize.restart();
             run.should_send_new_size = false;
