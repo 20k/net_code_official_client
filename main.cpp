@@ -602,9 +602,16 @@ int main()
 
             vec2f mpos = {vmouse.x, vmouse.y};
 
-            mpos = mpos - term.realtime_script_windows[term.get_id_of_focused_realtime_window()].current_tl_cursor_pos;
+            realtime_script_run& run = term.realtime_script_windows[term.get_id_of_focused_realtime_window()];
 
-            vec2i dim = term.realtime_script_windows[term.get_id_of_focused_realtime_window()].current_dim;
+            mpos = mpos - run.current_tl_cursor_pos;
+
+            vec2f br_absolute = run.current_pos + (vec2f){run.current_dim.x(), run.current_dim.y()};
+            vec2f relative_dim = br_absolute - run.current_tl_cursor_pos;
+
+            //vec2i dim = run.current_dim;
+
+            vec2f dim = relative_dim;
 
             if(mpos.x() >= 0 && mpos.y() >= 0 && mpos.x() <= dim.x() && mpos.y() <= dim.y())
             {

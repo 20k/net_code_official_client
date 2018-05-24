@@ -39,7 +39,7 @@ struct realtime_script_run
 
     vec2f current_tl_cursor_pos = {0,0};
     vec2f current_pos = {0,0};
-    vec2i current_dim = {0, 0};
+    vec2i current_dim = {0,0};
     bool should_send_new_size = false;
     sf::Clock last_resize;
 };
