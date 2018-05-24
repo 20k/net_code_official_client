@@ -489,6 +489,8 @@ void terminal_imgui::render_realtime_windows(c_shared_data data, int& was_closed
 
         ImGui::Begin((title_str + "###" + str).c_str(), &run.open);
 
+        run.current_tl_cursor_pos = {ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y};
+
         run.focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
         int cpos = -1;

@@ -602,7 +602,7 @@ int main()
 
             vec2f mpos = {vmouse.x, vmouse.y};
 
-            mpos = mpos - term.realtime_script_windows[term.get_id_of_focused_realtime_window()].current_pos;
+            mpos = mpos - term.realtime_script_windows[term.get_id_of_focused_realtime_window()].current_tl_cursor_pos;
 
             mpos = mpos / (vec2f){char_inf::cwidth, char_inf::cheight};
 
