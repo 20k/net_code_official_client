@@ -58,10 +58,12 @@ std::string make_lower(std::string in)
 
 #ifdef EXTERN_IP
 #define HOST_PORT "6760"
+#define HOST_PORT_SSL "6770"
 #endif // EXTERN_IP
 
 #ifdef LOCAL_IP
 #define HOST_PORT "6761"
+#define HOST_PORT_SSL "6771"
 #endif // LOCAL_IP
 
 void update_font_texture_safe()
@@ -213,7 +215,7 @@ int main()
 
     font.loadFromFile("VeraMono.ttf");
 
-    nc_start(shared, HOST_IP, HOST_PORT);
+    nc_start_ssl(shared, HOST_IP, HOST_PORT_SSL);
 
     sf::ContextSettings sett;
     sett.antialiasingLevel = 8;
