@@ -866,7 +866,7 @@ int main()
 
     CoUninitialize();
 
-    //while(shared.termination_count != 3) {}
+    //while(sd_get_termination_count(shared) != 3) {}
 
     return 0;
 }
