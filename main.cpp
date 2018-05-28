@@ -860,13 +860,11 @@ int main()
     swindow.handle_serialise(chat_win, true);
     swindow.save(chat_file);
 
-    sd_set_termination(shared);
+    //sd_set_termination(shared);
 
-    sf::sleep(sf::milliseconds(100));
+    nc_shutdown(shared);
 
     CoUninitialize();
-
-    //while(sd_get_termination_count(shared) != 3) {}
 
     return 0;
 }
