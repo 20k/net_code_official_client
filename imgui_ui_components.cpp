@@ -652,6 +652,11 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
                 tell_msgs.push_back(c_str_sized_to_cpp(chat_info.tells[i].msg));
             }
 
+            for(int i=0; i < chat_info.num_notifs; i++)
+            {
+                text_history.push_back(string_to_interop_no_autos(c_str_sized_to_cpp(chat_info.notifs[i].msg), false));
+            }
+
             sa_destroy_chat_api_info(chat_info);
 
             chat_win.set_side_channels(in_channels);
