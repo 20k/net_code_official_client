@@ -445,6 +445,19 @@ int main()
                 catch(...){}
             }
 
+            if(event.type == sf::Event::MouseButtonPressed)
+            {
+                if(event.mouseButton.button == sf::Mouse::Right)
+                {
+                    std::string add_text = get_clipboard_contents();
+
+                    for(auto& i : add_text)
+                    {
+                        to_edit->add_to_command(i);
+                    }
+                }
+            }
+
             if(event.type == sf::Event::KeyReleased)
             {
                 if(key_map.find(event.key.code) != key_map.end())
