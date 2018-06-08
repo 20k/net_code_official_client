@@ -530,21 +530,6 @@ void tokenise_function_internal(int& pos, data_t dat, token_seq tok, bool insert
 
     discard_whitespace(pos, dat, tok);
 
-    /*if(!array_style)
-    {
-        if(pos < (int)dat.size())
-        {
-            success = expect_key_value(pos, dat, tok, insert_ghosts, lax_value_strictness);
-
-            while(expect_single_char(pos, dat, tok, ',', token::COMMA, false, 0))
-            {
-                discard_whitespace(pos, dat, tok);
-                success = expect_key_value(pos, dat, tok, insert_ghosts, lax_value_strictness);
-            }
-        }
-    }*/
-
-
     if(pos < (int)dat.size())
     {
         if(dat[pos].c == '[')
@@ -573,7 +558,6 @@ void tokenise_function_internal(int& pos, data_t dat, token_seq tok, bool insert
         suppress = true;
     }
 
-    //std::cout << "success " << success << std::endl;
 
     if(!array_style)
     {
