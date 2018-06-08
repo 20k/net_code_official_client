@@ -190,7 +190,7 @@ bool expect_key(int& pos, data_t dat, token_seq tok)
     return true;
 }
 
-bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int ghost_offset, bool lax_value_strictness)
+bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int ghost_offset, bool lax_value_strictness, bool is_arrs = true)
 {
     if(!in_bound(pos, dat))
         return false;
@@ -202,9 +202,16 @@ bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int g
         is_string = true;
     }
 
+    bool is_arr = false;
+
+    if(dat[pos].c == '[')
+        is_arr = true;
+
     std::optional<int> found;
 
     token::token_subtype subtype = token::NONE;
+
+    int start_pos = pos;
 
     if(is_string)
     {
@@ -219,7 +226,7 @@ bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int g
         }
         else
         {
-            if(insert_ghosts)
+            //if(insert_ghosts)
             {
                 ///if lax value strictness
                 ///and insert ghosts
@@ -235,20 +242,42 @@ bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int g
                     int len = dat.size();
 
                     ///input ends with })
-                    if(dat[len-1].c == ')' && dat[len-2].c == '}')
+                    if((dat[len-1].c == ')' && dat[len-2].c == '}') || (dat[len-1].c == ')' && dat[len-2].c == ']'))
                     {
                         *test = len-2;
                     }
                 }
 
-                if(test.has_value())
+                if(insert_ghosts && test.has_value())
                 {
                     auto token = make_ghost_token(*test + ghost_offset, token::QUOTE, std::string(1, start_c));
 
                     tok.push_back(token);
                 }
+
+                found = test;
             }
+
+            //found = expect_until(pos+1, dat, {}, (expect_until_modes)(expect_until_do_eof | expect_until_is_not_name));
         }
+    }
+    else if(is_arr && expect_single_char(pos, dat, tok, '[', token::OPEN_SQUARE, false, 0))
+    {
+        discard_whitespace(pos, dat, tok);
+        expect_value(pos, dat, tok, insert_ghosts, ghost_offset, lax_value_strictness);
+
+        while(expect_single_char(pos, dat, tok, ',', token::COMMA, false, 0))
+        {
+            discard_whitespace(pos, dat, tok);
+            expect_value(pos, dat, tok, insert_ghosts, ghost_offset, lax_value_strictness);
+        }
+
+        discard_whitespace(pos, dat, tok);
+        expect_single_char(pos, dat, tok, ']', token::CLOSE_SQUARE, insert_ghosts, ghost_offset);
+
+        found = pos;
+
+        pos = start_pos;
     }
     else
     {
@@ -258,7 +287,7 @@ bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int g
         if(!lax_value_strictness)
             found = expect_until(pos, dat, {}, (expect_until_modes)(expect_until_do_eof | expect_until_is_not_name));
         else
-            found = expect_until(pos, dat, {')', '}', ';', ':', ',', ' '}, expect_until_do_eof);
+            found = expect_until(pos, dat, {')', '}', ';', ':', ',', ' ', ']'}, expect_until_do_eof);
 
         ///validate number properly
         if(found.has_value())
@@ -481,32 +510,81 @@ void tokenise_function_internal(int& pos, data_t dat, token_seq tok, bool insert
     bool opening_paren = expect_single_char(pos, dat, tok, '(', token::OPEN_PAREN, insert_ghosts, 0);
     discard_whitespace(pos, dat, tok);
 
-    bool opening_bracket = expect_single_char(pos, dat, tok, '{', token::OPEN_CURLEY, insert_ghosts, 0);
-    discard_whitespace(pos, dat, tok);
+    //bool array_style = expect_single_char(pos, dat, tok, '[', token::OPEN_SQUARE, false, 0);
+    //discard_whitespace(pos, dat, tok);
 
-    bool success = true;
+    bool array_style = false;
 
     if(pos < (int)dat.size())
     {
-        success = expect_key_value(pos, dat, tok, insert_ghosts, lax_value_strictness);
+        array_style = dat[pos].c == '[';
+    }
+
+    bool success = true;
+    bool opening_bracket = false;
+
+    if(!array_style)
+    {
+        opening_bracket = expect_single_char(pos, dat, tok, '{', token::OPEN_CURLEY, insert_ghosts, 0);
+    }
+
+    discard_whitespace(pos, dat, tok);
+
+    /*if(!array_style)
+    {
+        if(pos < (int)dat.size())
+        {
+            success = expect_key_value(pos, dat, tok, insert_ghosts, lax_value_strictness);
+
+            while(expect_single_char(pos, dat, tok, ',', token::COMMA, false, 0))
+            {
+                discard_whitespace(pos, dat, tok);
+                success = expect_key_value(pos, dat, tok, insert_ghosts, lax_value_strictness);
+            }
+        }
+    }*/
+
+
+    if(pos < (int)dat.size())
+    {
+        if(dat[pos].c == '[')
+            success = expect_value(pos, dat, tok, insert_ghosts, 0, lax_value_strictness);
+        else
+            success = expect_key_value(pos, dat, tok, insert_ghosts, lax_value_strictness);
 
         while(expect_single_char(pos, dat, tok, ',', token::COMMA, false, 0))
         {
             discard_whitespace(pos, dat, tok);
-            success = expect_key_value(pos, dat, tok, insert_ghosts, lax_value_strictness);
+
+            if(pos < (int)dat.size())
+            {
+                if(dat[pos].c == '[')
+                    success = expect_value(pos, dat, tok, insert_ghosts, 0, lax_value_strictness);
+                else
+                    success = expect_key_value(pos, dat, tok, insert_ghosts, lax_value_strictness);
+            }
         }
     }
 
     bool suppress = false;
 
-    if(tok.size() > 0 && tok.back().ghost && (tok.back().type != token::OPEN_PAREN && tok.back().type != token::OPEN_CURLEY))
+    if(tok.size() > 0 && tok.back().ghost && (tok.back().type != token::OPEN_PAREN && tok.back().type != token::OPEN_CURLEY && tok.back().type != token::OPEN_SQUARE))
     {
         suppress = true;
     }
 
     //std::cout << "success " << success << std::endl;
 
-    expect_single_char(pos, dat, tok, '}', token::CLOSE_CURLEY, (success || opening_bracket) && !suppress, 0);
+    if(!array_style)
+    {
+        expect_single_char(pos, dat, tok, '}', token::CLOSE_CURLEY, (success || opening_bracket) && !suppress, 0);
+    }
+    else
+    {
+        //if(!success)
+        //    expect_single_char(pos, dat, tok, ']', token::CLOSE_SQUARE, !suppress, 0);
+    }
+
     discard_whitespace(pos, dat, tok);
 
     expect_single_char(pos, dat, tok, ')', token::CLOSE_PAREN, (success || opening_paren) && !suppress, 0);
