@@ -561,7 +561,7 @@ void tokenise_function_internal(int& pos, data_t dat, token_seq tok, bool insert
 
     if(!array_style)
     {
-        expect_single_char(pos, dat, tok, '}', token::CLOSE_CURLEY, (success || opening_bracket) && !suppress, 0);
+        expect_single_char(pos, dat, tok, '}', token::CLOSE_CURLEY, (success || opening_bracket || true) && !suppress, 0);
     }
     else
     {
