@@ -383,6 +383,7 @@ int main()
         if(font_select.update_rebuild())
         {
             update_font_texture_safe();
+            term.cache.invalidate();
         }
 
         realtime_shim.clear_command();
@@ -842,7 +843,7 @@ int main()
             sa_do_terminate_all_scripts(shared);
         }
 
-        //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
+        std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
 
         term.auto_handle.window_in_focus = is_focused(focused);
         chat_win.auto_handle.window_in_focus = is_focused(focused);
