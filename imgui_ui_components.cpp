@@ -387,6 +387,8 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
     if(scroll_hack.scrolling)
     {
         scroll_hack.scrolled = (1.f - scroll_hack.output_scroll_frac) * (cache.get_lines() + 1.f);
+
+        cache.invalidate();
     }
 
     return text_area_focused;

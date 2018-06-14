@@ -862,6 +862,9 @@ int main()
             sa_do_terminate_script(shared, was_closed_id);
         }
 
+        if(term.auto_handle.tab_pressed)
+            term.invalidate();
+
         term.auto_handle.tab_pressed = ONCE_MACRO(sf::Keyboard::Tab) && is_focused(focused);
 
         if(term.auto_handle.tab_pressed)
