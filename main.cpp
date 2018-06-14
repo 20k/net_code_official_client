@@ -383,7 +383,7 @@ int main()
         if(font_select.update_rebuild())
         {
             update_font_texture_safe();
-            term.cache.invalidate();
+            term.invalidate();
         }
 
         realtime_shim.clear_command();
