@@ -631,6 +631,9 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
                 history.push_back(string_to_interop_no_autos(c_str_sized_to_cpp(chat_info.notifs[i].msg), false));
             }
 
+            if(chat_info.num_tells > 0 || chat_info.num_notifs > 0 || chat_info.num_msgs > 0)
+                invalidate();
+
             sa_destroy_chat_api_info(chat_info);
 
             chat_win.set_side_channels(in_channels);
@@ -649,8 +652,6 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
 
             limit_size(history, MAX_TEXT_HISTORY);
             de_newline(history);
-
-            invalidate();
         }
         else if(command_info.type == server_command_server_scriptargs)
         {
