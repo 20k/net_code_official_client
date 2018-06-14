@@ -60,7 +60,7 @@ void format_cache::ensure_built(vec2f current, vec2f start, vec2f wrap_dim, cons
         it->erase(std::remove_if(it->begin(), it->end(),
                                  [&](const formatted_char& chr)
                                  {
-                                     return chr.render_pos.y() < -char_inf::cheight || chr.render_pos.y() >= start.y() + height;
+                                     return chr.render_pos.y() < start.y() + -char_inf::cheight || chr.render_pos.y() >= start.y() + height;
                                  }), it->end());
     }
 
