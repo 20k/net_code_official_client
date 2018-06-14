@@ -53,21 +53,15 @@ void format_cache::ensure_built(vec2f current, vec2f start, vec2f wrap_dim, cons
 
     internally_format(cache, {start.x(), start.y() + ImGui::GetWindowHeight()}, 0*scroll_hack.scrolled * char_inf::cheight, terminating_y);
 
+    int height = ImGui::GetWindowHeight();
+
     for(auto it = cache.begin(); it != cache.end(); it++)
     {
-        for(auto char_it = it->begin(); char_it != it->end(); )
-        {
-            vec2f pos = char_it->render_pos;
-
-            if(pos.y() < -char_inf::cheight || pos.y() >= start.y() + ImGui::GetWindowHeight())
-            {
-                char_it = it->erase(char_it);
-            }
-            else
-            {
-                char_it++;
-            }
-        }
+        it->erase(std::remove_if(it->begin(), it->end(),
+                                 [&](const formatted_char& chr)
+                                 {
+                                     return chr.render_pos.y() < -char_inf::cheight || chr.render_pos.y() >= start.y() + height;
+                                 }), it->end());
     }
 
     valid_cache = true;
