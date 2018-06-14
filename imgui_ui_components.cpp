@@ -57,7 +57,7 @@ void terminal_imgui::do_serialise(serialise& s, bool ser)
         auto_handle.is_valid.clear();
     }
 
-    s.handle_serialise(text_history, ser);
+    s.handle_serialise(history, ser);
     s.handle_serialise(chat_threads, ser);
     s.handle_serialise(command, ser);
     s.handle_serialise_no_clear(auto_handle, ser);
@@ -67,7 +67,7 @@ void terminal_imgui::do_serialise(serialise& s, bool ser)
 
 void terminal_imgui::clear_terminal()
 {
-    text_history.clear();
+    history.clear();
 }
 
 void terminal_imgui::clear_chat()
@@ -297,7 +297,7 @@ void imgui_render_str(const std::vector<formatted_char>& text, std::vector<std::
     }
 }
 
-bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, std::vector<std::vector<formatted_char>>& formatted_text, float extra_shrink = 0)
+bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, format_cache& cache, float extra_shrink = 0)
 {
     float overall_width = ImGui::GetWindowWidth();
 
@@ -319,14 +319,14 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     int vertical_columns = ceil((float)wrap_dim.y / char_inf::cheight);
 
-    int min_start = (int)text_history.size() - vertical_columns;
+    /*int min_start = (int)text_history.size() - vertical_columns;
 
     min_start = min_start - scroll_hack.scrolled;
 
     if(min_start < 0)
-        min_start = 0;
+        min_start = 0;*/
 
-    std::vector<std::vector<formatted_char>> formatted;
+    //std::vector<std::vector<formatted_char>> formatted;
 
     auto all_interop = text_history;
 
@@ -362,55 +362,15 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     all_interop.push_back(icommand);
 
+    cache.ensure_built(current, {start.x, start.y}, {wrap_dim.x, wrap_dim.y}, all_interop, scroll_hack, vertical_columns);
+
     //int max_lines = vertical_columns;
 
-    int last_lines = 0;
-    int total_lines = 0;
+    cache.out.clear();
 
-    int current_line = 0;
-
-    for(auto& i : all_interop)
+    for(auto& i : cache.cache)
     {
-        int found_line = 0;
-        int empty_last = 0;
-
-        get_height(i, current, {start.x, start.y}, {wrap_dim.x, wrap_dim.y}, found_line, empty_last);
-
-        total_lines += found_line;
-    }
-
-    float inverse_scroll_start = total_lines + 0 - scroll_hack.scrolled;
-
-    //float terminating_line = inverse_scroll_start;
-    float terminating_y = inverse_scroll_start * char_inf::cheight + start.y;
-
-    for(int i=0; i < (int)all_interop.size(); i++)
-    {
-        int found_lines = 0;
-
-        get_height(all_interop[i], current, {start.x, start.y}, {wrap_dim.x, wrap_dim.y}, found_lines, last_lines);
-
-        int min_bound = inverse_scroll_start - vertical_columns;
-        int max_bound = inverse_scroll_start;
-
-        if(current_line + found_lines >= min_bound && current_line < max_bound)
-        {
-            auto current_interop = format_characters(all_interop[i], current, {start.x, start.y}, (vec2f){wrap_dim.x, wrap_dim.y}, found_lines, last_lines);
-
-            formatted.push_back(current_interop);
-        }
-
-        current.y() += found_lines * char_inf::cheight;
-
-        last_lines = found_lines;
-        current_line += found_lines;
-    }
-
-    internally_format(formatted, {start.x, start.y + ImGui::GetWindowHeight()}, 0*scroll_hack.scrolled * char_inf::cheight, terminating_y);
-
-    for(auto& i : formatted)
-    {
-        imgui_render_str(i, formatted_text, ImGui::GetWindowWidth());
+        imgui_render_str(i, cache.out, ImGui::GetWindowWidth());
     }
 
     bool text_area_focused = ImGui::IsWindowFocused();
@@ -420,11 +380,11 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
     ImGui::SameLine(0.f, 0.f);
 
     ///rough
-    scroll_hack.do_hack(total_lines, true);
+    scroll_hack.do_hack(cache.get_lines(), true);
 
     if(scroll_hack.scrolling)
     {
-        scroll_hack.scrolled = (1.f - scroll_hack.output_scroll_frac) * (total_lines + 1.f);
+        scroll_hack.scrolled = (1.f - scroll_hack.output_scroll_frac) * (cache.get_lines() + 1.f);
     }
 
     return text_area_focused;
@@ -434,8 +394,6 @@ void terminal_imgui::render(sf::RenderWindow& win)
 {
     copy_handler* handle = get_global_copy_handler();
 
-    std::vector<std::vector<formatted_char>> formatted_text;
-
     ImGui::SetNextWindowPos(ImVec2(0,0));
     ImGui::SetNextWindowSize(ImVec2(win.getSize().x, win.getSize().y));
 
@@ -443,12 +401,12 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
     focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
-    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, text_history, auto_handle, formatted_text);
+    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache);
 
     ImGui::End();
 
     if(focused && child_focused)
-        handle->process_formatted(formatted_text);
+        handle->process_formatted(cache.out);
 }
 
 void terminal_imgui::render_realtime_windows(c_shared_data data, int& was_closed_id)
@@ -460,8 +418,6 @@ void terminal_imgui::render_realtime_windows(c_shared_data data, int& was_closed
     for(auto& i : realtime_script_windows)
     {
         realtime_script_run& run = i.second;
-
-        std::vector<std::vector<formatted_char>> formatted_text;
 
         std::string str = std::to_string(i.first);
 
@@ -496,10 +452,12 @@ void terminal_imgui::render_realtime_windows(c_shared_data data, int& was_closed
         int cpos = -1;
         std::string cmd = " ";
 
-        bool child_focused = render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, formatted_text);
+        run.cache.invalidate();
+
+        bool child_focused = render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, run.cache);
 
         if(run.focused && child_focused)
-            handle->process_formatted(formatted_text);
+            handle->process_formatted(run.cache.out);
 
         ImVec2 window_size = ImGui::GetWindowSize();
 
@@ -543,15 +501,25 @@ int terminal_imgui::get_id_of_focused_realtime_window()
     return -1;
 }
 
+void terminal_imgui::invalidate()
+{
+    cache.invalidate();
+
+    for(auto& i : chat_threads)
+    {
+        i.second.cache.invalidate();
+    }
+}
+
 #define MAX_TEXT_HISTORY 200
 
 void terminal_imgui::bump_command_to_history()
 {
-    text_history.push_back(string_to_interop(command.command, true, auto_handle));
+    history.push_back(string_to_interop(command.command, true, auto_handle));
     command.clear_command();
 
-    limit_size(text_history, MAX_TEXT_HISTORY);
-    de_newline(text_history);
+    limit_size(history, MAX_TEXT_HISTORY);
+    de_newline(history);
 }
 
 void terminal_imgui::add_text_from_server(const std::string& in, chat_window& chat_win, bool server_command)
@@ -576,6 +544,8 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
         if(command_info.type == server_command_command)
         {
             str = c_str_consume(sa_command_to_human_readable(command_info));
+
+            invalidate();
 
             push = true;
         }
@@ -654,7 +624,7 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
 
             for(int i=0; i < chat_info.num_notifs; i++)
             {
-                text_history.push_back(string_to_interop_no_autos(c_str_sized_to_cpp(chat_info.notifs[i].msg), false));
+                history.push_back(string_to_interop_no_autos(c_str_sized_to_cpp(chat_info.notifs[i].msg), false));
             }
 
             sa_destroy_chat_api_info(chat_info);
@@ -663,18 +633,20 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
 
             for(int i=0; i < (int)chnls.size(); i++)
             {
-                text_history.push_back(string_to_interop(msgs[i] + "\n", false, chat_win.auto_handle));
+                history.push_back(string_to_interop(msgs[i] + "\n", false, chat_win.auto_handle));
 
-                chat_threads[chnls[i]].chats.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
+                chat_threads[chnls[i]].history.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
             }
 
             for(auto& i : tell_msgs)
             {
-                text_history.push_back(string_to_interop_no_autos(i + "\n", false));
+                history.push_back(string_to_interop_no_autos(i + "\n", false));
             }
 
-            limit_size(text_history, MAX_TEXT_HISTORY);
-            de_newline(text_history);
+            limit_size(history, MAX_TEXT_HISTORY);
+            de_newline(history);
+
+            invalidate();
         }
         else if(command_info.type == server_command_server_scriptargs)
         {
@@ -732,16 +704,20 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
     else
     {
         push = true;
+
+        invalidate();
     }
 
     if(push)
     {
-        text_history.push_back(string_to_interop(str, false, auto_handle));
+        history.push_back(string_to_interop(str, false, auto_handle));
 
-        limit_size(text_history, MAX_TEXT_HISTORY);
+        limit_size(history, MAX_TEXT_HISTORY);
         consider_resetting_scrollbar = true;
 
-        de_newline(text_history);
+        de_newline(history);
+
+        invalidate();
     }
 
     sa_destroy_server_command_info(command_info);
@@ -749,7 +725,7 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
 
 void chat_thread::do_serialise(serialise& s, bool ser)
 {
-    s.handle_serialise(chats, ser);
+    s.handle_serialise(history, ser);
 }
 
 void chat_window::do_serialise(serialise& s, bool ser)
@@ -778,8 +754,6 @@ void chat_window::tick()
 void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads)
 {
     copy_handler* handle = get_global_copy_handler();
-
-    std::vector<std::vector<formatted_char>> formatted;
 
     chat_thread& thread = threads[selected];
 
@@ -811,12 +785,12 @@ void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_threa
 
     ImGui::SameLine(0, 0);
 
-    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.chats, auto_handle, formatted, 80);
+    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.history, auto_handle, thread.cache, 80);
 
     ImGui::End();
 
     if(focused && child_focused)
-        handle->process_formatted(formatted);
+        handle->process_formatted(thread.cache.out);
 }
 
 void chat_window::set_side_channels(const std::vector<std::string>& sides)

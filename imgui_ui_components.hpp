@@ -6,6 +6,7 @@
 #include "editable_string.hpp"
 #include "auto_handlers.hpp"
 #include <libncclient/c_shared_data.h>
+#include "format_cache.hpp"
 
 struct chat_thread;
 struct chat_window;
@@ -42,12 +43,13 @@ struct realtime_script_run
     vec2i current_dim = {0,0};
     bool should_send_new_size = false;
     sf::Clock last_resize;
+
+    format_cache cache;
 };
 
-struct terminal_imgui : serialisable
+struct terminal_imgui : serialisable, cacheable
 {
     scrollbar_hack scroll_hack;
-    std::vector<interop_vec_t> text_history;
 
     std::map<std::string, chat_thread> chat_threads;
 
@@ -77,12 +79,12 @@ struct terminal_imgui : serialisable
 
     ///returns -1 on none
     int get_id_of_focused_realtime_window();
+
+    void invalidate();
 };
 
-struct chat_thread : serialisable
+struct chat_thread : serialisable, cacheable
 {
-    std::vector<interop_vec_t> chats;
-
     virtual void do_serialise(serialise& s, bool ser);
 };
 
@@ -129,6 +131,8 @@ struct chat_window : serialisable
     void render_side_attachment(sf::RenderWindow& win);
 
     void set_side_channels(const std::vector<std::string>& sides);
+
+    void invalidate();
 };
 
 #endif // IMGUI_UI_COMPONENTS_HPP_INCLUDED

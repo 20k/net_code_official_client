@@ -423,6 +423,8 @@ int main()
                     if(event.text.unicode >= 32 && event.text.unicode <= 126)
                     {
                         to_edit->add_to_command(event.text.unicode);
+
+                        term.invalidate();
                     }
                 }
             }
@@ -431,6 +433,8 @@ int main()
             {
                 window.setSize({event.size.width, event.size.height});
                 window.setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));
+
+                term.invalidate();
 
                 try
                 {
@@ -455,6 +459,8 @@ int main()
                     {
                         to_edit->add_to_command(i);
                     }
+
+                    term.invalidate();
                 }
             }
 
@@ -471,6 +477,8 @@ int main()
 
                 if(key_map.find(event.key.code) != key_map.end())
                     on_pressed.push_back(key_map[event.key.code]);
+
+                term.invalidate();
 
                 if(event.key.code == sf::Keyboard::BackSpace)
                 {
@@ -548,6 +556,8 @@ int main()
             {
                 if(event.mouseButton.button == sf::Mouse::Left)
                 {
+                    term.invalidate();
+
                     get_global_copy_handler()->on_lclick({event.mouseButton.x, event.mouseButton.y});
                 }
             }
@@ -556,12 +566,16 @@ int main()
             {
                 if(event.mouseButton.button == sf::Mouse::Left)
                 {
+                    term.invalidate();
+
                     get_global_copy_handler()->on_lclick_release({event.mouseButton.x, event.mouseButton.y});
                 }
             }
 
             if(event.type == sf::Event::MouseWheelScrolled)
             {
+                term.invalidate();
+
                 mouse_delta += event.mouseWheelScroll.delta;
                 script_mousewheel_delta += event.mouseWheelScroll.delta;
             }
@@ -657,6 +671,8 @@ int main()
 
         if(enter)
         {
+            term.invalidate();
+
             //term.add_to_command('\n');
 
             if(term.focused)
@@ -846,6 +862,9 @@ int main()
         }
 
         term.auto_handle.tab_pressed = ONCE_MACRO(sf::Keyboard::Tab) && is_focused(focused);
+
+        if(term.auto_handle.tab_pressed)
+            term.invalidate();
 
         ///this is a hack to fix the fact that sometimes
         ///click input doesn't make clean click/release pairs
