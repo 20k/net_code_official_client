@@ -309,60 +309,62 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
         scroll_hack.scrolled_this_frame = 0.f;
     }
 
-    auto wrap_dim = ImGui::GetWindowSize();
-    auto start = ImGui::GetWindowPos();
-
-    wrap_dim.x += start.x;
-    wrap_dim.y += start.y;
-
-    vec2f current = {start.x, start.y};
-
-    int vertical_columns = ceil((float)wrap_dim.y / char_inf::cheight);
-
-    /*int min_start = (int)text_history.size() - vertical_columns;
-
-    min_start = min_start - scroll_hack.scrolled;
-
-    if(min_start < 0)
-        min_start = 0;*/
-
-    //std::vector<std::vector<formatted_char>> formatted;
-
-    auto all_interop = text_history;
-
-    std::string render_command = command;
-    bool specials = true;
-
-    if(render_command == "")
+    if(!cache.valid())
     {
-        render_command = "`bType something here...`";
-        specials = false;
+        auto wrap_dim = ImGui::GetWindowSize();
+        auto start = ImGui::GetWindowPos();
+
+        wrap_dim.x += start.x;
+        wrap_dim.y += start.y;
+
+        vec2f current = {start.x, start.y};
+
+        int vertical_columns = ceil((float)wrap_dim.y / char_inf::cheight);
+
+        /*int min_start = (int)text_history.size() - vertical_columns;
+
+        min_start = min_start - scroll_hack.scrolled;
+
+        if(min_start < 0)
+            min_start = 0;*/
+
+        //std::vector<std::vector<formatted_char>> formatted;
+
+        auto all_interop = text_history;
+
+        std::string render_command = command;
+        bool specials = true;
+
+        if(render_command == "")
+        {
+            render_command = "`bType something here...`";
+            specials = false;
+        }
+
+        auto icommand = string_to_interop(render_command, specials, auto_handle, false);
+
+        int cursor_offset = 0;
+
+        auto_handle.handle_autocompletes(icommand, cursor_pos_idx, cursor_offset, command);
+
+        interop_char curs;
+        curs.col = {255, 255, 255};
+        curs.c = '|';
+        curs.is_cursor = true;
+
+        int curs_cur = cursor_pos_idx + cursor_offset;
+
+        if(ImGui::IsWindowFocused())
+        {
+            if(curs_cur >= (int)icommand.size())
+                icommand.push_back(curs);
+            else if(curs_cur >= 0 && curs_cur < (int)icommand.size())
+                icommand.insert(icommand.begin() + curs_cur, curs);
+        }
+
+        all_interop.push_back(icommand);
+        cache.ensure_built(current, {start.x, start.y}, {wrap_dim.x, wrap_dim.y}, all_interop, scroll_hack, vertical_columns);
     }
-
-    auto icommand = string_to_interop(render_command, specials, auto_handle, false);
-
-    int cursor_offset = 0;
-
-    auto_handle.handle_autocompletes(icommand, cursor_pos_idx, cursor_offset, command);
-
-    interop_char curs;
-    curs.col = {255, 255, 255};
-    curs.c = '|';
-    curs.is_cursor = true;
-
-    int curs_cur = cursor_pos_idx + cursor_offset;
-
-    if(ImGui::IsWindowFocused())
-    {
-        if(curs_cur >= (int)icommand.size())
-            icommand.push_back(curs);
-        else if(curs_cur >= 0 && curs_cur < (int)icommand.size())
-            icommand.insert(icommand.begin() + curs_cur, curs);
-    }
-
-    all_interop.push_back(icommand);
-
-    cache.ensure_built(current, {start.x, start.y}, {wrap_dim.x, wrap_dim.y}, all_interop, scroll_hack, vertical_columns);
 
     //int max_lines = vertical_columns;
 

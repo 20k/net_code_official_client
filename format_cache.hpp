@@ -29,6 +29,11 @@ struct format_cache
     {
         return total_lines;
     }
+
+    bool valid()
+    {
+        return valid_cache;
+    }
 };
 
 struct cacheable
