@@ -8,6 +8,8 @@ struct scrollbar_hack;
 
 struct format_cache
 {
+    vec2f last_pos = {0,0};
+
     int total_lines = 0;
     bool valid_cache = false;
     std::vector<std::vector<formatted_char>> cache;

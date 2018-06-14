@@ -303,6 +303,13 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     ImGui::BeginChild("left_sub", ImVec2(overall_width - 40 - extra_shrink, 0.f), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove);
 
+    auto cpos = ImGui::GetWindowPos();
+
+    if(cpos.x != cache.last_pos.x() || cpos.y != cache.last_pos.y())
+        cache.invalidate();
+
+    cache.last_pos = {cpos.x, cpos.y};
+
     if(ImGui::IsWindowHovered() && scroll_hack.scrolled_this_frame != 0)
     {
         scroll_hack.scrolled += scroll_hack.scrolled_this_frame;
