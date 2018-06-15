@@ -58,12 +58,12 @@ std::string make_lower(std::string in)
 
 #ifdef EXTERN_IP
 #define HOST_PORT "6760"
-#define HOST_PORT_SSL "6770"
+#define HOST_PORT_SSL "6780"
 #endif // EXTERN_IP
 
 #ifdef LOCAL_IP
 #define HOST_PORT "6761"
-#define HOST_PORT_SSL "6771"
+#define HOST_PORT_SSL "6781"
 #endif // LOCAL_IP
 
 void update_font_texture_safe()
