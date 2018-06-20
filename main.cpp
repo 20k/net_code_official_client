@@ -235,6 +235,10 @@ int main()
     //ImGuiFreeType::BuildFontAtlas(io.Fonts, 0);
     //ImGui::SFML::UpdateFontTexture();
 
+    //ImVec4 vec = ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive);
+    //ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0,0,0,0));
+    //printf("%f %f %f %f\n", vec.x, vec.y, vec.z, vec.w);
+
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(30/255.f, 30/255.f, 30/255.f, 255/255.f));
 
     ImGuiStyle& style = ImGui::GetStyle();
