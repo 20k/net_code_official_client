@@ -33,7 +33,13 @@ enum expect_until_modes
     expect_until_do_eof = 1,
     expect_until_do_escape = 2,
     expect_until_is_not_name = 4,
+    expect_until_allow_numeric_operators_in_name = 8,
 };
+
+bool is_numeric_operator(char c)
+{
+    return c == '-' || c == '+';
+}
 
 std::optional<int> expect_until(int pos, data_t dat, const std::vector<char>& c, expect_until_modes mode = expect_until_do_none)
 {
@@ -57,10 +63,17 @@ std::optional<int> expect_until(int pos, data_t dat, const std::vector<char>& c,
 
         if((mode & expect_until_is_not_name) > 0)
         {
-            if(i == pos && !is_valid_name_character(dat[i].c, true))
+            bool valid_operator = false;
+
+            if((mode & expect_until_allow_numeric_operators_in_name) > 0)
+            {
+                valid_operator = is_numeric_operator(dat[i].c);
+            }
+
+            if(i == pos && (!is_valid_name_character(dat[i].c, true) && !valid_operator))
                 return std::nullopt;
 
-            if(i != pos && !is_valid_name_character(dat[i].c, true))
+            if(i != pos && (!is_valid_name_character(dat[i].c, true) && !valid_operator))
             {
                 return i;
             }
@@ -285,7 +298,7 @@ bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int g
         //found = expect_until(pos, dat, {')', '}', ';', ':', ',', ' '}, expect_until_do_eof);
 
         if(!lax_value_strictness)
-            found = expect_until(pos, dat, {}, (expect_until_modes)(expect_until_do_eof | expect_until_is_not_name));
+            found = expect_until(pos, dat, {}, (expect_until_modes)(expect_until_do_eof | expect_until_is_not_name | expect_until_allow_numeric_operators_in_name));
         else
             found = expect_until(pos, dat, {')', '}', ';', ':', ',', ' ', ']'}, expect_until_do_eof);
 
@@ -298,7 +311,7 @@ bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int g
 
             for(int i=pos; i < *found; i++)
             {
-                if(!isdigit(dat[i].c))
+                if(!isdigit(dat[i].c) && dat[i].c != '-' && dat[i].c != '+')
                 {
                     all_numeric = false;
                     break;
@@ -667,6 +680,7 @@ std::string tokens_to_full_script(const std::vector<token_info>& tokens)
 
 void token_tests()
 {
+    #ifdef T0
     std::cout << "token testing\n";
 
     std::string base_str = "#scripts.core({user:\"hello\", doot:\"doot\",asdf:93});";
@@ -713,6 +727,22 @@ void token_tests()
             printf("success at %i %i %i %s\n", i, tokens[i].type, expected[i], tokens[i].str.c_str());
         }
     }
+    #endif // T0
+
+    #define T1
+    #ifdef T1
+    std::string base_str = "#scripts.core({user:\"hello\", doot:\"doot\",asdf:93, NID:-1, asdf:\"hi\"});";
+
+    std::vector<interop_char> chars = build_from_colour_string(base_str, false);
+
+    std::vector<token_info> tokens = tokenise_function(chars, true);
+
+    for(int i=0; i < (int)tokens.size(); i++)
+    {
+        printf("success at %i %i %s\n", i, tokens[i].type, tokens[i].str.c_str());
+    }
+
+    #endif // T1
 
     return;
 }
