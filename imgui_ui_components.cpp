@@ -785,9 +785,20 @@ void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_threa
 
     ImGui::BeginChild("left_selector", ImVec2(80, 0));
 
+    int max_width = 60;
+
     for(auto& i : side_buttons)
     {
-        if(ImGui::Button(i.c_str(), ImVec2(60, 0)))
+        int width = ImGui::CalcTextSize(i.c_str()).x;
+
+        max_width = std::max(width, max_width);
+    }
+
+    max_width += ImGui::GetStyle().ItemInnerSpacing.x * 2;
+
+    for(auto& i : side_buttons)
+    {
+        if(ImGui::Button(i.c_str(), ImVec2(max_width, 0)))
         {
             selected = i;
         }
