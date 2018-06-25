@@ -128,8 +128,6 @@ struct chat_window : serialisable
 
     void render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads);
 
-    void render_side_attachment(sf::RenderWindow& win);
-
     void set_side_channels(const std::vector<std::string>& sides);
 
     void invalidate();
