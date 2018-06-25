@@ -680,6 +680,7 @@ std::string tokens_to_full_script(const std::vector<token_info>& tokens)
 
 void token_tests()
 {
+    #define T0
     #ifdef T0
     std::cout << "token testing\n";
 
@@ -729,7 +730,7 @@ void token_tests()
     }
     #endif // T0
 
-    #define T1
+    //#define T1
     #ifdef T1
     std::string base_str = "#scripts.core({user:\"hello\", doot:\"doot\",asdf:93, NID:-1, asdf:\"hi\"});";
 
