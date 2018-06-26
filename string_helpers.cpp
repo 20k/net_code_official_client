@@ -8,10 +8,10 @@ interop_vec_t string_to_interop(const std::string& str, bool render_specials, au
 {
     interop_vec_t chars = build_from_colour_string(str, render_specials);
 
-    while(chars.size() > 0 && chars.back().c == '\n')
+    /*while(chars.size() > 0 && chars.back().c == '\n')
     {
         chars.pop_back();
-    }
+    }*/
 
     if(str.size() < 2000)
         auto_handle.auto_colour(chars, false, parse_for_autocompletes);
@@ -25,10 +25,10 @@ interop_vec_t string_to_interop_no_autos(const std::string& str, bool render_spe
 {
     interop_vec_t chars = build_from_colour_string(str, render_specials);
 
-    while(chars.size() > 0 && chars.back().c == '\n')
+    /*while(chars.size() > 0 && chars.back().c == '\n')
     {
         chars.pop_back();
-    }
+    }*/
 
     return chars;
 }
