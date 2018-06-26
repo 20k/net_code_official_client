@@ -420,7 +420,7 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
     focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
-    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, 0.f, current_user + "> ");
+    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, 0.f, colour_string(current_user) + "> ");
 
     ImGui::End();
 
