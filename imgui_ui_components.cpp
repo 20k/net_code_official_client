@@ -828,7 +828,7 @@ void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_threa
 
     ImGui::SameLine(0, 0);
 
-    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.history, auto_handle, thread.cache, thread, 80);
+    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this, 80);
 
     ImGui::End();
 

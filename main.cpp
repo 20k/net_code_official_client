@@ -555,6 +555,38 @@ int main()
                     else
                         to_edit->add_to_command('\n');
                 }
+
+                if(event.key.code == sf::Keyboard::PageDown)
+                {
+                    if(to_edit == &term.command)
+                    {
+                        mouse_delta -= term.render_height - 2;
+
+                        if(term.scroll_hack.scrolled + mouse_delta < 0)
+                            mouse_delta = -term.scroll_hack.scrolled;
+
+                    }
+
+                    if(to_edit == &chat_win.command)
+                    {
+                        mouse_delta -= chat_win.render_height - 2;
+
+                        if(term.scroll_hack.scrolled + mouse_delta < 0)
+                            mouse_delta = -term.scroll_hack.scrolled;
+                    }
+
+                    term.invalidate();
+                }
+
+                if(event.key.code == sf::Keyboard::PageUp)
+                {
+                    if(to_edit == &term.command)
+                        mouse_delta += term.render_height - 2;
+                    if(to_edit == &chat_win.command)
+                        mouse_delta += chat_win.render_height - 2;
+
+                    term.invalidate();
+                }
             }
 
             if(event.type == sf::Event::MouseButtonPressed)
@@ -659,6 +691,8 @@ int main()
 
         if(!is_focused(focused) || term.get_id_of_focused_realtime_window() == -1)
             script_mousewheel_delta = 0;
+
+        //printf("delta %f\n", mouse_delta);
 
         term.scroll_hack.scrolled_this_frame = mouse_delta;
         chat_win.scroll_hack.scrolled_this_frame = mouse_delta;

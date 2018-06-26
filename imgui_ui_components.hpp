@@ -92,7 +92,7 @@ struct terminal_imgui : serialisable, cacheable, frameable
     void invalidate();
 };
 
-struct chat_thread : serialisable, cacheable, frameable
+struct chat_thread : serialisable, cacheable
 {
     virtual void do_serialise(serialise& s, bool ser);
 };
@@ -102,7 +102,7 @@ struct new_button
     std::string txt;
 };
 
-struct chat_window : serialisable
+struct chat_window : serialisable, frameable
 {
     bool focus_once = false;
     scrollbar_hack scroll_hack;
