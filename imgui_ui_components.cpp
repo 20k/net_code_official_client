@@ -724,6 +724,10 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
                 auto_handle.found_unprocessed_autocompletes.insert(name);
             }
         }
+        else if(starts_with(str, "command_auth"))
+        {
+            ///do nothing
+        }
         else
         {
             push = true;
