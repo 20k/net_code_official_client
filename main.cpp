@@ -369,6 +369,8 @@ int main()
 
     double script_mousewheel_delta = 0.;
 
+    term.invalidate();
+
     while(running)
     {
         if(font_select.update_rebuild())
@@ -886,8 +888,14 @@ int main()
 
         sf::sleep(sf::milliseconds(4));
 
+        int lcwidth = char_inf::cwidth;
+        int lcheight = char_inf::cheight;
+
         char_inf::cwidth = ImGui::CalcTextSize("A").x + char_inf::extra_glyph_spacing;
         char_inf::cheight = ImGui::CalcTextSize("A").y;
+
+        if(char_inf::cwidth != lcwidth || char_inf::cheight != lcheight)
+            term.invalidate();
     }
 
     serialise sterm;

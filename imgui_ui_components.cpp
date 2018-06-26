@@ -297,7 +297,7 @@ void imgui_render_str(const std::vector<formatted_char>& text, std::vector<std::
     }
 }
 
-bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, format_cache& cache, float extra_shrink = 0, std::string command_padding = "")
+bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, format_cache& cache, frameable& frame, float extra_shrink = 0, std::string command_padding = "")
 {
     float overall_width = ImGui::GetWindowWidth();
 
@@ -326,9 +326,11 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
         vec2f current = {start.x, start.y};
 
-        int vertical_columns = ceil((float)wrap_dim.y / char_inf::cheight);
+        int vertical_rows = ceil((float)wrap_dim.y / char_inf::cheight);
 
-        /*int min_start = (int)text_history.size() - vertical_columns;
+        frame.render_height = vertical_rows;
+
+        /*int min_start = (int)text_history.size() - vertical_rows;
 
         min_start = min_start - scroll_hack.scrolled;
 
@@ -378,10 +380,8 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
         all_interop.push_back(icommand);
 
-        cache.ensure_built(current, {start.x, start.y}, {wrap_dim.x, wrap_dim.y}, all_interop, scroll_hack, vertical_columns);
+        cache.ensure_built(current, {start.x, start.y}, {wrap_dim.x, wrap_dim.y}, all_interop, scroll_hack, vertical_rows);
     }
-
-    //int max_lines = vertical_columns;
 
     cache.out.clear();
 
@@ -420,7 +420,7 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
     focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
-    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, 0.f, colour_string(current_user) + "> ");
+    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, *this, 0.f, colour_string(current_user) + "> ");
 
     ImGui::End();
 
@@ -473,7 +473,7 @@ void terminal_imgui::render_realtime_windows(c_shared_data data, int& was_closed
 
         run.cache.invalidate();
 
-        bool child_focused = render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, run.cache);
+        bool child_focused = render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, run.cache, *this);
 
         if(run.focused && child_focused)
             handle->process_formatted(run.cache.out);
@@ -828,7 +828,7 @@ void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_threa
 
     ImGui::SameLine(0, 0);
 
-    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.history, auto_handle, thread.cache, 80);
+    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.history, auto_handle, thread.cache, thread, 80);
 
     ImGui::End();
 

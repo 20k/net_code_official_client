@@ -25,7 +25,14 @@ struct scrollbar_hack
     void do_hack(int approx_num, bool set_scrollbar);
 };
 
-struct realtime_script_run
+///has a frame, aka is a window
+struct frameable
+{
+    ///how high the render area is in character sized rows;
+    int render_height = 0;
+};
+
+struct realtime_script_run : frameable
 {
     sf::Clock last_message;
 
@@ -47,7 +54,7 @@ struct realtime_script_run
     format_cache cache;
 };
 
-struct terminal_imgui : serialisable, cacheable
+struct terminal_imgui : serialisable, cacheable, frameable
 {
     scrollbar_hack scroll_hack;
 
@@ -85,7 +92,7 @@ struct terminal_imgui : serialisable, cacheable
     void invalidate();
 };
 
-struct chat_thread : serialisable, cacheable
+struct chat_thread : serialisable, cacheable, frameable
 {
     virtual void do_serialise(serialise& s, bool ser);
 };
