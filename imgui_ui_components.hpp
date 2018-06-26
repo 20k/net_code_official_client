@@ -55,6 +55,8 @@ struct terminal_imgui : serialisable, cacheable
 
     std::map<int, realtime_script_run> realtime_script_windows;
 
+    std::string current_user;
+
     bool consider_resetting_scrollbar = false;
     bool locked_to_bottom = false;
     bool lock_next_frame = true;

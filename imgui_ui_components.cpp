@@ -297,7 +297,7 @@ void imgui_render_str(const std::vector<formatted_char>& text, std::vector<std::
     }
 }
 
-bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, format_cache& cache, float extra_shrink = 0)
+bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, format_cache& cache, float extra_shrink = 0, std::string command_padding = "")
 {
     float overall_width = ImGui::GetWindowWidth();
 
@@ -350,6 +350,8 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
         auto icommand = string_to_interop(render_command, specials, auto_handle, false);
 
+        auto icommand_pad = string_to_interop(command_padding, false, auto_handle, false);
+
         int cursor_offset = 0;
 
         auto_handle.handle_autocompletes(icommand, cursor_pos_idx, cursor_offset, command);
@@ -369,7 +371,13 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
                 icommand.insert(icommand.begin() + curs_cur, curs);
         }
 
+        for(int i=0; i < (int)icommand_pad.size(); i++)
+        {
+            icommand.insert(icommand.begin() + i, icommand_pad[i]);
+        }
+
         all_interop.push_back(icommand);
+
         cache.ensure_built(current, {start.x, start.y}, {wrap_dim.x, wrap_dim.y}, all_interop, scroll_hack, vertical_columns);
     }
 
@@ -412,7 +420,7 @@ void terminal_imgui::render(sf::RenderWindow& win)
 
     focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
-    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache);
+    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, 0.f, current_user + "> ");
 
     ImGui::End();
 
@@ -640,6 +648,14 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
 
             if(chat_info.num_tells > 0 || chat_info.num_notifs > 0 || chat_info.num_msgs > 0)
                 invalidate();
+
+            std::string next_user = c_str_sized_to_cpp(chat_info.current_user);
+
+            if(next_user != current_user)
+            {
+                cache.invalidate();
+                current_user = next_user;
+            }
 
             sa_destroy_chat_api_info(chat_info);
 
