@@ -551,7 +551,12 @@ int main()
                 if(event.key.code == sf::Keyboard::Return)
                 {
                     if(to_edit != &realtime_shim)
-                        enter = true;
+                    {
+                        if(!key.isKeyPressed(sf::Keyboard::LControl) && !key.isKeyPressed(sf::Keyboard::LShift))
+                            enter = true;
+                        else
+                            to_edit->add_to_command('\n');
+                    }
                     else
                         to_edit->add_to_command('\n');
                 }
