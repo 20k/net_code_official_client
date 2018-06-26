@@ -200,19 +200,6 @@ int main()
 
     c_shared_data shared = sd_alloc();
 
-    if(file_exists("key.key"))
-    {
-        //shared.auth = read_file_bin("key.key");
-
-        std::string fauth = read_file_bin("key.key");
-
-        sd_set_auth(shared, make_view(fauth));
-
-        std::cout << "loaded auth of " << fauth.size() << std::endl;
-
-        //shared.send_auth = true;
-    }
-
     font.loadFromFile("VeraMono.ttf");
 
     nc_start_ssl(shared, HOST_IP, HOST_PORT_SSL);
