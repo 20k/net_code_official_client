@@ -708,7 +708,7 @@ int main()
 
         font_select.render();
 
-        if(enter)
+        if(enter && to_edit->command.size() > 0)
         {
             term.invalidate();
 
@@ -762,7 +762,7 @@ int main()
                 sized_string chat_command = sa_make_chat_command(make_view(chat_win.selected), make_view(chat_win.command.command));
 
                 ///TODO
-                sd_add_back_write(shared, make_view(chat_command));
+                sd_add_back_read(shared, make_view(chat_command));
 
                 free_sized_string(chat_command);
             }
@@ -801,6 +801,12 @@ int main()
             serialise swindow;
             swindow.handle_serialise(chat_win, true);
             swindow.save(chat_file);
+        }
+        else if(enter && to_edit->command.size() == 0)
+        {
+            sd_add_back_read(shared, make_view("command "));
+
+            //to_edit->push_command_to_history(to_edit->command);
         }
 
         #ifdef TESTING
