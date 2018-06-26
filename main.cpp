@@ -494,12 +494,18 @@ int main()
 
                 if(event.key.code == sf::Keyboard::Left)
                 {
-                    to_edit->move_cursor(-1);
+                    if(!key.isKeyPressed(sf::Keyboard::LControl))
+                        to_edit->move_cursor(-1);
+                    else
+                        to_edit->move_cursor(-5);
                 }
 
                 if(event.key.code == sf::Keyboard::Right)
                 {
-                    to_edit->move_cursor(1);
+                    if(!key.isKeyPressed(sf::Keyboard::LControl))
+                        to_edit->move_cursor(1);
+                    else
+                        to_edit->move_cursor(5);
                 }
 
                 if(event.key.code == sf::Keyboard::Home)
