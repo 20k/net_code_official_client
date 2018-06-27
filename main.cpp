@@ -226,7 +226,9 @@ int main()
     //ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0,0,0,0));
     //printf("%f %f %f %f\n", vec.x, vec.y, vec.z, vec.w);
 
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(30/255.f, 30/255.f, 30/255.f, 255/255.f));
+    vec3f bg_col = {30, 30, 30};
+
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(bg_col.x()/255.f, bg_col.y()/255.f, bg_col.z()/255.f, 255/255.f));
 
     ImGuiStyle& style = ImGui::GetStyle();
 
@@ -924,7 +926,7 @@ int main()
 
         ImGui::SFML::Render(window);
         window.display();
-        window.clear(sf::Color(30, 30, 30));
+        window.clear(sf::Color(bg_col.x(), bg_col.y(), bg_col.z()));
 
         sf::sleep(sf::milliseconds(4));
 
