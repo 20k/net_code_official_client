@@ -3,6 +3,84 @@
 
 #include <ImGuiColorTextEdit/TextEditor.h>
 
+struct editable_script
+{
+    std::string editing_script;
+    std::string script_contents;
+
+    bool has_script = false;
+
+    bool force_save = false;
+
+    sf::Clock save_clock;
+
+    void set_file_name(const std::string& file_name)
+    {
+        ///resetting
+        if(has_script)
+            save();
+
+        editing_script = file_name;
+        has_script = true;
+
+        load();
+    }
+
+    void save()
+    {
+        std::string backup = "./scripts/" + editing_script + ".backup";
+        std::string temp = "./scripts/" + editing_script + ".temp";
+        std::string base = "./scripts/" + editing_script;
+
+        write_all_bin(backup, script_contents);
+
+        remove(temp.c_str());
+        rename(base.c_str(), temp.c_str());
+        rename(backup.c_str(), base.c_str());
+        remove(temp.c_str());
+
+        save_clock.restart();
+
+        force_save = false;
+    }
+
+    void load()
+    {
+        script_contents = read_file_bin("./scripts/" + editing_script);
+    }
+
+    void tick()
+    {
+        if(!has_script)
+            return;
+
+        ///ONLY DO THIS ON MODIFICATIONS
+        ///so we can detect if it were externally modified
+        if(save_clock.getElapsedTime().asSeconds() > 60 || force_save)
+        {
+            save();
+        }
+    }
+
+    std::string get_contents()
+    {
+        return script_contents;
+    }
+
+    void set_contents(const std::string& new_contents)
+    {
+        script_contents = new_contents;
+    }
+
+    ~editable_script()
+    {
+        if(!has_script)
+            return;
+
+        save();
+    }
+};
+
 ///we need the concept of a currently open script and tabbed scripts
 ///and also scripts need to never be able to have lost changes
 struct text_editor_manager
@@ -10,8 +88,7 @@ struct text_editor_manager
     TextEditor editor;
     std::string editing_user;
 
-    std::string editing_script;
-    std::string script_contents;
+    editable_script current_script;
 
     bool is_open = true;
     bool any_selected = false;
@@ -69,10 +146,9 @@ struct text_editor_manager
 
                         if(ImGui::MenuItem(name.c_str()))
                         {
-                            editing_script = name;
-                            script_contents = read_file_bin("./scripts/" + editing_script);
+                            current_script.set_file_name(name);
 
-                            editor.SetText(script_contents);
+                            editor.SetText(current_script.get_contents());
                             any_selected = true;
                         }
                     }
@@ -93,33 +169,15 @@ struct text_editor_manager
 
     void tick()
     {
-        if(!is_open && !force_save)
+        current_script.tick();
+
+        if(!is_open)
             return;
 
-        if(!any_selected && !force_save)
+        if(!any_selected)
             return;
 
-        script_contents = editor.GetText();
-
-        ///ONLY DO THIS ON MODIFICATIONS
-        ///so we can detect if it were externally modified
-        if(save_clock.getElapsedTime().asSeconds() > 60 || force_save)
-        {
-            std::string backup = "./scripts/" + editing_script + ".backup";
-            std::string temp = "./scripts/" + editing_script + ".temp";
-            std::string base = "./scripts/" + editing_script;
-
-            write_all_bin(backup, script_contents);
-
-            remove(temp.c_str());
-            rename(base.c_str(), temp.c_str());
-            rename(backup.c_str(), base.c_str());
-            remove(temp.c_str());
-
-            save_clock.restart();
-
-            force_save = false;
-        }
+        current_script.set_contents(editor.GetText());
     }
 };
 
