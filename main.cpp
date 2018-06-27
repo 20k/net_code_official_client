@@ -28,6 +28,7 @@
 #include "imgui_ui_components.hpp"
 #include <json/json.hpp>
 #include <ImGuiColorTextEdit/TextEditor.h>
+#include <objbase.h>
 
 bool is_focused(bool in_focus)
 {
@@ -200,7 +201,28 @@ struct text_editor_manager
 
     void render()
     {
-        ImGui::Begin("Text Editor");
+        ImGui::Begin("Text Editor", nullptr, ImGuiWindowFlags_MenuBar);
+
+        if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				if (ImGui::MenuItem("Save"))
+				{
+					auto textToSave = editor.GetText();
+					/// save text....
+				}
+				if (ImGui::MenuItem("Quit", "Alt-F4"))
+				{
+
+				}
+
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMenuBar();
+		}
+
 
         editor.Render("TextRenderer");
 
