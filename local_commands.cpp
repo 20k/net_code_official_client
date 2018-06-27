@@ -23,20 +23,6 @@ std::vector<std::string> get_scripts_list(const std::string& username)
 
         if(starts_with(std::string(file.name), username + "."))
         {
-            /*auto names = no_ss_split(file.name, ".");
-
-            if(names.size() == 2)
-            {
-                fname.push_back(names[1]);
-            }
-            if(names.size() > 2)
-            {
-                if(names[2].size() > 0 && names[2] != "js")
-                    fname.push_back(names[1] + " [" + names[2] + "]");
-                else
-                    fname.push_back(names[1]);
-            }*/
-
             ret.push_back(file.name);
         }
 
@@ -134,6 +120,7 @@ std::string handle_local_command(const std::string& username, const std::string&
         for(auto& i : fname)
             build += i + ", ";
 
+        ///removes tailing ", "
         if(build.size() > 0)
         {
             build.pop_back();
