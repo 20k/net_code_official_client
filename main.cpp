@@ -27,6 +27,7 @@
 #include <imgui/misc/freetype/imgui_freetype.h>
 #include "imgui_ui_components.hpp"
 #include <json/json.hpp>
+#include <ImGuiColorTextEdit/TextEditor.h>
 
 bool is_focused(bool in_focus)
 {
@@ -187,6 +188,26 @@ void test()
 }
 #endif // FONT_TEST
 
+struct text_editor_manager
+{
+    TextEditor editor;
+
+    text_editor_manager()
+    {
+        auto lang = TextEditor::LanguageDefinition::Lua();
+        editor.SetLanguageDefinition(lang);
+    }
+
+    void render()
+    {
+        ImGui::Begin("Text Editor");
+
+        editor.Render("TextRenderer");
+
+        ImGui::End();
+    }
+};
+
 ///test new repo
 int main()
 {
@@ -339,6 +360,8 @@ int main()
         catch(...){}
     }
 
+    text_editor_manager text_editor;
+
     sf::Clock render_clock;
 
     sf::Clock client_poll_clock;
@@ -386,7 +409,11 @@ int main()
         on_pressed.clear();
         on_released.clear();
 
-        editable_string* to_edit = &term.command;
+        editable_string no_string;
+        editable_string* to_edit = &no_string;
+
+        if(term.focused)
+            to_edit = &term.command;
 
         if(chat_win.focused)
             to_edit = &chat_win.command;
@@ -547,7 +574,7 @@ int main()
 
                 if(event.key.code == sf::Keyboard::Return)
                 {
-                    if(to_edit != &realtime_shim)
+                    if(to_edit != &realtime_shim && to_edit != &no_string)
                     {
                         if(!key.isKeyPressed(sf::Keyboard::LControl) && !key.isKeyPressed(sf::Keyboard::LShift))
                             enter = true;
@@ -709,6 +736,7 @@ int main()
         //ImGui::ShowDemoWindow(nullptr);
 
         font_select.render();
+        text_editor.render();
 
         if(enter && to_edit->command.size() > 0)
         {

@@ -22,3 +22,6 @@
 [submodule "deps/imgui-sfml"]
 	path = deps/imgui-sfml
 	url = https://github.com/eliasdaler/imgui-sfml
+[submodule "deps/ImGuiColorTextEdit"]
+	path = deps/ImGuiColorTextEdit
+	url = https://github.com/20k/ImGuiColorTextEdit
