@@ -21,9 +21,19 @@ std::vector<std::string> get_scripts_list(const std::string& username)
         tinydir_file file;
         tinydir_readfile(&dir, &file);
 
-        if(starts_with(std::string(file.name), username + "."))
+        if(username != "")
         {
-            ret.push_back(file.name);
+            if(starts_with(std::string(file.name), username + "."))
+            {
+                ret.push_back(file.name);
+            }
+        }
+        else
+        {
+            if(!file.is_dir)
+            {
+                ret.push_back(file.name);
+            }
         }
 
         tinydir_next(&dir);
