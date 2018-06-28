@@ -124,6 +124,37 @@ struct text_editor_manager
         {
             editor.SetText(all_scripts[current_idx].get_contents());
         }
+        else
+        {
+            editor.SetText("");
+        }
+    }
+
+    void close(int idx)
+    {
+        if(idx < 0 || idx >= (int)all_scripts.size())
+            return;
+
+        bool should_switch_lower = false;
+
+        if(idx <= current_idx)
+        {
+            should_switch_lower = true;
+        }
+
+        all_scripts[idx].save();
+
+        all_scripts.erase(all_scripts.begin() + idx);
+
+        if(should_switch_lower)
+        {
+            int tidx = current_idx - 1;
+
+            if(tidx < 0)
+                tidx = 0;
+
+            switch_to(tidx);
+        }
     }
 
     void render()
@@ -189,12 +220,19 @@ struct text_editor_manager
             {
                 bool selected = i == current_idx;
 
-                if(ImGui::MenuItem(all_scripts[i].editing_script.c_str(), nullptr, &selected, true))
+                if(ImGui::MenuItem(all_scripts[i].editing_script.c_str(), nullptr, selected, true))
                 {
                     if(i != current_idx)
                     {
                         switch_to(i);
                     }
+                }
+
+                if(ImGui::IsItemClicked(2) || ImGui::IsItemClicked(1))
+                {
+                    close(i);
+                    i--;
+                    continue;
                 }
             }
 

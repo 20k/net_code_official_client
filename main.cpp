@@ -110,6 +110,7 @@ struct font_selector
         ImGuiFreeType::BuildFontAtlas(io.Fonts, fonts_flags);
 
         wants_rebuild = false;
+        update_font_texture_safe();
         return true;
     }
 
@@ -382,7 +383,6 @@ int main()
     {
         if(font_select.update_rebuild())
         {
-            update_font_texture_safe();
             term.invalidate();
         }
 
