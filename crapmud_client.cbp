@@ -234,6 +234,8 @@
 		<Unit filename="colour_interop.hpp" />
 		<Unit filename="copy_handler.cpp" />
 		<Unit filename="copy_handler.hpp" />
+		<Unit filename="deps/ImGuiColorTextEdit/TextEditor.cpp" />
+		<Unit filename="deps/ImGuiColorTextEdit/TextEditor.h" />
 		<Unit filename="deps/imgui-sfml/imgui-SFML.cpp" />
 		<Unit filename="deps/imgui-sfml/imgui-SFML.h" />
 		<Unit filename="deps/imgui/imgui.cpp" />
@@ -246,6 +248,8 @@
 		<Unit filename="deps/serialise/serialise.hpp" />
 		<Unit filename="editable_string.cpp" />
 		<Unit filename="editable_string.hpp" />
+		<Unit filename="font_cfg.cpp" />
+		<Unit filename="font_cfg.hpp" />
 		<Unit filename="format_cache.cpp" />
 		<Unit filename="format_cache.hpp" />
 		<Unit filename="icon.res">
@@ -257,12 +261,14 @@
 		</Unit>
 		<Unit filename="imgui_ui_components.cpp" />
 		<Unit filename="imgui_ui_components.hpp" />
+		<Unit filename="local_commands.cpp" />
 		<Unit filename="local_commands.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="stacktrace.cpp" />
 		<Unit filename="stacktrace.hpp" />
 		<Unit filename="string_helpers.cpp" />
 		<Unit filename="string_helpers.hpp" />
+		<Unit filename="text_editor.hpp" />
 		<Unit filename="tokeniser.cpp" />
 		<Unit filename="tokeniser.hpp" />
 		<Unit filename="util.hpp" />
