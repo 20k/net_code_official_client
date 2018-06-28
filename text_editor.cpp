@@ -128,6 +128,8 @@ void text_editor_manager::close(int idx)
 
 void text_editor_manager::render()
 {
+    //ImGui::PushFont(font_select.get_editor_font());
+
     ImGui::Begin("Text Editor", &is_open, ImGuiWindowFlags_MenuBar);
 
     if(ImGui::IsItemFocused())
@@ -187,8 +189,9 @@ void text_editor_manager::render()
                 if(ImGui::Button("-"))
                 {
                     current_font_size -= 0.5;
+                    dirty_font = true;
 
-                    font_select.reset_default_fonts(current_font_size);
+                    //font_select.reset_default_fonts(current_font_size);
                 }
 
                 ImGui::SameLine();
@@ -202,8 +205,9 @@ void text_editor_manager::render()
                 if(ImGui::Button("+"))
                 {
                     current_font_size += 0.5;
+                    dirty_font = true;
 
-                    font_select.reset_default_fonts(current_font_size);
+                    //font_select.reset_default_fonts(current_font_size);
                 }
 
                 ImGui::EndMenu();
@@ -259,6 +263,8 @@ void text_editor_manager::render()
     editor.Render("TextRenderer");
 
     ImGui::End();
+
+    //ImGui::PopFont();
 }
 
 void text_editor_manager::tick()

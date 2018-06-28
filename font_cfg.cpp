@@ -60,6 +60,8 @@ void font_selector::reset_default_fonts(float editor_font_size)
     io.Fonts->AddFontFromFileTTF("VeraMono.ttf", editor_font_size, &font_cfg);
     ///DEFAULT
     io.Fonts->AddFontDefault();
+
+    wants_rebuild = true;
 }
 
 // Call _BEFORE_ NewFrame()

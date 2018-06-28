@@ -308,6 +308,11 @@ int main()
 
     while(running)
     {
+        if(text_editor.dirty_font)
+        {
+            font_select.reset_default_fonts(text_editor.current_font_size);
+        }
+
         if(font_select.update_rebuild())
         {
             term.invalidate();

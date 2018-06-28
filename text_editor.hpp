@@ -49,6 +49,7 @@ struct text_editor_manager
     bool modified = false;
 
     float current_font_size = 14.f;
+    bool dirty_font = false;
 
     font_selector& font_select;
 
