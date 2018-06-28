@@ -9,8 +9,8 @@ struct editable_script
     std::string script_contents;
 
     bool has_script = false;
-
     bool force_save = false;
+    bool has_unsaved_changes = false;
 
     sf::Clock save_clock;
 
@@ -88,7 +88,10 @@ struct text_editor_manager
     TextEditor editor;
     std::string editing_user;
 
-    editable_script current_script;
+    //editable_script current_script;
+
+    std::vector<editable_script> all_scripts;
+    int current_idx = -1;
 
     bool is_open = true;
     bool any_selected = false;
@@ -108,6 +111,21 @@ struct text_editor_manager
         editing_user = username;
     }
 
+    void switch_to(int idx)
+    {
+        if(current_idx >= 0 && current_idx < (int)all_scripts.size())
+        {
+            all_scripts[current_idx].save();
+        }
+
+        current_idx = idx;
+
+        if(current_idx >= 0 && current_idx < (int)all_scripts.size())
+        {
+            editor.SetText(all_scripts[current_idx].get_contents());
+        }
+    }
+
     void render()
     {
         ImGui::Begin("Text Editor", &is_open, ImGuiWindowFlags_MenuBar);
@@ -118,7 +136,12 @@ struct text_editor_manager
 
             if(key.isKeyPressed(sf::Keyboard::LControl) && ONCE_MACRO(sf::Keyboard::S))
             {
-                force_save = true;
+                //force_save = true;
+
+                for(auto& i : all_scripts)
+                {
+                    i.save();
+                }
             }
         }
 
@@ -146,9 +169,12 @@ struct text_editor_manager
 
                         if(ImGui::MenuItem(name.c_str()))
                         {
-                            current_script.set_file_name(name);
+                            editable_script script;
+                            script.set_file_name(name);
+                            all_scripts.push_back(script);
 
-                            editor.SetText(current_script.get_contents());
+                            switch_to((int)all_scripts.size() - 1);
+
                             any_selected = true;
                         }
                     }
@@ -159,8 +185,42 @@ struct text_editor_manager
 				ImGui::EndMenu();
 			}
 
+            for(int i=0; i < (int)all_scripts.size(); i++)
+            {
+                bool selected = i == current_idx;
+
+                if(ImGui::MenuItem(all_scripts[i].editing_script.c_str(), nullptr, &selected, true))
+                {
+                    if(i != current_idx)
+                    {
+                        switch_to(i);
+                    }
+                }
+            }
+
+
 			ImGui::EndMenuBar();
 		}
+
+		/*for(int i=0; i < (int)all_scripts.size(); i++)
+        {
+            if(ImGui::Button(all_scripts[i].editing_script.c_str()))
+            {
+
+            }
+
+            if(i != (int)all_scripts.size() - 1)
+            {
+                ImGui::SameLine();
+            }
+        }*/
+
+		//current_script.has_unsaved_changes |= editor.IsTextChanged();
+
+		if(current_idx >= 0 && current_idx < (int)all_scripts.size())
+        {
+            all_scripts[current_idx].has_unsaved_changes |= editor.IsTextChanged();
+        }
 
         editor.Render("TextRenderer");
 
@@ -169,7 +229,12 @@ struct text_editor_manager
 
     void tick()
     {
-        current_script.tick();
+        //current_script.tick();
+
+        if(current_idx >= 0 && current_idx < (int)all_scripts.size())
+        {
+            all_scripts[current_idx].tick();
+        }
 
         if(!is_open)
             return;
@@ -177,7 +242,12 @@ struct text_editor_manager
         if(!any_selected)
             return;
 
-        current_script.set_contents(editor.GetText());
+        if(current_idx >= 0 && current_idx < (int)all_scripts.size())
+        {
+            all_scripts[current_idx].set_contents(editor.GetText());
+        }
+
+        //current_script.set_contents(editor.GetText());
     }
 };
 
