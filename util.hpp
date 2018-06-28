@@ -2,6 +2,7 @@
 #define UTIL_HPP_INCLUDED
 
 template<sf::Keyboard::Key k, int n, int c>
+inline
 bool once()
 {
     static bool last;
@@ -24,6 +25,7 @@ bool once()
 }
 
 template<sf::Mouse::Button b, int n, int c>
+inline
 bool once()
 {
     static bool last;

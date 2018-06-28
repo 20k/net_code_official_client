@@ -268,6 +268,7 @@
 		<Unit filename="stacktrace.hpp" />
 		<Unit filename="string_helpers.cpp" />
 		<Unit filename="string_helpers.hpp" />
+		<Unit filename="text_editor.cpp" />
 		<Unit filename="text_editor.hpp" />
 		<Unit filename="tokeniser.cpp" />
 		<Unit filename="tokeniser.hpp" />

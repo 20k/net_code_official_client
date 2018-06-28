@@ -175,7 +175,7 @@ int main()
     io.Fonts->AddFontDefault();*/
 
     font_selector font_select;
-    font_select.add_default_fonts();
+    font_select.reset_default_fonts();
 
     terminal_imgui term;
     chat_window chat_win;
@@ -270,7 +270,7 @@ int main()
         catch(...){}
     }
 
-    text_editor_manager text_editor;
+    text_editor_manager text_editor(font_select);
 
     sf::Clock render_clock;
 

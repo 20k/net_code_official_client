@@ -44,7 +44,7 @@ ImFont* font_selector::get_editor_font()
     return io.Fonts->Fonts[(int)font_cfg::TEXT_EDITOR];
 }
 
-void font_selector::add_default_fonts()
+void font_selector::reset_default_fonts(float editor_font_size)
 {
     ImFontConfig font_cfg;
     font_cfg.GlyphExtraSpacing = ImVec2(char_inf::extra_glyph_spacing, 0);
@@ -57,7 +57,7 @@ void font_selector::add_default_fonts()
     ///BASE
     io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 14.f, &font_cfg);
     ///TEXT_EDITOR
-    io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 10.f, &font_cfg);
+    io.Fonts->AddFontFromFileTTF("VeraMono.ttf", editor_font_size, &font_cfg);
     ///DEFAULT
     io.Fonts->AddFontDefault();
 }
