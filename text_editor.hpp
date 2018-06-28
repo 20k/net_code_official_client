@@ -48,6 +48,8 @@ struct text_editor_manager
     bool force_save = false;
     bool modified = false;
 
+    ///need to save this
+    ///and save the whole class generally
     float current_font_size = 14.f;
     bool dirty_font = false;
 

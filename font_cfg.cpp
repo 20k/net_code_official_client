@@ -52,7 +52,7 @@ void font_selector::reset_default_fonts(float editor_font_size)
     ImGuiIO& io = ImGui::GetIO();
 
     io.Fonts->Clear();
-    io.Fonts->ClearFonts();
+    //io.Fonts->ClearFonts();
 
     ///BASE
     io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 14.f, &font_cfg);
@@ -60,6 +60,8 @@ void font_selector::reset_default_fonts(float editor_font_size)
     io.Fonts->AddFontFromFileTTF("VeraMono.ttf", editor_font_size, &font_cfg);
     ///DEFAULT
     io.Fonts->AddFontDefault();
+
+    //ImGui::PushFont(font);
 
     wants_rebuild = true;
 }
@@ -82,6 +84,8 @@ bool font_selector::update_rebuild()
 
     wants_rebuild = false;
     update_font_texture_safe();
+
+    //ImGui::PushFont(io.Fonts->Fonts[0]);
     return true;
 }
 

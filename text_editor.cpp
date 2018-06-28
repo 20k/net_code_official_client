@@ -260,11 +260,13 @@ void text_editor_manager::render()
         all_scripts[current_idx].has_unsaved_changes |= editor.IsTextChanged();
     }
 
+    ImGui::PushFont(font_select.get_editor_font());
+
     editor.Render("TextRenderer");
 
-    ImGui::End();
+    ImGui::PopFont();
 
-    //ImGui::PopFont();
+    ImGui::End();
 }
 
 void text_editor_manager::tick()

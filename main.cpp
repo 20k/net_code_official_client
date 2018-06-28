@@ -311,12 +311,15 @@ int main()
         if(text_editor.dirty_font)
         {
             font_select.reset_default_fonts(text_editor.current_font_size);
+
+            text_editor.dirty_font = false;
         }
 
         if(font_select.update_rebuild())
         {
             term.invalidate();
         }
+
 
         realtime_shim.clear_command();
         realtime_str.clear();
@@ -647,6 +650,8 @@ int main()
 
         ImGui::SFML::Update(window,  imgui_delta.restart());
 
+        ImGui::PushFont(font_select.get_base_font());
+
         //ImGui::ShowDemoWindow(nullptr);
 
         font_select.render();
@@ -868,6 +873,8 @@ int main()
             get_global_copy_handler()->finished = false;
             get_global_copy_handler()->held = false;
         }
+
+        ImGui::PopFont();
 
         ImGui::SFML::Render(window);
         window.display();
