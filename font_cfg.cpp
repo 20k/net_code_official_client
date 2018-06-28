@@ -7,6 +7,8 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "string_helpers.hpp"
+
 void update_font_texture_safe()
 {
     static sf::Texture texture;
@@ -40,6 +42,24 @@ ImFont* font_selector::get_editor_font()
     ImGuiIO& io = ImGui::GetIO();
 
     return io.Fonts->Fonts[(int)font_cfg::TEXT_EDITOR];
+}
+
+void font_selector::add_default_fonts()
+{
+    ImFontConfig font_cfg;
+    font_cfg.GlyphExtraSpacing = ImVec2(char_inf::extra_glyph_spacing, 0);
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    io.Fonts->Clear();
+    io.Fonts->ClearFonts();
+
+    ///BASE
+    io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 14.f, &font_cfg);
+    ///TEXT_EDITOR
+    io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 10.f, &font_cfg);
+    ///DEFAULT
+    io.Fonts->AddFontDefault();
 }
 
 // Call _BEFORE_ NewFrame()

@@ -27,6 +27,7 @@ struct font_selector
     ImFont* get_base_font();
     ImFont* get_editor_font();
 
+    void add_default_fonts();
     // Call _BEFORE_ NewFrame()
     bool update_rebuild();
     // Call to draw interface

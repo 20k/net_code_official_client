@@ -149,17 +149,6 @@ int main()
 
     ImGui::SFML::Init(window, false);
 
-    ImFontConfig font_cfg;
-    font_cfg.GlyphExtraSpacing = ImVec2(char_inf::extra_glyph_spacing, 0);
-
-    ImGuiIO& io = ImGui::GetIO();
-    ///BASE
-    io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 14.f, &font_cfg);
-    ///TEXT_EDITOR
-    io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 10.f, &font_cfg);
-    ///DEFAULT
-    io.Fonts->AddFontDefault();
-
     //ImGuiFreeType::BuildFontAtlas(io.Fonts, 0);
     //ImGui::SFML::UpdateFontTexture();
 
@@ -186,6 +175,7 @@ int main()
     io.Fonts->AddFontDefault();*/
 
     font_selector font_select;
+    font_select.add_default_fonts();
 
     terminal_imgui term;
     chat_window chat_win;
