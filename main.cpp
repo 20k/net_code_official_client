@@ -167,7 +167,7 @@ int main()
     style.ChildRounding = 2;
     style.ChildBorderSize = 0;
     style.FrameBorderSize = 0;
-    style.PopupBorderSize = 0;
+    //style.PopupBorderSize = 0;
     style.WindowBorderSize = 0;
 
     /*ImGuiIO& io = ImGui::GetIO();
@@ -653,6 +653,7 @@ int main()
         ImGui::PushFont(font_select.get_base_font());
 
         //ImGui::ShowDemoWindow(nullptr);
+        //ImGui::ShowStyleEditor(nullptr);
 
         font_select.render();
 

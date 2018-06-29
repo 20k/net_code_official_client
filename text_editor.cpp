@@ -220,13 +220,30 @@ void text_editor_manager::render()
         {
             bool selected = i == current_idx;
 
-            if(ImGui::MenuItem(all_scripts[i].editing_script.c_str(), nullptr, selected, true))
+            std::string name = all_scripts[i].editing_script;
+
+            if(selected)
+                name += " (X)";
+
+            /*auto old_col = ImGui::GetStyleColorVec4(ImGuiCol_HeaderHovered);
+
+            if(selected)
+            {
+                ImGui::PushStyleColor(ImGuiCol_Header, old_col);
+            }*/
+
+            if(ImGui::MenuItem(name.c_str(), nullptr, selected, true))
             {
                 if(i != current_idx)
                 {
                     switch_to(i);
                 }
             }
+
+            /*if(selected)
+            {
+                ImGui::PopStyleColor(1);
+            }*/
 
             if(ImGui::IsItemClicked(2) || ImGui::IsItemClicked(1))
             {
