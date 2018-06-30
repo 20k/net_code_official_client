@@ -233,9 +233,12 @@ int main()
 
     SMAP(Escape, escape);
 
+    text_editor_manager text_editor(font_select);
+
     std::string terminal_file = "./terminal_v5.txt";
     std::string chat_file = "./chat_v5.txt";
     std::string general_file = "./window.txt";
+    std::string settings_file = "./text_sett.txt";
 
     if(file_exists(terminal_file))
     {
@@ -249,6 +252,13 @@ int main()
         serialise swindow;
         swindow.load(chat_file);
         swindow.handle_serialise(chat_win, false);
+    }
+
+    if(file_exists(settings_file))
+    {
+        serialise ssett;
+        ssett.load(settings_file);
+        ssett.handle_serialise_no_clear(text_editor, false);
     }
 
     if(file_exists(general_file))
@@ -269,8 +279,6 @@ int main()
         }
         catch(...){}
     }
-
-    text_editor_manager text_editor(font_select);
 
     sf::Clock render_clock;
 
@@ -814,6 +822,10 @@ int main()
             swindow.handle_serialise(chat_win, true);
             swindow.save(chat_file);
 
+            serialise stem;
+            stem.handle_serialise_no_clear(text_editor, true);
+            stem.save(settings_file);
+
             write_clock.restart();
         }
 
@@ -903,6 +915,10 @@ int main()
     serialise swindow;
     swindow.handle_serialise(chat_win, true);
     swindow.save(chat_file);
+
+    serialise stem;
+    stem.handle_serialise_no_clear(text_editor, true);
+    stem.save(settings_file);
 
     //sd_set_termination(shared);
 

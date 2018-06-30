@@ -4,8 +4,9 @@
 #include <ImGuiColorTextEdit/TextEditor.h>
 #include <SFML/Graphics.hpp>
 #include "util.hpp"
+#include <serialise/serialise.hpp>
 
-struct editable_script
+struct editable_script : serialisable
 {
     std::string editing_script;
     std::string friendly_name;
@@ -27,10 +28,12 @@ struct editable_script
     std::string get_contents();
     void set_contents(const std::string& new_contents);
 
+    virtual void do_serialise(serialise& s, bool ser);
+
     ~editable_script();
 };
 
-struct user_scripts
+struct user_scripts : serialisable
 {
     std::string user;
     int current_idx = -1;
@@ -43,6 +46,8 @@ struct user_scripts
     void close(TextEditor& editor, int idx);
     void close(TextEditor& editor, const std::string& name);
 
+    virtual void do_serialise(serialise& s, bool ser);
+
     void save();
 };
 
@@ -50,12 +55,14 @@ struct font_selector;
 
 ///we need the concept of a currently open script and tabbed scripts
 ///and also scripts need to never be able to have lost changes
-struct text_editor_manager
+struct text_editor_manager : serialisable
 {
     TextEditor editor;
     std::string editing_user;
     std::string selected_user;
-    std::vector<std::string> to_close;
+    //std::vector<std::string> to_close;
+
+    sf::Clock settings_save_clock;
 
     //editable_script current_script;
 
@@ -79,6 +86,7 @@ struct text_editor_manager
     sf::Clock save_clock;
 
     text_editor_manager(font_selector& _font_select);
+    ~text_editor_manager();
 
     void set_current_user(const std::string& username);
 
@@ -87,6 +95,8 @@ struct text_editor_manager
     void render();
 
     void tick();
+
+    virtual void do_serialise(serialise& s, bool ser);
 };
 
 

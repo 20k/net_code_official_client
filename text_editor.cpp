@@ -3,6 +3,56 @@
 #include "local_commands.hpp"
 #include "font_cfg.hpp"
 #include <iostream>
+#include <json/json.hpp>
+
+void editable_script::do_serialise(serialise& s, bool ser)
+{
+    s.handle_serialise(editing_script, ser);
+
+    if(ser == false)
+    {
+        has_script = false;
+        set_file_name(editing_script);
+    }
+}
+
+void user_scripts::do_serialise(serialise& s, bool ser)
+{
+    s.handle_serialise(user, ser);
+    s.handle_serialise(current_idx, ser);
+    s.handle_serialise(all_scripts, ser);
+}
+
+void text_editor_manager::do_serialise(serialise& s, bool ser)
+{
+    s.handle_serialise(selected_user, ser);
+    s.handle_serialise(is_open, ser);
+    s.handle_serialise(any_selected, ser);
+    s.handle_serialise(force_save, ser);
+    s.handle_serialise(modified, ser);
+    s.handle_serialise(current_font_size, ser);
+    s.handle_serialise(dirty_font, ser);
+    s.handle_serialise(all_scripts, ser);
+
+    if(ser == false && selected_user != "")
+    {
+        user_scripts& current = all_scripts[selected_user];
+
+        if(current.current_idx >= 0 && current.current_idx < (int)current.all_scripts.size())
+        {
+            editor.SetText(current.all_scripts[current.current_idx].get_contents());
+        }
+        else
+        {
+            editor.SetText(" ");
+        }
+    }
+
+    if(ser == false && selected_user == "")
+    {
+        editor.SetText(" ");
+    }
+}
 
 void editable_script::set_file_name(const std::string& file_name)
 {
@@ -79,6 +129,11 @@ text_editor_manager::text_editor_manager(font_selector& _font_select) : font_sel
 {
     auto lang = TextEditor::LanguageDefinition::Lua();
     editor.SetLanguageDefinition(lang);
+}
+
+text_editor_manager::~text_editor_manager()
+{
+
 }
 
 void text_editor_manager::set_current_user(const std::string& username)
