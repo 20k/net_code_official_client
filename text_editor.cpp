@@ -2,6 +2,7 @@
 #include <libncclient/nc_util.hpp>
 #include "local_commands.hpp"
 #include "font_cfg.hpp"
+#include <iostream>
 
 void editable_script::set_file_name(const std::string& file_name)
 {
@@ -85,7 +86,7 @@ void text_editor_manager::set_current_user(const std::string& username)
     editing_user = username;
 }
 
-void text_editor_manager::switch_to(int idx)
+void user_scripts::switch_to(TextEditor& editor, int idx)
 {
     if(current_idx >= 0 && current_idx < (int)all_scripts.size())
     {
@@ -104,7 +105,18 @@ void text_editor_manager::switch_to(int idx)
     }
 }
 
-void text_editor_manager::close(int idx)
+void user_scripts::switch_to(TextEditor& editor, const std::string& name)
+{
+    for(int i=0; i < (int)all_scripts.size(); i++)
+    {
+        if(all_scripts[i].editing_script == name)
+        {
+            switch_to(editor, i);
+        }
+    }
+}
+
+void user_scripts::close(TextEditor& editor, int idx)
 {
     if(idx < 0 || idx >= (int)all_scripts.size())
         return;
@@ -127,9 +139,35 @@ void text_editor_manager::close(int idx)
         if(tidx < 0)
             tidx = 0;
 
-        switch_to(tidx);
+        switch_to(editor, tidx);
     }
 }
+
+void user_scripts::close(TextEditor& editor, const std::string& name)
+{
+    for(int i=0; i < (int)all_scripts.size(); i++)
+    {
+        if(all_scripts[i].editing_script == name)
+        {
+            close(editor, i);
+            i--;
+            continue;
+        }
+    }
+}
+
+void user_scripts::save()
+{
+    for(auto& i : all_scripts)
+    {
+        i.save();
+    }
+}
+
+/*void text_editor_manager::schedule_close(const std::string& name)
+{
+    to_close.push_back(name);
+}*/
 
 void text_editor_manager::render()
 {
@@ -147,7 +185,7 @@ void text_editor_manager::render()
 
             for(auto& i : all_scripts)
             {
-                i.save();
+                i.second.save();
             }
         }
     }
@@ -155,7 +193,7 @@ void text_editor_manager::render()
     std::vector<std::string> script_names = get_all_scripts_list();
     //std::vector<std::string> script_names = get_scripts_list(editing_user);
 
-    std::map<std::string, std::vector<std::string>> user_scripts;
+    std::map<std::string, std::vector<std::string>> current_scripts;
 
     for(auto& i : script_names)
     {
@@ -165,9 +203,8 @@ void text_editor_manager::render()
 
         //std::string user_script = format_raw_script_name(i);
 
-        user_scripts[usr_name].push_back(i);
+        current_scripts[usr_name].push_back(i);
     }
-
 
     if(ImGui::BeginMenuBar())
     {
@@ -175,7 +212,7 @@ void text_editor_manager::render()
         {
             if(ImGui::BeginMenu("Scripts"))
             {
-                for(auto& item : user_scripts)
+                for(auto& item : current_scripts)
                 {
                     if(ImGui::BeginMenu(item.first.c_str()))
                     {
@@ -187,9 +224,13 @@ void text_editor_manager::render()
                             {
                                 editable_script script;
                                 script.set_file_name(name);
-                                all_scripts.push_back(script);
+                                //all_scripts.push_back(script);
 
-                                switch_to((int)all_scripts.size() - 1);
+                                all_scripts[item.first].all_scripts.push_back(script);
+
+                                all_scripts[item.first].switch_to(editor, (int)all_scripts[item.first].all_scripts.size() - 1);
+
+                                selected_user = item.first;
 
                                 any_selected = true;
                             }
@@ -234,6 +275,15 @@ void text_editor_manager::render()
             ImGui::EndMenu();
         }
 
+        for(auto& i : current_scripts)
+        {
+            if(ImGui::MenuItem(i.first.c_str()))
+            {
+                selected_user = i.first;
+            }
+        }
+
+        #if 0
         for(int i=0; i < (int)all_scripts.size(); i++)
         {
             bool selected = i == current_idx;
@@ -270,19 +320,50 @@ void text_editor_manager::render()
                 continue;
             }
         }
+        #endif // 0
 
 
         ImGui::EndMenuBar();
     }
 
 
-    /*ImGui::BeginChild("Test", ImVec2(0,0), false, ImGuiWindowFlags_MenuBar);
+    ImGui::BeginChild("Test", ImVec2(0,0), false, ImGuiWindowFlags_MenuBar);
 
     ImGui::BeginMenuBar();
 
-    ImGui::MenuItem("Hallo");
+    const std::vector<editable_script>& fnames =  all_scripts[selected_user].all_scripts;
 
-    ImGui::EndMenuBar();*/
+    {
+        for(int i=0; i < (int)fnames.size(); i++)
+        {
+            user_scripts& currently_editing = all_scripts[selected_user];
+
+            bool selected = i == currently_editing.current_idx;
+
+            std::string name = currently_editing.all_scripts[i].editing_script;
+
+            std::string friendly_name = currently_editing.all_scripts[i].friendly_name;
+
+            //if(selected)
+            //    friendly_name += " (X)";
+
+            if(ImGui::MenuItem(friendly_name.c_str(), nullptr, selected, true))
+            {
+                if(i != currently_editing.current_idx)
+                {
+                    currently_editing.switch_to(editor, name);
+                }
+            }
+
+            if(ImGui::IsItemClicked(2) || ImGui::IsItemClicked(1))
+            {
+                currently_editing.close(editor, i);
+                break;
+            }
+        }
+    }
+
+    ImGui::EndMenuBar();
 
     /*for(int i=0; i < (int)all_scripts.size(); i++)
     {
@@ -299,9 +380,14 @@ void text_editor_manager::render()
 
     //current_script.has_unsaved_changes |= editor.IsTextChanged();
 
-    if(current_idx >= 0 && current_idx < (int)all_scripts.size())
+    for(auto& i : all_scripts)
     {
-        all_scripts[current_idx].has_unsaved_changes |= editor.IsTextChanged();
+        int current_idx = i.second.current_idx;
+
+        if(current_idx >= 0 && current_idx < (int)i.second.all_scripts.size())
+        {
+            i.second.all_scripts[current_idx].has_unsaved_changes |= editor.IsTextChanged();
+        }
     }
 
     ImGui::PushFont(font_select.get_editor_font());
@@ -310,7 +396,7 @@ void text_editor_manager::render()
 
     ImGui::PopFont();
 
-    //ImGui::EndChild();
+    ImGui::EndChild();
 
     ImGui::End();
 }
@@ -319,9 +405,14 @@ void text_editor_manager::tick()
 {
     //current_script.tick();
 
-    if(current_idx >= 0 && current_idx < (int)all_scripts.size())
+    for(auto& i : all_scripts)
     {
-        all_scripts[current_idx].tick();
+        int current_idx = i.second.current_idx;
+
+        if(current_idx >= 0 && current_idx < (int)i.second.all_scripts.size())
+        {
+            i.second.all_scripts[current_idx].tick();
+        }
     }
 
     if(!is_open)
@@ -330,9 +421,11 @@ void text_editor_manager::tick()
     if(!any_selected)
         return;
 
-    if(current_idx >= 0 && current_idx < (int)all_scripts.size())
+    int current_idx = all_scripts[selected_user].current_idx;
+
+    if(current_idx >= 0 && current_idx < (int)all_scripts[selected_user].all_scripts.size())
     {
-        all_scripts[current_idx].set_contents(editor.GetText());
+        all_scripts[selected_user].all_scripts[current_idx].set_contents(editor.GetText());
     }
 
     //current_script.set_contents(editor.GetText());

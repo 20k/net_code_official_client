@@ -30,6 +30,22 @@ struct editable_script
     ~editable_script();
 };
 
+struct user_scripts
+{
+    std::string user;
+    int current_idx = -1;
+
+    std::vector<editable_script> all_scripts;
+
+    void switch_to(TextEditor& editor, int idx);
+    void switch_to(TextEditor& editor, const std::string& name);
+
+    void close(TextEditor& editor, int idx);
+    void close(TextEditor& editor, const std::string& name);
+
+    void save();
+};
+
 struct font_selector;
 
 ///we need the concept of a currently open script and tabbed scripts
@@ -38,11 +54,15 @@ struct text_editor_manager
 {
     TextEditor editor;
     std::string editing_user;
+    std::string selected_user;
+    std::vector<std::string> to_close;
 
     //editable_script current_script;
 
-    std::vector<editable_script> all_scripts;
-    int current_idx = -1;
+    std::map<std::string, user_scripts> all_scripts;
+
+    //std::vector<editable_script> all_scripts;
+    //int current_idx = -1;
 
     bool is_open = true;
     bool any_selected = false;
@@ -61,9 +81,8 @@ struct text_editor_manager
     text_editor_manager(font_selector& _font_select);
 
     void set_current_user(const std::string& username);
-    void switch_to(int idx);
 
-    void close(int idx);
+    //void schedule_close(const std::string& name);
 
     void render();
 
