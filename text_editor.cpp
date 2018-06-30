@@ -214,7 +214,14 @@ void text_editor_manager::render()
             {
                 for(auto& item : current_scripts)
                 {
-                    if(ImGui::BeginMenu(item.first.c_str()))
+                    std::string user_name = item.first;
+
+                    if(user_name == selected_user)
+                        user_name = ">" + user_name;
+                    else
+                        user_name = " " + user_name;
+
+                    if(ImGui::BeginMenu(user_name.c_str()))
                     {
                         for(auto& name : item.second)
                         {
@@ -277,9 +284,18 @@ void text_editor_manager::render()
 
         for(auto& i : current_scripts)
         {
-            if(ImGui::MenuItem(i.first.c_str()))
+            std::string user_name = i.first;
+
+            if(user_name == selected_user)
+                user_name = ">" + user_name;
+            else
+                user_name = " " + user_name;
+
+            if(ImGui::MenuItem(user_name.c_str()))
             {
                 selected_user = i.first;
+
+                all_scripts[selected_user].switch_to(editor, all_scripts[selected_user].current_idx);
             }
         }
 
@@ -344,8 +360,10 @@ void text_editor_manager::render()
 
             std::string friendly_name = currently_editing.all_scripts[i].friendly_name;
 
-            //if(selected)
-            //    friendly_name += " (X)";
+            if(selected)
+                friendly_name = ">" + friendly_name;
+            else
+                friendly_name = " " + friendly_name;
 
             if(ImGui::MenuItem(friendly_name.c_str(), nullptr, selected, true))
             {
