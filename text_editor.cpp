@@ -299,46 +299,6 @@ void text_editor_manager::render()
             }
         }
 
-        #if 0
-        for(int i=0; i < (int)all_scripts.size(); i++)
-        {
-            bool selected = i == current_idx;
-
-            std::string name = all_scripts[i].friendly_name;
-
-            if(selected)
-                name += " (X)";
-
-            /*auto old_col = ImGui::GetStyleColorVec4(ImGuiCol_HeaderHovered);
-
-            if(selected)
-            {
-                ImGui::PushStyleColor(ImGuiCol_Header, old_col);
-            }*/
-
-            if(ImGui::MenuItem(name.c_str(), nullptr, selected, true))
-            {
-                if(i != current_idx)
-                {
-                    switch_to(i);
-                }
-            }
-
-            /*if(selected)
-            {
-                ImGui::PopStyleColor(1);
-            }*/
-
-            if(ImGui::IsItemClicked(2) || ImGui::IsItemClicked(1))
-            {
-                close(i);
-                i--;
-                continue;
-            }
-        }
-        #endif // 0
-
-
         ImGui::EndMenuBar();
     }
 
@@ -382,21 +342,6 @@ void text_editor_manager::render()
     }
 
     ImGui::EndMenuBar();
-
-    /*for(int i=0; i < (int)all_scripts.size(); i++)
-    {
-        if(ImGui::Button(all_scripts[i].editing_script.c_str()))
-        {
-
-        }
-
-        if(i != (int)all_scripts.size() - 1)
-        {
-            ImGui::SameLine();
-        }
-    }*/
-
-    //current_script.has_unsaved_changes |= editor.IsTextChanged();
 
     for(auto& i : all_scripts)
     {
