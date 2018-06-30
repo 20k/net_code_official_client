@@ -9,6 +9,34 @@
 #include "auto_handlers.hpp"
 #include "imgui_ui_components.hpp"
 
+std::vector<std::string> get_all_scripts_list()
+{
+    std::vector<std::string> ret;
+
+    tinydir_dir dir;
+    tinydir_open(&dir, "./scripts");
+
+    while (dir.has_next)
+    {
+        tinydir_file file;
+        tinydir_readfile(&dir, &file);
+
+        if(!file.is_dir)
+        {
+            std::string name = file.name;
+
+            if(no_ss_split(name, ".").size() >= 2)
+                ret.push_back(name);
+        }
+
+        tinydir_next(&dir);
+    }
+
+    tinydir_close(&dir);
+
+    return ret;
+}
+
 std::vector<std::string> get_scripts_list(const std::string& username)
 {
     std::vector<std::string> ret;

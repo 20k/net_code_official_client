@@ -10,6 +10,8 @@ void editable_script::set_file_name(const std::string& file_name)
         save();
 
     editing_script = file_name;
+    friendly_name = format_raw_script_name(editing_script);
+
     has_script = true;
 
     load();
@@ -53,6 +55,9 @@ void editable_script::tick()
 
 std::string editable_script::get_contents()
 {
+    if(script_contents.size() == 0)
+        return " ";
+
     return script_contents;
 }
 
@@ -95,7 +100,7 @@ void text_editor_manager::switch_to(int idx)
     }
     else
     {
-        editor.SetText("");
+        editor.SetText(" ");
     }
 }
 
@@ -147,37 +152,50 @@ void text_editor_manager::render()
         }
     }
 
+    std::vector<std::string> script_names = get_all_scripts_list();
+    //std::vector<std::string> script_names = get_scripts_list(editing_user);
+
+    std::map<std::string, std::vector<std::string>> user_scripts;
+
+    for(auto& i : script_names)
+    {
+        auto split = no_ss_split(i, ".");
+
+        std::string usr_name = split[0];
+
+        //std::string user_script = format_raw_script_name(i);
+
+        user_scripts[usr_name].push_back(i);
+    }
+
+
     if(ImGui::BeginMenuBar())
     {
         if(ImGui::BeginMenu("File"))
         {
-            /*if (ImGui::MenuItem("Save"))
-            {
-                auto textToSave = editor.GetText();
-                /// save text....
-            }
-            if (ImGui::MenuItem("Quit", "Alt-F4"))
-            {
-
-            }*/
-
             if(ImGui::BeginMenu("Scripts"))
             {
-                std::vector<std::string> script_names = get_scripts_list(editing_user);
-
-                for(auto& name : script_names)
+                for(auto& item : user_scripts)
                 {
-                    //std::string parsed = format_raw_script_name(i);
-
-                    if(ImGui::MenuItem(name.c_str()))
+                    if(ImGui::BeginMenu(item.first.c_str()))
                     {
-                        editable_script script;
-                        script.set_file_name(name);
-                        all_scripts.push_back(script);
+                        for(auto& name : item.second)
+                        {
+                            std::string friendly_name = format_raw_script_name(name);
 
-                        switch_to((int)all_scripts.size() - 1);
+                            if(ImGui::MenuItem(friendly_name.c_str()))
+                            {
+                                editable_script script;
+                                script.set_file_name(name);
+                                all_scripts.push_back(script);
 
-                        any_selected = true;
+                                switch_to((int)all_scripts.size() - 1);
+
+                                any_selected = true;
+                            }
+                        }
+
+                        ImGui::EndMenu();
                     }
                 }
 
@@ -220,7 +238,7 @@ void text_editor_manager::render()
         {
             bool selected = i == current_idx;
 
-            std::string name = all_scripts[i].editing_script;
+            std::string name = all_scripts[i].friendly_name;
 
             if(selected)
                 name += " (X)";
@@ -257,6 +275,15 @@ void text_editor_manager::render()
         ImGui::EndMenuBar();
     }
 
+
+    /*ImGui::BeginChild("Test", ImVec2(0,0), false, ImGuiWindowFlags_MenuBar);
+
+    ImGui::BeginMenuBar();
+
+    ImGui::MenuItem("Hallo");
+
+    ImGui::EndMenuBar();*/
+
     /*for(int i=0; i < (int)all_scripts.size(); i++)
     {
         if(ImGui::Button(all_scripts[i].editing_script.c_str()))
@@ -282,6 +309,8 @@ void text_editor_manager::render()
     editor.Render("TextRenderer");
 
     ImGui::PopFont();
+
+    //ImGui::EndChild();
 
     ImGui::End();
 }

@@ -8,6 +8,7 @@
 struct editable_script
 {
     std::string editing_script;
+    std::string friendly_name;
     std::string script_contents;
 
     bool has_script = false;

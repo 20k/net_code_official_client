@@ -7,6 +7,7 @@
 struct auto_handler;
 struct terminal_imgui;
 
+std::vector<std::string> get_all_scripts_list();
 std::vector<std::string> get_scripts_list(const std::string& username);
 std::string format_raw_script_name(const std::string& file_name);
 

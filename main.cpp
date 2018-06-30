@@ -712,10 +712,13 @@ int main()
             }
             else
             {
+                //if(chat_win.command.command.size() > 0 && chat_win.command.command.back() == '\n')
+                //    chat_win.command.command.pop_back();
+
                 sized_string chat_command = sa_make_chat_command(make_view(chat_win.selected), make_view(chat_win.command.command));
 
                 ///TODO
-                sd_add_back_read(shared, make_view(chat_command));
+                sd_add_back_write(shared, make_view(chat_command));
 
                 free_sized_string(chat_command);
             }
