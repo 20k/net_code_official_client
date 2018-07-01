@@ -724,6 +724,16 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
                 auto_handle.found_unprocessed_autocompletes.insert(name);
             }
         }
+        else if(command_info.type == server_command_command_tagged)
+        {
+            command_tagged_info tag_info = sa_command_tagged_to_info(command_info);
+
+            str = c_str_sized_to_cpp(tag_info.val);
+
+            std::string tag = c_str_sized_to_cpp(tag_info.tag);
+
+            push = true;
+        }
         else if(starts_with(str, "command_auth"))
         {
             ///do nothing

@@ -137,7 +137,7 @@ void editable_script::upload(c_shared_data data)
 
     std::string name = all[1];
 
-    std::string comm = "client_command #up_es6";
+    std::string comm = "client_command_tagged " + name + " #up_es6";
 
     std::string final_command = comm + " " + name + " " + script_data;
 
