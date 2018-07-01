@@ -666,7 +666,7 @@ int main()
         font_select.render();
 
         text_editor.tick();
-        text_editor.render();
+        text_editor.render(shared);
 
         if(enter && to_edit->command.size() > 0)
         {

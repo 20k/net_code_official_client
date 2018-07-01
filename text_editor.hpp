@@ -99,7 +99,7 @@ struct text_editor_manager : serialisable
 
     //void schedule_close(const std::string& name);
 
-    void render();
+    void render(c_shared_data data);
 
     void tick();
 

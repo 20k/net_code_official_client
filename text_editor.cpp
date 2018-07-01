@@ -137,9 +137,9 @@ void editable_script::upload(c_shared_data data)
 
     std::string name = all[1];
 
-    std::string comm = "#up_es6";
+    std::string comm = "client_command #up_es6";
 
-    std::string final_command = comm + name + " " + script_data;
+    std::string final_command = comm + " " + name + " " + script_data;
 
     sd_add_back_write(data, make_view(final_command));
 }
@@ -281,7 +281,7 @@ std::optional<editable_script*> user_scripts::get_current_script()
     to_close.push_back(name);
 }*/
 
-void text_editor_manager::render()
+void text_editor_manager::render(c_shared_data data)
 {
     //ImGui::PushFont(font_select.get_editor_font());
 
@@ -467,19 +467,20 @@ void text_editor_manager::render()
         ImGui::BeginMenuBar();
 
         {
-            if(ImGui::MenuItem("Build"))
+            if(ImGui::MenuItem("Upload"))
             {
-
+                opt.value()->upload(data);
             }
 
             if(ImGui::MenuItem("Run"))
             {
-
+                opt.value()->run(data);
             }
 
-            if(ImGui::MenuItem("Build+Run"))
+            if(ImGui::MenuItem("Upload+Run"))
             {
-
+                opt.value()->upload(data);
+                opt.value()->run(data);
             }
         }
 
