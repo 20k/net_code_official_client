@@ -14,6 +14,11 @@ void editable_script::do_serialise(serialise& s, bool ser)
         has_script = false;
         set_file_name(editing_script);
     }
+
+    if(ser == true && has_script)
+    {
+        save();
+    }
 }
 
 void user_scripts::do_serialise(serialise& s, bool ser)
@@ -433,16 +438,18 @@ void text_editor_manager::tick()
         }
     }
 
-    if(!is_open)
-        return;
+    /*if(!is_open)
+        return;*/
 
-    if(!any_selected)
-        return;
+    /*if(!any_selected)
+        return;*/
 
     int current_idx = all_scripts[selected_user].current_idx;
 
     if(current_idx >= 0 && current_idx < (int)all_scripts[selected_user].all_scripts.size())
     {
+        //std::cout << "contents " << editor.GetText() << std::endl;
+
         all_scripts[selected_user].all_scripts[current_idx].set_contents(editor.GetText());
     }
 
