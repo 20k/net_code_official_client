@@ -5,6 +5,7 @@
 #include <SFML/Graphics.hpp>
 #include "util.hpp"
 #include <serialise/serialise.hpp>
+#include <libncclient/c_shared_data.h>
 
 struct editable_script : serialisable
 {
@@ -30,6 +31,9 @@ struct editable_script : serialisable
 
     virtual void do_serialise(serialise& s, bool ser);
 
+    void upload(c_shared_data data); ///can only be uploaded from hosting user, currently
+    void run(c_shared_data data); ///can be run from any context
+
     ~editable_script();
 };
 
@@ -49,6 +53,7 @@ struct user_scripts : serialisable
     virtual void do_serialise(serialise& s, bool ser);
 
     void save();
+    void save_editing();
 };
 
 struct font_selector;
@@ -98,7 +103,7 @@ struct text_editor_manager : serialisable
 
     virtual void do_serialise(serialise& s, bool ser);
 
-    void save();
+    void save(bool full = false);
     void load();
 };
 

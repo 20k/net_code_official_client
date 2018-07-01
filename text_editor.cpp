@@ -4,6 +4,7 @@
 #include "font_cfg.hpp"
 #include <iostream>
 #include <json/json.hpp>
+#include <libncclient/nc_string_interop.hpp>
 
 void editable_script::do_serialise(serialise& s, bool ser)
 {
@@ -15,10 +16,10 @@ void editable_script::do_serialise(serialise& s, bool ser)
         set_file_name(editing_script);
     }
 
-    if(ser == true && has_script)
+    /*if(ser == true && has_script)
     {
         save();
-    }
+    }*/
 }
 
 void user_scripts::do_serialise(serialise& s, bool ser)
@@ -122,6 +123,41 @@ void editable_script::set_contents(const std::string& new_contents)
     script_contents = new_contents;
 }
 
+void editable_script::upload(c_shared_data data)
+{
+    ///#up_es6 name data
+
+    std::string script_data = get_contents();
+    std::string disk_name = editing_script;
+
+    auto all = no_ss_split(disk_name, ".");
+
+    if(all.size() < 2)
+        return;
+
+    std::string name = all[1];
+
+    std::string comm = "#up_es6";
+
+    std::string final_command = comm + name + " " + script_data;
+
+    sd_add_back_write(data, make_view(final_command));
+}
+
+void editable_script::run(c_shared_data data)
+{
+    std::string disk_name = editing_script;
+
+    auto all = no_ss_split(disk_name, ".");
+
+    if(all.size() < 2)
+        return;
+
+    std::string command = std::string("client_command ") + "#ns." + all[0] + "." + all[1] + "({})";
+
+    sd_add_back_write(data, make_view(command));
+}
+
 editable_script::~editable_script()
 {
     if(!has_script)
@@ -138,7 +174,7 @@ text_editor_manager::text_editor_manager(font_selector& _font_select) : font_sel
 
 text_editor_manager::~text_editor_manager()
 {
-
+    save(true);
 }
 
 void text_editor_manager::set_current_user(const std::string& username)
@@ -224,6 +260,14 @@ void user_scripts::save()
     }
 }
 
+void user_scripts::save_editing()
+{
+    if(current_idx >= 0 && current_idx < (int)all_scripts.size())
+    {
+        all_scripts[current_idx].save();
+    }
+}
+
 /*void text_editor_manager::schedule_close(const std::string& name)
 {
     to_close.push_back(name);
@@ -232,6 +276,9 @@ void user_scripts::save()
 void text_editor_manager::render()
 {
     //ImGui::PushFont(font_select.get_editor_font());
+
+    if(!is_open)
+        return;
 
     ImGui::Begin("Text Editor", &is_open, ImGuiWindowFlags_MenuBar);
 
@@ -438,8 +485,8 @@ void text_editor_manager::tick()
         }
     }
 
-    /*if(!is_open)
-        return;*/
+    if(!is_open)
+        return;
 
     /*if(!any_selected)
         return;*/
@@ -456,13 +503,28 @@ void text_editor_manager::tick()
     //current_script.set_contents(editor.GetText());
 }
 
-void text_editor_manager::save()
+void text_editor_manager::save(bool full)
 {
     std::string settings_file = "text_sett.txt";
 
     serialise stem;
     stem.handle_serialise_no_clear(*this, true);
     stem.save(settings_file);
+
+    if(full)
+    {
+        for(auto& i : all_scripts)
+        {
+            for(auto& j : i.second.all_scripts)
+            {
+                j.save();
+            }
+        }
+    }
+    else if(selected_user != "")
+    {
+        all_scripts[selected_user].save_editing();
+    }
 }
 
 void text_editor_manager::load()

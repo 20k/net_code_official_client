@@ -492,6 +492,11 @@ int main()
                     font_select.is_open = !font_select.is_open;
                 }
 
+                if(event.key.code == sf::Keyboard::F2)
+                {
+                    text_editor.is_open = !text_editor.is_open;
+                }
+
                 if(event.key.code == sf::Keyboard::Return)
                 {
                     if(to_edit != &realtime_shim && to_edit != &no_string)
@@ -909,7 +914,7 @@ int main()
     swindow.handle_serialise(chat_win, true);
     swindow.save(chat_file);
 
-    text_editor.save();
+    text_editor.save(true);
 
     //sd_set_termination(shared);
 
