@@ -268,6 +268,14 @@ void user_scripts::save_editing()
     }
 }
 
+std::optional<editable_script*> user_scripts::get_current_script()
+{
+    if(current_idx < 0 || current_idx >= (int)all_scripts.size())
+        return std::nullopt;
+
+    return &all_scripts[current_idx];
+}
+
 /*void text_editor_manager::schedule_close(const std::string& name)
 {
     to_close.push_back(name);
@@ -450,6 +458,35 @@ void text_editor_manager::render()
 
     ImGui::EndMenuBar();
 
+    auto opt = all_scripts[selected_user].get_current_script();
+
+    if(opt.has_value())
+    {
+        ImGui::BeginChild("NewChild", ImVec2(0,0), false, ImGuiWindowFlags_MenuBar);
+
+        ImGui::BeginMenuBar();
+
+        {
+            if(ImGui::MenuItem("Build"))
+            {
+
+            }
+
+            if(ImGui::MenuItem("Run"))
+            {
+
+            }
+
+            if(ImGui::MenuItem("Build+Run"))
+            {
+
+            }
+        }
+
+        ImGui::EndMenuBar();
+    }
+
+
     for(auto& i : all_scripts)
     {
         int current_idx = i.second.current_idx;
@@ -465,6 +502,9 @@ void text_editor_manager::render()
     editor.Render("TextRenderer");
 
     ImGui::PopFont();
+
+    if(opt)
+        ImGui::EndChild();
 
     ImGui::EndChild();
 

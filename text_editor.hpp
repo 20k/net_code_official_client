@@ -54,6 +54,8 @@ struct user_scripts : serialisable
 
     void save();
     void save_editing();
+
+    std::optional<editable_script*> get_current_script();
 };
 
 struct font_selector;
