@@ -455,3 +455,24 @@ void text_editor_manager::tick()
 
     //current_script.set_contents(editor.GetText());
 }
+
+void text_editor_manager::save()
+{
+    std::string settings_file = "text_sett.txt";
+
+    serialise stem;
+    stem.handle_serialise_no_clear(*this, true);
+    stem.save(settings_file);
+}
+
+void text_editor_manager::load()
+{
+    std::string settings_file = "text_sett.txt";
+
+    if(file_exists(settings_file))
+    {
+        serialise ssett;
+        ssett.load(settings_file);
+        ssett.handle_serialise_no_clear(*this, false);
+    }
+}

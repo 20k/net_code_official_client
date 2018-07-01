@@ -254,12 +254,7 @@ int main()
         swindow.handle_serialise(chat_win, false);
     }
 
-    if(file_exists(settings_file))
-    {
-        serialise ssett;
-        ssett.load(settings_file);
-        ssett.handle_serialise_no_clear(text_editor, false);
-    }
+    text_editor.load();
 
     if(file_exists(general_file))
     {
@@ -822,9 +817,7 @@ int main()
             swindow.handle_serialise(chat_win, true);
             swindow.save(chat_file);
 
-            serialise stem;
-            stem.handle_serialise_no_clear(text_editor, true);
-            stem.save(settings_file);
+            text_editor.save();
 
             write_clock.restart();
         }
@@ -916,9 +909,7 @@ int main()
     swindow.handle_serialise(chat_win, true);
     swindow.save(chat_file);
 
-    serialise stem;
-    stem.handle_serialise_no_clear(text_editor, true);
-    stem.save(settings_file);
+    text_editor.save();
 
     //sd_set_termination(shared);
 

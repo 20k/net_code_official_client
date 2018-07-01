@@ -97,6 +97,9 @@ struct text_editor_manager : serialisable
     void tick();
 
     virtual void do_serialise(serialise& s, bool ser);
+
+    void save();
+    void load();
 };
 
 
