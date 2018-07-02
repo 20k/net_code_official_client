@@ -822,7 +822,8 @@ int main()
             swindow.handle_serialise(chat_win, true);
             swindow.save(chat_file);
 
-            text_editor.save();
+            text_editor.save_settings();
+            //text_editor.save();
 
             write_clock.restart();
         }
@@ -914,7 +915,8 @@ int main()
     swindow.handle_serialise(chat_win, true);
     swindow.save(chat_file);
 
-    text_editor.save(true);
+    text_editor.save_only_modified();
+    //text_editor.save(true);
 
     //sd_set_termination(shared);
 

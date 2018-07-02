@@ -88,9 +88,10 @@ void editable_script::save()
     rename(backup.c_str(), base.c_str());
     remove(temp.c_str());
 
-    save_clock.restart();
+    //save_clock.restart();
 
     force_save = false;
+    has_unsaved_changes = false;
 }
 
 void editable_script::load()
@@ -105,7 +106,7 @@ void editable_script::tick()
 
     ///ONLY DO THIS ON MODIFICATIONS
     ///so we can detect if it were externally modified
-    if(save_clock.getElapsedTime().asSeconds() > 60 || force_save)
+    if(force_save)
     {
         save();
     }
@@ -188,7 +189,8 @@ editable_script::~editable_script()
     if(!has_script)
         return;
 
-    save();
+    if(has_unsaved_changes)
+        save();
 }
 
 text_editor_manager::text_editor_manager(font_selector& _font_select) : font_select(_font_select)
@@ -199,7 +201,8 @@ text_editor_manager::text_editor_manager(font_selector& _font_select) : font_sel
 
 text_editor_manager::~text_editor_manager()
 {
-    save(true);
+    save_only_modified();
+    //save(true);
 }
 
 void text_editor_manager::set_current_user(const std::string& username)
@@ -209,10 +212,10 @@ void text_editor_manager::set_current_user(const std::string& username)
 
 void user_scripts::switch_to(TextEditor& editor, int idx)
 {
-    if(current_idx >= 0 && current_idx < (int)all_scripts.size())
+    /*if(current_idx >= 0 && current_idx < (int)all_scripts.size())
     {
         all_scripts[current_idx].save();
-    }
+    }*/
 
     current_idx = idx;
 
@@ -315,17 +318,17 @@ void text_editor_manager::render(c_shared_data data)
 
     ImGui::Begin("Text Editor", &is_open, ImGuiWindowFlags_MenuBar);
 
-    if(ImGui::IsItemFocused())
+    if(ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
     {
         sf::Keyboard key;
 
         if(key.isKeyPressed(sf::Keyboard::LControl) && ONCE_MACRO(sf::Keyboard::S))
         {
-            //force_save = true;
+            auto curr = all_scripts[selected_user].get_current_script();
 
-            for(auto& i : all_scripts)
+            if(curr.has_value())
             {
-                i.second.save();
+                curr.value()->save();
             }
         }
     }
@@ -443,7 +446,7 @@ void text_editor_manager::render(c_shared_data data)
     }
 
 
-    ImGui::BeginChild("Test", ImVec2(0,0), false, ImGuiWindowFlags_MenuBar);
+    ImGui::BeginChild("ScriptBar", ImVec2(0,0), false, ImGuiWindowFlags_MenuBar);
 
     ImGui::BeginMenuBar();
 
@@ -461,9 +464,14 @@ void text_editor_manager::render(c_shared_data data)
             std::string friendly_name = currently_editing.all_scripts[i].friendly_name;
 
             if(selected)
-                friendly_name = ">" + friendly_name;
+                friendly_name = ">" + friendly_name + " ";
             else
-                friendly_name = " " + friendly_name;
+                friendly_name = " " + friendly_name + " ";
+
+            if(currently_editing.all_scripts[i].has_unsaved_changes)
+            {
+                friendly_name.back() = '*';
+            }
 
             if(ImGui::MenuItem(friendly_name.c_str(), nullptr, selected, true))
             {
@@ -513,7 +521,7 @@ void text_editor_manager::render(c_shared_data data)
     }
 
 
-    for(auto& i : all_scripts)
+    /*for(auto& i : all_scripts)
     {
         int current_idx = i.second.current_idx;
 
@@ -521,7 +529,7 @@ void text_editor_manager::render(c_shared_data data)
         {
             i.second.all_scripts[current_idx].has_unsaved_changes |= editor.IsTextChanged();
         }
-    }
+    }*/
 
     ImGui::PushFont(font_select.get_editor_font());
 
@@ -581,10 +589,16 @@ void text_editor_manager::tick()
     {
         //std::cout << "contents " << editor.GetText() << std::endl;
 
+        std::string current_contents = all_scripts[selected_user].all_scripts[current_idx].get_contents();
+        std::string editor_text = editor.GetText();
+
+        if(current_contents != editor_text)
+        {
+            all_scripts[selected_user].all_scripts[current_idx].has_unsaved_changes = true;
+        }
+
         all_scripts[selected_user].all_scripts[current_idx].set_contents(editor.GetText());
     }
-
-    //current_script.set_contents(editor.GetText());
 }
 
 void text_editor_manager::save(bool full)
@@ -609,6 +623,29 @@ void text_editor_manager::save(bool full)
     {
         all_scripts[selected_user].save_editing();
     }
+}
+
+void text_editor_manager::save_only_modified()
+{
+    save_settings();
+
+    for(auto& i : all_scripts)
+    {
+        for(auto& j : i.second.all_scripts)
+        {
+            if(j.has_unsaved_changes)
+                j.save();
+        }
+    }
+}
+
+void text_editor_manager::save_settings()
+{
+    std::string settings_file = "text_sett.txt";
+
+    serialise stem;
+    stem.handle_serialise_no_clear(*this, true);
+    stem.save(settings_file);
 }
 
 void text_editor_manager::load()

@@ -21,7 +21,7 @@ struct editable_script : serialisable
     bool force_save = false;
     bool has_unsaved_changes = false;
 
-    sf::Clock save_clock;
+    //sf::Clock save_clock;
 
     void set_file_name(const std::string& file_name);
 
@@ -113,6 +113,8 @@ struct text_editor_manager : serialisable
     virtual void do_serialise(serialise& s, bool ser);
 
     void save(bool full = false);
+    void save_only_modified();
+    void save_settings();
     void load();
 };
 
