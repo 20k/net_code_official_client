@@ -7,6 +7,10 @@
 #include <serialise/serialise.hpp>
 #include <libncclient/c_shared_data.h>
 
+#include "tag_manager.hpp"
+
+struct text_editor_manager;
+
 struct editable_script : serialisable
 {
     std::string editing_script;
@@ -31,8 +35,9 @@ struct editable_script : serialisable
 
     virtual void do_serialise(serialise& s, bool ser);
 
-    void upload(c_shared_data data); ///can only be uploaded from hosting user, currently
+    void upload(c_shared_data data, bool tagged = false); ///can only be uploaded from hosting user, currently
     void run(c_shared_data data); ///can be run from any context
+    void schedule_run_after_upload(text_editor_manager& text_editor_manage);
 
     ~editable_script();
 };
@@ -68,6 +73,8 @@ struct text_editor_manager : serialisable
     std::string editing_user;
     std::string selected_user;
     //std::vector<std::string> to_close;
+
+    std::vector<server_tagged_message> scheduled_runs;
 
     sf::Clock settings_save_clock;
 

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <json/json.hpp>
 #include <libncclient/nc_string_interop.hpp>
+#include "tag_manager.hpp"
 
 void editable_script::do_serialise(serialise& s, bool ser)
 {
@@ -123,7 +124,7 @@ void editable_script::set_contents(const std::string& new_contents)
     script_contents = new_contents;
 }
 
-void editable_script::upload(c_shared_data data)
+void editable_script::upload(c_shared_data data, bool tagged)
 {
     ///#up_es6 name data
 
@@ -135,9 +136,21 @@ void editable_script::upload(c_shared_data data)
     if(all.size() < 2)
         return;
 
+    tag_manager& tag_manage = get_global_tag_manager();
+
     std::string name = all[1];
 
-    std::string comm = "client_command_tagged " + name + " #up_es6";
+    if(tag_manage.received_tag(name))
+    {
+        tag_manage.remove_tag(name);
+    }
+
+    std::string comm;
+
+    if(tagged)
+        comm = "client_command_tagged " + name + " #up_es6";
+    else
+        comm = "client_command #up_es6";
 
     std::string final_command = comm + " " + name + " " + script_data;
 
@@ -156,6 +169,18 @@ void editable_script::run(c_shared_data data)
     std::string command = std::string("client_command ") + "#ns." + all[0] + "." + all[1] + "({})";
 
     sd_add_back_write(data, make_view(command));
+}
+
+void editable_script::schedule_run_after_upload(text_editor_manager& text_editor_manage)
+{
+    std::string disk_name = editing_script;
+
+    auto all = no_ss_split(disk_name, ".");
+
+    if(all.size() < 2)
+        return;
+
+    text_editor_manage.scheduled_runs.push_back({all[1], "client_command #ns." + all[0] + "." + all[1] + "({})"});
 }
 
 editable_script::~editable_script()
@@ -479,8 +504,8 @@ void text_editor_manager::render(c_shared_data data)
 
             if(ImGui::MenuItem("Upload+Run"))
             {
-                opt.value()->upload(data);
-                opt.value()->run(data);
+                opt.value()->upload(data, true);
+                opt.value()->schedule_run_after_upload(*this);
             }
         }
 
@@ -510,6 +535,24 @@ void text_editor_manager::render(c_shared_data data)
     ImGui::EndChild();
 
     ImGui::End();
+
+    tag_manager& tag_manage = get_global_tag_manager();
+
+    for(int i=0; i < (int)scheduled_runs.size(); i++)
+    {
+        server_tagged_message& tagged = scheduled_runs[i];
+
+        if(tag_manage.received_tag(tagged.tag))
+        {
+            tag_manage.remove_tag(tagged.tag);
+
+            sd_add_back_write(data, make_view(tagged.message));
+
+            scheduled_runs.erase(scheduled_runs.begin() + i);
+            i--;
+            continue;
+        }
+    }
 }
 
 void text_editor_manager::tick()

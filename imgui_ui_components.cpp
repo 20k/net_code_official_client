@@ -5,6 +5,7 @@
 #include <libncclient/nc_string_interop.hpp>
 #include <libncclient/c_server_api.h>
 #include "copy_handler.hpp"
+#include "tag_manager.hpp"
 
 namespace ImGuiX
 {
@@ -731,6 +732,10 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
             str = c_str_sized_to_cpp(tag_info.val);
 
             std::string tag = c_str_sized_to_cpp(tag_info.tag);
+
+            tag_manager& tag_manage = get_global_tag_manager();
+
+            tag_manage.add_tagged(tag, str);
 
             push = true;
         }
