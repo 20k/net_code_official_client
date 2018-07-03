@@ -347,6 +347,38 @@ void text_editor_manager::render(c_shared_data data)
                 curr.value()->save();
             }
         }
+
+        if(should_undo)
+        {
+            auto curr = all_scripts[selected_user].get_current_script();
+
+            if(curr.has_value())
+            {
+                editable_script* edit = curr.value();
+
+                edit->editor.Undo();
+                edit->set_contents(edit->editor.GetText());
+            }
+
+            should_undo = false;
+        }
+
+        if(should_redo)
+        {
+            auto curr = all_scripts[selected_user].get_current_script();
+
+            if(curr.has_value())
+            {
+                editable_script* edit = curr.value();
+
+                edit->editor.Redo();
+                edit->set_contents(edit->editor.GetText());
+            }
+
+            should_redo = false;
+        }
+
+        is_focused = true;
     }
 
     std::vector<std::string> script_names = get_all_scripts_list();

@@ -419,6 +419,19 @@ int main()
 
             if(event.type == sf::Event::KeyPressed)
             {
+                if(text_editor.is_open && text_editor.is_focused)
+                {
+                    if(event.key.code == sf::Keyboard::Z && key.isKeyPressed(sf::Keyboard::LControl))
+                    {
+                        text_editor.should_undo = true;
+                    }
+
+                    if(event.key.code == sf::Keyboard::Y && key.isKeyPressed(sf::Keyboard::LControl))
+                    {
+                        text_editor.should_redo = true;
+                    }
+                }
+
                 if(key_map.find(event.key.code) != key_map.end())
                     realtime_str.push_back(key_map[event.key.code]);
 

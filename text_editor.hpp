@@ -85,6 +85,9 @@ struct text_editor_manager : serialisable
     bool display_modifications_window = false;
     std::set<std::string> modified_scripts;
 
+    bool should_undo = false;
+    bool should_redo = false;
+
     std::vector<server_tagged_message> scheduled_runs;
 
     sf::Clock settings_save_clock;
@@ -97,6 +100,7 @@ struct text_editor_manager : serialisable
     //int current_idx = -1;
 
     bool is_open = true;
+    bool is_focused = false;
     bool any_selected = false;
     bool force_save = false;
     bool modified = false;
