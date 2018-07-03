@@ -438,7 +438,7 @@ void text_editor_manager::render(c_shared_data data)
 
                     if(ImGui::BeginMenu(user_name.c_str()))
                     {
-                        if(ImGui::MenuItem("New Script"))
+                        if(ImGui::MenuItem("New Script..."))
                         {
                             editable_script script;
 
@@ -624,6 +624,11 @@ void text_editor_manager::render(c_shared_data data)
             {
                 currently_editing.close(i);
                 break;
+            }
+
+            if(ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip("Double Click to Rename");
             }
         }
     }
