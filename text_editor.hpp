@@ -24,6 +24,7 @@ struct editable_script : serialisable
     bool has_script = false;
     bool force_save = false;
     bool has_unsaved_changes = false;
+    bool is_renaming = false;
 
     //sf::Clock save_clock;
 
@@ -33,6 +34,8 @@ struct editable_script : serialisable
     void load();
 
     void tick();
+
+    void change_name(const std::string& to);
 
     std::string get_contents();
     std::string get_contents_as_were_loaded(); ///compare against disk contents to tell if its changed

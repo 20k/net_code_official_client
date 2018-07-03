@@ -122,6 +122,21 @@ void editable_script::tick()
     }
 }
 
+void editable_script::change_name(const std::string& to)
+{
+    if(file_exists("./scripts/" + to))
+        return;
+
+    std::string base_name = "./scripts/" + editing_script;
+    std::string new_name = "./scripts/" + to;
+
+    editing_script = to;
+
+    rename(base_name.c_str(), new_name.c_str());
+
+    friendly_name = format_raw_script_name(editing_script);
+}
+
 std::string editable_script::get_contents()
 {
     if(script_contents.size() == 0)
@@ -510,22 +525,24 @@ void text_editor_manager::render(c_shared_data data)
     const std::vector<editable_script>& fnames =  all_scripts[selected_user].all_scripts;
 
     {
+        user_scripts& currently_editing = all_scripts[selected_user];
+
         for(int i=0; i < (int)fnames.size(); i++)
         {
-            user_scripts& currently_editing = all_scripts[selected_user];
+            editable_script& current_script = currently_editing.all_scripts[i];
 
             bool selected = i == currently_editing.current_idx;
 
-            std::string name = currently_editing.all_scripts[i].editing_script;
+            std::string name = current_script.editing_script;
 
-            std::string friendly_name = currently_editing.all_scripts[i].friendly_name;
+            std::string friendly_name = current_script.friendly_name;
 
             if(selected)
                 friendly_name = ">" + friendly_name + " ";
             else
                 friendly_name = " " + friendly_name + " ";
 
-            if(currently_editing.all_scripts[i].has_unsaved_changes)
+            if(current_script.has_unsaved_changes)
             {
                 friendly_name.back() = '*';
             }
@@ -538,9 +555,48 @@ void text_editor_manager::render(c_shared_data data)
                 }
             }
 
+            if(current_script.is_renaming)
+            {
+                ImGui::SetNextWindowFocus();
+                ImGui::Begin("Rename", &current_script.is_renaming, ImGuiWindowFlags_AlwaysAutoResize);
+
+                char input[100] = {0};
+
+                for(int i=0; i < 99 && i < (int)name.size(); i++)
+                {
+                    input[i] = name[i];
+                }
+
+                if(ImGui::InputText("", &input[0], 99, ImGuiInputTextFlags_EnterReturnsTrue))
+                {
+                    std::string str(std::begin(input), std::begin(input) + strlen(input));
+
+                    bool valid = true;
+
+                    for(int i=0; i < (int)str.size(); i++)
+                    {
+                        if(str[i] == ' ')
+                            valid = false;
+                    }
+
+                    if(valid)
+                    {
+                        current_script.is_renaming = false;
+                        current_script.change_name(str);
+                    }
+                }
+
+                ImGui::End();
+            }
+
+            if(ImGui::IsItemClicked(0) && ImGui::IsMouseDoubleClicked(0))
+            {
+                current_script.is_renaming = true;
+            }
+
             if(ImGui::IsItemClicked(2) || ImGui::IsItemClicked(1))
             {
-                currently_editing.close( i);
+                currently_editing.close(i);
                 break;
             }
         }
