@@ -438,6 +438,32 @@ void text_editor_manager::render(c_shared_data data)
 
                     if(ImGui::BeginMenu(user_name.c_str()))
                     {
+                        if(ImGui::MenuItem("New Script"))
+                        {
+                            editable_script script;
+
+                            std::string partial_name = item.first + ".new_script";
+                            std::string expanded_partial_name = partial_name;
+
+                            int partial_id = 1;
+
+                            while(file_exists("./scripts/" + expanded_partial_name + ".js"))
+                            {
+                                expanded_partial_name = partial_name + std::to_string(partial_id++);
+                            }
+
+                            script.set_file_name(expanded_partial_name + ".js");
+                            script.save();
+
+                            all_scripts[item.first].all_scripts.push_back(script);
+
+                            all_scripts[item.first].switch_to((int)all_scripts[item.first].all_scripts.size() - 1);
+
+                            selected_user = item.first;
+
+                            any_selected = true;
+                        }
+
                         for(auto& name : item.second)
                         {
                             std::string friendly_name = format_raw_script_name(name);
