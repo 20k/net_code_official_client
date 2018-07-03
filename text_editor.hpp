@@ -99,7 +99,7 @@ struct text_editor_manager : serialisable
     //std::vector<editable_script> all_scripts;
     //int current_idx = -1;
 
-    bool is_open = true;
+    bool is_open = false;
     bool is_focused = false;
     bool any_selected = false;
     bool force_save = false;
