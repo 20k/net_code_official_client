@@ -120,6 +120,11 @@ std::string editable_script::get_contents()
     return script_contents;
 }
 
+std::string editable_script::get_disk_contents()
+{
+    return read_file_bin("./scripts/" + editing_script);
+}
+
 void editable_script::set_contents(const std::string& new_contents)
 {
     script_contents = new_contents;
@@ -601,6 +606,105 @@ void text_editor_manager::tick()
     }
 }
 
+void text_editor_manager::on_focus_window()
+{
+    should_check_for_modifications = true;
+}
+
+void text_editor_manager::check_for_external_modifications()
+{
+    if(should_check_for_modifications)
+    {
+        for(auto& i : all_scripts)
+        {
+            user_scripts& scripts = i.second;
+
+            for(editable_script& script : scripts.all_scripts)
+            {
+                std::string disk = script.get_disk_contents();
+                std::string current = script.get_contents();
+
+                if(disk != current)
+                {
+                    modified_scripts.insert(script.editing_script);
+
+                    display_modifications_window = true;
+                }
+            }
+        }
+    }
+
+    if(display_modifications_window)
+    {
+        ImGui::SetNextWindowFocus();
+        ImGui::Begin("Files were modified externally", &display_modifications_window);
+
+        for(auto it = modified_scripts.begin(); it != modified_scripts.end();)
+        {
+            bool any_erased = false;
+
+            std::string full_name = *it;
+
+            ImGui::Text(full_name.c_str());
+
+            ImGui::SameLine();
+
+            ///remember to refresh editor here
+            if(ImGui::Button("Keep Disk"))
+            {
+                auto found = name_to_editable(full_name);
+
+                ///need to reset editor here if were're currently editing
+                if(found.has_value())
+                {
+                    editable_script* edit = found.value();
+
+                    edit->load();
+
+                    auto f2 = all_scripts[selected_user].get_current_script();
+
+                    if(f2.has_value())
+                    {
+                        editable_script* script = *f2;
+
+                        if(script->editing_script == full_name)
+                        {
+                            editor.SetText(edit->get_contents());
+                        }
+                    }
+                }
+
+                any_erased = true;
+                it = modified_scripts.erase(it);
+            }
+
+            ImGui::SameLine();
+
+            if(ImGui::Button("Keep Current"))
+            {
+                auto found = name_to_editable(full_name);
+
+                if(found.has_value())
+                {
+                    editable_script* edit = found.value();
+
+                    edit->save();
+                }
+
+                any_erased = true;
+                it = modified_scripts.erase(it);
+            }
+
+            if(!any_erased)
+                it++;
+        }
+
+        ImGui::End();
+    }
+
+    should_check_for_modifications = false;
+}
+
 void text_editor_manager::save(bool full)
 {
     std::string settings_file = "text_sett.txt";
@@ -658,4 +762,18 @@ void text_editor_manager::load()
         ssett.load(settings_file);
         ssett.handle_serialise_no_clear(*this, false);
     }
+}
+
+std::optional<editable_script*> text_editor_manager::name_to_editable(const std::string& editable_name)
+{
+    for(auto& i : all_scripts)
+    {
+        for(auto& j : i.second.all_scripts)
+        {
+            if(j.editing_script == editable_name)
+                return &j;
+        }
+    }
+
+    return {};
 }

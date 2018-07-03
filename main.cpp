@@ -350,7 +350,11 @@ int main()
             ImGui::SFML::ProcessEvent(event);
 
             if(event.type == sf::Event::GainedFocus)
+            {
+                text_editor.on_focus_window();
                 focused = true;
+            }
+
             if(event.type == sf::Event::LostFocus)
                 focused = false;
 
@@ -667,6 +671,7 @@ int main()
 
         text_editor.tick();
         text_editor.render(shared);
+        text_editor.check_for_external_modifications();
 
         if(enter && to_edit->command.size() > 0)
         {

@@ -6,6 +6,7 @@
 #include "util.hpp"
 #include <serialise/serialise.hpp>
 #include <libncclient/c_shared_data.h>
+#include <set>
 
 #include "tag_manager.hpp"
 
@@ -31,6 +32,7 @@ struct editable_script : serialisable
     void tick();
 
     std::string get_contents();
+    std::string get_disk_contents();
     void set_contents(const std::string& new_contents);
 
     virtual void do_serialise(serialise& s, bool ser);
@@ -74,6 +76,10 @@ struct text_editor_manager : serialisable
     std::string selected_user;
     //std::vector<std::string> to_close;
 
+    bool should_check_for_modifications = true;
+    bool display_modifications_window = false;
+    std::set<std::string> modified_scripts;
+
     std::vector<server_tagged_message> scheduled_runs;
 
     sf::Clock settings_save_clock;
@@ -110,12 +116,17 @@ struct text_editor_manager : serialisable
 
     void tick();
 
+    void on_focus_window();
+    void check_for_external_modifications();
+
     virtual void do_serialise(serialise& s, bool ser);
 
     void save(bool full = false);
     void save_only_modified();
     void save_settings();
     void load();
+
+    std::optional<editable_script*> name_to_editable(const std::string& editable_name);
 };
 
 
