@@ -650,7 +650,7 @@ void text_editor_manager::check_for_external_modifications()
     if(display_modifications_window)
     {
         ImGui::SetNextWindowFocus();
-        ImGui::Begin("Files were modified externally", &display_modifications_window);
+        ImGui::Begin("Files were modified externally", &display_modifications_window, ImGuiWindowFlags_AlwaysAutoResize);
 
         for(auto it = modified_scripts.begin(); it != modified_scripts.end();)
         {
