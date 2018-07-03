@@ -423,6 +423,11 @@ void text_editor_manager::render(c_shared_data data)
         current_scripts[usr_name].push_back(i);
     }
 
+    if(current_scripts.find(editing_user) == current_scripts.end())
+    {
+        current_scripts[editing_user];
+    }
+
     if(ImGui::BeginMenuBar())
     {
         if(ImGui::BeginMenu("File"))
