@@ -356,7 +356,10 @@ void text_editor_manager::render(c_shared_data data)
     if(!is_open)
         return;
 
+
     ImGui::Begin("Text Editor", &is_open, ImGuiWindowFlags_MenuBar);
+
+    //ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
 
     if(ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
     {
@@ -695,6 +698,8 @@ void text_editor_manager::render(c_shared_data data)
         ImGui::EndChild();
 
     ImGui::EndChild();
+
+    //ImGui::PopStyleVar(1);
 
     ImGui::End();
 
