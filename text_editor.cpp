@@ -43,6 +43,11 @@ void text_editor_manager::do_serialise(serialise& s, bool ser)
     s.handle_serialise(dirty_font, ser);
     s.handle_serialise(all_scripts, ser);
 
+    if(ser == false)
+    {
+        dirty_font = true;
+    }
+
     /*if(ser == false && selected_user != "")
     {
         user_scripts& current = all_scripts[selected_user];
@@ -203,6 +208,10 @@ editable_script::editable_script()
 {
     TextEditor::LanguageDefinition lang = TextEditor::LanguageDefinition::JavaScript();
     editor.SetLanguageDefinition(lang);
+
+    TextEditor::Palette palette = editor.GetPalette();
+    palette[(int)TextEditor::PaletteIndex::Identifier] = 0xFFFFFFFF;
+    editor.SetPalette(palette);
 }
 
 editable_script::~editable_script()

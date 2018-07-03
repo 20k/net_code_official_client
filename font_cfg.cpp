@@ -27,7 +27,8 @@ void update_font_texture_safe()
 
 font_selector::font_selector()
 {
-    fonts_flags = ImGuiFreeType::ForceAutoHint | ImGuiFreeType::MonoHinting;
+    fonts_flags = ImGuiFreeType::ForceAutoHint;
+    //fonts_flags = ImGuiFreeType::ForceAutoHint | ImGuiFreeType::MonoHinting;
 }
 
 ImFont* font_selector::get_base_font()
