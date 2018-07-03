@@ -356,8 +356,7 @@ void text_editor_manager::render(c_shared_data data)
     if(!is_open)
         return;
 
-
-    ImGui::Begin("Text Editor", &is_open, ImGuiWindowFlags_MenuBar);
+    ImGui::Begin("Text Editor", &is_open, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_ResizeFromAnySide);
 
     //ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
 
