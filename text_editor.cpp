@@ -548,12 +548,10 @@ void text_editor_manager::render(c_shared_data data)
 
     ImGui::BeginMenuBar();
 
-    const std::vector<editable_script>& fnames =  all_scripts[selected_user].all_scripts;
-
     {
         user_scripts& currently_editing = all_scripts[selected_user];
 
-        for(int i=0; i < (int)fnames.size(); i++)
+        for(int i=0; i < (int)currently_editing.all_scripts.size(); i++)
         {
             editable_script& current_script = currently_editing.all_scripts[i];
 
@@ -628,7 +626,7 @@ void text_editor_manager::render(c_shared_data data)
 
             if(ImGui::IsItemHovered())
             {
-                ImGui::SetTooltip("Double Click to Rename");
+                ImGui::SetTooltip("Double click to rename\nRight click to close");
             }
         }
     }
