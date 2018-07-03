@@ -201,7 +201,7 @@ void editable_script::schedule_run_after_upload(text_editor_manager& text_editor
 
 editable_script::editable_script()
 {
-    auto lang = TextEditor::LanguageDefinition::Lua();
+    TextEditor::LanguageDefinition lang = TextEditor::LanguageDefinition::JavaScript();
     editor.SetLanguageDefinition(lang);
 }
 
