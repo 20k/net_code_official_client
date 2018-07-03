@@ -15,6 +15,8 @@ void editable_script::do_serialise(serialise& s, bool ser)
     {
         has_script = false;
         set_file_name(editing_script);
+
+        editor.SetText(get_contents());
     }
 
     /*if(ser == true && has_script)
@@ -41,7 +43,7 @@ void text_editor_manager::do_serialise(serialise& s, bool ser)
     s.handle_serialise(dirty_font, ser);
     s.handle_serialise(all_scripts, ser);
 
-    if(ser == false && selected_user != "")
+    /*if(ser == false && selected_user != "")
     {
         user_scripts& current = all_scripts[selected_user];
 
@@ -58,7 +60,7 @@ void text_editor_manager::do_serialise(serialise& s, bool ser)
     if(ser == false && selected_user == "")
     {
         editor.SetText(" ");
-    }
+    }*/
 }
 
 void editable_script::set_file_name(const std::string& file_name)
@@ -197,6 +199,12 @@ void editable_script::schedule_run_after_upload(text_editor_manager& text_editor
     text_editor_manage.scheduled_runs.push_back({all[1], "client_command #ns." + all[0] + "." + all[1] + "({})"});
 }
 
+editable_script::editable_script()
+{
+    auto lang = TextEditor::LanguageDefinition::Lua();
+    editor.SetLanguageDefinition(lang);
+}
+
 editable_script::~editable_script()
 {
     if(!has_script)
@@ -208,8 +216,7 @@ editable_script::~editable_script()
 
 text_editor_manager::text_editor_manager(font_selector& _font_select) : font_select(_font_select)
 {
-    auto lang = TextEditor::LanguageDefinition::Lua();
-    editor.SetLanguageDefinition(lang);
+
 }
 
 text_editor_manager::~text_editor_manager()
@@ -223,7 +230,7 @@ void text_editor_manager::set_current_user(const std::string& username)
     editing_user = username;
 }
 
-void user_scripts::switch_to(TextEditor& editor, int idx)
+void user_scripts::switch_to(int idx)
 {
     /*if(current_idx >= 0 && current_idx < (int)all_scripts.size())
     {
@@ -234,26 +241,22 @@ void user_scripts::switch_to(TextEditor& editor, int idx)
 
     if(current_idx >= 0 && current_idx < (int)all_scripts.size())
     {
-        editor.SetText(all_scripts[current_idx].get_contents());
-    }
-    else
-    {
-        editor.SetText(" ");
+        all_scripts[current_idx].editor.SetText(all_scripts[current_idx].get_contents());
     }
 }
 
-void user_scripts::switch_to(TextEditor& editor, const std::string& name)
+void user_scripts::switch_to(const std::string& name)
 {
     for(int i=0; i < (int)all_scripts.size(); i++)
     {
         if(all_scripts[i].editing_script == name)
         {
-            switch_to(editor, i);
+            switch_to(i);
         }
     }
 }
 
-void user_scripts::close(TextEditor& editor, int idx)
+void user_scripts::close(int idx)
 {
     if(idx < 0 || idx >= (int)all_scripts.size())
         return;
@@ -276,17 +279,17 @@ void user_scripts::close(TextEditor& editor, int idx)
         if(tidx < 0)
             tidx = 0;
 
-        switch_to(editor, tidx);
+        switch_to( tidx);
     }
 }
 
-void user_scripts::close(TextEditor& editor, const std::string& name)
+void user_scripts::close(const std::string& name)
 {
     for(int i=0; i < (int)all_scripts.size(); i++)
     {
         if(all_scripts[i].editing_script == name)
         {
-            close(editor, i);
+            close(i);
             i--;
             continue;
         }
@@ -391,7 +394,7 @@ void text_editor_manager::render(c_shared_data data)
 
                                 all_scripts[item.first].all_scripts.push_back(script);
 
-                                all_scripts[item.first].switch_to(editor, (int)all_scripts[item.first].all_scripts.size() - 1);
+                                all_scripts[item.first].switch_to((int)all_scripts[item.first].all_scripts.size() - 1);
 
                                 selected_user = item.first;
 
@@ -451,7 +454,7 @@ void text_editor_manager::render(c_shared_data data)
             {
                 selected_user = i.first;
 
-                all_scripts[selected_user].switch_to(editor, all_scripts[selected_user].current_idx);
+                all_scripts[selected_user].switch_to(all_scripts[selected_user].current_idx);
             }
         }
 
@@ -490,13 +493,13 @@ void text_editor_manager::render(c_shared_data data)
             {
                 if(i != currently_editing.current_idx)
                 {
-                    currently_editing.switch_to(editor, name);
+                    currently_editing.switch_to( name);
                 }
             }
 
             if(ImGui::IsItemClicked(2) || ImGui::IsItemClicked(1))
             {
-                currently_editing.close(editor, i);
+                currently_editing.close( i);
                 break;
             }
         }
@@ -546,7 +549,19 @@ void text_editor_manager::render(c_shared_data data)
 
     ImGui::PushFont(font_select.get_editor_font());
 
-    editor.Render("TextRenderer");
+    //editor.Render("TextRenderer");
+
+    if(selected_user != "")
+    {
+        auto found = all_scripts[selected_user].get_current_script();
+
+        if(found.has_value())
+        {
+            editable_script* scr = *found;
+
+            scr->editor.Render("TextRenderer");
+        }
+    }
 
     ImGui::PopFont();
 
@@ -602,15 +617,17 @@ void text_editor_manager::tick()
     {
         //std::cout << "contents " << editor.GetText() << std::endl;
 
-        std::string current_contents = all_scripts[selected_user].all_scripts[current_idx].get_contents();
-        std::string editor_text = editor.GetText();
+        editable_script& editable =all_scripts[selected_user].all_scripts[current_idx];
+
+        std::string current_contents = editable.get_contents();
+        std::string editor_text = editable.editor.GetText();
 
         if(current_contents != editor_text)
         {
-            all_scripts[selected_user].all_scripts[current_idx].has_unsaved_changes = true;
+            editable.has_unsaved_changes = true;
         }
 
-        all_scripts[selected_user].all_scripts[current_idx].set_contents(editor.GetText());
+        editable.set_contents(editable.editor.GetText());
     }
 }
 
@@ -682,7 +699,7 @@ void text_editor_manager::check_for_external_modifications()
 
                         if(script->editing_script == full_name)
                         {
-                            editor.SetText(edit->get_contents());
+                            edit->editor.SetText(edit->get_contents());
                         }
                     }
                 }

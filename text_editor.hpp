@@ -17,6 +17,7 @@ struct editable_script : serialisable
     std::string editing_script;
     std::string friendly_name;
     std::string script_contents;
+    TextEditor editor;
 
     std::string disk_contents_on_load;
 
@@ -44,6 +45,7 @@ struct editable_script : serialisable
     void run(c_shared_data data); ///can be run from any context
     void schedule_run_after_upload(text_editor_manager& text_editor_manage);
 
+    editable_script();
     ~editable_script();
 };
 
@@ -54,11 +56,11 @@ struct user_scripts : serialisable
 
     std::vector<editable_script> all_scripts;
 
-    void switch_to(TextEditor& editor, int idx);
-    void switch_to(TextEditor& editor, const std::string& name);
+    void switch_to(int idx);
+    void switch_to(const std::string& name);
 
-    void close(TextEditor& editor, int idx);
-    void close(TextEditor& editor, const std::string& name);
+    void close(int idx);
+    void close(const std::string& name);
 
     virtual void do_serialise(serialise& s, bool ser);
 
@@ -74,7 +76,7 @@ struct font_selector;
 ///and also scripts need to never be able to have lost changes
 struct text_editor_manager : serialisable
 {
-    TextEditor editor;
+    //TextEditor editor;
     std::string editing_user;
     std::string selected_user;
     //std::vector<std::string> to_close;
