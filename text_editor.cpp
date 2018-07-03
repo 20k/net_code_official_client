@@ -92,11 +92,14 @@ void editable_script::save()
 
     force_save = false;
     has_unsaved_changes = false;
+
+    disk_contents_on_load = script_contents;
 }
 
 void editable_script::load()
 {
     script_contents = read_file_bin("./scripts/" + editing_script);
+    disk_contents_on_load = script_contents;
 }
 
 void editable_script::tick()
@@ -123,6 +126,11 @@ std::string editable_script::get_contents()
 std::string editable_script::get_disk_contents()
 {
     return read_file_bin("./scripts/" + editing_script);
+}
+
+std::string editable_script::get_contents_as_were_loaded()
+{
+    return disk_contents_on_load;
 }
 
 void editable_script::set_contents(const std::string& new_contents)
@@ -622,9 +630,9 @@ void text_editor_manager::check_for_external_modifications()
             for(editable_script& script : scripts.all_scripts)
             {
                 std::string disk = script.get_disk_contents();
-                std::string current = script.get_contents();
+                std::string original_disk = script.get_contents_as_were_loaded();
 
-                if(disk != current)
+                if(disk != original_disk)
                 {
                     modified_scripts.insert(script.editing_script);
 
@@ -632,6 +640,11 @@ void text_editor_manager::check_for_external_modifications()
                 }
             }
         }
+    }
+
+    if(modified_scripts.size() == 0)
+    {
+        display_modifications_window = false;
     }
 
     if(display_modifications_window)

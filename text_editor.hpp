@@ -18,6 +18,8 @@ struct editable_script : serialisable
     std::string friendly_name;
     std::string script_contents;
 
+    std::string disk_contents_on_load;
+
     bool has_script = false;
     bool force_save = false;
     bool has_unsaved_changes = false;
@@ -32,6 +34,7 @@ struct editable_script : serialisable
     void tick();
 
     std::string get_contents();
+    std::string get_contents_as_were_loaded(); ///compare against disk contents to tell if its changed
     std::string get_disk_contents();
     void set_contents(const std::string& new_contents);
 
