@@ -42,6 +42,7 @@ void text_editor_manager::do_serialise(serialise& s, bool ser)
     s.handle_serialise(current_font_size, ser);
     s.handle_serialise(dirty_font, ser);
     s.handle_serialise(all_scripts, ser);
+    s.handle_serialise(should_auto_indent, ser);
 
     if(ser == false)
     {
@@ -500,28 +501,35 @@ void text_editor_manager::render(c_shared_data data)
 
             if(ImGui::BeginMenu("Settings"))
             {
-                if(ImGui::Button("-"))
+                ///font size
                 {
-                    current_font_size -= 0.5;
-                    dirty_font = true;
+                    if(ImGui::Button("-"))
+                    {
+                        current_font_size -= 0.5;
+                        dirty_font = true;
+                    }
 
-                    //font_select.reset_default_fonts(current_font_size);
+                    ImGui::SameLine();
+
+                    std::string str = std::to_string(current_font_size);
+
+                    ImGui::Text(str.c_str());
+
+                    ImGui::SameLine();
+
+                    if(ImGui::Button("+"))
+                    {
+                        current_font_size += 0.5;
+                        dirty_font = true;
+                    }
                 }
 
-                ImGui::SameLine();
-
-                std::string str = std::to_string(current_font_size);
-
-                ImGui::Text(str.c_str());
-
-                ImGui::SameLine();
-
-                if(ImGui::Button("+"))
+                ///auto indent
                 {
-                    current_font_size += 0.5;
-                    dirty_font = true;
-
-                    //font_select.reset_default_fonts(current_font_size);
+                    if(ImGui::Checkbox("Auto Indent?", &should_auto_indent))
+                    {
+                        update_auto_indent();
+                    }
                 }
 
                 ImGui::EndMenu();
@@ -926,6 +934,19 @@ void text_editor_manager::load()
         serialise ssett;
         ssett.load(settings_file);
         ssett.handle_serialise_no_clear(*this, false);
+    }
+
+    update_auto_indent();
+}
+
+void text_editor_manager::update_auto_indent()
+{
+    for(auto& i : all_scripts)
+    {
+        for(auto& k : i.second.all_scripts)
+        {
+            k.editor.SetShouldAutoIndent(should_auto_indent);
+        }
     }
 }
 

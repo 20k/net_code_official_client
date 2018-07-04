@@ -108,6 +108,8 @@ struct text_editor_manager : serialisable
     bool force_save = false;
     bool modified = false;
 
+    bool should_auto_indent = true;
+
     ///need to save this
     ///and save the whole class generally
     float current_font_size = 14.f;
@@ -137,6 +139,8 @@ struct text_editor_manager : serialisable
     void save_only_modified();
     void save_settings();
     void load();
+
+    void update_auto_indent();
 
     std::optional<editable_script*> name_to_editable(const std::string& editable_name);
 };
