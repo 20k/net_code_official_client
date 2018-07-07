@@ -423,6 +423,7 @@ void terminal_imgui::render(sf::RenderWindow& win, bool refocus)
     ImGui::Begin("asdf1", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
     focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+    hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
 
     if(refocus)
         ImGui::SetNextWindowFocus();
@@ -483,6 +484,7 @@ void terminal_imgui::render_realtime_windows(c_shared_data data, int& was_closed
         run.current_tl_cursor_pos = {ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y};
 
         run.focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+        run.hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
 
         int cpos = -1;
         std::string cmd = " ";
@@ -836,6 +838,7 @@ void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_threa
     ImGui::Begin(chat_str.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_ResizeFromAnySide);
 
     focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+    hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
 
     ImGui::BeginChild("left_selector", ImVec2(80, 0));
 

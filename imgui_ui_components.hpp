@@ -38,6 +38,7 @@ struct realtime_script_run : frameable
 
     interop_vec_t parsed_data;
     bool focused = false;
+    bool hovered = false;
     scrollbar_hack scroll_hack;
     bool open = true;
     bool was_open = true;
@@ -69,6 +70,7 @@ struct terminal_imgui : serialisable, cacheable, frameable
     bool locked_to_bottom = false;
     bool lock_next_frame = true;
     bool focused = true;
+    bool hovered = false;
     bool reset_scrollbar = true;
     editable_string command;
 
@@ -131,6 +133,7 @@ struct chat_window : serialisable, frameable
     sf::Color get_highlight_col();
 
     bool focused = false;
+    bool hovered = false;
     float border_size = 2.f;
 
     void tick();

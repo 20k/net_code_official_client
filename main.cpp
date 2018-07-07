@@ -333,6 +333,8 @@ int main()
         editable_string no_string;
         editable_string* to_edit = &no_string;
 
+        editable_string* hovered_string = &no_string;
+
         if(term.focused)
             to_edit = &term.command;
 
@@ -341,6 +343,15 @@ int main()
 
         if(term.get_id_of_focused_realtime_window() != -1)
             to_edit = &realtime_shim;
+
+        if(term.hovered)
+            hovered_string = &term.command;
+
+        if(chat_win.hovered)
+            hovered_string = &chat_win.command;
+
+        if(term.get_id_of_focused_realtime_window() != -1 && term.realtime_script_windows[term.get_id_of_focused_realtime_window()].hovered)
+            hovered_string = &realtime_shim;
 
         bool enter = false;
 
@@ -532,7 +543,7 @@ int main()
 
                 if(event.key.code == sf::Keyboard::PageDown)
                 {
-                    if(to_edit == &term.command)
+                    if(hovered_string == &term.command)
                     {
                         mouse_delta -= term.render_height - 2;
 
@@ -541,12 +552,12 @@ int main()
 
                     }
 
-                    if(to_edit == &chat_win.command)
+                    if(hovered_string == &chat_win.command)
                     {
                         mouse_delta -= chat_win.render_height - 2;
 
-                        if(term.scroll_hack.scrolled + mouse_delta < 0)
-                            mouse_delta = -term.scroll_hack.scrolled;
+                        if(chat_win.scroll_hack.scrolled + mouse_delta < 0)
+                            mouse_delta = -chat_win.scroll_hack.scrolled;
                     }
 
                     term.invalidate();
@@ -554,9 +565,9 @@ int main()
 
                 if(event.key.code == sf::Keyboard::PageUp)
                 {
-                    if(to_edit == &term.command)
+                    if(hovered_string == &term.command)
                         mouse_delta += term.render_height - 2;
-                    if(to_edit == &chat_win.command)
+                    if(hovered_string == &chat_win.command)
                         mouse_delta += chat_win.render_height - 2;
 
                     term.invalidate();
