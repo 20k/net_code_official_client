@@ -42,6 +42,7 @@ struct realtime_script_run : frameable
     bool open = true;
     bool was_open = true;
 
+    std::string script_name;
     vec2f dim = {300, 300};
     bool set_size = true;
 

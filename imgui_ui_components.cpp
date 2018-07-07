@@ -447,12 +447,21 @@ void terminal_imgui::render_realtime_windows(c_shared_data data, int& was_closed
 
         std::string str = std::to_string(i.first);
 
+        std::string ext = "###" + str;
+
         std::string title_str = str;
+
+        if(run.script_name != "")
+        {
+            title_str = run.script_name;
+        }
 
         if(run.focused)
         {
             title_str += " (Capturing Input)";
         }
+
+        title_str += ext;
 
         if(run.was_open && !run.open)
         {
@@ -617,6 +626,11 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
 
                 realtime_script_windows[info.id].dim.x() = rwidth;
                 realtime_script_windows[info.id].dim.y() = rheight;
+            }
+
+            if(info.name.num > 0)
+            {
+                realtime_script_windows[info.id].script_name = c_str_sized_to_cpp(info.name);
             }
 
             sa_destroy_realtime_info(info);
