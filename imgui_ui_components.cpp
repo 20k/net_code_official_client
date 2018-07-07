@@ -424,6 +424,9 @@ void terminal_imgui::render(sf::RenderWindow& win, bool refocus)
 
     focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
+    if(refocus)
+        ImGui::SetNextWindowFocus();
+
     bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, *this, 0.f, colour_string(current_user) + "> ");
 
     ImGui::End();
@@ -844,6 +847,9 @@ void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_threa
     ImGui::EndChild();
 
     ImGui::SameLine(0, 0);
+
+    if(refocus)
+        ImGui::SetNextWindowFocus();
 
     bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this, 80);
 
