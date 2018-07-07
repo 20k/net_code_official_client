@@ -180,6 +180,8 @@ int main()
     terminal_imgui term;
     chat_window chat_win;
 
+    bool should_coordinate_focus = true;
+
     sf::Event event;
 
     std::map<sf::Keyboard::Key, std::string> key_map;
@@ -323,7 +325,6 @@ int main()
             term.invalidate();
         }
 
-
         realtime_shim.clear_command();
         realtime_str.clear();
         on_pressed.clear();
@@ -353,6 +354,8 @@ int main()
             {
                 text_editor.on_focus_window();
                 focused = true;
+
+                term.invalidate();
             }
 
             if(event.type == sf::Event::LostFocus)
@@ -882,9 +885,11 @@ int main()
         int was_closed_id = -1;
 
         //test_imgui_term.render(window);
-        term.render(window);
         term.render_realtime_windows(shared, was_closed_id);
-        chat_win.render(window, term.chat_threads);
+        chat_win.render(window, term.chat_threads, should_coordinate_focus);
+        term.render(window, should_coordinate_focus);
+
+        should_coordinate_focus = false;
 
         if(was_closed_id != -1)
         {

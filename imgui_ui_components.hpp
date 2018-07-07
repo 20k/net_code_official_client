@@ -80,7 +80,7 @@ struct terminal_imgui : serialisable, cacheable, frameable
     void clear_text();
 
     terminal_imgui();
-    void render(sf::RenderWindow& win);
+    void render(sf::RenderWindow& win, bool refocus);
     void render_realtime_windows(c_shared_data data, int& was_closed_id);
     void bump_command_to_history();
 
@@ -104,7 +104,6 @@ struct new_button
 
 struct chat_window : serialisable, frameable
 {
-    bool focus_once = false;
     scrollbar_hack scroll_hack;
 
     vec2f render_start = {0,0};
@@ -135,7 +134,7 @@ struct chat_window : serialisable, frameable
 
     void tick();
 
-    void render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads);
+    void render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads, bool refocus);
 
     void set_side_channels(const std::vector<std::string>& sides);
 

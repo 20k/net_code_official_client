@@ -410,12 +410,15 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
     return text_area_focused;
 }
 
-void terminal_imgui::render(sf::RenderWindow& win)
+void terminal_imgui::render(sf::RenderWindow& win, bool refocus)
 {
     copy_handler* handle = get_global_copy_handler();
 
     ImGui::SetNextWindowPos(ImVec2(0,0));
     ImGui::SetNextWindowSize(ImVec2(win.getSize().x, win.getSize().y));
+
+    if(refocus)
+        ImGui::SetNextWindowFocus();
 
     ImGui::Begin("asdf1", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
@@ -781,6 +784,7 @@ void chat_window::do_serialise(serialise& s, bool ser)
     s.handle_serialise(side_buttons, ser);
     s.handle_serialise(selected, ser);
     s.handle_serialise(command, ser);
+    //s.handle_serialise(focus_once, ser);
 }
 
 sf::Color chat_window::get_frame_col()
@@ -798,19 +802,17 @@ void chat_window::tick()
 
 }
 
-void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads)
+void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads, bool refocus)
 {
     copy_handler* handle = get_global_copy_handler();
 
     chat_thread& thread = threads[selected];
 
-    if(!focus_once)
+    if(refocus)
         ImGui::SetNextWindowFocus();
 
     ImGui::SetNextWindowSize(ImVec2(dim.x(), dim.y()), ImGuiCond_FirstUseEver);
     //ImGui::SetNextWindowPos(ImVec2(win.getSize().x - dim.x() * 1.08f, ImGuiCond_FirstUseEver));
-
-    focus_once = true;
 
     std::string chat_str = selected + "###chat_window";
 
