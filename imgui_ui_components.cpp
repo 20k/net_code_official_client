@@ -572,12 +572,6 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
 
     if(server_command)
     {
-        std::string command_str = "command ";
-        std::string chat_api = "chat_api ";
-        std::string scriptargs = "server_scriptargs ";
-        std::string invalid_str = "server_scriptargs_invalid";
-        std::string ratelimit_str = "server_scriptargs_ratelimit ";
-
         if(command_info.type == server_command_command)
         {
             str = c_str_consume(sa_command_to_human_readable(command_info));
@@ -760,6 +754,10 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
             tag_manage.add_tagged(tag, str);
 
             push = true;
+        }
+        else if(command_info.type == server_command_command_ping)
+        {
+            ///do nothing
         }
         else if(starts_with(str, "command_auth"))
         {
