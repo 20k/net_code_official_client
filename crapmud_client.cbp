@@ -238,6 +238,7 @@
 		<Unit filename="deps/ImGuiColorTextEdit/TextEditor.h" />
 		<Unit filename="deps/imgui-sfml/imgui-SFML.cpp" />
 		<Unit filename="deps/imgui-sfml/imgui-SFML.h" />
+		<Unit filename="deps/imgui/imconfig.h" />
 		<Unit filename="deps/imgui/imgui.cpp" />
 		<Unit filename="deps/imgui/imgui.h" />
 		<Unit filename="deps/imgui/imgui_demo.cpp" />
@@ -278,6 +279,7 @@
 			<envvars />
 			<debugger />
 			<lib_finder disable_auto="1" />
+			<fortran_project />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>
