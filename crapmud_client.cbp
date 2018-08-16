@@ -200,6 +200,7 @@
 			<Add option="-Wno-narrowing" />
 			<Add option="-std=gnu++1z" />
 			<Add option="-Werror=return-type" />
+			<Add option="-Wno-strict-aliasing" />
 			<Add option="-DNET_CLIENT" />
 			<Add option="-DNO_COMPRESSION" />
 			<Add option="-DBOOST_STACKTRACE_USE_WINDBG" />

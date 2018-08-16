@@ -139,7 +139,8 @@ int main()
 
     font.loadFromFile("VeraMono.ttf");
 
-    nc_start_ssl(shared, HOST_IP, HOST_PORT_SSL);
+    //nc_start_ssl(shared, HOST_IP, HOST_PORT_SSL);
+    nc_start(shared, HOST_IP, HOST_PORT);
 
     sf::ContextSettings sett;
     sett.antialiasingLevel = 8;
