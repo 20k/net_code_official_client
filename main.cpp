@@ -700,6 +700,8 @@ int main()
         text_editor.render(shared);
         text_editor.check_for_external_modifications();
 
+        term.check_insert_user_command();
+
         if(enter && to_edit->command.size() > 0)
         {
             term.invalidate();

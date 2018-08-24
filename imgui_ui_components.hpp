@@ -65,6 +65,7 @@ struct terminal_imgui : serialisable, cacheable, frameable
     std::map<int, realtime_script_run> realtime_script_windows;
 
     std::string current_user;
+    bool one_time_user_insertion = true;
 
     bool consider_resetting_scrollbar = false;
     bool locked_to_bottom = false;
@@ -77,6 +78,8 @@ struct terminal_imgui : serialisable, cacheable, frameable
     auto_handler auto_handle;
 
     virtual void do_serialise(serialise& s, bool ser);
+
+    void check_insert_user_command();
 
     void clear_terminal();
     void clear_chat();

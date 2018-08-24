@@ -66,6 +66,20 @@ void terminal_imgui::do_serialise(serialise& s, bool ser)
     //std::cout << "loaded hist " << text_history.size() << std::endl;
 }
 
+void terminal_imgui::check_insert_user_command()
+{
+    if(one_time_user_insertion)
+    {
+        if(command.command.size() == 0)
+        {
+            command.command = "user ";
+            command.cursor_pos_idx = command.command.size() + 1;
+        }
+    }
+
+    one_time_user_insertion = false;
+}
+
 void terminal_imgui::clear_terminal()
 {
     history.clear();
