@@ -552,7 +552,23 @@ void terminal_imgui::invalidate()
 
 void terminal_imgui::bump_command_to_history()
 {
-    history.push_back(string_to_interop(command.command, true, auto_handle));
+    std::string ccommand = command.command;
+
+    interop_vec_t interop;
+
+    if(ccommand != "" && current_user != "")
+    {
+        interop = string_to_interop_no_autos(colour_string(current_user) + "> ", false);
+    }
+
+    auto interop_command = string_to_interop(ccommand, true, auto_handle);
+
+    for(auto& i : interop_command)
+    {
+        interop.push_back(i);
+    }
+
+    history.push_back(interop);
     command.clear_command();
 
     limit_size(history, MAX_TEXT_HISTORY);
