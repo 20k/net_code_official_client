@@ -459,7 +459,7 @@ void terminal_imgui::render_realtime_windows(c_shared_data data, int& was_closed
 
         if(run.focused)
         {
-            title_str += " (Capturing Input)";
+            title_str += " (Active)";
         }
 
         title_str += ext;
