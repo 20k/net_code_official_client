@@ -702,6 +702,17 @@ int main()
 
         term.check_insert_user_command();
 
+        if(starts_with(to_edit->command, "user user ") && term.focused)
+        {
+            if(to_edit->command.size() > strlen("user "))
+            {
+                for(int i=0; i < strlen("user "); i++)
+                {
+                    to_edit->command.erase(to_edit->command.begin());
+                }
+            }
+        }
+
         if(enter && to_edit->command.size() > 0)
         {
             term.invalidate();
