@@ -213,8 +213,6 @@ int main()
     SMAP(PageUp, pageup);
     SMAP(PageDown, pagedown);
 
-    SMAP(Space, space);
-
     SMAP(Num1, 1);
     SMAP(Num2, 2);
     SMAP(Num3, 3);
@@ -233,7 +231,23 @@ int main()
     SMAP(LAlt, lalt);
     SMAP(RAlt, ralt);
 
+    SMAP(LBracket, [);
+    SMAP(RBracket, ]);
+
+    key_map[sf::Keyboard::SemiColon] = ";";
+    key_map[sf::Keyboard::Comma] = ",";
+    SMAP(Period, .);
+    SMAP(Tilde, ~);
+    SMAP(Equal, =);
+    SMAP(Hyphen, -);
+
+    SMAP(Space, space);
+
     SMAP(Escape, escape);
+
+    key_map[sf::Keyboard::Quote] = "\'";
+    SMAP(Slash, /);
+    SMAP(Backslash, \\);
 
     text_editor_manager text_editor(font_select);
 
