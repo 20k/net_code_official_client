@@ -709,6 +709,7 @@ int main()
                 for(int i=0; i < strlen("user "); i++)
                 {
                     to_edit->command.erase(to_edit->command.begin());
+                    to_edit->cursor_pos_idx = to_edit->command.size();
                 }
             }
         }

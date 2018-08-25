@@ -73,7 +73,7 @@ void terminal_imgui::check_insert_user_command()
         if(command.command.size() == 0)
         {
             command.command = "user ";
-            command.cursor_pos_idx = command.command.size() + 1;
+            command.cursor_pos_idx = command.command.size();
         }
     }
 
