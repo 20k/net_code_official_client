@@ -251,9 +251,9 @@ int main()
     SMAP(Slash, /);
     SMAP(Backslash, \\);
 
-    MMAP(Left, "lmouse");
-    MMAP(Right, "rmouse");
-    MMAP(Middle, "mmouse");
+    MMAP(Left, lmouse);
+    MMAP(Right, rmouse);
+    MMAP(Middle, mmouse);
 
     text_editor_manager text_editor(font_select);
 
