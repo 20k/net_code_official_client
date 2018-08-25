@@ -51,6 +51,8 @@ std::string make_lower(std::string in)
 #define SMAP(A, S) key_map[sf::Keyboard::A] = ((#S));
 #define MMAP(A, S) mouse_map[sf::Mouse::A] = ((#S));
 
+#define SPECIAL_MAP(A, S) on_input_map[sf::Keyboard::A] = ((#S));
+
 //#define HOST_IP "192.168.0.55"
 #ifdef EXTERN_IP
 #define HOST_IP "77.96.132.101"
@@ -186,6 +188,7 @@ int main()
     sf::Event event;
 
     std::map<sf::Keyboard::Key, std::string> key_map;
+    std::map<sf::Keyboard::Key, std::string> on_input_map;
     std::map<sf::Mouse::Button, std::string> mouse_map;
 
     DMAP(A);DMAP(B);DMAP(C);
@@ -206,6 +209,14 @@ int main()
     SMAP(Tab, tab);
     SMAP(Delete, delete);
 
+    SPECIAL_MAP(Return, return);
+    SPECIAL_MAP(BackSpace, backspace);
+    SPECIAL_MAP(Delete, delete);
+
+    SPECIAL_MAP(Insert,insert);
+    SPECIAL_MAP(Tab, tab);
+    SPECIAL_MAP(Delete, delete);
+
     SMAP(Up, up);
     SMAP(Down, down);
     SMAP(Right, right);
@@ -214,6 +225,15 @@ int main()
     SMAP(End, end);
     SMAP(PageUp, pageup);
     SMAP(PageDown, pagedown);
+
+    SPECIAL_MAP(Up, up);
+    SPECIAL_MAP(Down, down);
+    SPECIAL_MAP(Right, right);
+    SPECIAL_MAP(Left, left);
+    SPECIAL_MAP(Home, home);
+    SPECIAL_MAP(End, end);
+    SPECIAL_MAP(PageUp, pageup);
+    SPECIAL_MAP(PageDown, pagedown);
 
     SMAP(Num1, 1);
     SMAP(Num2, 2);
@@ -233,6 +253,13 @@ int main()
     SMAP(LAlt, lalt);
     SMAP(RAlt, ralt);
 
+    SPECIAL_MAP(LShift, lshift);
+    SPECIAL_MAP(RShift, rshift);
+    SPECIAL_MAP(LControl, lctrl);
+    SPECIAL_MAP(RControl, rctrl);
+    SPECIAL_MAP(LAlt, lalt);
+    SPECIAL_MAP(RAlt, ralt);
+
     SMAP(LBracket, [);
     SMAP(RBracket, ]);
 
@@ -246,6 +273,7 @@ int main()
     SMAP(Space, space);
 
     SMAP(Escape, escape);
+    SPECIAL_MAP(Escape, escape);
 
     key_map[sf::Keyboard::Quote] = "\'";
     SMAP(Slash, /);
@@ -406,6 +434,13 @@ int main()
                         to_edit->add_to_command(event.text.unicode);
 
                         term.invalidate();
+
+                        std::string str = std::string(1, event.text.unicode);
+
+                        if(str == " ")
+                            str = "space";
+
+                        realtime_str.push_back(str);
                     }
                 }
             }
@@ -478,8 +513,8 @@ int main()
                     }
                 }
 
-                if(key_map.find(event.key.code) != key_map.end())
-                    realtime_str.push_back(key_map[event.key.code]);
+                if(on_input_map.find(event.key.code) != on_input_map.end())
+                    realtime_str.push_back(on_input_map[event.key.code]);
 
                 if(key_map.find(event.key.code) != key_map.end())
                     on_pressed.push_back(key_map[event.key.code]);
