@@ -49,6 +49,7 @@ std::string make_lower(std::string in)
 
 #define DMAP(A) key_map[sf::Keyboard::A] = make_lower((#A));
 #define SMAP(A, S) key_map[sf::Keyboard::A] = ((#S));
+#define MMAP(A, S) mouse_map[sf::Mouse::A] = ((#S));
 
 //#define HOST_IP "192.168.0.55"
 #ifdef EXTERN_IP
@@ -185,6 +186,7 @@ int main()
     sf::Event event;
 
     std::map<sf::Keyboard::Key, std::string> key_map;
+    std::map<sf::Mouse::Button, std::string> mouse_map;
 
     DMAP(A);DMAP(B);DMAP(C);
     DMAP(D);DMAP(E);DMAP(F);
@@ -248,6 +250,10 @@ int main()
     key_map[sf::Keyboard::Quote] = "\'";
     SMAP(Slash, /);
     SMAP(Backslash, \\);
+
+    MMAP(Left, "lmouse");
+    MMAP(Right, "rmouse");
+    MMAP(Middle, "mmouse");
 
     text_editor_manager text_editor(font_select);
 
@@ -424,8 +430,20 @@ int main()
                 catch(...){}
             }
 
+            if(event.type == sf::Event::MouseButtonReleased)
+            {
+                if(mouse_map.find(event.mouseButton.button) != mouse_map.end())
+                    on_pressed.push_back(mouse_map[event.mouseButton.button]);
+            }
+
             if(event.type == sf::Event::MouseButtonPressed)
             {
+                if(mouse_map.find(event.mouseButton.button) != mouse_map.end())
+                    on_released.push_back(mouse_map[event.mouseButton.button]);
+
+                if(mouse_map.find(event.mouseButton.button) != mouse_map.end())
+                    realtime_str.push_back(mouse_map[event.mouseButton.button]);
+
                 if(event.mouseButton.button == sf::Mouse::Right)
                 {
                     std::string add_text = get_clipboard_contents();
