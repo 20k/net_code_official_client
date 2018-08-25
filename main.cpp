@@ -704,9 +704,9 @@ int main()
 
         if(starts_with(to_edit->command, "user user ") && term.focused)
         {
-            if(to_edit->command.size() > strlen("user "))
+            if((int)to_edit->command.size() > (int)strlen("user "))
             {
-                for(int i=0; i < strlen("user "); i++)
+                for(int i=0; i < (int)strlen("user "); i++)
                 {
                     to_edit->command.erase(to_edit->command.begin());
                     to_edit->cursor_pos_idx = to_edit->command.size();
