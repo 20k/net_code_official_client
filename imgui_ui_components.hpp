@@ -100,6 +100,8 @@ struct terminal_imgui : serialisable, cacheable, frameable
 
 struct chat_thread : serialisable, cacheable
 {
+    bool dirty = false;
+
     virtual void do_serialise(serialise& s, bool ser);
 };
 
@@ -138,6 +140,7 @@ struct chat_window : serialisable, frameable
     bool focused = false;
     bool hovered = false;
     float border_size = 2.f;
+    bool show_chat_in_main_window = true;
 
     void tick();
 

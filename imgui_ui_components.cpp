@@ -710,9 +710,11 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
 
             for(int i=0; i < (int)chnls.size(); i++)
             {
-                history.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
+                if(chat_win.show_chat_in_main_window)
+                    history.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
 
                 chat_threads[chnls[i]].history.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
+                chat_threads[chnls[i]].dirty = true;
             }
 
             for(auto& i : tell_msgs)
@@ -831,6 +833,7 @@ void chat_window::do_serialise(serialise& s, bool ser)
     s.handle_serialise(side_buttons, ser);
     s.handle_serialise(selected, ser);
     s.handle_serialise(command, ser);
+    s.handle_serialise(show_chat_in_main_window, ser);
     //s.handle_serialise(focus_once, ser);
 }
 
@@ -854,6 +857,7 @@ void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_threa
     copy_handler* handle = get_global_copy_handler();
 
     chat_thread& thread = threads[selected];
+    thread.dirty = false;
 
     if(refocus)
         ImGui::SetNextWindowFocus();
@@ -863,7 +867,19 @@ void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_threa
 
     std::string chat_str = selected + "###chat_window";
 
-    ImGui::Begin(chat_str.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_ResizeFromAnySide);
+    ImGui::Begin(chat_str.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_ResizeFromAnySide | ImGuiWindowFlags_MenuBar);
+
+    if(ImGui::BeginMenuBar())
+    {
+        if(ImGui::BeginMenu("Settings"))
+        {
+            ImGui::Checkbox("Show in main window", &show_chat_in_main_window);
+
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMenuBar();
+    }
 
     focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
     hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
@@ -874,7 +890,12 @@ void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_threa
 
     for(auto& i : side_buttons)
     {
-        int width = ImGui::CalcTextSize(i.c_str()).x;
+        std::string name = i;
+
+        if(threads[i].dirty && !show_chat_in_main_window)
+            name += "*";
+
+        int width = ImGui::CalcTextSize(name.c_str()).x;
 
         max_width = std::max(width, max_width);
     }
@@ -883,7 +904,12 @@ void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_threa
 
     for(auto& i : side_buttons)
     {
-        if(ImGui::Button(i.c_str(), ImVec2(max_width, 0)))
+        std::string name = i;
+
+        if(threads[i].dirty && !show_chat_in_main_window)
+            name += "*";
+
+        if(ImGui::Button(name.c_str(), ImVec2(max_width, 0)))
         {
             selected = i;
         }
