@@ -67,6 +67,12 @@ std::map<char, vec3f> get_cmap()
     colour_map['y'] = {140,42,72};
     colour_map['z'] = {15,17,20};
 
+    colour_map['0'] = {255, 20, 255};
+    colour_map['1'] = {255, 20, 20};
+    colour_map['2'] = {255, 140, 40};
+    colour_map['3'] = {255, 255, 40};
+    colour_map['4'] = {60, 255, 60};
+
     return colour_map;
 }
 
