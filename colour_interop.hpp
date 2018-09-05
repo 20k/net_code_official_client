@@ -92,7 +92,7 @@ void strip_interop(interop_vec_t& in)
     if(in.size() <= 2)
         return;
 
-    if(in.front().c == '`' && in.back().c == '`' && isalpha(in[1].c) && in[1].c != '`')
+    if(in.front().c == '`' && in.back().c == '`' && isalnum(in[1].c) && in[1].c != '`')
     {
         in.pop_back();
         in.erase(in.begin());
