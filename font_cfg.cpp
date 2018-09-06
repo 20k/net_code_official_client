@@ -157,5 +157,12 @@ void font_selector::render()
 
     current_base_font_size = ifsize;
 
+    if(wants_rebuild)
+    {
+        serialise sfont;
+        sfont.handle_serialise(*this, true);
+        sfont.save("./font_sett.txt");
+    }
+
     ImGui::End();
 }

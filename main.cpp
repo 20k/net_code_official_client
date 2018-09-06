@@ -289,6 +289,7 @@ int main()
     std::string chat_file = "./chat_v5.txt";
     std::string general_file = "./window.txt";
     std::string settings_file = "./text_sett.txt";
+    std::string font_file = "./font_sett.txt";
 
     if(file_exists(terminal_file))
     {
@@ -302,6 +303,13 @@ int main()
         serialise swindow;
         swindow.load(chat_file);
         swindow.handle_serialise(chat_win, false);
+    }
+
+    if(file_exists(font_file))
+    {
+        serialise sfont;
+        sfont.load(font_file);
+        sfont.handle_serialise(font_select, false);
     }
 
     text_editor.load();

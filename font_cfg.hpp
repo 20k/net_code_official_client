@@ -1,9 +1,11 @@
 #ifndef FONT_CFG_HPP_INCLUDED
 #define FONT_CFG_HPP_INCLUDED
 
+#include <serialise/serialise.hpp>
+
 struct ImFont;
 
-struct font_selector
+struct font_selector : serialisable
 {
     bool wants_rebuild = true;
     float fonts_multiply = 1.f;
@@ -36,6 +38,12 @@ struct font_selector
     bool update_rebuild(float editor_font_size = 14.f);
     // Call to draw interface
     void render();
+
+    virtual void do_serialise(serialise& s, bool ser) override
+    {
+        s.handle_serialise(current_base_font_size, ser);
+        s.handle_serialise(current_base_font, ser);
+    }
 };
 
 #endif // FONT_CFG_HPP_INCLUDED
