@@ -127,8 +127,6 @@ void font_selector::render()
     wants_rebuild |= ImGui::CheckboxFlags("Bold",          &fonts_flags, ImGuiFreeType::Bold);
     wants_rebuild |= ImGui::CheckboxFlags("Oblique",       &fonts_flags, ImGuiFreeType::Oblique);
 
-    //if(ImGui::DragFloat("Font Size", &current_base_font_size, 1.f, 5.f, 26.f))
-
     int ifsize = current_base_font_size;
 
     if(ImGui::DragInt("Font Size", &ifsize, 1, 5, 26))
@@ -140,8 +138,6 @@ void font_selector::render()
         ifsize = 5;
     if(ifsize > 26)
         ifsize = 26;
-
-    //ImGui::Text((std::string("Font Size: ") + std::to_string(ifsize)).c_str());
 
     ImGui::SameLine();
 
