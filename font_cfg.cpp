@@ -35,7 +35,7 @@ ImFont* font_selector::get_base_font()
 {
     ImGuiIO& io = ImGui::GetIO();
 
-    return io.Fonts->Fonts[(int)font_cfg::BASE];
+    return io.Fonts->Fonts[current_base_font];
 }
 
 ImFont* font_selector::get_editor_font()
@@ -56,7 +56,7 @@ void font_selector::reset_default_fonts(float editor_font_size)
     //io.Fonts->ClearFonts();
 
     ///BASE
-    io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 14.f, &font_cfg);
+    io.Fonts->AddFontFromFileTTF("VeraMono.ttf", current_base_font_size, &font_cfg);
     ///TEXT_EDITOR
     io.Fonts->AddFontFromFileTTF("VeraMono.ttf", editor_font_size, &font_cfg);
     ///DEFAULT
@@ -68,10 +68,12 @@ void font_selector::reset_default_fonts(float editor_font_size)
 }
 
 // Call _BEFORE_ NewFrame()
-bool font_selector::update_rebuild()
+bool font_selector::update_rebuild(float editor_font_size)
 {
     if (!wants_rebuild)
         return false;
+
+    reset_default_fonts(editor_font_size);
 
     ImGuiIO& io = ImGui::GetIO();
 
@@ -96,8 +98,24 @@ void font_selector::render()
     if(!is_open)
         return;
 
-    ImGui::Begin("FreeType Options", &is_open);
-    ImGui::ShowFontSelector("Fonts");
+    ImGui::Begin("FreeType Options", &is_open, ImGuiWindowFlags_AlwaysAutoResize);
+
+    ImGuiIO& io = ImGui::GetIO();
+    ImFont* font_current = ImGui::GetFont();
+
+    if (ImGui::BeginCombo("Fonts", font_current->GetDebugName()))
+    {
+        for (int n = 0; n < io.Fonts->Fonts.Size; n++)
+        {
+            if (ImGui::Selectable(io.Fonts->Fonts[n]->GetDebugName(), io.Fonts->Fonts[n] == font_current))
+            {
+                io.FontDefault = io.Fonts->Fonts[n];
+                wants_rebuild = true;
+                current_base_font = n;
+            }
+        }
+        ImGui::EndCombo();
+    }
 
     wants_rebuild |= ImGui::DragFloat("Multiply", &fonts_multiply, 0.001f, 0.0f, 2.0f);
 
@@ -108,6 +126,40 @@ void font_selector::render()
     wants_rebuild |= ImGui::CheckboxFlags("MonoHinting",   &fonts_flags, ImGuiFreeType::MonoHinting);
     wants_rebuild |= ImGui::CheckboxFlags("Bold",          &fonts_flags, ImGuiFreeType::Bold);
     wants_rebuild |= ImGui::CheckboxFlags("Oblique",       &fonts_flags, ImGuiFreeType::Oblique);
+
+    //if(ImGui::DragFloat("Font Size", &current_base_font_size, 1.f, 5.f, 26.f))
+
+    int ifsize = current_base_font_size;
+
+    if(ImGui::DragInt("Font Size", &ifsize, 1, 5, 26))
+    {
+        wants_rebuild = true;
+    }
+
+    if(ifsize < 5)
+        ifsize = 5;
+    if(ifsize > 26)
+        ifsize = 26;
+
+    //ImGui::Text((std::string("Font Size: ") + std::to_string(ifsize)).c_str());
+
+    ImGui::SameLine();
+
+    if(ImGui::Button("-"))
+    {
+        ifsize--;
+        wants_rebuild = true;
+    }
+
+    ImGui::SameLine();
+
+    if(ImGui::Button("+"))
+    {
+        ifsize++;
+        wants_rebuild = true;
+    }
+
+    current_base_font_size = ifsize;
 
     ImGui::End();
 }

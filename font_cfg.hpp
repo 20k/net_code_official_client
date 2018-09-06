@@ -24,12 +24,16 @@ struct font_selector
         DEFAULT = 2,
     };
 
+    int current_base_font = (int)font_cfg::BASE;
+
     ImFont* get_base_font();
     ImFont* get_editor_font();
 
+    float current_base_font_size = 14;
+
     void reset_default_fonts(float editor_font_size = 14.f);
     // Call _BEFORE_ NewFrame()
-    bool update_rebuild();
+    bool update_rebuild(float editor_font_size = 14.f);
     // Call to draw interface
     void render();
 };

@@ -368,7 +368,7 @@ int main()
             text_editor.dirty_font = false;
         }
 
-        if(font_select.update_rebuild())
+        if(font_select.update_rebuild(text_editor.current_font_size))
         {
             term.invalidate();
         }
