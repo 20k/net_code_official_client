@@ -914,7 +914,7 @@ int main()
         if(mouse.isButtonPressed(sf::Mouse::Left) && is_focused(focused))
             get_global_copy_handler()->on_hold_lclick(window,  vpos);
 
-        if(sd_has_front_read(shared))
+        while(sd_has_front_read(shared))
         {
             sized_string c_data = sd_get_front_read(shared);
             std::string fdata = c_str_sized_to_cpp(c_data);
