@@ -55,7 +55,8 @@ std::string make_lower(std::string in)
 
 //#define HOST_IP "192.168.0.55"
 #ifdef EXTERN_IP
-#define HOST_IP "77.96.132.101"
+//#define HOST_IP "77.96.132.101"
+#define HOST_IP "netcodegame.com"
 #endif // EXTERN_IP
 
 #ifdef LOCAL_IP
