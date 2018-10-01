@@ -90,6 +90,14 @@ void editable_string::push_command_to_history(const std::string& cmd)
 
     limit_size(command_history, max_command_history);
 
+    if(command_history.size() > 0)
+    {
+        int fin = (int)command_history.size() - 1;
+
+        if(command_history[fin] == cmd)
+            return;
+    }
+
     command_history.push_back(cmd);
     command_history_idx = (int)command_history.size();
 }
