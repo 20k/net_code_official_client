@@ -604,7 +604,7 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
     {
         if(command_info.type == server_command_command)
         {
-            str = c_str_consume(sa_command_to_human_readable(command_info));
+            str = c_str_consume(sa_command_to_human_readable(command_info)) + "\n";
 
             invalidate();
 
