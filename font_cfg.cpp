@@ -8,6 +8,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "string_helpers.hpp"
+#include <tinydir/tinydir.h>
 
 void update_font_texture_safe()
 {
@@ -45,6 +46,44 @@ ImFont* font_selector::get_editor_font()
     return io.Fonts->Fonts[(int)font_cfg::TEXT_EDITOR];
 }
 
+struct tinydir_autoclose
+{
+    tinydir_dir dir;
+
+    tinydir_autoclose(const std::string& directory)
+    {
+        tinydir_open(&dir, directory.c_str());
+    }
+
+    ~tinydir_autoclose()
+    {
+        tinydir_close(&dir);
+    }
+};
+
+template<typename T>
+void for_each_file(const std::string& directory, const T& t)
+{
+    tinydir_autoclose close(directory);
+
+    while(close.dir.has_next)
+    {
+        tinydir_file file;
+        tinydir_readfile(&close.dir, &file);
+
+        if(!file.is_dir)
+        {
+            std::string file_name(file.name);
+            std::string file_ext(file.extension);
+
+            t(file_name, file_ext);
+        }
+
+        tinydir_next(&close.dir);
+    }
+}
+
+
 void font_selector::reset_default_fonts(float editor_font_size)
 {
     ImFontConfig font_cfg;
@@ -62,6 +101,14 @@ void font_selector::reset_default_fonts(float editor_font_size)
     ///DEFAULT
     io.Fonts->AddFontDefault();
 
+    for_each_file("./", [&](const std::string& name, const std::string& ext)
+    {
+        if(ext != "ttf")
+            return;
+
+        io.Fonts->AddFontFromFileTTF(name.c_str(), current_base_font_size, &font_cfg);
+    });
+
     //ImGui::PushFont(font);
 
     wants_rebuild = true;
@@ -76,6 +123,8 @@ bool font_selector::update_rebuild(float editor_font_size)
     reset_default_fonts(editor_font_size);
 
     ImGuiIO& io = ImGui::GetIO();
+
+    io.FontDefault = io.Fonts->Fonts[current_base_font];
 
     for (int n = 0; n < io.Fonts->Fonts.Size; n++)
     {
@@ -109,7 +158,7 @@ void font_selector::render()
         {
             if (ImGui::Selectable(io.Fonts->Fonts[n]->GetDebugName(), io.Fonts->Fonts[n] == font_current))
             {
-                io.FontDefault = io.Fonts->Fonts[n];
+                //io.FontDefault = io.Fonts->Fonts[n];
                 wants_rebuild = true;
                 current_base_font = n;
             }
