@@ -146,7 +146,7 @@ int main()
     nc_start_ssl(shared, HOST_IP, HOST_PORT_SSL);
 
     sf::ContextSettings sett;
-    sett.antialiasingLevel = 8;
+    sett.antialiasingLevel = 1;
 
     sf::RenderWindow window;
     window.create(sf::VideoMode(1200,600), "net_code", sf::Style::Default, sett);
@@ -1017,7 +1017,8 @@ int main()
 
         ImGui::SFML::Render(window);
         window.display();
-        window.clear(sf::Color(bg_col.x(), bg_col.y(), bg_col.z()));
+        //window.clear(sf::Color(bg_col.x(), bg_col.y(), bg_col.z()));
+        window.clear();
 
         sf::sleep(sf::milliseconds(4));
 
