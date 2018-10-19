@@ -117,10 +117,10 @@
 					<Add option="-s" />
 				</Linker>
 			</Target>
-			<Target title="DebugDeploy">
-				<Option output="bin/DebugDeploy/crapmud_client" prefix_auto="1" extension_auto="1" />
+			<Target title="DeployTestDebug">
+				<Option output="bin/DeployTestDebug/crapmud_client" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="DebugDeploy" />
-				<Option object_output="obj/DebugDeploy/" />
+				<Option object_output="obj/DeployTestDebug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -204,17 +204,19 @@
 			<Add option="-DNET_CLIENT" />
 			<Add option="-DNO_COMPRESSION" />
 			<Add option="-DBOOST_STACKTRACE_USE_WINDBG" />
+			<Add option="-DSFML_STATIC" />
 			<Add directory="deps" />
+			<Add directory="deps/SFML/include" />
+			<Add directory="deps/freetype/include/freetype" />
 			<Add directory="deps/imgui" />
-			<Add directory="deps/freetype" />
-			<Add directory="deps/freetype/include" />
+			<Add directory="C:/Users/James/Desktop/projects/crapmud_client/deps/freetype/include" />
 		</Compiler>
 		<Linker>
 			<Add option="-lmingw32" />
-			<Add option="-lsfml-graphics" />
-			<Add option="-lsfml-audio" />
-			<Add option="-lsfml-window" />
-			<Add option="-lsfml-system" />
+			<Add option="-lsfml-audio-s" />
+			<Add option="-lsfml-graphics-s" />
+			<Add option="-lsfml-window-s" />
+			<Add option="-lsfml-system-s" />
 			<Add option="-lfreetype" />
 			<Add option="-lopengl32" />
 			<Add option="-lflac" />
@@ -225,8 +227,10 @@
 			<Add option="-lboost_filesystem-mt" />
 			<Add option="-ldbgeng" />
 			<Add option="-lboost_stacktrace_windbg-mt" />
+			<Add option="-lwinmm" />
+			<Add option="-lgdi32" />
 			<Add library="deps/libncclient/libncclient.a" />
-			<Add library="deps/freetype/win64/libfreetype.a" />
+			<Add directory="deps/SFML/lib" />
 		</Linker>
 		<ExtraCommands>
 			<Add after="copy_dll.bat" />
