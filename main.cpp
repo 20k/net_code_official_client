@@ -152,9 +152,6 @@ int main()
     sf::RenderWindow window;
     window.create(sf::VideoMode(1200,600), "net_code", sf::Style::Default, sett);
 
-    sf::Font sfml_font;
-    sfml_font.loadFromFile("./VeraMono.ttf");
-
     ImGui::SFML::Init(window, false);
 
     //ImGuiFreeType::BuildFontAtlas(io.Fonts, 0);
@@ -1024,7 +1021,7 @@ int main()
         ImGui::SFML::Render(window);
 
         sf::Text txt;
-        txt.setFont(sfml_font);
+        txt.setFont(*font_select.get_base_sfml_font());
         txt.setString("Hi there hello there\nMy name is {3, 3}");
         txt.setCharacterSize(8);
 

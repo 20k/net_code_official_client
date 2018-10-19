@@ -44,6 +44,10 @@ struct font_selector : serialisable
         s.handle_serialise(current_base_font_size, ser);
         s.handle_serialise(current_base_font, ser);
     }
+
+    std::vector<sf::Font> sfml_fonts;
+
+    sf::Font* get_base_sfml_font();
 };
 
 #endif // FONT_CFG_HPP_INCLUDED

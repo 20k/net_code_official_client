@@ -30,6 +30,11 @@ font_selector::font_selector()
 {
     fonts_flags = ImGuiFreeType::ForceAutoHint;
     //fonts_flags = ImGuiFreeType::ForceAutoHint | ImGuiFreeType::MonoHinting;
+
+    sf::Font font;
+    font.loadFromFile("VeraMono.ttf");
+
+    sfml_fonts.push_back(font);
 }
 
 ImFont* font_selector::get_base_font()
@@ -44,6 +49,11 @@ ImFont* font_selector::get_editor_font()
     ImGuiIO& io = ImGui::GetIO();
 
     return io.Fonts->Fonts[(int)font_cfg::TEXT_EDITOR];
+}
+
+sf::Font* font_selector::get_base_sfml_font()
+{
+    return &sfml_fonts[0];
 }
 
 struct tinydir_autoclose

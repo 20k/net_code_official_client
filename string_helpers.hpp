@@ -4,8 +4,6 @@
 #include <SFML/Graphics.hpp>
 #include "colour_interop.hpp"
 
-inline sf::Font font;
-
 namespace char_inf
 {
     inline int cwidth = 8;
@@ -128,7 +126,7 @@ void render_str(sf::RenderWindow& win, const interop_vec_t& chars, vec2f& cpos, 
 }
 #endif // 0
 
-inline
+/*inline
 void render_str(sf::RenderWindow& win, const interop_vec_t& chars, vec2f& cpos, vec2f start, vec2f wrap_dim, float zero_bound)
 {
     sf::Text txt;
@@ -167,7 +165,7 @@ void render_str(sf::RenderWindow& win, const interop_vec_t& chars, vec2f& cpos, 
 
         pos.x() += char_inf::cwidth;
     }
-}
+}*/
 
 struct auto_handler;
 
