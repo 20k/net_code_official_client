@@ -141,20 +141,26 @@ int main()
 
     c_shared_data shared = sd_alloc();
 
-    font.loadFromFile("VeraMono.ttf");
+    //font.loadFromFile("VeraMono.ttf");
 
     nc_start_ssl(shared, HOST_IP, HOST_PORT_SSL);
 
     sf::ContextSettings sett;
     sett.antialiasingLevel = 1;
+    sett.sRgbCapable = false;
 
     sf::RenderWindow window;
     window.create(sf::VideoMode(1200,600), "net_code", sf::Style::Default, sett);
+
+    sf::Font sfml_font;
+    sfml_font.loadFromFile("./VeraMono.ttf");
 
     ImGui::SFML::Init(window, false);
 
     //ImGuiFreeType::BuildFontAtlas(io.Fonts, 0);
     //ImGui::SFML::UpdateFontTexture();
+
+    //My name is
 
     //ImVec4 vec = ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive);
     //ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0,0,0,0));
@@ -1016,6 +1022,15 @@ int main()
         ImGui::PopFont();
 
         ImGui::SFML::Render(window);
+
+        sf::Text txt;
+        txt.setFont(sfml_font);
+        txt.setString("Hi there hello there\nMy name is {3, 3}");
+        txt.setCharacterSize(8);
+
+        txt.setPosition(600, 650);
+        window.draw(txt, sf::BlendAdd);
+
         window.display();
         //window.clear(sf::Color(bg_col.x(), bg_col.y(), bg_col.z()));
         window.clear();
