@@ -148,14 +148,14 @@ void text_callback(const ImDrawList* parent_list, const ImDrawCmd* cmd)
 
     //std::cout << "pos " << position.x() << " " << position.y() << std::endl;
 
-    ImVec2 tl((int)position.x(), (int)position.y());
-    ImVec2 br((int)position.x() + text_dim.x(), (int)position.y() + text_dim.y());
+    //ImVec2 tl((int)position.x(), (int)position.y());
+    //ImVec2 br((int)position.x() + text_dim.x(), (int)position.y() + text_dim.y());
 
     //sf::RectangleShape shape(sf::Vector2f(text_dim.x(), text_dim.y()));
     //shape.setPosition(position.x(), position.y());
 
-    if(!ImGui::IsRectVisible(tl, br))
-        return;
+    //if(!ImGui::IsRectVisible(tl, br))
+    //    return;
 
     sf::BlendMode mode(sf::BlendMode::One, sf::BlendMode::OneMinusSrcColor,
                        sf::BlendMode::Add,

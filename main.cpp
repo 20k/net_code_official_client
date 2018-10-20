@@ -995,8 +995,8 @@ int main()
         chat_win.render(font_context, window, term.chat_threads, should_coordinate_focus);
         term.render(font_context, window, should_coordinate_focus);
 
-        window.display();
-        window.clear();
+        //window.display();
+        //window.clear();
 
         should_coordinate_focus = false;
 
@@ -1025,17 +1025,17 @@ int main()
 
         ImGui::SFML::Render(window);
 
-        sf::Text txt;
+        /*sf::Text txt;
         txt.setFont(*font_select.get_base_sfml_font());
         txt.setString("Hi there hello there\nMy name is {3, 3}");
         txt.setCharacterSize(8);
 
         txt.setPosition(600, 650);
-        window.draw(txt, sf::BlendAdd);
+        window.draw(txt, sf::BlendAdd);*/
 
-        //window.display();
+        window.display();
         //window.clear(sf::Color(bg_col.x(), bg_col.y(), bg_col.z()));
-        //window.clear();
+        window.clear();
 
         sf::sleep(sf::milliseconds(4));
 
