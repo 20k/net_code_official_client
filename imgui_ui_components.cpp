@@ -117,24 +117,64 @@ struct render_command
     vec2f absolute_pos;
 };
 
-void render_text_wrapper(font_render_context& font_select, vec2f position, vec4f colour_255, const std::string& text)
+struct text_args
 {
+    font_render_context& ctx;
+    vec2f position;
+    vec4f colour_255;
+    std::string txt;
+
+    text_args(font_render_context& pctx, vec2f ppos, vec4f pcol_255, const std::string& ptxt) : ctx(pctx), position(ppos), colour_255(pcol_255), txt(ptxt){}
+};
+
+void text_callback(const ImDrawList* parent_list, const ImDrawCmd* cmd)
+{
+    text_args* data = (text_args*)cmd->UserCallbackData;
+
+    vec2f position = data->position;
+    vec4f colour_255 = data->colour_255;
+
     sf::Text txt;
-    txt.setFont(*font_select.font_select.get_base_sfml_font());
-    txt.setString(text);
-    txt.setColor(sf::Color(colour_255.x(), colour_255.y(), colour_255.z(), colour_255.w()));
+    txt.setFont(*data->ctx.font_select.get_base_sfml_font());
+    txt.setString(data->txt);
+    txt.setFillColor(sf::Color(colour_255.x(), colour_255.y(), colour_255.z(), colour_255.w()));
 
     txt.setPosition((int)position.x(), (int)position.y());
-    txt.setCharacterSize(8);
+    txt.setCharacterSize(data->ctx.font_select.current_base_font_size);
+    txt.setLetterSpacing(char_inf::extra_glyph_spacing);
+
+    ///default origin is top left
+    vec2i text_dim = {char_inf::cwidth * data->txt.size(), char_inf::cheight};
 
     //std::cout << "pos " << position.x() << " " << position.y() << std::endl;
+
+    ImVec2 tl((int)position.x(), (int)position.y());
+    ImVec2 br((int)position.x() + text_dim.x(), (int)position.y() + text_dim.y());
+
+    //sf::RectangleShape shape(sf::Vector2f(text_dim.x(), text_dim.y()));
+    //shape.setPosition(position.x(), position.y());
+
+    if(!ImGui::IsRectVisible(tl, br))
+        return;
 
     sf::BlendMode mode(sf::BlendMode::One, sf::BlendMode::OneMinusSrcColor,
                        sf::BlendMode::Add,
                        sf::BlendMode::Zero, sf::BlendMode::One,
                        sf::BlendMode::Add);
 
-    font_select.win.draw(txt, mode);
+    //font_select.win.draw(shape);
+    data->ctx.win.draw(txt, mode);
+
+    delete data;
+}
+
+void render_text_wrapper(font_render_context& font_select, vec2f position, vec4f colour_255, const std::string& text)
+{
+    text_args* args = new text_args(font_select, position, colour_255, text);
+
+    ImDrawList* draw = ImGui::GetWindowDrawList();
+
+    draw->AddCallback(text_callback, (void*)args);
 }
 
 void render_copy_aware(font_render_context& font_select, vec3f col, const std::string& str, vec2f start_pos, vec2f end_pos, vec2f render_pos)
