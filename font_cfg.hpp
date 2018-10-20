@@ -50,4 +50,15 @@ struct font_selector : serialisable
     sf::Font* get_base_sfml_font();
 };
 
+struct font_render_context
+{
+    sf::RenderWindow& win;
+    font_selector& font_select;
+
+    font_render_context(sf::RenderWindow& pwin, font_selector& pfont_select) : win(pwin), font_select(pfont_select)
+    {
+
+    }
+};
+
 #endif // FONT_CFG_HPP_INCLUDED

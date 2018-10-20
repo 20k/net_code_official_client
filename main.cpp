@@ -371,6 +371,8 @@ int main()
 
     term.invalidate();
 
+    font_render_context font_context(window, font_select);
+
     while(running)
     {
         if(text_editor.dirty_font)
@@ -989,9 +991,12 @@ int main()
         int was_closed_id = -1;
 
         //test_imgui_term.render(window);
-        term.render_realtime_windows(shared, was_closed_id);
-        chat_win.render(window, term.chat_threads, should_coordinate_focus);
-        term.render(window, should_coordinate_focus);
+        term.render_realtime_windows(font_context, shared, was_closed_id);
+        chat_win.render(font_context, window, term.chat_threads, should_coordinate_focus);
+        term.render(font_context, window, should_coordinate_focus);
+
+        window.display();
+        window.clear();
 
         should_coordinate_focus = false;
 
@@ -1028,9 +1033,9 @@ int main()
         txt.setPosition(600, 650);
         window.draw(txt, sf::BlendAdd);
 
-        window.display();
+        //window.display();
         //window.clear(sf::Color(bg_col.x(), bg_col.y(), bg_col.z()));
-        window.clear();
+        //window.clear();
 
         sf::sleep(sf::milliseconds(4));
 
