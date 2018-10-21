@@ -170,7 +170,7 @@ int main()
 
     ImGuiStyle& style = ImGui::GetStyle();
 
-    style.FrameRounding = 2;
+    style.FrameRounding = 0;
     style.WindowRounding = 2;
     style.ChildRounding = 2;
     /*style.ChildBorderSize = 0;

@@ -19,7 +19,7 @@ sf::Texture& get_font_atlas()
 
 void update_font_texture_safe()
 {
-    sf::Texture& texture = get_font_atlas();
+    /*sf::Texture& texture = get_font_atlas();
 
     ImGuiIO& io = ImGui::GetIO();
     unsigned char* pixels;
@@ -44,7 +44,7 @@ void update_font_texture_safe()
     //texture.create(width, height);
     //texture.update(pixels);
 
-    io.Fonts->TexID = reinterpret_cast<void*>(texture.getNativeHandle());
+    io.Fonts->TexID = reinterpret_cast<void*>(texture.getNativeHandle());*/
 }
 
 font_selector::font_selector()
