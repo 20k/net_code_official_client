@@ -7,6 +7,8 @@
 #include "copy_handler.hpp"
 #include "tag_manager.hpp"
 #include "font_cfg.hpp"
+#include <GL/gl.h>
+#include <gl/glext.h>
 
 namespace ImGuiX
 {
@@ -127,12 +129,53 @@ struct text_args
     text_args(font_render_context& pctx, vec2f ppos, vec4f pcol_255, const std::string& ptxt) : ctx(pctx), position(ppos), colour_255(pcol_255), txt(ptxt){}
 };
 
+void text_setup(const ImDrawCmd* cmd)
+{
+    text_args* data = (text_args*)cmd->UserCallbackData;
+
+    data->ctx.win.pushGLStates();
+}
+
+void text_teardown(const ImDrawCmd* cmd)
+{
+    text_args* data = (text_args*)cmd->UserCallbackData;
+
+    data->ctx.win.popGLStates();
+}
+
+void text_free(const ImDrawCmd* cmd)
+{
+    text_args* data = (text_args*)cmd->UserCallbackData;
+
+    std::cout << "deleting " << data << std::endl;
+
+    delete data;
+
+    std::cout << "done" << std::endl;
+}
+
 void text_callback(const ImDrawList* parent_list, const ImDrawCmd* cmd)
 {
     text_args* data = (text_args*)cmd->UserCallbackData;
 
     vec2f position = data->position;
     vec4f colour_255 = data->colour_255;
+
+    vec2i text_dim = {char_inf::cwidth * data->txt.size(), char_inf::cheight};
+
+    ImVec2 tl((int)position.x(), (int)position.y());
+    ImVec2 br((int)position.x() + text_dim.x(), (int)position.y() + text_dim.y());
+
+    //if(!ImGui::IsRectVisible(tl, br))
+    //    return;
+
+    if(br.x < 0 || tl.x >= data->ctx.win.getSize().x || br.y < 0 || tl.y >= data->ctx.win.getSize().y)
+        return;
+
+    sf::BlendMode mode(sf::BlendMode::One, sf::BlendMode::OneMinusSrcColor,
+                       sf::BlendMode::Add,
+                       sf::BlendMode::Zero, sf::BlendMode::One,
+                       sf::BlendMode::Add);
 
     sf::Text txt;
     txt.setFont(*data->ctx.font_select.get_base_sfml_font());
@@ -143,29 +186,7 @@ void text_callback(const ImDrawList* parent_list, const ImDrawCmd* cmd)
     txt.setCharacterSize(data->ctx.font_select.current_base_font_size);
     txt.setLetterSpacing(char_inf::extra_glyph_spacing);
 
-    ///default origin is top left
-    vec2i text_dim = {char_inf::cwidth * data->txt.size(), char_inf::cheight};
-
-    //std::cout << "pos " << position.x() << " " << position.y() << std::endl;
-
-    //ImVec2 tl((int)position.x(), (int)position.y());
-    //ImVec2 br((int)position.x() + text_dim.x(), (int)position.y() + text_dim.y());
-
-    //sf::RectangleShape shape(sf::Vector2f(text_dim.x(), text_dim.y()));
-    //shape.setPosition(position.x(), position.y());
-
-    //if(!ImGui::IsRectVisible(tl, br))
-    //    return;
-
-    sf::BlendMode mode(sf::BlendMode::One, sf::BlendMode::OneMinusSrcColor,
-                       sf::BlendMode::Add,
-                       sf::BlendMode::Zero, sf::BlendMode::One,
-                       sf::BlendMode::Add);
-
-    //font_select.win.draw(shape);
     data->ctx.win.draw(txt, mode);
-
-    delete data;
 }
 
 void render_text_wrapper(font_render_context& font_select, vec2f position, vec4f colour_255, const std::string& text)
@@ -174,7 +195,16 @@ void render_text_wrapper(font_render_context& font_select, vec2f position, vec4f
 
     ImDrawList* draw = ImGui::GetWindowDrawList();
 
-    draw->AddCallback(text_callback, (void*)args);
+    vec2i text_dim = {char_inf::cwidth * text.size(), char_inf::cheight};
+
+    ImVec2 tl((int)position.x(), (int)position.y());
+    ImVec2 br((int)position.x() + text_dim.x(), (int)position.y() + text_dim.y());
+
+    ImGui::PushClipRect(tl, br, true);
+
+    draw->AddCallback(text_callback, text_setup, text_teardown, text_free, (void*)args);
+
+    ImGui::PopClipRect();
 }
 
 void render_copy_aware(font_render_context& font_select, vec3f col, const std::string& str, vec2f start_pos, vec2f end_pos, vec2f render_pos)
@@ -231,11 +261,11 @@ void render_copy_aware(font_render_context& font_select, vec3f col, const std::s
 
         ImGui::SetCursorScreenPos(ImVec2(c_pos.x(), c_pos.y()));
 
-        ImGui::Text(" ");
+        //ImGui::Text(" ");
 
-        render_text_wrapper(font_select, c_pos, {ccol.x(), ccol.y(), ccol.z(), 255.f}, cstr);
+        //render_text_wrapper(font_select, c_pos, {ccol.x(), ccol.y(), ccol.z(), 255.f}, cstr);
 
-        //ImGuiX::TextColoredUnformatted(ImVec4(ccol.x()/255.f, ccol.y()/255.f, ccol.z()/255.f, 1.f), cstr.c_str());
+        ImGuiX::TextColoredUnformatted(ImVec4(ccol.x()/255.f, ccol.y()/255.f, ccol.z()/255.f, 1.f), cstr.c_str());
 
         c_pos.x() += cstr.size() * char_inf::cwidth;
 
@@ -248,11 +278,11 @@ void render_copy_blind(font_render_context& font_select, vec3f col, const std::s
 {
     ImGui::SetCursorScreenPos(ImVec2(render_pos.x(), render_pos.y()));
 
-    ImGui::Text(" ");
+    //ImGui::Text(" ");
 
-    render_text_wrapper(font_select, render_pos, {col.x(), col.y(), col.z(), 255.f}, str);
+    //render_text_wrapper(font_select, render_pos, {col.x(), col.y(), col.z(), 255.f}, str);
 
-    //ImGuiX::TextColoredUnformatted(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
+    ImGuiX::TextColoredUnformatted(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
 }
 
 void imgui_render_str(font_render_context& font_select, const std::vector<formatted_char>& text, std::vector<std::vector<formatted_char>>& formatted_text, float window_width)

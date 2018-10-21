@@ -10,9 +10,16 @@
 #include "string_helpers.hpp"
 #include <tinydir/tinydir.h>
 
-void update_font_texture_safe()
+sf::Texture& get_font_atlas()
 {
     static sf::Texture texture;
+
+    return texture;
+}
+
+void update_font_texture_safe()
+{
+    sf::Texture& texture = get_font_atlas();
 
     ImGuiIO& io = ImGui::GetIO();
     unsigned char* pixels;
@@ -20,8 +27,22 @@ void update_font_texture_safe()
 
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-    texture.create(width, height);
-    texture.update(pixels);
+    std::cout << "fwidth " << width << " fheight " << height << std::endl;
+
+    sf::Image bad_pixels;
+
+    bad_pixels = texture.copyToImage();
+
+    const sf::Uint8* bad_pixels_ptr = bad_pixels.getPixelsPtr();
+
+    for(int i=0; i < 100; i++)
+    {
+        std::cout << "f1 " << (int)bad_pixels_ptr[i] << " f2 " << (int)pixels[i] << std::endl;
+    }
+
+
+    //texture.create(width, height);
+    //texture.update(pixels);
 
     io.Fonts->TexID = reinterpret_cast<void*>(texture.getNativeHandle());
 }
@@ -125,10 +146,12 @@ void font_selector::reset_default_fonts(float editor_font_size)
 }
 
 // Call _BEFORE_ NewFrame()
-bool font_selector::update_rebuild(float editor_font_size)
+bool font_selector::update_rebuild(sf::RenderWindow& win, float editor_font_size)
 {
     if (!wants_rebuild)
         return false;
+
+    win.pushGLStates();
 
     reset_default_fonts(editor_font_size);
 
@@ -142,10 +165,17 @@ bool font_selector::update_rebuild(float editor_font_size)
         //io.Fonts->Fonts[n]->ConfigData->RasterizerFlags = (BuildMode == FontBuildMode_FreeType) ? fonts_flags : 0x00;
     }
 
-    ImGuiFreeType::BuildFontAtlas(io.Fonts, fonts_flags);
+
+    sf::Texture& backing = get_font_atlas();
+
+    ImGuiFreeType::BuildFontAtlas(backing, io.Fonts, fonts_flags);
 
     wants_rebuild = false;
     update_font_texture_safe();
+
+    win.popGLStates();
+
+    //io.Fonts->TexID = reinterpret_cast<void*>(backing.getNativeHandle());
 
     //ImGui::PushFont(io.Fonts->Fonts[0]);
     return true;

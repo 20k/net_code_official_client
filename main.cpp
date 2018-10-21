@@ -151,6 +151,7 @@ int main()
 
     sf::RenderWindow window;
     window.create(sf::VideoMode(1200,600), "net_code", sf::Style::Default, sett);
+    window.resetGLStates();
 
     ImGui::SFML::Init(window, false);
 
@@ -382,7 +383,7 @@ int main()
             text_editor.dirty_font = false;
         }
 
-        if(font_select.update_rebuild(text_editor.current_font_size))
+        if(font_select.update_rebuild(window, text_editor.current_font_size))
         {
             term.invalidate();
         }
@@ -981,7 +982,7 @@ int main()
             sa_do_terminate_all_scripts(shared);
         }
 
-        //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
+        std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
 
         term.auto_handle.window_in_focus = is_focused(focused);
         chat_win.auto_handle.window_in_focus = is_focused(focused);
@@ -1032,6 +1033,10 @@ int main()
 
         txt.setPosition(600, 650);
         window.draw(txt, sf::BlendAdd);*/
+
+        //sf::Sprite spr(get_font_atlas());
+
+        //window.draw(spr);
 
         window.display();
         //window.clear(sf::Color(bg_col.x(), bg_col.y(), bg_col.z()));

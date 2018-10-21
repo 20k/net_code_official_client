@@ -5,6 +5,8 @@
 
 struct ImFont;
 
+sf::Texture& get_font_atlas();
+
 struct font_selector : serialisable
 {
     bool wants_rebuild = true;
@@ -35,7 +37,7 @@ struct font_selector : serialisable
 
     void reset_default_fonts(float editor_font_size = 14.f);
     // Call _BEFORE_ NewFrame()
-    bool update_rebuild(float editor_font_size = 14.f);
+    bool update_rebuild(sf::RenderWindow& win, float editor_font_size = 14.f);
     // Call to draw interface
     void render();
 
