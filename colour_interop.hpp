@@ -7,6 +7,14 @@
 #include <vector>
 
 inline
+vec3f srgb_to_lin(vec3f in)
+{
+    in = pow(in/255.f, 2.2) * 255;
+
+    return in;
+}
+
+inline
 std::map<char, vec3f> get_cmap()
 {
     std::map<char, vec3f> colour_map;
@@ -72,6 +80,13 @@ std::map<char, vec3f> get_cmap()
     colour_map['2'] = {255, 140, 40};
     colour_map['3'] = {255, 255, 40};
     colour_map['4'] = {60, 255, 60};
+
+    for(auto& i : colour_map)
+    {
+        vec3f& col = i.second;
+
+        col = srgb_to_lin(col);
+    }
 
     return colour_map;
 }

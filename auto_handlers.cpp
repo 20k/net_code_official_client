@@ -43,6 +43,11 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
     cols["["] = pale_red;
     cols["]"] = pale_red;
 
+    for(auto& i : cols)
+    {
+        i.second = srgb_to_lin(i.second);
+    }
+
     std::map<std::string, vec3f> generic_keywords;
 
     if(use_autocolour)
@@ -53,6 +58,11 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
         generic_keywords["if"] = pale_blue;
         generic_keywords["return"] = pale_blue;
         generic_keywords[";"] = pale_red;
+    }
+
+    for(auto& i : generic_keywords)
+    {
+        i.second = srgb_to_lin(i.second);
     }
 
     std::set<token::token> valid_colourings
@@ -66,9 +76,9 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
         token::CLOSE_SQUARE,
     };
 
-    vec3f value_col = {8, 143, 242};
+    vec3f value_col = srgb_to_lin({8, 143, 242});
     //vec3f value_col = {100, 206, 209};
-    vec3f key_col = {243, 166, 3};
+    vec3f key_col = srgb_to_lin({243, 166, 3});
 
     for(int i=0; i < (int)in.size(); i++)
     {
