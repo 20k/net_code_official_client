@@ -81,12 +81,12 @@ std::map<char, vec3f> get_cmap()
     colour_map['3'] = {255, 255, 40};
     colour_map['4'] = {60, 255, 60};
 
-    for(auto& i : colour_map)
+    /*for(auto& i : colour_map)
     {
         vec3f& col = i.second;
 
         col = srgb_to_lin(col);
-    }
+    }*/
 
     return colour_map;
 }

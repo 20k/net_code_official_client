@@ -175,6 +175,8 @@ void render_copy_aware(font_render_context& font_select, vec3f col, const std::s
 
         //ImGuiX::TextColoredUnformatted(ImVec4(ccol.x()/255.f, ccol.y()/255.f, ccol.z()/255.f, 1.f), cstr.c_str());
 
+        ccol = srgb_to_lin(ccol);
+
         ImDrawList* imlist = ImGui::GetWindowDrawList();
         imlist->AddText(ImVec2(c_pos.x(), c_pos.y()), IM_COL32((int)ccol.x(), (int)ccol.y(), (int)ccol.z(), 255), cstr.c_str());
 
@@ -190,6 +192,8 @@ void render_copy_blind(font_render_context& font_select, vec3f col, const std::s
     ImGui::SetCursorScreenPos(ImVec2(render_pos.x(), render_pos.y()));
 
     //ImGuiX::TextColoredUnformatted(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
+
+    col = srgb_to_lin(col);
 
     ImDrawList* imlist = ImGui::GetWindowDrawList();
     imlist->AddText(ImVec2(render_pos.x(), render_pos.y()), IM_COL32((int)col.x(), (int)col.y(), (int)col.z(), 255), str.c_str());
