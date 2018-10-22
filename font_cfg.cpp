@@ -168,7 +168,7 @@ bool font_selector::update_rebuild(sf::RenderWindow& win, float editor_font_size
 
     sf::Texture& backing = get_font_atlas();
 
-    ImGuiFreeType::BuildFontAtlas(backing, io.Fonts, fonts_flags);
+    ImGuiFreeType::BuildFontAtlas(backing, io.Fonts, fonts_flags, subpixel_flags);
 
     wants_rebuild = false;
     update_font_texture_safe();
@@ -179,6 +179,25 @@ bool font_selector::update_rebuild(sf::RenderWindow& win, float editor_font_size
 
     //ImGui::PushFont(io.Fonts->Fonts[0]);
     return true;
+}
+
+bool handle_checkbox(const std::vector<std::string>& in, unsigned int& storage, const std::vector<int>& to_set)
+{
+    bool any = false;
+
+    for(int i=0; i < (int)in.size(); i++)
+    {
+        bool is_set = to_set[i] == storage;
+
+        any |= ImGui::Checkbox(in[i].c_str(), &is_set);
+
+        if(is_set)
+        {
+            storage = to_set[i];
+        }
+    }
+
+    return any;
 }
 
 // Call to draw interface
@@ -215,6 +234,18 @@ void font_selector::render()
     wants_rebuild |= ImGui::CheckboxFlags("MonoHinting",   &fonts_flags, ImGuiFreeType::MonoHinting);
     wants_rebuild |= ImGui::CheckboxFlags("Bold",          &fonts_flags, ImGuiFreeType::Bold);
     wants_rebuild |= ImGui::CheckboxFlags("Oblique",       &fonts_flags, ImGuiFreeType::Oblique);
+
+    ImGui::NewLine();
+
+    /*wants_rebuild |= ImGui::CheckboxFlags("Default Filtering", &subpixel_flags, ImGuiFreeType::DEFAULT);
+    wants_rebuild |= ImGui::CheckboxFlags("Legacy Filtering", &subpixel_flags, ImGuiFreeType::LEGACY);
+    wants_rebuild |= ImGui::CheckboxFlags("Light Filtering", &subpixel_flags, ImGuiFreeType::LIGHT);
+    wants_rebuild |= ImGui::CheckboxFlags("No Filtering", &subpixel_flags, ImGuiFreeType::NONE);
+    wants_rebuild |= ImGui::CheckboxFlags("Disable subpixel AA", &subpixel_flags, ImGuiFreeType::DISABLE_SUBPIXEL_AA);*/
+
+    wants_rebuild |= handle_checkbox({"Default Filtering", "Legacy Filtering", "Light Filtering", "No Filtering", "Disable subpixel AA"},
+                                    subpixel_flags,
+                                    {ImGuiFreeType::DEFAULT, ImGuiFreeType::LEGACY, ImGuiFreeType::LIGHT, ImGuiFreeType::NONE, ImGuiFreeType::DISABLE_SUBPIXEL_AA});
 
     int ifsize = current_base_font_size;
 

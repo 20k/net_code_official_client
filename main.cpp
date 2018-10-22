@@ -147,7 +147,7 @@ int main()
 
     sf::ContextSettings sett;
     sett.antialiasingLevel = 1;
-    sett.sRgbCapable = false;
+    sett.sRgbCapable = true;
 
     sf::RenderWindow window;
     window.create(sf::VideoMode(1200,600), "net_code", sf::Style::Default, sett);
@@ -164,11 +164,14 @@ int main()
     //ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0,0,0,0));
     //printf("%f %f %f %f\n", vec.x, vec.y, vec.z, vec.w);
 
+    ImGui::FixStyleSrgb();
+
     vec3f bg_col = {30, 30, 30};
 
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(bg_col.x()/255.f, bg_col.y()/255.f, bg_col.z()/255.f, 255/255.f));
 
     ImGuiStyle& style = ImGui::GetStyle();
+
 
     style.FrameRounding = 0;
     style.WindowRounding = 2;
