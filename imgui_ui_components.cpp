@@ -732,7 +732,7 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
             for(int i=0; i < (int)chnls.size(); i++)
             {
                 if(chat_win.show_chat_in_main_window)
-                    history.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
+                    history.push_back(string_to_interop(msgs[i] + "\n", false, chat_win.auto_handle));
 
                 chat_threads[chnls[i]].history.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
                 chat_threads[chnls[i]].dirty = true;
@@ -740,7 +740,7 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
 
             for(auto& i : tell_msgs)
             {
-                history.push_back(string_to_interop_no_autos(i, false));
+                history.push_back(string_to_interop_no_autos(i + "\n", false));
             }
 
             limit_size(history, MAX_TEXT_HISTORY);
