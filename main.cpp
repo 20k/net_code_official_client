@@ -166,7 +166,7 @@ int main()
 
     ImGui::FixStyleSrgb();
 
-    vec3f bg_col = {30, 30, 30};
+    vec3f bg_col = {38, 38, 38};
 
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(bg_col.x()/255.f, bg_col.y()/255.f, bg_col.z()/255.f, 255/255.f));
 
