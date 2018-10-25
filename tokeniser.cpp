@@ -449,6 +449,11 @@ bool expect_seclevel(int& pos, data_t dat, token_seq tok)
         "#ls.",
         "#ns.",
         "#s.",
+        "#4s.",
+        "#3s.",
+        "#2s.",
+        "#1s.",
+        "#0s."
     };
 
     if(dat[pos].c != '#')
@@ -457,11 +462,11 @@ bool expect_seclevel(int& pos, data_t dat, token_seq tok)
     std::string found;
     bool any = false;
 
-    for(auto& i : match)
+    for(auto& sec : match)
     {
         bool all = true;
 
-        for(int kk = 0; kk < (int)i.size(); kk++)
+        for(int kk = 0; kk < (int)sec.size(); kk++)
         {
             int offset = kk + pos;
 
@@ -471,7 +476,7 @@ bool expect_seclevel(int& pos, data_t dat, token_seq tok)
                 break;
             }
 
-            if(i[kk] != dat[offset].c)
+            if(sec[kk] != dat[offset].c)
             {
                 all = false;
                 break;
@@ -481,7 +486,7 @@ bool expect_seclevel(int& pos, data_t dat, token_seq tok)
         if(!all)
             continue;
 
-        found = i;
+        found = sec;
 
         any = true;
         break;
