@@ -5,8 +5,6 @@
 
 struct ImFont;
 
-sf::Texture& get_font_atlas();
-
 struct font_selector : serialisable
 {
     bool wants_rebuild = true;
@@ -51,6 +49,8 @@ struct font_selector : serialisable
     std::vector<sf::Font> sfml_fonts;
 
     sf::Font* get_base_sfml_font();
+
+    sf::Texture font_atlas;
 };
 
 struct font_render_context

@@ -10,13 +10,6 @@
 #include "string_helpers.hpp"
 #include <tinydir/tinydir.h>
 
-sf::Texture& get_font_atlas()
-{
-    static sf::Texture texture;
-
-    return texture;
-}
-
 void update_font_texture_safe()
 {
     /*sf::Texture& texture = get_font_atlas();
@@ -166,9 +159,7 @@ bool font_selector::update_rebuild(sf::RenderWindow& win, float editor_font_size
     }
 
 
-    sf::Texture& backing = get_font_atlas();
-
-    ImGuiFreeType::BuildFontAtlas(backing, io.Fonts, fonts_flags, subpixel_flags);
+    ImGuiFreeType::BuildFontAtlas(font_atlas, io.Fonts, fonts_flags, subpixel_flags);
 
     wants_rebuild = false;
     update_font_texture_safe();
