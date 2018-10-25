@@ -711,7 +711,7 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
 
             for(int i=0; i < chat_info.num_notifs; i++)
             {
-                history.push_back(string_to_interop_no_autos(c_str_sized_to_cpp(chat_info.notifs[i].msg), false));
+                history.push_back(string_to_interop_no_autos(c_str_sized_to_cpp(chat_info.notifs[i].msg) + "\n", false));
             }
 
             if(chat_info.num_tells > 0 || chat_info.num_notifs > 0 || chat_info.num_msgs > 0)
