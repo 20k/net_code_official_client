@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include "text_editor.hpp"
 #include "font_cfg.hpp"
+#include <iomanip>
 
 bool is_focused(bool in_focus)
 {
@@ -854,7 +855,9 @@ int main()
                 //if(chat_win.command.command.size() > 0 && chat_win.command.command.back() == '\n')
                 //    chat_win.command.command.pop_back();
 
-                sized_string chat_command = sa_make_chat_command(make_view(chat_win.selected), make_view(chat_win.command.command));
+                std::string escaped_string = escape_str(chat_win.command.command);
+
+                sized_string chat_command = sa_make_chat_command(make_view(chat_win.selected), make_view(escaped_string));
 
                 ///TODO
                 sd_add_back_write(shared, make_view(chat_command));
