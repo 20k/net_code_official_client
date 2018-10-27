@@ -179,7 +179,7 @@ bool handle_checkbox(const std::vector<std::string>& in, unsigned int& storage, 
 
     for(int i=0; i < (int)in.size(); i++)
     {
-        bool is_set = to_set[i] == storage;
+        bool is_set = to_set[i] == (int)storage;
 
         any |= ImGui::Checkbox(in[i].c_str(), &is_set);
 
