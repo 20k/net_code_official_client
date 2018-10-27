@@ -146,14 +146,40 @@ int main()
 
     nc_start_ssl(shared, HOST_IP, HOST_PORT_SSL);
 
-    bool use_srgb = false;
+    bool use_srgb = true;
+
+    int window_width = 1200;
+    int window_height = 600;
+
+    std::string general_file = "./window.txt";
+
+    if(file_exists(general_file))
+    {
+        using nlohmann::json;
+
+        std::string str = read_file_bin(general_file);
+
+        try
+        {
+            json j;
+            j = json::parse(str);
+
+            if(j.find("width_px") != j.end() && j.find("height_px") != j.end())
+            {
+                window_width = j["width_px"];
+                window_height = j["height_px"];
+                //window.setSize(sf::Vector2u((int)j["width_px"], (int)j["height_px"]));
+            }
+        }
+        catch(...){}
+    }
 
     sf::ContextSettings sett;
     sett.antialiasingLevel = 1;
     sett.sRgbCapable = use_srgb;
 
     sf::RenderWindow window;
-    window.create(sf::VideoMode(1200,600), "net_code", sf::Style::Default, sett);
+    window.create(sf::VideoMode(window_width, window_height), "net_code", sf::Style::Default, sett);
     window.resetGLStates();
 
     ImGui::SFML::Init(window, false);
@@ -302,7 +328,6 @@ int main()
 
     std::string terminal_file = "./terminal_v5.txt";
     std::string chat_file = "./chat_v5.txt";
-    std::string general_file = "./window.txt";
     std::string settings_file = "./text_sett.txt";
     std::string font_file = "./font_sett.txt";
 
@@ -328,25 +353,6 @@ int main()
     }
 
     text_editor.load();
-
-    if(file_exists(general_file))
-    {
-        using nlohmann::json;
-
-        std::string str = read_file_bin(general_file);
-
-        try
-        {
-            json j;
-            j = json::parse(str);
-
-            if(j.find("width_px") != j.end() && j.find("height_px") != j.end())
-            {
-                window.setSize(sf::Vector2u((int)j["width_px"], (int)j["height_px"]));
-            }
-        }
-        catch(...){}
-    }
 
     sf::Clock render_clock;
 
@@ -484,6 +490,7 @@ int main()
                     json j;
                     j["width_px"] = event.size.width;
                     j["height_px"] = event.size.height;
+                    j["use_srgb"] = use_srgb;
 
                     write_all_bin(general_file, j.dump());
                 }
