@@ -1,6 +1,7 @@
 #include "window_context.hpp"
 #include <libncclient/nc_util.hpp>
 #include <json/json.hpp>
+#include <libncclient/nc_util.hpp>
 
 window_context::window_context()
 {
@@ -58,7 +59,7 @@ void window_context::save()
         j["height_px"] = height;
         j["is_srgb"] = is_srgb;
 
-        write_all_bin(general_file, j.dump());
+        atomic_write_all(general_file, j.dump());
     }
     catch(...){}
 }
