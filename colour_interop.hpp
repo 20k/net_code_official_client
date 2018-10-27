@@ -133,9 +133,14 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
     {
         char cur = in[i];
 
+        char next = 0;
+
+        if(i < length - 1)
+            next = in[i + 1];
+
         term = false;
 
-        if(cur == '\\' && i < length - 1 && in[i + 1] == '`')
+        if(cur == '\\' && next == '`')
         {
             if(include_specials)
             {
@@ -169,6 +174,12 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
             interop_char c;
             c.c = cur;
 
+            if(cmap.find(next) != cmap.end())
+            {
+                c.col = cmap[next];
+                c.coloured = true;
+            }
+
             current_color_buf.push_back(c);
 
             continue;
@@ -195,8 +206,19 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
 
             interop_char c;
             c.c = cur;
-            c.col = cmap[last_col];
-            c.coloured = true;
+
+            if(cmap.find(last_col) != cmap.end())
+            {
+                c.col = cmap[last_col];
+                c.coloured = true;
+            }
+            else
+            {
+                last_col = 'A';
+            }
+
+            /*c.col = cmap[last_col];
+            c.coloured = true;*/
 
             current_color_buf.push_back(c);
 
