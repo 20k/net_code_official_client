@@ -5,6 +5,8 @@
 
 struct ImFont;
 
+struct window_context;
+
 struct font_selector : serialisable
 {
     bool wants_rebuild = true;
@@ -38,7 +40,7 @@ struct font_selector : serialisable
     // Call _BEFORE_ NewFrame()
     bool update_rebuild(sf::RenderWindow& win, float editor_font_size = 14.f);
     // Call to draw interface
-    void render();
+    void render(window_context& window_ctx);
 
     virtual void do_serialise(serialise& s, bool ser) override
     {
@@ -53,12 +55,14 @@ struct font_selector : serialisable
     sf::Texture font_atlas;
 };
 
+struct window_context;
+
 struct font_render_context
 {
-    sf::RenderWindow& win;
     font_selector& font_select;
+    window_context& window_ctx;
 
-    font_render_context(sf::RenderWindow& pwin, font_selector& pfont_select) : win(pwin), font_select(pfont_select)
+    font_render_context(font_selector& pfont_select, window_context& pwindow_ctx) : font_select(pfont_select), window_ctx(pwindow_ctx)
     {
 
     }

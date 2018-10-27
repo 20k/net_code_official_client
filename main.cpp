@@ -393,7 +393,7 @@ int main()
 
     term.invalidate();
 
-    font_render_context font_context(window, font_select);
+    font_render_context font_context(font_select, window_ctx);
 
     while(running)
     {
@@ -790,7 +790,7 @@ int main()
         //ImGui::ShowDemoWindow(nullptr);
         //ImGui::ShowStyleEditor(nullptr);
 
-        font_select.render();
+        font_select.render(window_ctx);
 
         text_editor.tick();
         text_editor.render(shared);

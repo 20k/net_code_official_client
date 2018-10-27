@@ -9,6 +9,7 @@
 #include "font_cfg.hpp"
 #include <GL/gl.h>
 #include <gl/glext.h>
+#include "window_context.hpp"
 
 namespace ImGuiX
 {
@@ -175,7 +176,7 @@ void render_copy_aware(font_render_context& font_select, vec3f col, const std::s
 
         //ImGuiX::TextColoredUnformatted(ImVec4(ccol.x()/255.f, ccol.y()/255.f, ccol.z()/255.f, 1.f), cstr.c_str());
 
-        if(font_select.win.getSettings().sRgbCapable)
+        if(font_select.window_ctx.win.getSettings().sRgbCapable)
             ccol = srgb_to_lin(ccol);
 
         ImDrawList* imlist = ImGui::GetWindowDrawList();
@@ -194,7 +195,7 @@ void render_copy_blind(font_render_context& font_select, vec3f col, const std::s
 
     //ImGuiX::TextColoredUnformatted(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
 
-    if(font_select.win.getSettings().sRgbCapable)
+    if(font_select.window_ctx.win.getSettings().sRgbCapable)
         col = srgb_to_lin(col);
 
     ImDrawList* imlist = ImGui::GetWindowDrawList();

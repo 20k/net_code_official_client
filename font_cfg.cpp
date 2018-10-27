@@ -192,7 +192,7 @@ bool handle_checkbox(const std::vector<std::string>& in, unsigned int& storage, 
 }
 
 // Call to draw interface
-void font_selector::render()
+void font_selector::render(window_context& window_ctx)
 {
     if(!is_open)
         return;
