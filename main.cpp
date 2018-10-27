@@ -31,6 +31,7 @@
 #include "text_editor.hpp"
 #include "font_cfg.hpp"
 #include <iomanip>
+#include "window_context.hpp"
 
 bool is_focused(bool in_focus)
 {
@@ -148,7 +149,7 @@ int main()
 
     bool use_srgb = true;
 
-    int window_width = 1200;
+    /*int window_width = 1200;
     int window_height = 600;
 
     std::string general_file = "./window.txt";
@@ -180,7 +181,11 @@ int main()
 
     sf::RenderWindow window;
     window.create(sf::VideoMode(window_width, window_height), "net_code", sf::Style::Default, sett);
-    window.resetGLStates();
+    window.resetGLStates();*/
+
+    window_context window_ctx;
+
+    sf::RenderWindow& window = window_ctx.win;
 
     ImGui::SFML::Init(window, false);
 
@@ -483,18 +488,10 @@ int main()
 
                 term.invalidate();
 
-                try
-                {
-                    using nlohmann::json;
+                window_ctx.width = event.size.width;
+                window_ctx.height = event.size.height;
 
-                    json j;
-                    j["width_px"] = event.size.width;
-                    j["height_px"] = event.size.height;
-                    j["use_srgb"] = use_srgb;
-
-                    write_all_bin(general_file, j.dump());
-                }
-                catch(...){}
+                window_ctx.save();
             }
 
             if(event.type == sf::Event::MouseButtonReleased)

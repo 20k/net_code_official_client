@@ -281,6 +281,8 @@
 		<Unit filename="tokeniser.cpp" />
 		<Unit filename="tokeniser.hpp" />
 		<Unit filename="util.hpp" />
+		<Unit filename="window_context.cpp" />
+		<Unit filename="window_context.hpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />
