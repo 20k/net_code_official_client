@@ -198,13 +198,15 @@ int main()
 
     ImGui::SetStyleSrgb(window_ctx.is_srgb);
 
-    vec3f bg_srgb = {35, 35, 35};
+    /*vec3f bg_srgb = {35, 35, 35};
     vec3f bg_nosrgb = {30, 30, 30};
 
     vec3f bg_col = bg_srgb;
 
     if(!window_ctx.is_srgb)
-        bg_col = bg_nosrgb;
+        bg_col = bg_nosrgb;*/
+
+    vec3f bg_col = {30, 30, 30};
 
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(bg_col.x()/255.f, bg_col.y()/255.f, bg_col.z()/255.f, 255/255.f));
 
@@ -794,10 +796,10 @@ int main()
 
         if(window_ctx.srgb_dirty)
         {
-            vec3f bg_col = bg_srgb;
+            /*vec3f bg_col = bg_srgb;
 
             if(!window_ctx.is_srgb)
-                bg_col = bg_nosrgb;
+                bg_col = bg_nosrgb;*/
 
             //ImGui::PopStyleColor(ImGuiCol_WindowBg);
             //ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(bg_col.x()/255.f, bg_col.y()/255.f, bg_col.z()/255.f, 255/255.f));
