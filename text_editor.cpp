@@ -89,7 +89,7 @@ void editable_script::save()
     std::string temp = "./scripts/" + editing_script + ".temp";
     std::string base = "./scripts/" + editing_script;
 
-    atomic_write_all(backup, script_contents);
+    write_all_bin(backup, script_contents);
 
     remove(temp.c_str());
     rename(base.c_str(), temp.c_str());
