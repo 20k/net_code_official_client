@@ -146,16 +146,24 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
             {
                 interop_char c;
                 c.c = '\\';
-                c.col = cmap[last_col];
-                c.coloured = found_colour;
+
+                if(found_colour)
+                {
+                    c.col = cmap[last_col];
+                    c.coloured = found_colour;
+                }
 
                 current_color_buf.push_back(c);
             }
 
             interop_char c;
             c.c = '`';
-            c.col = cmap[last_col];
-            c.coloured = found_colour;
+
+            if(found_colour)
+            {
+                c.col = cmap[last_col];
+                c.coloured = found_colour;
+            }
 
             current_color_buf.push_back(c);
 

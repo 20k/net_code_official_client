@@ -253,6 +253,18 @@ void imgui_render_str(font_render_context& font_select, const std::vector<format
             restart = false;
         }
 
+        if(fchar.ioc.is_cursor)
+        {
+            render_command next;
+            next.type = imgui_text;
+            next.col = {255, 255, 255};
+            next.str = "|";
+            next.absolute_pos = fchar.render_pos;
+
+            commands.push_back(next);
+            continue;
+        }
+
         current.col = fchar.ioc.col;
         current.str += fchar.ioc.c;
     }
