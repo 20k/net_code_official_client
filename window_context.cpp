@@ -56,7 +56,7 @@ void window_context::save()
         json j;
         j["width_px"] = width;
         j["height_px"] = height;
-        j["use_srgb"] = is_srgb;
+        j["is_srgb"] = is_srgb;
 
         write_all_bin(general_file, j.dump());
     }

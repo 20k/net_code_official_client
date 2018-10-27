@@ -9,6 +9,7 @@
 
 #include "string_helpers.hpp"
 #include <tinydir/tinydir.h>
+#include "window_context.hpp"
 
 void update_font_texture_safe()
 {
@@ -237,6 +238,21 @@ void font_selector::render(window_context& window_ctx)
     wants_rebuild |= handle_checkbox({"Default Filtering", "Legacy Filtering", "Light Filtering", "No Filtering", "Disable subpixel AA"},
                                     subpixel_flags,
                                     {ImGuiFreeType::DEFAULT, ImGuiFreeType::LEGACY, ImGuiFreeType::LIGHT, ImGuiFreeType::NONE, ImGuiFreeType::DISABLE_SUBPIXEL_AA});
+
+    ImGui::NewLine();
+
+    bool was_srgb = window_ctx.is_srgb;
+
+    ImGui::Checkbox("SrgbFramebuffer", &was_srgb);
+
+    if(window_ctx.is_srgb != was_srgb)
+    {
+        window_ctx.set_is_srgb(was_srgb);
+        window_ctx.srgb_dirty = true;
+        window_ctx.save();
+    }
+
+    ImGui::NewLine();
 
     int ifsize = current_base_font_size;
 

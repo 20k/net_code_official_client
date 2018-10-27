@@ -19,6 +19,8 @@ struct window_context
     void set_is_srgb(bool is_srgb);
 
     sf::RenderWindow win;
+
+    bool srgb_dirty = false;
 };
 
 #endif // WINDOW_CONTEXT_HPP_INCLUDED

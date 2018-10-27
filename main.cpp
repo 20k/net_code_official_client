@@ -147,8 +147,6 @@ int main()
 
     nc_start_ssl(shared, HOST_IP, HOST_PORT_SSL);
 
-    bool use_srgb = true;
-
     /*int window_width = 1200;
     int window_height = 600;
 
@@ -198,17 +196,19 @@ int main()
     //ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0,0,0,0));
     //printf("%f %f %f %f\n", vec.x, vec.y, vec.z, vec.w);
 
-    ImGui::SetStyleSrgb(use_srgb);
+    ImGui::SetStyleSrgb(window_ctx.is_srgb);
 
-    vec3f bg_col = {35, 35, 35};
+    vec3f bg_srgb = {35, 35, 35};
+    vec3f bg_nosrgb = {30, 30, 30};
 
-    if(!use_srgb)
-        bg_col = {30, 30, 30};
+    vec3f bg_col = bg_srgb;
+
+    if(!window_ctx.is_srgb)
+        bg_col = bg_nosrgb;
 
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(bg_col.x()/255.f, bg_col.y()/255.f, bg_col.z()/255.f, 255/255.f));
 
     ImGuiStyle& style = ImGui::GetStyle();
-
 
     style.FrameRounding = 0;
     style.WindowRounding = 2;
@@ -329,7 +329,7 @@ int main()
     MMAP(Middle, mmouse);
 
     text_editor_manager text_editor(font_select);
-    text_editor.set_is_srgb(use_srgb);
+    text_editor.set_is_srgb(window_ctx.is_srgb);
 
     std::string terminal_file = "./terminal_v5.txt";
     std::string chat_file = "./chat_v5.txt";
@@ -791,6 +791,20 @@ int main()
         //ImGui::ShowStyleEditor(nullptr);
 
         font_select.render(window_ctx);
+
+        if(window_ctx.srgb_dirty)
+        {
+            vec3f bg_col = bg_srgb;
+
+            if(!window_ctx.is_srgb)
+                bg_col = bg_nosrgb;
+
+            //ImGui::PopStyleColor(ImGuiCol_WindowBg);
+            //ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(bg_col.x()/255.f, bg_col.y()/255.f, bg_col.z()/255.f, 255/255.f));
+
+            text_editor.set_is_srgb(window_ctx.is_srgb);
+            ImGui::SetStyleSrgb(window_ctx.is_srgb);
+        }
 
         text_editor.tick();
         text_editor.render(shared);
