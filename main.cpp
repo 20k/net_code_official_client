@@ -205,8 +205,8 @@ int main()
     ImGuiStyle& style = ImGui::GetStyle();
 
     style.FrameRounding = 0;
-    style.WindowRounding = 2;
-    style.ChildRounding = 2;
+    style.WindowRounding = 0;
+    style.ChildRounding = 0;
     /*style.ChildBorderSize = 0;
     style.FrameBorderSize = 0;
     //style.PopupBorderSize = 0;
