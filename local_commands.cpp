@@ -9,6 +9,9 @@
 #include "auto_handlers.hpp"
 #include "imgui_ui_components.hpp"
 
+#include <windows.h>
+#include <shellapi.h>
+
 std::vector<std::string> get_all_scripts_list()
 {
     std::vector<std::string> ret;
