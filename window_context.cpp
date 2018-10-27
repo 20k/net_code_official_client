@@ -62,3 +62,15 @@ void window_context::save()
     }
     catch(...){}
 }
+
+void window_context::set_is_srgb(bool pis_srgb)
+{
+    is_srgb = pis_srgb;
+
+    sf::ContextSettings sett;
+    sett.antialiasingLevel = 1;
+    sett.sRgbCapable = is_srgb;
+
+    win.create(sf::VideoMode(width, height), "net_code", sf::Style::Default, sett);
+    win.resetGLStates();
+}
