@@ -48,10 +48,10 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
     cols["["] = pale_red;
     cols["]"] = pale_red;
 
-    for(auto& i : cols)
+    /*for(auto& i : cols)
     {
         i.second = srgb_to_lin(i.second);
-    }
+    }*/
 
     std::map<std::string, vec3f> generic_keywords;
 

@@ -250,6 +250,11 @@ text_editor_manager::~text_editor_manager()
     //save(true);
 }
 
+void text_editor_manager::set_is_srgb(bool srgb)
+{
+    is_srgb = srgb;
+}
+
 void text_editor_manager::set_current_user(const std::string& username)
 {
     editing_user = username;
@@ -771,6 +776,15 @@ void text_editor_manager::tick()
         }
 
         editable.set_contents(editable.editor.GetText());
+    }
+
+    for(auto& i : all_scripts)
+    {
+        for(auto& script : i.second.all_scripts)
+        {
+            if(script.editor.IsSrgb() != is_srgb)
+                script.editor.SetIsSrgb(is_srgb);
+        }
     }
 }
 

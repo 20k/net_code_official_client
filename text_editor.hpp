@@ -91,6 +91,7 @@ struct text_editor_manager : serialisable
     bool should_undo = false;
     bool should_redo = false;
 
+
     std::vector<server_tagged_message> scheduled_runs;
 
     sf::Clock settings_save_clock;
@@ -122,6 +123,7 @@ struct text_editor_manager : serialisable
     text_editor_manager(font_selector& _font_select);
     ~text_editor_manager();
 
+    void set_is_srgb(bool srgb);
     void set_current_user(const std::string& username);
 
     //void schedule_close(const std::string& name);
@@ -143,6 +145,8 @@ struct text_editor_manager : serialisable
     void update_auto_indent();
 
     std::optional<editable_script*> name_to_editable(const std::string& editable_name);
+
+    bool is_srgb = false;
 };
 
 

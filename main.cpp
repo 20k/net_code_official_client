@@ -146,9 +146,11 @@ int main()
 
     nc_start_ssl(shared, HOST_IP, HOST_PORT_SSL);
 
+    bool use_srgb = false;
+
     sf::ContextSettings sett;
     sett.antialiasingLevel = 1;
-    sett.sRgbCapable = true;
+    sett.sRgbCapable = use_srgb;
 
     sf::RenderWindow window;
     window.create(sf::VideoMode(1200,600), "net_code", sf::Style::Default, sett);
@@ -165,9 +167,12 @@ int main()
     //ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0,0,0,0));
     //printf("%f %f %f %f\n", vec.x, vec.y, vec.z, vec.w);
 
-    ImGui::FixStyleSrgb();
+    ImGui::SetStyleSrgb(use_srgb);
 
     vec3f bg_col = {35, 35, 35};
+
+    if(!use_srgb)
+        bg_col = {30, 30, 30};
 
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(bg_col.x()/255.f, bg_col.y()/255.f, bg_col.z()/255.f, 255/255.f));
 
@@ -293,6 +298,7 @@ int main()
     MMAP(Middle, mmouse);
 
     text_editor_manager text_editor(font_select);
+    text_editor.set_is_srgb(use_srgb);
 
     std::string terminal_file = "./terminal_v5.txt";
     std::string chat_file = "./chat_v5.txt";
