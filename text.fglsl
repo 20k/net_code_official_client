@@ -33,15 +33,6 @@ void main()
 
     float luminance_we_should_have_gotten = texture_luminance * colour_lum;
 
-    ///the fraction that our luminance is reduced by
-    ///its the in_luminance / luminance(vec3(1,1,1))
-    //float desired_luminance_reduction = 1. / colour_lum;
-
-    ///so this is how much it was really reduced by
-    //float luminance_fraction = multiplied_luminance / texture_luminance;
-
-    //float colour_scale = (1 / colour_lum) / luminance_fraction;
-
     ///ok concrete number this
     ///white col is 1,1,1
     ///we're colouring red, gives us 1,0,0
