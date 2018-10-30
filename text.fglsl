@@ -1,4 +1,5 @@
 uniform sampler2D texture;
+uniform int check_use;
 
 /*float luminance(vec3 val)
 {
@@ -12,8 +13,19 @@ float luminance(vec3 val)
 
 void main()
 {
-    vec3 in_col = gl_Color;
+    vec4 in_col4 = gl_Color;
+    vec3 in_col = in_col4.xyz;
     vec3 tex_col = texture2D(texture, gl_TexCoord[0].xy);
+
+    if(check_use == 0)
+    {
+        //gl_FragColor = 0;
+        gl_FragColor = vec4(in_col * tex_col, in_col4.a);
+        return;
+    }
+
+    //gl_FragColor = vec4(1,0,0, 1);
+    //return;
 
     ///ok so
     ///what I want to do is...
