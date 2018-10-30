@@ -1,8 +1,13 @@
 uniform sampler2D texture;
 
-float luminance(vec3 val)
+/*float luminance(vec3 val)
 {
     return 0.299f*val.x + 0.587f*val.y + 0.114f*val.z;
+}*/
+
+float luminance(vec3 val)
+{
+    return 0.2126 * val.x + 0.7152 * val.y + 0.0722 * val.z;
 }
 
 void main()
@@ -54,24 +59,27 @@ void main()
 
     ///so it needs to be reduced further by texture luminance_reduction / in_luminance_reduction?
 
+    if(luminance(tex_col) < 0.0001)
+        return;
+
     float luminance_fraction_reduction = luminance(in_col);
 
     float texture_luminance_fraction_reduction = luminance(tex_col * in_col) / luminance(tex_col);
 
-    //vec3 out = multiplied_luminance;
+    int set_0 = 0;
 
-    //vec3 fin = multiplied_col * luminance_we_should_have_gotten / multiplied_luminance;
+    if(texture_luminance_fraction_reduction < 0.0001)
+    {
+        texture_luminance_fraction_reduction = 1;
+        set_0 = 1;
+    }
 
-    //vec3 fin = multiplied_col * luminance_fraction_reduction /
+    float multiply_fraction = luminance_fraction_reduction / texture_luminance_fraction_reduction;
 
-    vec3 fin = multiplied_col * luminance_fraction_reduction / texture_luminance_fraction_reduction;
+    vec3 fin = multiplied_col * multiply_fraction;
 
-    ///
-
-    ///so
-    ///
+    if(set_0)
+        fin = vec3(0,0,0);
 
     gl_FragColor = vec4(fin, 1);
-
-    //gl_FragColor = vec4(multiplied_col * luminance_fraction, 1);
 }
