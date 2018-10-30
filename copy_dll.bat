@@ -1,3 +1,5 @@
 copy "deps\\libncclient\\ncclient.dll" "./"
 copy "deps\\libncclient\\ncclient.dll" "Release\\bin"
 copy "deps\\libncclient\\ncclient.dll" "DebugDeploy"
+copy "text.fglsl" "Release\\bin"
+copy "text.fglsl" "DebugDeploy"

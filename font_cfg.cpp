@@ -254,6 +254,14 @@ void font_selector::render(window_context& window_ctx)
 
     ImGui::NewLine();
 
+    bool text_shader_enabled = ImGui::TextShaderEnabled();
+
+    ImGui::Checkbox("UseTextShader", &text_shader_enabled);
+
+    ImGui::SetTextShaderEnabled(text_shader_enabled);
+
+    ImGui::NewLine();
+
     int ifsize = current_base_font_size;
 
     if(ImGui::DragInt("Font Size", &ifsize, 1, 5, 26))
