@@ -55,251 +55,40 @@ void main()
 
     if(check_use == 0)
     {
-        //gl_FragColor = 0;
         gl_FragColor = vec4(in_col * tex_col, in_col4.a);
         return;
     }
 
-    //gl_FragColor = vec4(1,0,0, 1);
-    //return;
-
-    ///ok so
-    ///what I want to do is...
-    ///the further the text is away from white, the more i want to dim subpixels
-    ///so if the text is red, we want to dim subpixels by
-
-    ///multiply texture colour by input colour
-    ///work out difference in brightness
-    ///scale it so that the difference in brightness is the same as it should be
-
-    vec3 multiplied_col = tex_col * in_col;
-
-    /*float texture_luminance = luminance(tex_col);
-    float colour_lum = luminance(in_col);
-
-    float multiplied_luminance = luminance(multiplied_col);
-
-    float luminance_we_should_have_gotten = texture_luminance * colour_lum;*/
-
-    ///ok
-    ///say in colour is (1,0,0) -> luminance of say 33%
-    ///texture is red rgb subpixel
-    ///luminance(tex_col * in_col) / luminance(tex_col) = 1
-    ///so multiply fraction is set to 1/3
-    ///
-
-    /*if(luminance(tex_col) < 0.0001)
-        return;*/
-
-    /*float luminance_fraction_reduction = luminance(in_col);// * luminance(tex_col);
-    float texture_luminance_fraction_reduction = luminance(tex_col * in_col) / luminance(tex_col);*/
-
-    /*float luminance_fraction_reduction = luminance(in_col) * luminance(tex_col);
-    float texture_luminance_fraction_reduction = luminance(tex_col * in_col);
-
-    int set_0 = 0;
-
-    if(texture_luminance_fraction_reduction < 0.000001)
-    {
-        texture_luminance_fraction_reduction = 1;
-        set_0 = 1;
-    }
-
-    float multiply_fraction = luminance_fraction_reduction / texture_luminance_fraction_reduction;
-
-    float luma_difference = luminance_fraction_reduction - texture_luminance_fraction_reduction;*/
-
-    float lum_in = abs(luminance(in_col));
-
-    float tex_lums = lum_in * luminance(tex_col);
-
-    float brightness_before_mult = luminance(tex_col);
-    float brightness_after_mult = luminance(tex_col * in_col);
-
-    float brightness_diff = abs(brightness_after_mult - brightness_before_mult);
-
-    //vec3 scaled_texture_luminance = lum_in * tex_col * in_col / (luminance(tex_col) * luminance(in_col));
-
-    //scaled_texture_luminance -= in_col;
-    //scaled_texture_luminance -= in_col;
-
-    //vec3 scaled_texture_luminance = luminance(tex_col) * in_col / luminance(in_col);
-
-    //scaled_texture_luminance -= tex_col;
-
-    vec3 scaled_texture_luminance = in_col * luminance(tex_col * in_col) / luminance(in_col);
-
-    scaled_texture_luminance -= tex_col * in_col;
-
-
-
-    vec3 subpixel_information = in_col * luminance(tex_col * in_col) / luminance(in_col);
-
-    scaled_texture_luminance = luminance(abs(subpixel_information - tex_col * in_col));
-
-    ///in_col is a flat colour
-    ///tex_col is a coverage texture between 0 and 1
-
-    ///so this is the brightness as the current texture pixel
-    vec3 texture_lum = luminance(tex_col);
-
     vec3 post_mult = tex_col * in_col;
-
-    //float expected_change = luminance(tex_col) - luminance(in_col) * luminance(tex_col);
-
-    //float real_change = luminance(tex_col) - luminance(post_mult);
 
     float expected_change = luminance(in_col) * luminance(tex_col);
     float real_change = luminance(post_mult);
 
-    //scaled_texture_luminance = post_mult * expected_change / real_change;
-
     float luminance_error = expected_change - real_change;
 
-    //scaled_texture_luminance = post_mult - post_mult * luminance_error;
+    float pm_lum = luminance(post_mult);
 
-    //scaled_texture_luminance = post_mult - post_mult * abs(luminance_error);
+    int set_0 = 0;
 
-    //scaled_texture_luminance = post_mult * expected_change / real_change;
+    if(pm_lum < 0.00001)
+    {
+        pm_lum = 1;
+        set_0 = 1;
+    }
 
-    //vec3 colour_to_use = mix(in_col / luminance(in_col), post_mult / luminance(post_mult), 1.f - luminance(post_mult));
-
-    vec3 colour_to_use = post_mult / luminance(post_mult);
+    vec3 colour_to_use = post_mult / pm_lum;
 
     ///the error is in / luminance(post_mult)
     ///it means that very dim pixels are being scaled way up
     ///maybe investigate if its the blend mode giving me grief
-    post_mult = post_mult + luminance_error * colour_to_use / luminance(colour_to_use);
-    //post_mult = (expected_change) * post_mult / real_change;
+    post_mult = post_mult + luminance_error * colour_to_use;
 
-    //scaled_texture_luminance = (in_col * tex_col);
-
-    scaled_texture_luminance = post_mult;
-
-    /*scaled_texture_luminance = 0;
-
-    if(expected_change < 0)
-        scaled_texture_luminance.x = abs(expected_change);
-    else
-        scaled_texture_luminance.y = abs(expected_change);*/
-
-    //scaled_texture_luminance = post_mult + luminance_error * post_mult;
-
-    //scaled_texture_luminance = abs(luminance_error);
-
-    //scaled_texture_luminance = abs(luminance(post_mult) - expected_change);
-
-    //scaled_texture_luminance = abs(luminance_error) / luminance(post_mult);
-
-
-
-    ///so multiply this luminance by our y value, restore chroma, and done?
-    //vec3 colour_lum = luminance(in_col);
-
-    //scaled_texture_luminance = ((luminance(subpixel_information) - tex_col) * luminance(tex_col * in_col));
-
-    //scaled_texture_luminance = luminance(scaled_texture_luminance);
-
-    int set_0 = 0;
-
-    /*if(brightness_diff < 0.00001)
-    {
-        brightness_diff = 1;
-        set_0 = 1;
-    }*/
-
-    float brightness_scale = (brightness_diff - lum_in);
-
-    //vec3 fin = brightness_scale * tex_col * in_col / luminance(tex_col * in_col);
-
-    //vec3 fin = brightness_scale * tex_col * in_col;
-
-    vec3 fin = scaled_texture_luminance;
+    vec3 fin = post_mult;
 
     fin = clamp(fin, 0, 1);
 
-    /*vec3 yuv_mult = rgb_to_yuv(multiplied_col);
-
-    //multiply_fraction = clamp(multiply_fraction, 0, 1);
-
-    //yuv_mult.x *= multiply_fraction;
-
-    //yuv_mult.x = yuv_mult.x * multiply_fraction;
-
-    //yuv_mult = clamp(yuv_mult, 0, 1);
-
-    vec3 fin = yuv_to_rgb(yuv_mult) * multiply_fraction;*/
-
-    //multiply_fraction = clamp(multiply_fraction, 0, 1);
-
-    ///this... actually isn't accurate
-    ///because multiplying rgb by two doesn't double the luminance
-    //vec3 fin = multiplied_col * multiply_fraction;
-
-    //vec3 fin = tex_col * in_col;
-
-    ///so this basically replicates why the ycbcr thing doesn't work
-    /*if(multiply_fraction < 1)
-    {
-        fin *= multiply_fraction;
-    }
-    else
-    {
-        vec3 old_fin = fin;
-
-        vec3 new_fin = fin * multiply_fraction;
-
-        vec3 grayscale = luminance(new_fin) - luminance(old_fin);
-
-        fin = old_fin + grayscale;
-    }*/
-
-    /*if(multiply_fraction < 1)
-    {
-        fin *= multiply_fraction;
-    }
-    else
-    {
-        vec3 old_fin = fin;
-
-        vec3 new_fin = fin * multiply_fraction;
-
-        vec3 grayscale = (luminance(new_fin) - luminance(old_fin)) * in_col / luminance(in_col);
-
-        fin = old_fin + grayscale;
-    }*/
-
-    //fin *= multiply_fraction;
-
-    //fin += luminance(fin) * multiply_fraction
-
-    ///ok so
-    ///this works, but the problem is it discards rgb subpixel smoothing
-    ///so if we just need to adjust brightness a bit, it basically discards existing subpixeling
-    /*vec3 old_fin = fin;
-    vec3 new_fin = fin * multiply_fraction;
-    vec3 grayscale = (luminance(new_fin) - luminance(old_fin)) * in_col / luminance(in_col);
-    fin = old_fin + grayscale;*/
-
-    //fin *= multiply_fraction;
-
-    //fin += luma_difference * fin / luminance(fin);
-
     if(set_0)
         fin = vec3(0,0,0);
-
-    //fin = multiply_fraction;
-
-    //fin = multiply_fraction/2;
-
-    /*fin = 0;
-
-    fin.x = luminance_fraction_reduction;
-    fin.y = texture_luminance_fraction_reduction;
-    fin.z = 0;*/
-
-    //fin = luminance_fraction_reduction;
-    //fin = texture_luminance_fraction_reduction;
 
     gl_FragColor = vec4(fin, 1);
 }
