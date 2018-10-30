@@ -1,47 +1,77 @@
 uniform sampler2D texture;
 
+float luminance(vec3 val)
+{
+    return 0.299f*val.x + 0.587f*val.y + 0.114f*val.z;
+}
+
 void main()
 {
-    /*float my_blur = 50.f / 80000.f;
+    vec3 in_col = gl_Color;
+    vec3 tex_col = texture2D(texture, gl_TexCoord[0].xy);
 
-    ivec2 size = textureSize(texture, 0);
+    ///ok so
+    ///what I want to do is...
+    ///the further the text is away from white, the more i want to dim subpixels
+    ///so if the text is red, we want to dim subpixels by
 
-    vec2 offx = vec2(my_blur, 0.0);
-    vec2 offy = vec2(0.0, my_blur);
+    ///multiply texture colour by input colour
+    ///work out difference in brightness
+    ///scale it so that the difference in brightness is the same as it should be
 
-    //vec4 pixel = texture2D(texture, gl_TexCoord[0].xy);
+    vec3 multiplied_col = tex_col * in_col;
 
-float gauss[7*7] = {0.000036,0.000363,0.001446,0.002291,0.001446,0.000363,0.000036,
-0.000363,0.003676,0.014662,0.023226,0.014662,0.003676,0.000363,
-0.001446,0.014662,0.058488,0.092651,0.058488,0.014662,0.001446,
-0.002291,0.023226,0.092651,0.146768,0.092651,0.023226,0.002291,
-0.001446,0.014662,0.058488,0.092651,0.058488,0.014662,0.001446,
-0.000363,0.003676,0.014662,0.023226,0.014662,0.003676,0.000363,
-0.000036,0.000363,0.001446,0.002291,0.001446,0.000363,0.000036,};
+    float texture_luminance = luminance(tex_col);
+    float colour_lum = luminance(in_col);
 
-    float mult = 1.f / 273.f;
+    float multiplied_luminance = luminance(multiplied_col);
 
-    mult = 1.f;
+    float luminance_we_should_have_gotten = texture_luminance * colour_lum;
 
-    vec4 pixel = 0;
+    ///the fraction that our luminance is reduced by
+    ///its the in_luminance / luminance(vec3(1,1,1))
+    //float desired_luminance_reduction = 1. / colour_lum;
 
-    for(int y=-3; y<=3; y++)
-    {
-        for(int x=-3; x<=3; x++)
-        {
-            vec2 offset_coord = vec2(x, y) / size;
+    ///so this is how much it was really reduced by
+    //float luminance_fraction = multiplied_luminance / texture_luminance;
 
-            pixel += texture2D(texture, gl_TexCoord[0].xy + offset_coord, 1.f) * gauss[(y + 3) * 7 + x + 3];
-        }
-    }
+    //float colour_scale = (1 / colour_lum) / luminance_fraction;
 
-    pixel *= mult;
+    ///ok concrete number this
+    ///white col is 1,1,1
+    ///we're colouring red, gives us 1,0,0
 
-    //vec4 pixel = texture2D(texture, gl_TexCoord[0].xy, 0.5);
+    ///our texture has a white pixel 1,1,1
+    ///gets coloured red = 1,0,0
 
-    //vec4 pixel = 1.;
+    ///in luminance reduction = lum(1,1,1) / lum(in_col) = like say 3
+    ///texture luminance reduction = lum(tex_old) / lum(tex_old * in_col) = also 3
 
-    gl_FragColor = pixel;*/
+    ///rgb case
+    ///texture has a red pixel 1,0,0
+    ///gets coloured red = 1,0,0
+    ///thats lum(1,0,0) / lum(1,0,0) = 1
 
-    gl_FragColor = texture2D(texture, gl_TexCoord[0].xy) * gl_Color/2;
+    ///so it needs to be reduced further by texture luminance_reduction / in_luminance_reduction?
+
+    float luminance_fraction_reduction = luminance(in_col);
+
+    float texture_luminance_fraction_reduction = luminance(tex_col * in_col) / luminance(tex_col);
+
+    //vec3 out = multiplied_luminance;
+
+    //vec3 fin = multiplied_col * luminance_we_should_have_gotten / multiplied_luminance;
+
+    //vec3 fin = multiplied_col * luminance_fraction_reduction /
+
+    vec3 fin = multiplied_col * luminance_fraction_reduction / texture_luminance_fraction_reduction;
+
+    ///
+
+    ///so
+    ///
+
+    gl_FragColor = vec4(fin, 1);
+
+    //gl_FragColor = vec4(multiplied_col * luminance_fraction, 1);
 }
