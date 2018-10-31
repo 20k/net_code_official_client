@@ -625,12 +625,32 @@ void terminal_imgui::bump_command_to_history()
     de_newline(history);
 }
 
+void fix_tabs(std::string& str)
+{
+    int tab_width = 4;
+
+    for(int i=0; i < (int)str.size(); i++)
+    {
+        if(str[i] == '\t')
+        {
+            str[i] = ' ';
+
+            for(int k=0; k < tab_width - 1; k++)
+            {
+                str.insert(str.begin() + i, ' ');
+            }
+        }
+    }
+}
+
 void terminal_imgui::add_text_from_server(const std::string& in, chat_window& chat_win, bool server_command)
 {
     if(in == "")
         return;
 
     std::string str = in;
+
+    fix_tabs(str);
 
     server_command_info command_info = sa_server_response_to_info(make_view(in));
 
