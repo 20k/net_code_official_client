@@ -10,6 +10,7 @@
 #include <GL/gl.h>
 #include <gl/glext.h>
 #include "window_context.hpp"
+#include "local_commands.hpp"
 
 namespace ImGuiX
 {
@@ -854,6 +855,22 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
         else if(command_info.type == server_command_command_ping)
         {
             ///do nothing
+        }
+        else if(command_info.type == server_command_command_down)
+        {
+            command_down_info down = sa_command_down_to_info(command_info);
+
+            std::string name = c_str_sized_to_cpp(down.full_name);
+            std::string data = c_str_sized_to_cpp(down.script_data);
+
+            std::string save_name = get_scripts_directory() + "/" + name + ".down.js";
+
+            write_all_bin(save_name, data);
+
+            sa_destroy_command_down_info(down);
+
+            str = make_success_col("Downloaded and saved script to " + name + ".down.js") + "\n";
+            push = true;
         }
         else if(starts_with(str, "command_auth"))
         {

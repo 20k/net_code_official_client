@@ -12,6 +12,11 @@
 #include <windows.h>
 #include <shellapi.h>
 
+std::string get_scripts_directory()
+{
+    return "./scripts";
+}
+
 std::vector<std::string> get_all_scripts_list()
 {
     std::vector<std::string> ret;
