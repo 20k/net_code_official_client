@@ -894,7 +894,7 @@ int main()
                 std::string data = handle_local_command(c_str_sized_to_cpp(found_user), cmd, term.auto_handle, should_shutdown, term);
                 free_sized_string(found_user);
 
-                term.add_text_from_server(data, chat_win, false);
+                term.add_text_from_server(shared, data, chat_win, false);
 
                 if(should_shutdown)
                 {
@@ -946,7 +946,7 @@ int main()
             api_calls.push_back(fdata);
             #endif // TESTING
 
-            term.add_text_from_server(fdata, chat_win);
+            term.add_text_from_server(shared, fdata, chat_win);
         }
 
         if(client_poll_clock.getElapsedTime().asMilliseconds() > 500)
@@ -1068,6 +1068,8 @@ int main()
 
         if(char_inf::cwidth != lcwidth || char_inf::cheight != lcheight)
             term.invalidate();
+
+        text_editor.set_current_user(c_str_consume(sd_get_user(shared)));
     }
 
     serialise sterm;

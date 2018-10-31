@@ -644,7 +644,7 @@ void fix_tabs(std::string& str)
     }
 }
 
-void terminal_imgui::add_text_from_server(const std::string& in, chat_window& chat_win, bool server_command)
+void terminal_imgui::add_text_from_server(c_shared_data shared, const std::string& in, chat_window& chat_win, bool server_command)
 {
     if(in == "")
         return;
@@ -768,6 +768,11 @@ void terminal_imgui::add_text_from_server(const std::string& in, chat_window& ch
                 cache.invalidate();
                 current_user = next_user;
             }
+
+            std::string root_user = c_str_sized_to_cpp(chat_info.root_user);
+
+            sd_set_user(shared, make_view(root_user));
+            //text_editor.set_current_user(spl[1]);
 
             sa_destroy_chat_api_info(chat_info);
 
