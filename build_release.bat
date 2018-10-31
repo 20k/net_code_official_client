@@ -11,3 +11,5 @@ copy "deps\\freetype\\FTL.TXT" "Release\\bin"
 copy "deps\\imgui\\LICENSE.txt" "Release\\bin"
 copy "deps\\imgui-sfml\\LICENSE" "Release\\bin"
 copy "deps\\freetype\\win64\\freetype.dll" "Release\\bin"
+
+call copy_dll.bat
