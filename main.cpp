@@ -139,7 +139,7 @@ int main()
 
     stack_on_start();
 
-    token_tests();
+    //token_tests();
 
     c_shared_data shared = sd_alloc();
 
