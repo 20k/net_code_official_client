@@ -116,8 +116,6 @@ std::vector<std::vector<formatted_char>> format_cache::get_render_cache()
 
     int current_line = 0;
 
-    bool dirty = false;
-
     int last_lines = 0;
 
     for(int i=0; i < (int)interop_cache.size(); i++)
@@ -137,13 +135,9 @@ std::vector<std::vector<formatted_char>> format_cache::get_render_cache()
             {
                 auto current_interop = format_characters(interop_cache[i], current, cached_start, cached_dim, found_lines, last_lines);
 
-                //full_cache.push_back(current_interop);
-
                 initialised_cache[i] = true;
                 line_cache[i] = current_interop;
                 local_cache.push_back(current_interop);
-
-                dirty = true;
             }
         }
 
