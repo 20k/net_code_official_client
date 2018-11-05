@@ -22,8 +22,11 @@ struct format_cache
     std::map<int, std::vector<formatted_char>> line_cache;
     std::vector<interop_vec_t> interop_cache;
 
+    bool deferred_invalidate = false;
+
     vec2f cached_start;
     vec2f cached_dim;
+    vec2f cached_window_size;
     float cached_line_offset = 0;
     float cached_y_end = 0;
 
@@ -38,6 +41,7 @@ struct format_cache
         last_line_valid = false;
     }
 
+    void ensure_last_line(vec2f current, vec2f start, vec2f wrap_dim, const std::vector<interop_vec_t>& all_interop, scrollbar_hack& scroll_hack, int vertical_columns);
     void ensure_built(vec2f current, vec2f start, vec2f wrap_dim, const std::vector<interop_vec_t>& all_interop, scrollbar_hack& scroll_hack, int vertical_columns);
 
     std::vector<formatted_char> request(int render_y_start, int render_y_end);

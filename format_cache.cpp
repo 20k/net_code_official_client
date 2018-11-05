@@ -2,13 +2,17 @@
 #include "imgui_ui_components.hpp"
 #include <imgui/imgui.h>
 
-void format_cache::ensure_built(vec2f current, vec2f start, vec2f wrap_dim, const std::vector<interop_vec_t>& all_interop, scrollbar_hack& scroll_hack, int vertical_columns)
+
+void format_cache::ensure_last_line(vec2f current, vec2f start, vec2f wrap_dim, const std::vector<interop_vec_t>& all_interop, scrollbar_hack& scroll_hack, int vertical_columns)
 {
     if(!last_line_valid && valid_cache)
     {
         int empty_last = 0;
 
-        interop_cache = all_interop;
+        if(interop_cache.size() == 0)
+            return;
+
+        //interop_cache = all_interop;
 
         if(all_interop.size() == 0)
             return;
@@ -17,17 +21,34 @@ void format_cache::ensure_built(vec2f current, vec2f start, vec2f wrap_dim, cons
 
         get_height(all_interop.back(), cached_start, cached_start, cached_dim, found_line, empty_last);
 
-        int old_height = height_map_cache[(int)all_interop.size()-1];
+        int old_height = height_map_cache[(int)interop_cache.size()-1];
+
+        if(old_height != found_line)
+            deferred_invalidate = true;
 
         total_lines -= old_height;
         total_lines += found_line;
 
-        height_map_cache[(int)all_interop.size()-1] = found_line;
+        height_map_cache[(int)interop_cache.size()-1] = found_line;
 
-        if(all_interop.size() > 0)
-            initialised_cache[(int)all_interop.size()-1] = false;
+        if(interop_cache.size() > 0)
+            initialised_cache[(int)interop_cache.size()-1] = false;
+
+        interop_cache.back() = all_interop.back();
 
         last_line_valid = true;
+        return;
+    }
+}
+
+void format_cache::ensure_built(vec2f current, vec2f start, vec2f wrap_dim, const std::vector<interop_vec_t>& all_interop, scrollbar_hack& scroll_hack, int vertical_columns)
+{
+    ensure_last_line(current, start, wrap_dim, all_interop, scroll_hack, vertical_columns);
+
+    if(deferred_invalidate)
+    {
+        valid_cache = false;
+        deferred_invalidate = false;
         return;
     }
 
@@ -36,6 +57,7 @@ void format_cache::ensure_built(vec2f current, vec2f start, vec2f wrap_dim, cons
 
     cached_start = start;
     cached_dim = wrap_dim;
+    cached_window_size = {ImGui::GetWindowWidth(), ImGui::GetWindowHeight()};
 
     total_lines = 0;
 

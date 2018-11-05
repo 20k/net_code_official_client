@@ -364,6 +364,11 @@ bool render_handle_imgui(font_render_context& font_select, scrollbar_hack& scrol
         //cache.invalidate();
     }
 
+    auto current_window_size = ImGui::GetWindowSize();
+
+    if(current_window_size.x != cache.cached_window_size.x() || current_window_size.y != cache.cached_window_size.y())
+        cache.invalidate();
+
     if(!cache.valid())
     {
         auto wrap_dim = ImGui::GetWindowSize();
@@ -378,16 +383,10 @@ bool render_handle_imgui(font_render_context& font_select, scrollbar_hack& scrol
 
         frame.render_height = vertical_rows;
 
-        /*int min_start = (int)text_history.size() - vertical_rows;
+        std::vector<interop_vec_t> all_interop;
 
-        min_start = min_start - scroll_hack.scrolled;
-
-        if(min_start < 0)
-            min_start = 0;*/
-
-        //std::vector<std::vector<formatted_char>> formatted;
-
-        auto all_interop = text_history;
+        if(!cache.valid_cache)
+            all_interop = text_history;
 
         std::string render_command = command;
         bool specials = true;
