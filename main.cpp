@@ -631,6 +631,7 @@ int main()
                         to_edit->add_to_command('\n');
                 }
 
+                ///TODO: DONT FORGET ABOUT FIXING TERMINAL INVALIDATION FOR THESE
                 if(event.key.code == sf::Keyboard::PageDown)
                 {
                     if(hovered_string == &term.command)
@@ -686,7 +687,7 @@ int main()
 
             if(event.type == sf::Event::MouseWheelScrolled)
             {
-                term.invalidate();
+                //term.invalidate();
 
                 mouse_delta += event.mouseWheelScroll.delta;
                 script_mousewheel_delta += event.mouseWheelScroll.delta;

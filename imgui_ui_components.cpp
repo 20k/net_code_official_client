@@ -356,8 +356,12 @@ bool render_handle_imgui(font_render_context& font_select, scrollbar_hack& scrol
 
     if(ImGui::IsWindowHovered() && scroll_hack.scrolled_this_frame != 0)
     {
+        cache.cached_line_offset += scroll_hack.scrolled_this_frame;
+
         scroll_hack.scrolled += scroll_hack.scrolled_this_frame;
         scroll_hack.scrolled_this_frame = 0.f;
+
+        //cache.invalidate();
     }
 
     if(!cache.valid())
@@ -433,7 +437,9 @@ bool render_handle_imgui(font_render_context& font_select, scrollbar_hack& scrol
 
     //imlist->AddDrawCmd();
 
-    for(auto& i : cache.cache)
+    auto ccache = cache.get_render_cache();
+
+    for(auto& i : ccache)
     {
         imgui_render_str(font_select, i, cache.out, ImGui::GetWindowWidth());
     }
