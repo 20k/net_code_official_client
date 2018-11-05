@@ -35,6 +35,8 @@ void format_cache::ensure_built(vec2f current, vec2f start, vec2f wrap_dim, cons
     //float terminating_line = inverse_scroll_start;
     float terminating_y = inverse_scroll_start * char_inf::cheight + start.y();
 
+    std::map<int, int> lines_map;
+
     for(int i=0; i < (int)all_interop.size(); i++)
     {
         int found_lines = 0;
@@ -55,8 +57,13 @@ void format_cache::ensure_built(vec2f current, vec2f start, vec2f wrap_dim, cons
 
         if(f_it == y_internal_pos_to_index.end())
         {
-            y_internal_pos_to_index[(int)current.y()] = i;
+            for(int kk=0; kk < found_lines; kk++)
+            {
+                y_internal_pos_to_index[(int)(current.y() + kk)] = i;
+            }
         }
+
+        lines_map[i] = found_lines;
 
         current.y() += found_lines * char_inf::cheight;
 
@@ -66,20 +73,14 @@ void format_cache::ensure_built(vec2f current, vec2f start, vec2f wrap_dim, cons
 
     y_internal_pos_to_index[(int)current.y()] = (int)all_interop.size()-1;
 
-    auto temp = y_internal_pos_to_index;
+    /*auto temp = y_internal_pos_to_index;
 
     for(auto it = y_internal_pos_to_index.begin(); it != y_internal_pos_to_index.end(); it++)
     {
-        auto bit = it;
-        it++;
+        int line_1 = it->first;
+        int idx_1 = it->second;
 
-        if(it == y_internal_pos_to_index.end())
-            break;
-
-        int line_1 = bit->first;
-        int idx_1 = bit->second;
-
-        int line_2 = it->first;
+        int line_2 = lines_map[idx_1] + line_1;
 
         for(int i=line_1; i < line_2; i++)
         {
@@ -87,7 +88,7 @@ void format_cache::ensure_built(vec2f current, vec2f start, vec2f wrap_dim, cons
         }
     }
 
-    y_internal_pos_to_index = temp;
+    y_internal_pos_to_index = temp;*/
 
     internally_format(full_cache, {start.x(), start.y() + ImGui::GetWindowHeight()}, 0*scroll_hack.scrolled * char_inf::cheight, terminating_y);
 
@@ -111,6 +112,62 @@ void format_cache::ensure_built(vec2f current, vec2f start, vec2f wrap_dim, cons
     valid_cache = true;
 }
 
+/*std::vector<formatted_char> format_cache::request(int render_y_start, int render_y_end)
+{
+    std::vector<formatted_char> ret;
+
+    int height = ImGui::GetWindowHeight();
+
+    vec2f render_position = cached_start;
+    render_position.y() += cached_line_offset * char_inf::cheight;
+
+    vec2f internal_position = {0, cached_y_end - cached_start.y() + char_inf::cheight * 1.5f - ImGui::GetWindowHeight() - cached_line_offset * char_inf::cheight};
+
+    set::set<int> fetch_list;
+}*/
+
+
+std::vector<std::vector<formatted_char>> format_cache::get_render_cache()
+{
+    std::vector<std::vector<formatted_char>> ret;
+
+    int height = ImGui::GetWindowHeight();
+
+    vec2f render_position = cached_start;
+    render_position.y() -= cached_line_offset * char_inf::cheight;
+
+    for(auto& i : full_cache)
+    {
+        if(i.size() == 0)
+            continue;
+
+        if(i.size() == 1)
+        {
+            formatted_char& chr = i[0];
+            continue;
+        }
+
+        if(i.size() > 1)
+        {
+            formatted_char& first = i.front();
+            formatted_char& last = i.back();
+
+            if(last.render_pos.y() < render_position.y() - char_inf::cheight/2 || first.render_pos.y() >= render_position.y() + height + char_inf::cheight/2)
+                continue;
+
+            ret.push_back(i);
+
+            for(auto& chr : ret.back())
+            {
+                chr.render_pos.y() += cached_line_offset * char_inf::cheight;
+            }
+        }
+    }
+
+    return ret;
+}
+
+#if 0
 std::vector<std::vector<formatted_char>> format_cache::get_render_cache()
 {
     std::vector<std::vector<formatted_char>> ret;// = full_cache;
@@ -143,48 +200,82 @@ std::vector<std::vector<formatted_char>> format_cache::get_render_cache()
     vec2f render_position = cached_start;
     render_position.y() += cached_line_offset * char_inf::cheight;
 
-    vec2f internal_position = {0, cached_y_end - cached_start.y() + char_inf::cheight * 1.5f - ImGui::GetWindowHeight()};
+    vec2f internal_position = {0, cached_y_end - cached_start.y() + char_inf::cheight * 1.5f - ImGui::GetWindowHeight() - cached_line_offset * char_inf::cheight};
 
-    vec2f render_end = cached_start;
-    render_end.y() += height;
+    std::set<int> fetch_list;
 
-    //std::cout << "yint " << y_internal_pos_to_index.size() << std::endl;
+    auto first_iterator = y_internal_pos_to_index.begin();
+    auto last_iterator = y_internal_pos_to_index.end();
 
-    /*for(auto& i : y_internal_pos_to_index)
-    {
-        std::cout << "i f " << i.first << " i s " << i.second << std::endl;
-    }*/
+    bool has_first = false;
 
-    for(int i=internal_position.y(); i < internal_position.y() + height; i++)
+    int first_y_index = internal_position.y() - 1;
+
+    int last_y_index = internal_position.y() + height + 1;
+
+    int nidx = 0;
+
+    std::cout <<" first y " << first_y_index << " last " << last_y_index << std::endl;
+
+    for(int i=first_y_index; i < last_y_index; i++)
     {
         auto it = y_internal_pos_to_index.find(i);
 
         if(it == y_internal_pos_to_index.end())
             continue;
 
+        nidx++;
+
+        if(!has_first)
+        {
+            first_iterator = it;
+            has_first = true;
+        }
+
         auto bit = it;
         it++;
 
         int start_1 = bit->second;
 
-        ///temp
         if(it == y_internal_pos_to_index.end())
         {
-            ret.push_back(full_cache[start_1]);
+            fetch_list.insert(start_1);
+
+            last_iterator = it;
 
             break;
         }
+
+        last_iterator = it;
 
         int start_2 = it->second;
 
         //printf("s %i %i\n", start_1, start_2);
 
-        for(int idx = start_1; idx < start_2; idx++)
+        ///need to also render one before, and render one after
+        ///maybe construct a set which is a renderlist?
+        for(int idx = start_1; idx <= start_2; idx++)
         {
-            assert(idx >= 0 && idx < full_cache.size());
-
-            ret.push_back(full_cache[idx]);
+            fetch_list.insert(idx);
         }
+    }
+
+    if(fetch_list.size() > 0)
+    {
+        int start = *fetch_list.begin();
+
+        if(start > 0)
+            fetch_list.insert(start-1);
+    }
+
+    std::cout << "flist size " << fetch_list.size() << " nidx " << nidx << std::endl;
+
+    for(auto& i : fetch_list)
+    {
+        if(i < 0 || i >= (int)full_cache.size())
+            continue;
+
+        ret.push_back(full_cache[i]);
     }
 
     for(auto& i : ret)
@@ -197,3 +288,4 @@ std::vector<std::vector<formatted_char>> format_cache::get_render_cache()
 
     return ret;
 }
+#endif // 0
