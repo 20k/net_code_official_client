@@ -10,52 +10,35 @@ void format_cache::ensure_built(vec2f current, vec2f start, vec2f wrap_dim, cons
     cached_start = start;
     cached_dim = wrap_dim;
 
-    full_cache.clear();
-    render_cache.clear();
     total_lines = 0;
 
-    int last_lines = 0;
+    height_map_cache.clear();
 
-    int current_line = 0;
+    int empty_last = 0;
 
-    for(auto& i : all_interop)
+    interop_cache = all_interop;
+
+    for(int i=0; i < (int)all_interop.size(); i++)
     {
         int found_line = 0;
-        int empty_last = 0;
 
-        get_height(i, current, start, wrap_dim, found_line, empty_last);
+        get_height(all_interop[i], current, start, wrap_dim, found_line, empty_last);
+
+        height_map_cache[i] = found_line;
 
         total_lines += found_line;
+        empty_last = found_line;
     }
 
     float inverse_scroll_start = total_lines + 0 - scroll_hack.scrolled;
 
+    scrolled_cache = scroll_hack.scrolled;
+
     //float terminating_line = inverse_scroll_start;
     float terminating_y = inverse_scroll_start * char_inf::cheight + start.y();
 
-    for(int i=0; i < (int)all_interop.size(); i++)
-    {
-        int found_lines = 0;
-
-        get_height(all_interop[i], current, start, wrap_dim, found_lines, last_lines);
-
-        int min_bound = inverse_scroll_start - vertical_columns;
-        int max_bound = inverse_scroll_start;
-
-        //if(current_line + found_lines >= min_bound && current_line < max_bound)
-        {
-            auto current_interop = format_characters(all_interop[i], current, start, wrap_dim, found_lines, last_lines);
-
-            full_cache.push_back(current_interop);
-        }
-
-        current.y() += found_lines * char_inf::cheight;
-
-        last_lines = found_lines;
-        current_line += found_lines;
-    }
-
-    internally_format(full_cache, {start.x(), start.y() + ImGui::GetWindowHeight()}, 0*scroll_hack.scrolled * char_inf::cheight, terminating_y);
+    initialised_cache.clear();
+    line_cache.clear();
 
     cached_y_end = terminating_y;
 
@@ -64,30 +47,70 @@ void format_cache::ensure_built(vec2f current, vec2f start, vec2f wrap_dim, cons
     valid_cache = true;
 }
 
-/*std::vector<formatted_char> format_cache::request(int render_y_start, int render_y_end)
-{
-    std::vector<formatted_char> ret;
-
-    int height = ImGui::GetWindowHeight();
-
-    vec2f render_position = cached_start;
-    render_position.y() += cached_line_offset * char_inf::cheight;
-
-    vec2f internal_position = {0, cached_y_end - cached_start.y() + char_inf::cheight * 1.5f - ImGui::GetWindowHeight() - cached_line_offset * char_inf::cheight};
-
-    set::set<int> fetch_list;
-}*/
-
 std::vector<std::vector<formatted_char>> format_cache::get_render_cache()
 {
     std::vector<std::vector<formatted_char>> ret;
 
-    int height = ImGui::GetWindowHeight();
+    float height = ImGui::GetWindowHeight();
 
     vec2f render_position = cached_start;
     render_position.y() -= cached_line_offset * char_inf::cheight;
 
-    for(auto& i : full_cache)
+    float inverse_scroll_start = total_lines - (scrolled_cache + cached_line_offset);
+
+    std::vector<std::vector<formatted_char>> local_cache;
+
+    int vertical_rows = ceil((float)height / char_inf::cheight);
+
+    vec2f current = cached_start;
+
+    int current_line = 0;
+
+    bool dirty = false;
+
+    int last_lines = 0;
+
+    for(int i=0; i < (int)interop_cache.size(); i++)
+    {
+        int found_lines = height_map_cache[i];
+
+        int min_bound = inverse_scroll_start - vertical_rows;
+        int max_bound = inverse_scroll_start;
+
+        if(current_line + found_lines >= min_bound && current_line < max_bound)
+        {
+            if(initialised_cache[i])
+            {
+                local_cache.push_back(line_cache[i]);
+            }
+            else
+            {
+                auto current_interop = format_characters(interop_cache[i], current, cached_start, cached_dim, found_lines, last_lines);
+
+                //full_cache.push_back(current_interop);
+
+                initialised_cache[i] = true;
+                line_cache[i] = current_interop;
+                local_cache.push_back(current_interop);
+
+                dirty = true;
+            }
+        }
+
+        current.y() += found_lines * char_inf::cheight;
+
+        last_lines = found_lines;
+        current_line += found_lines;
+    }
+
+    //if(dirty)
+    {
+        //float terminating_y = inverse_scroll_start * char_inf::cheight + cached_start.y();
+
+        internally_format(local_cache, {cached_start.x(), cached_start.y() + height}, 0.f, cached_y_end);
+    }
+
+    for(auto& i : local_cache)
     {
         if(i.size() == 0)
             continue;
@@ -131,9 +154,8 @@ std::vector<std::vector<formatted_char>> format_cache::get_render_cache()
             }
             else
             {
-                ret.push_back(i);
+                ret.push_back(std::move(i));
             }
-
 
             for(auto& chr : ret.back())
             {

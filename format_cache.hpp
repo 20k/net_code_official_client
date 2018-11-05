@@ -11,12 +11,15 @@ struct format_cache
     vec2f last_pos = {0,0};
 
     int total_lines = 0;
+    float scrolled_cache = 0;
     bool valid_cache = false;
-    std::vector<std::vector<formatted_char>> full_cache;
-    std::vector<std::vector<formatted_char>> render_cache;
     std::vector<std::vector<formatted_char>> out;
 
-    std::map<int, int> y_internal_pos_to_index;
+    std::map<int, int> height_map_cache;
+
+    std::map<int, bool> initialised_cache;
+    std::map<int, std::vector<formatted_char>> line_cache;
+    std::vector<interop_vec_t> interop_cache;
 
     vec2f cached_start;
     vec2f cached_dim;
@@ -34,10 +37,6 @@ struct format_cache
 
     std::vector<std::vector<formatted_char>> get_render_cache();
 
-    std::vector<std::vector<formatted_char>> get_cache()
-    {
-        return render_cache;
-    }
 
     int get_lines()
     {

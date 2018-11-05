@@ -289,15 +289,22 @@ float get_greatest_y(std::vector<formatted_char>& chars)
 }
 
 inline
+void internally_format(std::map<int, std::vector<formatted_char>>& chars, vec2f start, float scroll_offset, float y_end)
+{
+    for(auto& k : chars)
+    {
+        for(formatted_char& i : k.second)
+        {
+            i.render_pos = i.internal_pos + (vec2f){0, -y_end + start.y() - char_inf::cheight * 1.5f + scroll_offset};
+
+            i.render_pos = round(i.render_pos);
+        }
+    }
+}
+
+inline
 void internally_format(std::vector<std::vector<formatted_char>>& chars, vec2f start, float scroll_offset, float y_end)
 {
-    /*float greatest_y = 0;
-
-    for(auto& i : chars)
-    {
-        greatest_y = std::max(get_greatest_y(i), greatest_y);
-    }*/
-
     for(auto& k : chars)
     {
         for(formatted_char& i : k)
