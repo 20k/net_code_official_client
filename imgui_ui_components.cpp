@@ -605,6 +605,16 @@ void terminal_imgui::invalidate()
     }
 }
 
+void terminal_imgui::last_line_invalidate()
+{
+    cache.last_line_invalidate();
+
+    for(auto& i : chat_threads)
+    {
+        i.second.cache.last_line_invalidate();
+    }
+}
+
 #define MAX_TEXT_HISTORY 200
 
 void terminal_imgui::bump_command_to_history()

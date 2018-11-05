@@ -463,7 +463,7 @@ int main()
                     {
                         to_edit->add_to_command(event.text.unicode);
 
-                        term.invalidate();
+                        term.last_line_invalidate();
 
                         std::string str = std::string(1, event.text.unicode);
 
@@ -511,7 +511,7 @@ int main()
                         to_edit->add_to_command(i);
                     }
 
-                    term.invalidate();
+                    term.last_line_invalidate();
                 }
             }
 
@@ -542,7 +542,7 @@ int main()
                 if(key_map.find(event.key.code) != key_map.end())
                     on_pressed.push_back(key_map[event.key.code]);
 
-                term.invalidate();
+                term.last_line_invalidate();
 
                 if(event.key.code == sf::Keyboard::BackSpace)
                 {
@@ -651,7 +651,7 @@ int main()
                             mouse_delta = -chat_win.scroll_hack.scrolled;
                     }
 
-                    term.invalidate();
+                    term.last_line_invalidate();
                 }
 
                 if(event.key.code == sf::Keyboard::PageUp)
@@ -661,7 +661,7 @@ int main()
                     if(hovered_string == &chat_win.command)
                         mouse_delta += chat_win.render_height - 2;
 
-                    term.invalidate();
+                    term.last_line_invalidate();
                 }
             }
 
@@ -669,7 +669,7 @@ int main()
             {
                 if(event.mouseButton.button == sf::Mouse::Left)
                 {
-                    term.invalidate();
+                    term.last_line_invalidate();
 
                     get_global_copy_handler()->on_lclick({event.mouseButton.x, event.mouseButton.y});
                 }
@@ -679,7 +679,7 @@ int main()
             {
                 if(event.mouseButton.button == sf::Mouse::Left)
                 {
-                    term.invalidate();
+                    term.last_line_invalidate();
 
                     get_global_copy_handler()->on_lclick_release({event.mouseButton.x, event.mouseButton.y});
                 }
@@ -1024,12 +1024,12 @@ int main()
         }
 
         if(term.auto_handle.tab_pressed)
-            term.invalidate();
+            term.last_line_invalidate();
 
         term.auto_handle.tab_pressed = ONCE_MACRO(sf::Keyboard::Tab) && is_focused(focused);
 
         if(term.auto_handle.tab_pressed)
-            term.invalidate();
+            term.last_line_invalidate();
 
         ///this is a hack to fix the fact that sometimes
         ///click input doesn't make clean click/release pairs

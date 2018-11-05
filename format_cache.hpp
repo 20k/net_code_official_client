@@ -13,6 +13,7 @@ struct format_cache
     int total_lines = 0;
     float scrolled_cache = 0;
     bool valid_cache = false;
+    bool last_line_valid = false;
     std::vector<std::vector<formatted_char>> out;
 
     std::map<int, int> height_map_cache;
@@ -26,9 +27,15 @@ struct format_cache
     float cached_line_offset = 0;
     float cached_y_end = 0;
 
+    void last_line_invalidate()
+    {
+        last_line_valid = false;
+    }
+
     void invalidate()
     {
         valid_cache = false;
+        last_line_valid = false;
     }
 
     void ensure_built(vec2f current, vec2f start, vec2f wrap_dim, const std::vector<interop_vec_t>& all_interop, scrollbar_hack& scroll_hack, int vertical_columns);
@@ -45,7 +52,7 @@ struct format_cache
 
     bool valid()
     {
-        return valid_cache;
+        return valid_cache && last_line_valid;
     }
 };
 

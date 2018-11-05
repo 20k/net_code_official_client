@@ -97,6 +97,7 @@ struct terminal_imgui : serialisable, cacheable, frameable
     int get_id_of_focused_realtime_window();
 
     void invalidate();
+    void last_line_invalidate();
 };
 
 struct chat_thread : serialisable, cacheable

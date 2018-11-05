@@ -4,6 +4,33 @@
 
 void format_cache::ensure_built(vec2f current, vec2f start, vec2f wrap_dim, const std::vector<interop_vec_t>& all_interop, scrollbar_hack& scroll_hack, int vertical_columns)
 {
+    if(!last_line_valid && valid_cache)
+    {
+        int empty_last = 0;
+
+        interop_cache = all_interop;
+
+        if(all_interop.size() == 0)
+            return;
+
+        int found_line = 0;
+
+        get_height(all_interop.back(), cached_start, cached_start, cached_dim, found_line, empty_last);
+
+        int old_height = height_map_cache[(int)all_interop.size()-1];
+
+        total_lines -= old_height;
+        total_lines += found_line;
+
+        height_map_cache[(int)all_interop.size()-1] = found_line;
+
+        if(all_interop.size() > 0)
+            initialised_cache[(int)all_interop.size()-1] = false;
+
+        last_line_valid = true;
+        return;
+    }
+
     if(valid_cache)
         return;
 
@@ -45,6 +72,7 @@ void format_cache::ensure_built(vec2f current, vec2f start, vec2f wrap_dim, cons
     cached_line_offset = 0;
 
     valid_cache = true;
+    last_line_valid = true;
 }
 
 std::vector<std::vector<formatted_char>> format_cache::get_render_cache()
