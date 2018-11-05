@@ -28,14 +28,10 @@ void format_cache::ensure_built(vec2f current, vec2f start, vec2f wrap_dim, cons
         total_lines += found_line;
     }
 
-    y_internal_pos_to_index.clear();
-
     float inverse_scroll_start = total_lines + 0 - scroll_hack.scrolled;
 
     //float terminating_line = inverse_scroll_start;
     float terminating_y = inverse_scroll_start * char_inf::cheight + start.y();
-
-    std::map<int, int> lines_map;
 
     for(int i=0; i < (int)all_interop.size(); i++)
     {
@@ -53,59 +49,15 @@ void format_cache::ensure_built(vec2f current, vec2f start, vec2f wrap_dim, cons
             full_cache.push_back(current_interop);
         }
 
-        auto f_it = y_internal_pos_to_index.find((int)current.y());
-
-        if(f_it == y_internal_pos_to_index.end())
-        {
-            for(int kk=0; kk < found_lines; kk++)
-            {
-                y_internal_pos_to_index[(int)(current.y() + kk)] = i;
-            }
-        }
-
-        lines_map[i] = found_lines;
-
         current.y() += found_lines * char_inf::cheight;
 
         last_lines = found_lines;
         current_line += found_lines;
     }
 
-    y_internal_pos_to_index[(int)current.y()] = (int)all_interop.size()-1;
-
-    /*auto temp = y_internal_pos_to_index;
-
-    for(auto it = y_internal_pos_to_index.begin(); it != y_internal_pos_to_index.end(); it++)
-    {
-        int line_1 = it->first;
-        int idx_1 = it->second;
-
-        int line_2 = lines_map[idx_1] + line_1;
-
-        for(int i=line_1; i < line_2; i++)
-        {
-            temp[i] = idx_1;
-        }
-    }
-
-    y_internal_pos_to_index = temp;*/
-
     internally_format(full_cache, {start.x(), start.y() + ImGui::GetWindowHeight()}, 0*scroll_hack.scrolled * char_inf::cheight, terminating_y);
 
     cached_y_end = terminating_y;
-
-    int height = ImGui::GetWindowHeight();
-
-    //render_cache = full_cache;
-
-    /*for(auto it = render_cache.begin(); it != render_cache.end(); it++)
-    {
-        it->erase(std::remove_if(it->begin(), it->end(),
-                                 [&](const formatted_char& chr)
-                                 {
-                                     return chr.render_pos.y() < start.y() + -char_inf::cheight || chr.render_pos.y() >= start.y() + height;
-                                 }), it->end());
-    }*/
 
     cached_line_offset = 0;
 
@@ -126,7 +78,6 @@ void format_cache::ensure_built(vec2f current, vec2f start, vec2f wrap_dim, cons
     set::set<int> fetch_list;
 }*/
 
-
 std::vector<std::vector<formatted_char>> format_cache::get_render_cache()
 {
     std::vector<std::vector<formatted_char>> ret;
@@ -144,6 +95,11 @@ std::vector<std::vector<formatted_char>> format_cache::get_render_cache()
         if(i.size() == 1)
         {
             formatted_char& chr = i[0];
+
+            if(chr.render_pos.y() < render_position.y() - char_inf::cheight/2 || chr.render_pos.y() >= render_position.y() + height + char_inf::cheight/2)
+                continue;
+
+            ret.push_back(i);
             continue;
         }
 
@@ -155,12 +111,36 @@ std::vector<std::vector<formatted_char>> format_cache::get_render_cache()
             if(last.render_pos.y() < render_position.y() - char_inf::cheight/2 || first.render_pos.y() >= render_position.y() + height + char_inf::cheight/2)
                 continue;
 
-            ret.push_back(i);
+            bool straddles = last.render_pos.y() > render_position.y() + height || first.render_pos.y() < render_position.y();
+
+            if(straddles)
+            {
+                std::vector<formatted_char> accum;
+
+                for(formatted_char& chr : i)
+                {
+                    float ypos = chr.render_pos.y();
+
+                    if(ypos < render_position.y() - char_inf::cheight || ypos >= render_position.y() + height + char_inf::cheight)
+                        continue;
+                    else
+                        accum.push_back(chr);
+                }
+
+                ret.push_back(accum);
+            }
+            else
+            {
+                ret.push_back(i);
+            }
+
 
             for(auto& chr : ret.back())
             {
                 chr.render_pos.y() += cached_line_offset * char_inf::cheight;
             }
+
+            continue;
         }
     }
 
