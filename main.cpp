@@ -936,17 +936,15 @@ int main()
 
                         if(starts_with(command, "/join"))
                         {
-                            final_command = "#channel.join(" + args + ");";
+                            final_command = "#channel.join(" + args + ")";
                         }
                         else if(starts_with(command, "/leave"))
                         {
-                            final_command = "#channel.leave(" + args + ");";
+                            final_command = "#channel.leave(" + args + ")";
                         }
                         else if(starts_with(command, "/create"))
                         {
                             final_command = "#channel.create(" + args + ")";
-
-                            //std::cout << "command " << final_command << std::endl;
                         }
                         else
                         {
@@ -955,7 +953,7 @@ int main()
 
                         if(final_command != "")
                         {
-                            sd_add_back_write(shared, make_view("client_chat " + final_command));
+                            sd_add_back_write(shared, make_view("client_chat_respond " + final_command));
                         }
                     }
                 }
@@ -974,6 +972,7 @@ int main()
                 if(bump)
                 {
                     term.add_text_to_current_chat_thread(chat_win, command);
+                    term.invalidate();
                 }
             }
 

@@ -892,6 +892,14 @@ void terminal_imgui::add_text_from_server(c_shared_data shared, const std::strin
             str = make_success_col("Downloaded and saved script to " + name + ".down.js") + "\n";
             push = true;
         }
+        else if(command_info.type == server_command_chat_api_response)
+        {
+            std::string data = c_str_sized_to_cpp(command_info.data);
+
+            add_text_to_current_chat_thread(chat_win, data);
+
+            invalidate();
+        }
         else if(starts_with(str, "command_auth"))
         {
             ///do nothing
@@ -927,7 +935,7 @@ void terminal_imgui::add_text_to_current_chat_thread(chat_window& chat_win, cons
 {
     chat_thread& thr = chat_threads[chat_win.selected];
 
-    thr.history.push_back(string_to_interop_no_autos(text, false));
+    thr.history.push_back(string_to_interop(text, false, auto_handle, false));
     thr.dirty = true;
 }
 
