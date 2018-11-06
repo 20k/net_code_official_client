@@ -93,6 +93,8 @@ struct terminal_imgui : serialisable, cacheable, frameable
 
     void add_text_from_server(c_shared_data shared, const std::string& in, chat_window& chat_win, bool server_command = true);
 
+    void add_text_to_current_chat_thread(chat_window& chat_win, const std::string& text);
+
     ///returns -1 on none
     int get_id_of_focused_realtime_window();
 

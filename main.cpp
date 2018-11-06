@@ -866,14 +866,115 @@ int main()
                 //if(chat_win.command.command.size() > 0 && chat_win.command.command.back() == '\n')
                 //    chat_win.command.command.pop_back();
 
-                std::string escaped_string = escape_str(chat_win.command.command);
+                std::string command = chat_win.command.command;
 
-                sized_string chat_command = sa_make_chat_command(make_view(chat_win.selected), make_view(escaped_string));
+                bool bump = false;
 
-                ///TODO
-                sd_add_back_write(shared, make_view(chat_command));
+                if(command == "/join")
+                {
+                    sd_add_back_read(shared, make_view("Syntax is /join channel password"));
+                    bump = true;
+                }
+                else if(command == "/leave")
+                {
+                    sd_add_back_read(shared, make_view("Syntax is /leave channel"));
+                    bump = true;
+                }
+                else if(command == "/create")
+                {
+                    sd_add_back_read(shared, make_view("Syntax is /create channel password"));
+                    bump = true;
+                }
+                else if(starts_with(command, "/"))
+                {
+                    bump = true;
 
-                free_sized_string(chat_command);
+                    int idx = 0;
+
+                    for(; idx < (int)command.size() && command[idx] != ' '; idx++);
+
+                    if(idx + 1 >= (int)command.size())
+                    {
+                        sd_add_back_read(shared, make_view("First argument must be a channel name, eg /join global"));
+                    }
+                    else
+                    {
+                        idx++;
+
+                        std::string channel_name;
+
+                        for(; idx < (int)command.size() && command[idx] != ' '; idx++)
+                        {
+                            channel_name.push_back(command[idx]);
+                        }
+
+                        std::string channel_password;
+
+                        if(idx + 1 < (int)command.size())
+                        {
+                            idx++;
+
+                            ///password may include whitespace
+                            for(; idx < (int)command.size(); idx++)
+                            {
+                                channel_password.push_back(command[idx]);
+                            }
+                        }
+
+                        std::string args = "{name:\"" + escape_str(channel_name) + "\"";
+
+                        if(channel_password != "")
+                        {
+                            args += ", password:\"" + escape_str(channel_password) + "\"}";
+                        }
+                        else
+                        {
+                            args += "}";
+                        }
+
+                        std::string final_command;
+
+                        if(starts_with(command, "/join"))
+                        {
+                            final_command = "#channel.join(" + args + ");";
+                        }
+                        else if(starts_with(command, "/leave"))
+                        {
+                            final_command = "#channel.leave(" + args + ");";
+                        }
+                        else if(starts_with(command, "/create"))
+                        {
+                            final_command = "#channel.create(" + args + ")";
+
+                            //std::cout << "command " << final_command << std::endl;
+                        }
+                        else
+                        {
+                            sd_add_back_read(shared, make_view("Not a valid command, try /join, /leave or /create"));
+                        }
+
+                        if(final_command != "")
+                        {
+                            sd_add_back_write(shared, make_view("client_chat " + final_command));
+                        }
+                    }
+                }
+                else
+                {
+                    std::string escaped_string = escape_str(chat_win.command.command);
+
+                    sized_string chat_command = sa_make_chat_command(make_view(chat_win.selected), make_view(escaped_string));
+
+                    ///TODO
+                    sd_add_back_write(shared, make_view(chat_command));
+
+                    free_sized_string(chat_command);
+                }
+
+                if(bump)
+                {
+                    term.add_text_to_current_chat_thread(chat_win, command);
+                }
             }
 
             std::string cmd = term.command.command;

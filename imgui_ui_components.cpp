@@ -923,6 +923,14 @@ void terminal_imgui::add_text_from_server(c_shared_data shared, const std::strin
     sa_destroy_server_command_info(command_info);
 }
 
+void terminal_imgui::add_text_to_current_chat_thread(chat_window& chat_win, const std::string& text)
+{
+    chat_thread& thr = chat_threads[chat_win.selected];
+
+    thr.history.push_back(string_to_interop_no_autos(text, false));
+    thr.dirty = true;
+}
+
 void chat_thread::do_serialise(serialise& s, bool ser)
 {
     s.handle_serialise(history, ser);
