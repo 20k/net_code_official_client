@@ -872,17 +872,17 @@ int main()
 
                 if(command == "/join")
                 {
-                    sd_add_back_read(shared, make_view("Syntax is /join channel password"));
+                    sd_add_back_read(shared, make_view("command Syntax is /join channel password"));
                     bump = true;
                 }
                 else if(command == "/leave")
                 {
-                    sd_add_back_read(shared, make_view("Syntax is /leave channel"));
+                    sd_add_back_read(shared, make_view("command Syntax is /leave channel"));
                     bump = true;
                 }
                 else if(command == "/create")
                 {
-                    sd_add_back_read(shared, make_view("Syntax is /create channel password"));
+                    sd_add_back_read(shared, make_view("command Syntax is /create channel password"));
                     bump = true;
                 }
                 else if(starts_with(command, "/"))
@@ -895,7 +895,7 @@ int main()
 
                     if(idx + 1 >= (int)command.size())
                     {
-                        sd_add_back_read(shared, make_view("First argument must be a channel name, eg /join global"));
+                        sd_add_back_read(shared, make_view("command First argument must be a channel name, eg /join global"));
                     }
                     else
                     {
@@ -948,7 +948,7 @@ int main()
                         }
                         else
                         {
-                            sd_add_back_read(shared, make_view("Not a valid command, try /join, /leave or /create"));
+                            sd_add_back_read(shared, make_view("command Not a valid command, try /join, /leave or /create"));
                         }
 
                         if(final_command != "")
