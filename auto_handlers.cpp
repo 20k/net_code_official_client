@@ -256,10 +256,18 @@ int insert_kv_ghosts(const std::vector<std::string>& existing_keys, const std::v
 
         tokens.insert(tokens.begin() + token_id, arg_token);
 
+        handled_keys[in_keys[offset]] = true;
+
+        if(pos >= token_id)
+            pos++;
+
         token_id+=1;
 
         num_add+=1;
     }
+
+    if(pos < (int)tokens.size())
+        char_pos = tokens[pos].start_pos;
 
     return num_add;
 }
