@@ -175,7 +175,96 @@ auto longest_substring(const std::string& substring, const std::vector<std::stri
     return data.begin() + offset;
 }
 
+/*std::optional<token_info*> get_key_token(const std::string& key_name, const std::vector<token_info>& tokens)
+{
+    for(token_info& tok : tokens)
+    {
+
+    }
+}*/
+
+template<typename T>
+void safe_erase(T& obj, int offset)
+{
+    if(offset < 0 || offset >= obj.size())
+        return;
+
+    obj.erase(obj.begin() + offset);
+}
+
+///new plan
+///iterate through token stream
+///when we find a key, handle blacklisting and autocompletes
 int insert_kv_ghosts(const std::vector<std::string>& existing_keys, const std::vector<std::string>& in_keys, const std::vector<std::string>& in_vals, int pos, std::vector<token_info>& tokens, std::vector<interop_char>& in, int num_concrete_args)
+{
+    ///should be completely impossible
+    if(pos < 0)
+        return 0;
+
+    int char_pos = in.size();
+
+    if(pos > (int)tokens.size())
+        pos = tokens.size();
+
+    if(pos < (int)tokens.size())
+        char_pos = tokens[pos].start_pos;
+
+    std::map<std::string, bool> handled_keys;
+
+    int num_add = 0;
+
+    ///remember that we'll be mutating tokens here so take care of token_id
+    for(int token_id = 0; token_id < (int)tokens.size(); token_id++)
+    {
+        token_info& tok = tokens[token_id];
+
+        int token_id_p1 = token_id + 1;
+
+        if(token_id_p1 >= tokens.size())
+            token_id_p1 = token_id;
+
+        token_info& next_token = tokens[token_id_p1];
+
+        if(handled_keys[next_token.str])
+            continue;
+
+        if(tok.type != token::KEY)
+            continue;
+
+        if(next_token.type == token::COLON && next_token.ghost == false)
+            continue;
+
+        ///ok so we're a key
+        ///what happens now is that we need to check whether or not we have any partial matches
+        ///in in_keys, which is the full list of keys
+
+        std::string existing_key = tok.str;
+
+        auto longest_it = longest_substring(existing_key, in_keys);
+
+        if(longest_it == in_keys.end())
+            continue;
+
+        int offset = std::distance(in_keys.begin(), longest_it);
+
+        int match_offset = overlapping_characters(existing_key, *longest_it);
+
+        std::string val = in_vals[offset];
+
+        std::string remaining_key(in_keys[offset].begin() + match_offset, in_keys[offset].end());
+        token_info arg_token = make_ghost_token(next_token.start_pos, token::KEY, remaining_key);
+
+        tokens.insert(tokens.begin() + token_id, arg_token);
+
+        token_id+=1;
+
+        num_add+=1;
+    }
+
+    return num_add;
+}
+
+int insert_kv_ghosts_old(const std::vector<std::string>& existing_keys, const std::vector<std::string>& in_keys, const std::vector<std::string>& in_vals, int pos, std::vector<token_info>& tokens, std::vector<interop_char>& in, int num_concrete_args)
 {
     ///should be completely impossible
     if(pos < 0)
