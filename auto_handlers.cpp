@@ -146,7 +146,36 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
     }
 }
 
-int insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<std::string>& vals, int pos, std::vector<token_info>& tokens, std::vector<interop_char>& in, int num_concrete_args)
+int overlapping_characters(const std::string& substring, const std::string& in)
+{
+    int idx = 0;
+
+    for(; idx < (int)substring.size() && idx < (int)in.size() && substring[idx] == in[idx]; idx++);
+
+    return idx;
+}
+
+///returns an iterator
+auto longest_substring(const std::string& substring, const std::vector<std::string>& data)
+{
+    std::vector<int> longest_match;
+
+    for(auto& i : data)
+    {
+        longest_match.push_back(overlapping_characters(substring, i));
+    }
+
+    auto max_elem = std::max_element(longest_match.begin(), longest_match.end());
+
+    if(max_elem == longest_match.end())
+        return data.end();
+
+    int offset = std::distance(longest_match.begin(), max_elem);
+
+    return data.begin() + offset;
+}
+
+int insert_kv_ghosts(const std::vector<std::string>& existing_keys, const std::vector<std::string>& in_keys, const std::vector<std::string>& in_vals, int pos, std::vector<token_info>& tokens, std::vector<interop_char>& in, int num_concrete_args)
 {
     ///should be completely impossible
     if(pos < 0)
@@ -159,6 +188,71 @@ int insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<std
 
     if(pos < (int)tokens.size())
         char_pos = tokens[pos].start_pos;
+
+    std::vector<std::string> keys;
+    std::vector<std::string> vals;
+
+    ///ok so plan with partial key matching
+    ///we want to find if there are whole matches first
+    ///if yes then discard any whole matched keys
+    ///and blacklist that input key
+    ///then look for partial matches
+    ///when we find a partial match blacklist that input key
+    ///add to output vector of partially matched keys, with the value as well
+    ///add remaining key/values to the matched output from above
+    ///then do ghost tokens in that order
+
+    std::map<std::string, bool> key_blacklist;
+
+    for(auto& test_key : existing_keys)
+    {
+        auto it = std::find(in_keys.begin(), in_keys.end(), test_key);
+
+        if(it == in_keys.end())
+            continue;
+
+        key_blacklist[test_key] = true;
+
+        /*int offset = std::distance(in_keys.begin(), it);
+
+        keys.push_back(in_keys[offset]);
+        vals.push_back(in_vals[offset]);*/
+    }
+
+    bool suppress_first_sep = false;
+
+    for(auto& test_key : existing_keys)
+    {
+        if(key_blacklist[test_key])
+            continue;
+
+        auto longest_it = longest_substring(test_key, in_keys);
+
+        if(longest_it == in_keys.end())
+            continue;
+
+        int offset = std::distance(in_keys.begin(), longest_it);
+
+        int match_offset = overlapping_characters(test_key, *longest_it);
+
+        std::string remaining_key(in_keys[offset].begin() + match_offset, in_keys[offset].end());
+
+        keys.push_back(remaining_key);
+        vals.push_back(in_vals[offset]);
+
+        key_blacklist[in_keys[offset]] = true;
+
+        suppress_first_sep = true;
+    }
+
+    for(int i=0; i < (int)in_keys.size(); i++)
+    {
+        if(key_blacklist[in_keys[i]])
+            continue;
+
+        keys.push_back(in_keys[i]);
+        vals.push_back(in_vals[i]);
+    }
 
     bool insert_front = num_concrete_args > 0;
     bool insert_space = false;
@@ -177,7 +271,15 @@ int insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<std
             if(ctoken.str.size() == 1 && ((spos < (int)in.size() && in[spos].c != ' ') || spos >= (int)in.size()))
                 insert_space = true;
         }
+
+        if(tokens[lpos].type == token::COLON && suppress_first_sep)
+        {
+            tokens.erase(tokens.begin() + lpos);
+        }
     }
+
+    if(suppress_first_sep)
+        insert_front = false;
 
     int num = 0;
 
@@ -372,11 +474,15 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
     std::map<std::string, bool> key_exists_map;
     std::map<std::string, bool> value_exists_map; ///so we can type user: + [tab] -> user:"|"
 
+    std::vector<std::string> existing_keys;
+
     for(int i=0; i<(int)tokens.size(); i++)
     {
         if(tokens[i].type == token::KEY)
         {
             key_exists_map[tokens[i].str] = true;
+
+            existing_keys.push_back(tokens[i].str);
         }
     }
 
@@ -402,7 +508,7 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
     for(auto& i : key_exists_map)
     {
-        should_ghost[i.first] = false;
+        //should_ghost[i.first] = false;
         num_real_args++;
     }
 
@@ -440,7 +546,7 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
         if(tok.type == token::CLOSE_PAREN && !once_insert)
         {
-            int add = insert_kv_ghosts(keys, vals, i, tokens, in, num_real_args);
+            int add = insert_kv_ghosts(existing_keys, keys, vals, i, tokens, in, num_real_args);
 
             i += add;
             once_insert = true;
@@ -449,7 +555,7 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
         if(tok.type == token::CLOSE_CURLEY && !once_insert)
         {
-            int add = insert_kv_ghosts(keys, vals, i, tokens, in, num_real_args);
+            int add = insert_kv_ghosts(existing_keys, keys, vals, i, tokens, in, num_real_args);
 
             i += add;
             once_insert = true;
@@ -461,7 +567,7 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
     if(!once_insert)
     {
-        insert_kv_ghosts(keys, vals, 999, tokens, in, num_real_args);
+        insert_kv_ghosts(existing_keys, keys, vals, 999, tokens, in, num_real_args);
     }
 
     ///ok. now we need to do some parsing of the tokens themselves
