@@ -361,6 +361,9 @@ int main()
 
     sf::Clock write_clock;
 
+    sf::Clock inactivity_timer;
+    double inactivity_time_ms = 100;
+
     sf::Keyboard key;
     sf::Mouse mouse;
 
@@ -401,6 +404,8 @@ int main()
         if(font_select.update_rebuild(window, text_editor.current_font_size))
         {
             term.invalidate();
+
+            inactivity_timer.restart();
         }
 
         realtime_shim.clear_command();
@@ -435,9 +440,31 @@ int main()
 
         float mouse_delta = 0.f;
 
-        while(window.pollEvent(event))
+        bool skip_first_event = false;
+
+        if(inactivity_timer.getElapsedTime().asMilliseconds() > inactivity_time_ms)
         {
+            for(int i=0; i < 100; i++)
+            {
+                sf::sleep(sf::milliseconds(4));
+
+                if(window.pollEvent(event))
+                {
+                    skip_first_event = true;
+                    break;
+                }
+
+                if(sd_has_front_read(shared))
+                    break;
+            }
+        }
+
+        while(skip_first_event || window.pollEvent(event))
+        {
+            skip_first_event = false;
             ImGui::SFML::ProcessEvent(event);
+
+            inactivity_timer.restart();
 
             if(event.type == sf::Event::GainedFocus)
             {
@@ -791,6 +818,8 @@ int main()
         {
             text_editor.set_is_srgb(window_ctx.is_srgb);
             ImGui::SetStyleSrgb(window_ctx.is_srgb);
+
+            inactivity_timer.restart();
         }
 
         text_editor.tick();
@@ -809,6 +838,8 @@ int main()
                     to_edit->cursor_pos_idx = to_edit->command.size();
                 }
             }
+
+            inactivity_timer.restart();
         }
 
         if(enter && to_edit->command.size() > 0)
@@ -1035,10 +1066,16 @@ int main()
         vec2f vpos = {sf_mpos.x, sf_mpos.y};
 
         if(mouse.isButtonPressed(sf::Mouse::Left) && is_focused(focused))
+        {
+            inactivity_timer.restart();
+
             get_global_copy_handler()->on_hold_lclick(window,  vpos);
+        }
 
         while(sd_has_front_read(shared))
         {
+            inactivity_timer.restart();
+
             sized_string c_data = sd_get_front_read(shared);
             std::string fdata = c_str_sized_to_cpp(c_data);
             free_sized_string(c_data);
@@ -1124,12 +1161,17 @@ int main()
         }
 
         if(term.auto_handle.tab_pressed)
+        {
+            inactivity_timer.restart();
             term.last_line_invalidate();
+        }
 
         term.auto_handle.tab_pressed = ONCE_MACRO(sf::Keyboard::Tab) && is_focused(focused);
 
         if(term.auto_handle.tab_pressed)
+        {
             term.last_line_invalidate();
+        }
 
         ///this is a hack to fix the fact that sometimes
         ///click input doesn't make clean click/release pairs
@@ -1168,7 +1210,10 @@ int main()
         char_inf::cheight = ImGui::CalcTextSize("A").y;
 
         if(char_inf::cwidth != lcwidth || char_inf::cheight != lcheight)
+        {
+            inactivity_timer.restart();
             term.invalidate();
+        }
 
         text_editor.set_current_user(c_str_consume(sd_get_user(shared)));
     }
