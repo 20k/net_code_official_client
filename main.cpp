@@ -445,6 +445,13 @@ int main()
 
         bool skip_first_event = false;
 
+        steam_api_context.pump_callbacks();
+
+        if(steam_api_context.is_overlay_open())
+        {
+            inactivity_timer.restart();
+        }
+
         if(inactivity_timer.getElapsedTime().asMilliseconds() > inactivity_time_ms)
         {
             for(int i=0; i < 100; i++)
