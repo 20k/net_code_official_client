@@ -150,6 +150,8 @@ int main()
 
     nc_start_ssl(shared, HOST_IP, HOST_PORT_SSL);
 
+    //steam_api_context.handle_auth(shared);
+
     /*int window_width = 1200;
     int window_height = 600;
 

@@ -12,15 +12,18 @@ struct steamapi
     bool enabled = false;
     bool overlay_open = false;
 
-    std::vector<uint8_t> ticket;
-    uint32_t real_ticket_size = 0;
+    //std::vector<uint8_t> ticket;
+    //uint32_t real_ticket_size = 0;
 
-    uint32_t hauthticket = 0;
+    //uint32_t hauthticket = 0;
+
+    uint64_t steamapicall = 0;
 
     steamapi();
     ~steamapi();
 
-    bool handle_auth(c_shared_data shared);
+    void handle_auth(c_shared_data shared);
+    bool auth_success();
     void pump_callbacks();
     bool is_overlay_open();
 
