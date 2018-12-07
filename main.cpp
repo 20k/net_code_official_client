@@ -136,6 +136,8 @@ int main()
 {
     //test();
 
+    steamapi steam_api_context;
+
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
     stack_on_start();
