@@ -2,6 +2,8 @@
 #define STEAMAPI_HPP_INCLUDED
 
 #include <libncclient/c_all.h>
+#include <vector>
+#include <cstdint>
 
 struct callback_environment;
 
@@ -9,6 +11,9 @@ struct steamapi
 {
     bool enabled = false;
     bool overlay_open = false;
+
+    std::vector<uint8_t> ticket;
+    uint32_t real_ticket_size = 0;
 
     steamapi();
     ~steamapi();

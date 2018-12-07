@@ -13,6 +13,8 @@ struct callback_environment
     STEAM_CALLBACK( callback_environment, OnAuthResponse, GetAuthSessionTicketResponse_t );
 
     bool overlay_open = false;
+    bool has_ticket = false;
+    HAuthTicket hticket;
 };
 
 void callback_environment::OnGameOverlayActivated( GameOverlayActivated_t* pCallback )
@@ -22,12 +24,14 @@ void callback_environment::OnGameOverlayActivated( GameOverlayActivated_t* pCall
 
 void callback_environment::OnAuthResponse( GetAuthSessionTicketResponse_t* pResponse )
 {
-
+    if(pResponse->m_eResult == k_EResultOK)
+        hticket = pResponse->m_hAuthTicket;
 }
 
 steamapi::steamapi()
 {
     enabled = SteamAPI_Init();
+    ticket.resize(1024);
 
     secret_environment = new callback_environment;
 
@@ -46,11 +50,6 @@ bool steamapi::handle_auth(c_shared_data shared)
 {
     if(!enabled)
         return false;
-
-    std::vector<uint8_t> ticket;
-    ticket.resize(1024);
-
-    uint32 real_ticket_size = 0;
 
     HAuthTicket result = SteamUser()->GetAuthSessionTicket(&ticket[0], ticket.size(), &real_ticket_size);
 
