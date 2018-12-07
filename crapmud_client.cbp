@@ -274,6 +274,8 @@
 		<Unit filename="main.cpp" />
 		<Unit filename="stacktrace.cpp" />
 		<Unit filename="stacktrace.hpp" />
+		<Unit filename="steamapi.cpp" />
+		<Unit filename="steamapi.hpp" />
 		<Unit filename="string_helpers.cpp" />
 		<Unit filename="string_helpers.hpp" />
 		<Unit filename="text.fglsl" />

@@ -32,6 +32,7 @@
 #include "font_cfg.hpp"
 #include <iomanip>
 #include "window_context.hpp"
+#include "steamapi.hpp"
 
 bool is_focused(bool in_focus)
 {
