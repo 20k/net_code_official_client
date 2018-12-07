@@ -51,7 +51,7 @@ bool steamapi::handle_auth(c_shared_data shared)
     if(!enabled)
         return false;
 
-    HAuthTicket result = SteamUser()->GetAuthSessionTicket(&ticket[0], ticket.size(), &real_ticket_size);
+    hauthticket = SteamUser()->GetAuthSessionTicket(&ticket[0], ticket.size(), &real_ticket_size);
 
     return false;
 }

@@ -15,6 +15,8 @@ struct steamapi
     std::vector<uint8_t> ticket;
     uint32_t real_ticket_size = 0;
 
+    uint32_t hauthticket = 0;
+
     steamapi();
     ~steamapi();
 
