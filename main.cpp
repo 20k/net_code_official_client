@@ -366,8 +366,11 @@ int main()
 
     sf::Clock write_clock;
 
-    sf::Clock inactivity_timer;
-    double inactivity_time_ms = 100;
+    //sf::Clock inactivity_timer;
+    //double inactivity_time_ms = 100;
+
+    int active_frames_restart = 1;
+    int active_frames = active_frames_restart;
 
     sf::Keyboard key;
     sf::Mouse mouse;
@@ -410,7 +413,7 @@ int main()
         {
             term.invalidate();
 
-            inactivity_timer.restart();
+            active_frames = active_frames_restart;
         }
 
         realtime_shim.clear_command();
@@ -451,10 +454,10 @@ int main()
 
         if(steam_api_context.is_overlay_open())
         {
-            inactivity_timer.restart();
+            active_frames = active_frames_restart;
         }
 
-        if(inactivity_timer.getElapsedTime().asMilliseconds() > inactivity_time_ms)
+        if(active_frames <= 0)
         {
             for(int i=0; i < 100; i++)
             {
@@ -467,8 +470,14 @@ int main()
                 }
 
                 if(sd_has_front_read(shared))
+                {
                     break;
+                }
             }
+        }
+        else
+        {
+            active_frames--;
         }
 
         while(skip_first_event || window.pollEvent(event))
@@ -476,7 +485,7 @@ int main()
             skip_first_event = false;
             ImGui::SFML::ProcessEvent(event);
 
-            inactivity_timer.restart();
+            active_frames = active_frames_restart;
 
             if(event.type == sf::Event::GainedFocus)
             {
@@ -831,7 +840,7 @@ int main()
             text_editor.set_is_srgb(window_ctx.is_srgb);
             ImGui::SetStyleSrgb(window_ctx.is_srgb);
 
-            inactivity_timer.restart();
+            active_frames = active_frames_restart;
         }
 
         text_editor.tick();
@@ -851,7 +860,7 @@ int main()
                 }
             }
 
-            inactivity_timer.restart();
+            active_frames = active_frames_restart;
         }
 
         if(enter && to_edit->command.size() > 0)
@@ -1079,14 +1088,14 @@ int main()
 
         if(mouse.isButtonPressed(sf::Mouse::Left) && is_focused(focused))
         {
-            inactivity_timer.restart();
+            active_frames = active_frames_restart;
 
             get_global_copy_handler()->on_hold_lclick(window,  vpos);
         }
 
         while(sd_has_front_read(shared))
         {
-            inactivity_timer.restart();
+            active_frames = active_frames_restart;
 
             sized_string c_data = sd_get_front_read(shared);
             std::string fdata = c_str_sized_to_cpp(c_data);
@@ -1174,7 +1183,7 @@ int main()
 
         if(term.auto_handle.tab_pressed)
         {
-            inactivity_timer.restart();
+            active_frames = active_frames_restart;
             term.last_line_invalidate();
         }
 
@@ -1223,7 +1232,7 @@ int main()
 
         if(char_inf::cwidth != lcwidth || char_inf::cheight != lcheight)
         {
-            inactivity_timer.restart();
+            active_frames = active_frames_restart;
             term.invalidate();
         }
 
