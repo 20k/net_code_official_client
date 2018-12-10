@@ -20,6 +20,7 @@
 #include <libncclient/c_all.h>
 #include <libncclient/nc_util.hpp>
 #include <libncclient/nc_string_interop.hpp>
+#include <libncclient/c_steam_api.h>
 
 #include <imgui/imgui.h>
 #include <imgui-sfml/imgui-SFML.h>
@@ -32,7 +33,6 @@
 #include "font_cfg.hpp"
 #include <iomanip>
 #include "window_context.hpp"
-#include "steamapi.hpp"
 
 bool is_focused(bool in_focus)
 {
@@ -136,13 +136,13 @@ int main()
 {
     //test();
 
-    steamapi steam_api_context;
-
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
     stack_on_start();
 
     //token_tests();
+
+    c_steam_api csapi = steam_api_alloc();
 
     c_shared_data shared = sd_alloc();
 
@@ -450,9 +450,9 @@ int main()
 
         bool skip_first_event = false;
 
-        steam_api_context.pump_callbacks();
+        steam_api_pump_events(csapi);
 
-        if(steam_api_context.is_overlay_open())
+        if(steam_api_overlay_is_open(csapi))
         {
             active_frames = active_frames_restart;
         }
