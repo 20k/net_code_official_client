@@ -148,7 +148,7 @@ int main()
 
     //font.loadFromFile("VeraMono.ttf");
 
-    nc_start_ssl(shared, HOST_IP, HOST_PORT_SSL);
+    nc_start_ssl_steam_auth(shared, csapi, HOST_IP, HOST_PORT_SSL);
 
     //steam_api_context.handle_auth(shared);
 
