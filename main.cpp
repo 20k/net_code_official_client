@@ -473,6 +473,11 @@ int main()
                 {
                     break;
                 }
+
+                steam_api_pump_events(csapi);
+
+                if(steam_api_overlay_is_open(csapi))
+                    break;
             }
         }
         else
