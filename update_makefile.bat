@@ -1,1 +1,1 @@
-cbp2make -in crapmud_client.cbp -out makefile -unix
+cbp2make -in net_code_client.cbp -out makefile -unix
