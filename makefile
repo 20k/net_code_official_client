@@ -11,12 +11,12 @@ AR = ar
 LD = g++
 WINDRES = windres
 
-INC = -Ideps
-CFLAGS = -Wall -fexceptions -Wno-narrowing -std=gnu++1z -DNET_CLIENT -DNO_COMPRESSION
+INC = -Ideps -Ideps/SFML/include -Ideps/freetype/include/freetype -Ideps/imgui -IC:/Users/James/Desktop/projects/crapmud_client/deps/freetype/include
+CFLAGS = -Wall -fexceptions -Wno-narrowing -std=gnu++1z -Werror=return-type -Wno-strict-aliasing -DNET_CLIENT -DNO_COMPRESSION -DBOOST_STACKTRACE_USE_WINDBG -DSFML_STATIC
 RESINC = 
-LIBDIR = 
-LIB = 
-LDFLAGS = -lmingw32 -lsfml-graphics -lsfml-audio -lsfml-network -lsfml-window -lsfml-system -lfreetype -lopengl32 -lws2_32 -lflac -lopenal32 -logg -lboost_system-mt -lmswsock -lole32
+LIBDIR = -Ldeps/SFML/lib
+LIB = deps/libncclient/libncclient.a deps/steamworks_sdk_142/sdk/redistributable_bin/win64/libsteam_api64.a
+LDFLAGS = -lmingw32 -lsfml-audio-s -lsfml-graphics-s -lsfml-window-s -lsfml-system-s -lfreetype -lopengl32 -lflac -lopenal32 -logg -lboost_system-mt -lole32 -lboost_filesystem-mt -ldbgeng -lboost_stacktrace_windbg-mt -lwinmm -lgdi32
 
 INC_DEBUG = $(INC)
 CFLAGS_DEBUG = $(CFLAGS) -g -DLOCAL_IP
@@ -30,12 +30,12 @@ DEP_DEBUG =
 OUT_DEBUG = bin/Debug/crapmud_client
 
 INC_RELEASE = $(INC)
-CFLAGS_RELEASE = $(CFLAGS) -O2 -DLOCAL_IP
+CFLAGS_RELEASE = $(CFLAGS) -DLOCAL_IP
 RESINC_RELEASE = $(RESINC)
 RCFLAGS_RELEASE = $(RCFLAGS)
 LIBDIR_RELEASE = $(LIBDIR)
 LIB_RELEASE = $(LIB)
-LDFLAGS_RELEASE = $(LDFLAGS) -s
+LDFLAGS_RELEASE = $(LDFLAGS) -O2
 OBJDIR_RELEASE = obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = bin/Release/crapmud_client
@@ -52,26 +52,26 @@ DEP_PROFILE =
 OUT_PROFILE = bin/Profile/crapmud_client
 
 INC_DEPLOY = $(INC)
-CFLAGS_DEPLOY = $(CFLAGS) -O2 -DEXTERN_IP
+CFLAGS_DEPLOY = $(CFLAGS) -g -O2 -DEXTERN_IP
 RESINC_DEPLOY = $(RESINC)
 RCFLAGS_DEPLOY = $(RCFLAGS)
 LIBDIR_DEPLOY = $(LIBDIR)
 LIB_DEPLOY = $(LIB)
-LDFLAGS_DEPLOY = $(LDFLAGS) -s
+LDFLAGS_DEPLOY = $(LDFLAGS) -O2
 OBJDIR_DEPLOY = obj/Deploy
 DEP_DEPLOY = 
 OUT_DEPLOY = bin/Deploy/crapmud_client
 
 INC_DEPLOYPROFILE = $(INC)
-CFLAGS_DEPLOYPROFILE = $(CFLAGS) -pg -Og -g -DEXTERN_IP
+CFLAGS_DEPLOYPROFILE = $(CFLAGS) -pg -g -fno-pie -O0 -DEXTERN_IP
 RESINC_DEPLOYPROFILE = $(RESINC)
 RCFLAGS_DEPLOYPROFILE = $(RCFLAGS)
 LIBDIR_DEPLOYPROFILE = $(LIBDIR)
 LIB_DEPLOYPROFILE = $(LIB)
-LDFLAGS_DEPLOYPROFILE = $(LDFLAGS) -pg -lgmon
+LDFLAGS_DEPLOYPROFILE = $(LDFLAGS) -pg -lgmon -pg
 OBJDIR_DEPLOYPROFILE = obj/DeployProfile
 DEP_DEPLOYPROFILE = 
-OUT_DEPLOYPROFILE = bin/DeployProfile/crapmud_client
+OUT_DEPLOYPROFILE = DebugDeploy/DeployProfile
 
 INC_DEPLOYTOSTEAM = $(INC)
 CFLAGS_DEPLOYTOSTEAM = $(CFLAGS) -O2 -DEXTERN_IP
@@ -95,264 +95,1067 @@ OBJDIR_LINUX = obj/Deploy
 DEP_LINUX = 
 OUT_LINUX = bin/Deploy/crapmud_client
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/auto_handlers.o $(OBJDIR_DEBUG)/deps/serialise/serialise.o $(OBJDIR_DEBUG)/http_beast_client.o $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/string_helpers.o
+INC_DEPLOYTESTDEBUG = $(INC)
+CFLAGS_DEPLOYTESTDEBUG = $(CFLAGS) -Og -g -DEXTERN_IP
+RESINC_DEPLOYTESTDEBUG = $(RESINC)
+RCFLAGS_DEPLOYTESTDEBUG = $(RCFLAGS)
+LIBDIR_DEPLOYTESTDEBUG = $(LIBDIR)
+LIB_DEPLOYTESTDEBUG = $(LIB)
+LDFLAGS_DEPLOYTESTDEBUG = $(LDFLAGS)
+OBJDIR_DEPLOYTESTDEBUG = obj/DeployTestDebug
+DEP_DEPLOYTESTDEBUG = 
+OUT_DEPLOYTESTDEBUG = bin/DeployTestDebug/crapmud_client
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)/auto_handlers.o $(OBJDIR_RELEASE)/deps/serialise/serialise.o $(OBJDIR_RELEASE)/http_beast_client.o $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/string_helpers.o
+INC_DEPLOYTEST = $(INC)
+CFLAGS_DEPLOYTEST = $(CFLAGS) -g -O2 -DEXTERN_IP
+RESINC_DEPLOYTEST = $(RESINC)
+RCFLAGS_DEPLOYTEST = $(RCFLAGS)
+LIBDIR_DEPLOYTEST = $(LIBDIR)
+LIB_DEPLOYTEST = $(LIB)
+LDFLAGS_DEPLOYTEST = $(LDFLAGS) -O2
+OBJDIR_DEPLOYTEST = obj/Deploy
+DEP_DEPLOYTEST = 
+OUT_DEPLOYTEST = bin/Deploy/crapmud_client
 
-OBJ_PROFILE = $(OBJDIR_PROFILE)/auto_handlers.o $(OBJDIR_PROFILE)/deps/serialise/serialise.o $(OBJDIR_PROFILE)/http_beast_client.o $(OBJDIR_PROFILE)/main.o $(OBJDIR_PROFILE)/string_helpers.o
+INC_DEPLOYTESTSUBMODULES = $(INC)
+CFLAGS_DEPLOYTESTSUBMODULES = $(CFLAGS) -g -DEXTERN_IP
+RESINC_DEPLOYTESTSUBMODULES = $(RESINC)
+RCFLAGS_DEPLOYTESTSUBMODULES = $(RCFLAGS)
+LIBDIR_DEPLOYTESTSUBMODULES = $(LIBDIR)
+LIB_DEPLOYTESTSUBMODULES = $(LIB)
+LDFLAGS_DEPLOYTESTSUBMODULES = $(LDFLAGS) -O2
+OBJDIR_DEPLOYTESTSUBMODULES = obj/Deploy
+DEP_DEPLOYTESTSUBMODULES = 
+OUT_DEPLOYTESTSUBMODULES = bin/Deploy/crapmud_client
 
-OBJ_DEPLOY = $(OBJDIR_DEPLOY)/auto_handlers.o $(OBJDIR_DEPLOY)/deps/serialise/serialise.o $(OBJDIR_DEPLOY)/http_beast_client.o $(OBJDIR_DEPLOY)/icon.o $(OBJDIR_DEPLOY)/main.o $(OBJDIR_DEPLOY)/string_helpers.o
+INC_RELEASESUBMODULES = $(INC)
+CFLAGS_RELEASESUBMODULES = $(CFLAGS) -DLOCAL_IP
+RESINC_RELEASESUBMODULES = $(RESINC)
+RCFLAGS_RELEASESUBMODULES = $(RCFLAGS)
+LIBDIR_RELEASESUBMODULES = $(LIBDIR)
+LIB_RELEASESUBMODULES = $(LIB)
+LDFLAGS_RELEASESUBMODULES = $(LDFLAGS) -O2
+OBJDIR_RELEASESUBMODULES = obj/Release
+DEP_RELEASESUBMODULES = 
+OUT_RELEASESUBMODULES = bin/Release/crapmud_client
 
-OBJ_DEPLOYPROFILE = $(OBJDIR_DEPLOYPROFILE)/auto_handlers.o $(OBJDIR_DEPLOYPROFILE)/deps/serialise/serialise.o $(OBJDIR_DEPLOYPROFILE)/http_beast_client.o $(OBJDIR_DEPLOYPROFILE)/main.o $(OBJDIR_DEPLOYPROFILE)/string_helpers.o
+OBJ_DEBUG = $(OBJDIR_DEBUG)/format_cache.o $(OBJDIR_DEBUG)/imgui_ui_components.o $(OBJDIR_DEBUG)/local_commands.o $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/stacktrace.o $(OBJDIR_DEBUG)/string_helpers.o $(OBJDIR_DEBUG)/text_editor.o $(OBJDIR_DEBUG)/tokeniser.o $(OBJDIR_DEBUG)/window_context.o $(OBJDIR_DEBUG)/auto_handlers.o $(OBJDIR_DEBUG)/copy_handler.o $(OBJDIR_DEBUG)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_DEBUG)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEBUG)/deps/imgui/imgui.o $(OBJDIR_DEBUG)/deps/imgui/imgui_demo.o $(OBJDIR_DEBUG)/deps/imgui/imgui_draw.o $(OBJDIR_DEBUG)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEBUG)/deps/serialise/serialise.o $(OBJDIR_DEBUG)/editable_string.o $(OBJDIR_DEBUG)/font_cfg.o
 
-OBJ_DEPLOYTOSTEAM = $(OBJDIR_DEPLOYTOSTEAM)/auto_handlers.o $(OBJDIR_DEPLOYTOSTEAM)/deps/serialise/serialise.o $(OBJDIR_DEPLOYTOSTEAM)/http_beast_client.o $(OBJDIR_DEPLOYTOSTEAM)/main.o $(OBJDIR_DEPLOYTOSTEAM)/string_helpers.o
+OBJ_RELEASE = $(OBJDIR_RELEASE)/format_cache.o $(OBJDIR_RELEASE)/imgui_ui_components.o $(OBJDIR_RELEASE)/local_commands.o $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/stacktrace.o $(OBJDIR_RELEASE)/string_helpers.o $(OBJDIR_RELEASE)/text_editor.o $(OBJDIR_RELEASE)/tokeniser.o $(OBJDIR_RELEASE)/window_context.o $(OBJDIR_RELEASE)/auto_handlers.o $(OBJDIR_RELEASE)/copy_handler.o $(OBJDIR_RELEASE)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_RELEASE)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_RELEASE)/deps/imgui/imgui.o $(OBJDIR_RELEASE)/deps/imgui/imgui_demo.o $(OBJDIR_RELEASE)/deps/imgui/imgui_draw.o $(OBJDIR_RELEASE)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_RELEASE)/deps/serialise/serialise.o $(OBJDIR_RELEASE)/editable_string.o $(OBJDIR_RELEASE)/font_cfg.o
 
-OBJ_LINUX = $(OBJDIR_LINUX)/auto_handlers.o $(OBJDIR_LINUX)/deps/serialise/serialise.o $(OBJDIR_LINUX)/http_beast_client.o $(OBJDIR_LINUX)/icon.o $(OBJDIR_LINUX)/main.o $(OBJDIR_LINUX)/string_helpers.o
+OBJ_PROFILE = $(OBJDIR_PROFILE)/format_cache.o $(OBJDIR_PROFILE)/imgui_ui_components.o $(OBJDIR_PROFILE)/local_commands.o $(OBJDIR_PROFILE)/main.o $(OBJDIR_PROFILE)/stacktrace.o $(OBJDIR_PROFILE)/string_helpers.o $(OBJDIR_PROFILE)/text_editor.o $(OBJDIR_PROFILE)/tokeniser.o $(OBJDIR_PROFILE)/window_context.o $(OBJDIR_PROFILE)/auto_handlers.o $(OBJDIR_PROFILE)/copy_handler.o $(OBJDIR_PROFILE)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_PROFILE)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_PROFILE)/deps/imgui/imgui.o $(OBJDIR_PROFILE)/deps/imgui/imgui_demo.o $(OBJDIR_PROFILE)/deps/imgui/imgui_draw.o $(OBJDIR_PROFILE)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_PROFILE)/deps/serialise/serialise.o $(OBJDIR_PROFILE)/editable_string.o $(OBJDIR_PROFILE)/font_cfg.o
 
-all: debug release profile deploy deployprofile deploytosteam linux
+OBJ_DEPLOY = $(OBJDIR_DEPLOY)/format_cache.o $(OBJDIR_DEPLOY)/icon.o $(OBJDIR_DEPLOY)/imgui_ui_components.o $(OBJDIR_DEPLOY)/local_commands.o $(OBJDIR_DEPLOY)/main.o $(OBJDIR_DEPLOY)/stacktrace.o $(OBJDIR_DEPLOY)/string_helpers.o $(OBJDIR_DEPLOY)/text_editor.o $(OBJDIR_DEPLOY)/tokeniser.o $(OBJDIR_DEPLOY)/window_context.o $(OBJDIR_DEPLOY)/auto_handlers.o $(OBJDIR_DEPLOY)/copy_handler.o $(OBJDIR_DEPLOY)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_DEPLOY)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEPLOY)/deps/imgui/imgui.o $(OBJDIR_DEPLOY)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOY)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOY)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOY)/deps/serialise/serialise.o $(OBJDIR_DEPLOY)/editable_string.o $(OBJDIR_DEPLOY)/font_cfg.o
 
-clean: clean_debug clean_release clean_profile clean_deploy clean_deployprofile clean_deploytosteam clean_linux
+OBJ_DEPLOYPROFILE = $(OBJDIR_DEPLOYPROFILE)/format_cache.o $(OBJDIR_DEPLOYPROFILE)/imgui_ui_components.o $(OBJDIR_DEPLOYPROFILE)/local_commands.o $(OBJDIR_DEPLOYPROFILE)/main.o $(OBJDIR_DEPLOYPROFILE)/stacktrace.o $(OBJDIR_DEPLOYPROFILE)/string_helpers.o $(OBJDIR_DEPLOYPROFILE)/text_editor.o $(OBJDIR_DEPLOYPROFILE)/tokeniser.o $(OBJDIR_DEPLOYPROFILE)/window_context.o $(OBJDIR_DEPLOYPROFILE)/auto_handlers.o $(OBJDIR_DEPLOYPROFILE)/copy_handler.o $(OBJDIR_DEPLOYPROFILE)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYPROFILE)/deps/serialise/serialise.o $(OBJDIR_DEPLOYPROFILE)/editable_string.o $(OBJDIR_DEPLOYPROFILE)/font_cfg.o
+
+OBJ_DEPLOYTOSTEAM = $(OBJDIR_DEPLOYTOSTEAM)/format_cache.o $(OBJDIR_DEPLOYTOSTEAM)/imgui_ui_components.o $(OBJDIR_DEPLOYTOSTEAM)/local_commands.o $(OBJDIR_DEPLOYTOSTEAM)/main.o $(OBJDIR_DEPLOYTOSTEAM)/stacktrace.o $(OBJDIR_DEPLOYTOSTEAM)/string_helpers.o $(OBJDIR_DEPLOYTOSTEAM)/text_editor.o $(OBJDIR_DEPLOYTOSTEAM)/tokeniser.o $(OBJDIR_DEPLOYTOSTEAM)/window_context.o $(OBJDIR_DEPLOYTOSTEAM)/auto_handlers.o $(OBJDIR_DEPLOYTOSTEAM)/copy_handler.o $(OBJDIR_DEPLOYTOSTEAM)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTOSTEAM)/deps/serialise/serialise.o $(OBJDIR_DEPLOYTOSTEAM)/editable_string.o $(OBJDIR_DEPLOYTOSTEAM)/font_cfg.o
+
+OBJ_LINUX = $(OBJDIR_LINUX)/format_cache.o $(OBJDIR_LINUX)/icon.o $(OBJDIR_LINUX)/imgui_ui_components.o $(OBJDIR_LINUX)/local_commands.o $(OBJDIR_LINUX)/main.o $(OBJDIR_LINUX)/stacktrace.o $(OBJDIR_LINUX)/string_helpers.o $(OBJDIR_LINUX)/text_editor.o $(OBJDIR_LINUX)/tokeniser.o $(OBJDIR_LINUX)/window_context.o $(OBJDIR_LINUX)/auto_handlers.o $(OBJDIR_LINUX)/copy_handler.o $(OBJDIR_LINUX)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_LINUX)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_LINUX)/deps/imgui/imgui.o $(OBJDIR_LINUX)/deps/imgui/imgui_demo.o $(OBJDIR_LINUX)/deps/imgui/imgui_draw.o $(OBJDIR_LINUX)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_LINUX)/deps/serialise/serialise.o $(OBJDIR_LINUX)/editable_string.o $(OBJDIR_LINUX)/font_cfg.o
+
+OBJ_DEPLOYTESTDEBUG = $(OBJDIR_DEPLOYTESTDEBUG)/format_cache.o $(OBJDIR_DEPLOYTESTDEBUG)/imgui_ui_components.o $(OBJDIR_DEPLOYTESTDEBUG)/local_commands.o $(OBJDIR_DEPLOYTESTDEBUG)/main.o $(OBJDIR_DEPLOYTESTDEBUG)/stacktrace.o $(OBJDIR_DEPLOYTESTDEBUG)/string_helpers.o $(OBJDIR_DEPLOYTESTDEBUG)/text_editor.o $(OBJDIR_DEPLOYTESTDEBUG)/tokeniser.o $(OBJDIR_DEPLOYTESTDEBUG)/window_context.o $(OBJDIR_DEPLOYTESTDEBUG)/auto_handlers.o $(OBJDIR_DEPLOYTESTDEBUG)/copy_handler.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/serialise/serialise.o $(OBJDIR_DEPLOYTESTDEBUG)/editable_string.o $(OBJDIR_DEPLOYTESTDEBUG)/font_cfg.o
+
+OBJ_DEPLOYTEST = $(OBJDIR_DEPLOYTEST)/format_cache.o $(OBJDIR_DEPLOYTEST)/icon.o $(OBJDIR_DEPLOYTEST)/imgui_ui_components.o $(OBJDIR_DEPLOYTEST)/local_commands.o $(OBJDIR_DEPLOYTEST)/main.o $(OBJDIR_DEPLOYTEST)/stacktrace.o $(OBJDIR_DEPLOYTEST)/string_helpers.o $(OBJDIR_DEPLOYTEST)/text_editor.o $(OBJDIR_DEPLOYTEST)/tokeniser.o $(OBJDIR_DEPLOYTEST)/window_context.o $(OBJDIR_DEPLOYTEST)/auto_handlers.o $(OBJDIR_DEPLOYTEST)/copy_handler.o $(OBJDIR_DEPLOYTEST)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_DEPLOYTEST)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTEST)/deps/serialise/serialise.o $(OBJDIR_DEPLOYTEST)/editable_string.o $(OBJDIR_DEPLOYTEST)/font_cfg.o
+
+OBJ_DEPLOYTESTSUBMODULES = $(OBJDIR_DEPLOYTESTSUBMODULES)/format_cache.o $(OBJDIR_DEPLOYTESTSUBMODULES)/icon.o $(OBJDIR_DEPLOYTESTSUBMODULES)/imgui_ui_components.o $(OBJDIR_DEPLOYTESTSUBMODULES)/local_commands.o $(OBJDIR_DEPLOYTESTSUBMODULES)/main.o $(OBJDIR_DEPLOYTESTSUBMODULES)/stacktrace.o $(OBJDIR_DEPLOYTESTSUBMODULES)/string_helpers.o $(OBJDIR_DEPLOYTESTSUBMODULES)/text_editor.o $(OBJDIR_DEPLOYTESTSUBMODULES)/tokeniser.o $(OBJDIR_DEPLOYTESTSUBMODULES)/window_context.o $(OBJDIR_DEPLOYTESTSUBMODULES)/auto_handlers.o $(OBJDIR_DEPLOYTESTSUBMODULES)/copy_handler.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/serialise/serialise.o $(OBJDIR_DEPLOYTESTSUBMODULES)/editable_string.o $(OBJDIR_DEPLOYTESTSUBMODULES)/font_cfg.o
+
+OBJ_RELEASESUBMODULES = $(OBJDIR_RELEASESUBMODULES)/format_cache.o $(OBJDIR_RELEASESUBMODULES)/imgui_ui_components.o $(OBJDIR_RELEASESUBMODULES)/local_commands.o $(OBJDIR_RELEASESUBMODULES)/main.o $(OBJDIR_RELEASESUBMODULES)/stacktrace.o $(OBJDIR_RELEASESUBMODULES)/string_helpers.o $(OBJDIR_RELEASESUBMODULES)/text_editor.o $(OBJDIR_RELEASESUBMODULES)/tokeniser.o $(OBJDIR_RELEASESUBMODULES)/window_context.o $(OBJDIR_RELEASESUBMODULES)/auto_handlers.o $(OBJDIR_RELEASESUBMODULES)/copy_handler.o $(OBJDIR_RELEASESUBMODULES)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_demo.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_draw.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_RELEASESUBMODULES)/deps/serialise/serialise.o $(OBJDIR_RELEASESUBMODULES)/editable_string.o $(OBJDIR_RELEASESUBMODULES)/font_cfg.o
+
+all: before_build build_debug build_release build_profile build_deploy build_deployprofile build_deploytosteam build_linux build_deploytestdebug build_deploytest build_deploytestsubmodules build_releasesubmodules build_deploytestzapcc after_build
+
+clean: clean_debug clean_release clean_profile clean_deploy clean_deployprofile clean_deploytosteam clean_linux clean_deploytestdebug clean_deploytest clean_deploytestsubmodules clean_releasesubmodules clean_deploytestzapcc
+
+before_build: 
+
+after_build: 
+	copy_dll.bat
 
 before_debug: 
 	test -d bin/Debug || mkdir -p bin/Debug
 	test -d $(OBJDIR_DEBUG) || mkdir -p $(OBJDIR_DEBUG)
+	test -d $(OBJDIR_DEBUG)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_DEBUG)/deps/ImGuiColorTextEdit
+	test -d $(OBJDIR_DEBUG)/deps/imgui-sfml || mkdir -p $(OBJDIR_DEBUG)/deps/imgui-sfml
+	test -d $(OBJDIR_DEBUG)/deps/imgui || mkdir -p $(OBJDIR_DEBUG)/deps/imgui
+	test -d $(OBJDIR_DEBUG)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEBUG)/deps/imgui/misc/freetype
 	test -d $(OBJDIR_DEBUG)/deps/serialise || mkdir -p $(OBJDIR_DEBUG)/deps/serialise
 
 after_debug: 
 
-debug: before_debug out_debug after_debug
+build_debug: before_debug out_debug after_debug
+
+debug: before_build build_debug after_build
 
 out_debug: before_debug $(OBJ_DEBUG) $(DEP_DEBUG)
 	$(LD) $(LIBDIR_DEBUG) -o $(OUT_DEBUG) $(OBJ_DEBUG)  $(LDFLAGS_DEBUG) $(LIB_DEBUG)
 
-$(OBJDIR_DEBUG)/auto_handlers.o: auto_handlers.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c auto_handlers.cpp -o $(OBJDIR_DEBUG)/auto_handlers.o
+$(OBJDIR_DEBUG)/format_cache.o: format_cache.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c format_cache.cpp -o $(OBJDIR_DEBUG)/format_cache.o
 
-$(OBJDIR_DEBUG)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/serialise/serialise.cpp -o $(OBJDIR_DEBUG)/deps/serialise/serialise.o
+$(OBJDIR_DEBUG)/imgui_ui_components.o: imgui_ui_components.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c imgui_ui_components.cpp -o $(OBJDIR_DEBUG)/imgui_ui_components.o
 
-$(OBJDIR_DEBUG)/http_beast_client.o: http_beast_client.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c http_beast_client.cpp -o $(OBJDIR_DEBUG)/http_beast_client.o
+$(OBJDIR_DEBUG)/local_commands.o: local_commands.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c local_commands.cpp -o $(OBJDIR_DEBUG)/local_commands.o
 
 $(OBJDIR_DEBUG)/main.o: main.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c main.cpp -o $(OBJDIR_DEBUG)/main.o
 
+$(OBJDIR_DEBUG)/stacktrace.o: stacktrace.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c stacktrace.cpp -o $(OBJDIR_DEBUG)/stacktrace.o
+
 $(OBJDIR_DEBUG)/string_helpers.o: string_helpers.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c string_helpers.cpp -o $(OBJDIR_DEBUG)/string_helpers.o
+
+$(OBJDIR_DEBUG)/text_editor.o: text_editor.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c text_editor.cpp -o $(OBJDIR_DEBUG)/text_editor.o
+
+$(OBJDIR_DEBUG)/tokeniser.o: tokeniser.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c tokeniser.cpp -o $(OBJDIR_DEBUG)/tokeniser.o
+
+$(OBJDIR_DEBUG)/window_context.o: window_context.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c window_context.cpp -o $(OBJDIR_DEBUG)/window_context.o
+
+$(OBJDIR_DEBUG)/auto_handlers.o: auto_handlers.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c auto_handlers.cpp -o $(OBJDIR_DEBUG)/auto_handlers.o
+
+$(OBJDIR_DEBUG)/copy_handler.o: copy_handler.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c copy_handler.cpp -o $(OBJDIR_DEBUG)/copy_handler.o
+
+$(OBJDIR_DEBUG)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_DEBUG)/deps/ImGuiColorTextEdit/TextEditor.o
+
+$(OBJDIR_DEBUG)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_DEBUG)/deps/imgui-sfml/imgui-SFML.o
+
+$(OBJDIR_DEBUG)/deps/imgui/imgui.o: deps/imgui/imgui.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/imgui/imgui.cpp -o $(OBJDIR_DEBUG)/deps/imgui/imgui.o
+
+$(OBJDIR_DEBUG)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/imgui/imgui_demo.cpp -o $(OBJDIR_DEBUG)/deps/imgui/imgui_demo.o
+
+$(OBJDIR_DEBUG)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_DEBUG)/deps/imgui/imgui_draw.o
+
+$(OBJDIR_DEBUG)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEBUG)/deps/imgui/misc/freetype/imgui_freetype.o
+
+$(OBJDIR_DEBUG)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/serialise/serialise.cpp -o $(OBJDIR_DEBUG)/deps/serialise/serialise.o
+
+$(OBJDIR_DEBUG)/editable_string.o: editable_string.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c editable_string.cpp -o $(OBJDIR_DEBUG)/editable_string.o
+
+$(OBJDIR_DEBUG)/font_cfg.o: font_cfg.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c font_cfg.cpp -o $(OBJDIR_DEBUG)/font_cfg.o
 
 clean_debug: 
 	rm -f $(OBJ_DEBUG) $(OUT_DEBUG)
 	rm -rf bin/Debug
 	rm -rf $(OBJDIR_DEBUG)
+	rm -rf $(OBJDIR_DEBUG)/deps/ImGuiColorTextEdit
+	rm -rf $(OBJDIR_DEBUG)/deps/imgui-sfml
+	rm -rf $(OBJDIR_DEBUG)/deps/imgui
+	rm -rf $(OBJDIR_DEBUG)/deps/imgui/misc/freetype
 	rm -rf $(OBJDIR_DEBUG)/deps/serialise
 
 before_release: 
 	test -d bin/Release || mkdir -p bin/Release
 	test -d $(OBJDIR_RELEASE) || mkdir -p $(OBJDIR_RELEASE)
+	test -d $(OBJDIR_RELEASE)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_RELEASE)/deps/ImGuiColorTextEdit
+	test -d $(OBJDIR_RELEASE)/deps/imgui-sfml || mkdir -p $(OBJDIR_RELEASE)/deps/imgui-sfml
+	test -d $(OBJDIR_RELEASE)/deps/imgui || mkdir -p $(OBJDIR_RELEASE)/deps/imgui
+	test -d $(OBJDIR_RELEASE)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_RELEASE)/deps/imgui/misc/freetype
 	test -d $(OBJDIR_RELEASE)/deps/serialise || mkdir -p $(OBJDIR_RELEASE)/deps/serialise
 
 after_release: 
 	build_test.bat
 
-release: before_release out_release after_release
+build_release: before_release out_release after_release
+
+release: before_build build_release after_build
 
 out_release: before_release $(OBJ_RELEASE) $(DEP_RELEASE)
 	$(LD) $(LIBDIR_RELEASE) -o $(OUT_RELEASE) $(OBJ_RELEASE)  $(LDFLAGS_RELEASE) $(LIB_RELEASE)
 
-$(OBJDIR_RELEASE)/auto_handlers.o: auto_handlers.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c auto_handlers.cpp -o $(OBJDIR_RELEASE)/auto_handlers.o
+$(OBJDIR_RELEASE)/format_cache.o: format_cache.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c format_cache.cpp -o $(OBJDIR_RELEASE)/format_cache.o
 
-$(OBJDIR_RELEASE)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/serialise/serialise.cpp -o $(OBJDIR_RELEASE)/deps/serialise/serialise.o
+$(OBJDIR_RELEASE)/imgui_ui_components.o: imgui_ui_components.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c imgui_ui_components.cpp -o $(OBJDIR_RELEASE)/imgui_ui_components.o
 
-$(OBJDIR_RELEASE)/http_beast_client.o: http_beast_client.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c http_beast_client.cpp -o $(OBJDIR_RELEASE)/http_beast_client.o
+$(OBJDIR_RELEASE)/local_commands.o: local_commands.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c local_commands.cpp -o $(OBJDIR_RELEASE)/local_commands.o
 
 $(OBJDIR_RELEASE)/main.o: main.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c main.cpp -o $(OBJDIR_RELEASE)/main.o
 
+$(OBJDIR_RELEASE)/stacktrace.o: stacktrace.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c stacktrace.cpp -o $(OBJDIR_RELEASE)/stacktrace.o
+
 $(OBJDIR_RELEASE)/string_helpers.o: string_helpers.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c string_helpers.cpp -o $(OBJDIR_RELEASE)/string_helpers.o
+
+$(OBJDIR_RELEASE)/text_editor.o: text_editor.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c text_editor.cpp -o $(OBJDIR_RELEASE)/text_editor.o
+
+$(OBJDIR_RELEASE)/tokeniser.o: tokeniser.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c tokeniser.cpp -o $(OBJDIR_RELEASE)/tokeniser.o
+
+$(OBJDIR_RELEASE)/window_context.o: window_context.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c window_context.cpp -o $(OBJDIR_RELEASE)/window_context.o
+
+$(OBJDIR_RELEASE)/auto_handlers.o: auto_handlers.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c auto_handlers.cpp -o $(OBJDIR_RELEASE)/auto_handlers.o
+
+$(OBJDIR_RELEASE)/copy_handler.o: copy_handler.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c copy_handler.cpp -o $(OBJDIR_RELEASE)/copy_handler.o
+
+$(OBJDIR_RELEASE)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_RELEASE)/deps/ImGuiColorTextEdit/TextEditor.o
+
+$(OBJDIR_RELEASE)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_RELEASE)/deps/imgui-sfml/imgui-SFML.o
+
+$(OBJDIR_RELEASE)/deps/imgui/imgui.o: deps/imgui/imgui.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/imgui/imgui.cpp -o $(OBJDIR_RELEASE)/deps/imgui/imgui.o
+
+$(OBJDIR_RELEASE)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/imgui/imgui_demo.cpp -o $(OBJDIR_RELEASE)/deps/imgui/imgui_demo.o
+
+$(OBJDIR_RELEASE)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_RELEASE)/deps/imgui/imgui_draw.o
+
+$(OBJDIR_RELEASE)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_RELEASE)/deps/imgui/misc/freetype/imgui_freetype.o
+
+$(OBJDIR_RELEASE)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/serialise/serialise.cpp -o $(OBJDIR_RELEASE)/deps/serialise/serialise.o
+
+$(OBJDIR_RELEASE)/editable_string.o: editable_string.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c editable_string.cpp -o $(OBJDIR_RELEASE)/editable_string.o
+
+$(OBJDIR_RELEASE)/font_cfg.o: font_cfg.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c font_cfg.cpp -o $(OBJDIR_RELEASE)/font_cfg.o
 
 clean_release: 
 	rm -f $(OBJ_RELEASE) $(OUT_RELEASE)
 	rm -rf bin/Release
 	rm -rf $(OBJDIR_RELEASE)
+	rm -rf $(OBJDIR_RELEASE)/deps/ImGuiColorTextEdit
+	rm -rf $(OBJDIR_RELEASE)/deps/imgui-sfml
+	rm -rf $(OBJDIR_RELEASE)/deps/imgui
+	rm -rf $(OBJDIR_RELEASE)/deps/imgui/misc/freetype
 	rm -rf $(OBJDIR_RELEASE)/deps/serialise
 
 before_profile: 
 	test -d bin/Profile || mkdir -p bin/Profile
 	test -d $(OBJDIR_PROFILE) || mkdir -p $(OBJDIR_PROFILE)
+	test -d $(OBJDIR_PROFILE)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_PROFILE)/deps/ImGuiColorTextEdit
+	test -d $(OBJDIR_PROFILE)/deps/imgui-sfml || mkdir -p $(OBJDIR_PROFILE)/deps/imgui-sfml
+	test -d $(OBJDIR_PROFILE)/deps/imgui || mkdir -p $(OBJDIR_PROFILE)/deps/imgui
+	test -d $(OBJDIR_PROFILE)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_PROFILE)/deps/imgui/misc/freetype
 	test -d $(OBJDIR_PROFILE)/deps/serialise || mkdir -p $(OBJDIR_PROFILE)/deps/serialise
 
 after_profile: 
 
-profile: before_profile out_profile after_profile
+build_profile: before_profile out_profile after_profile
+
+profile: before_build build_profile after_build
 
 out_profile: before_profile $(OBJ_PROFILE) $(DEP_PROFILE)
 	$(LD) $(LIBDIR_PROFILE) -o $(OUT_PROFILE) $(OBJ_PROFILE)  $(LDFLAGS_PROFILE) $(LIB_PROFILE)
 
-$(OBJDIR_PROFILE)/auto_handlers.o: auto_handlers.cpp
-	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c auto_handlers.cpp -o $(OBJDIR_PROFILE)/auto_handlers.o
+$(OBJDIR_PROFILE)/format_cache.o: format_cache.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c format_cache.cpp -o $(OBJDIR_PROFILE)/format_cache.o
 
-$(OBJDIR_PROFILE)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
-	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/serialise/serialise.cpp -o $(OBJDIR_PROFILE)/deps/serialise/serialise.o
+$(OBJDIR_PROFILE)/imgui_ui_components.o: imgui_ui_components.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c imgui_ui_components.cpp -o $(OBJDIR_PROFILE)/imgui_ui_components.o
 
-$(OBJDIR_PROFILE)/http_beast_client.o: http_beast_client.cpp
-	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c http_beast_client.cpp -o $(OBJDIR_PROFILE)/http_beast_client.o
+$(OBJDIR_PROFILE)/local_commands.o: local_commands.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c local_commands.cpp -o $(OBJDIR_PROFILE)/local_commands.o
 
 $(OBJDIR_PROFILE)/main.o: main.cpp
 	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c main.cpp -o $(OBJDIR_PROFILE)/main.o
 
+$(OBJDIR_PROFILE)/stacktrace.o: stacktrace.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c stacktrace.cpp -o $(OBJDIR_PROFILE)/stacktrace.o
+
 $(OBJDIR_PROFILE)/string_helpers.o: string_helpers.cpp
 	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c string_helpers.cpp -o $(OBJDIR_PROFILE)/string_helpers.o
+
+$(OBJDIR_PROFILE)/text_editor.o: text_editor.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c text_editor.cpp -o $(OBJDIR_PROFILE)/text_editor.o
+
+$(OBJDIR_PROFILE)/tokeniser.o: tokeniser.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c tokeniser.cpp -o $(OBJDIR_PROFILE)/tokeniser.o
+
+$(OBJDIR_PROFILE)/window_context.o: window_context.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c window_context.cpp -o $(OBJDIR_PROFILE)/window_context.o
+
+$(OBJDIR_PROFILE)/auto_handlers.o: auto_handlers.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c auto_handlers.cpp -o $(OBJDIR_PROFILE)/auto_handlers.o
+
+$(OBJDIR_PROFILE)/copy_handler.o: copy_handler.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c copy_handler.cpp -o $(OBJDIR_PROFILE)/copy_handler.o
+
+$(OBJDIR_PROFILE)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_PROFILE)/deps/ImGuiColorTextEdit/TextEditor.o
+
+$(OBJDIR_PROFILE)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_PROFILE)/deps/imgui-sfml/imgui-SFML.o
+
+$(OBJDIR_PROFILE)/deps/imgui/imgui.o: deps/imgui/imgui.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/imgui/imgui.cpp -o $(OBJDIR_PROFILE)/deps/imgui/imgui.o
+
+$(OBJDIR_PROFILE)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/imgui/imgui_demo.cpp -o $(OBJDIR_PROFILE)/deps/imgui/imgui_demo.o
+
+$(OBJDIR_PROFILE)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_PROFILE)/deps/imgui/imgui_draw.o
+
+$(OBJDIR_PROFILE)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_PROFILE)/deps/imgui/misc/freetype/imgui_freetype.o
+
+$(OBJDIR_PROFILE)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/serialise/serialise.cpp -o $(OBJDIR_PROFILE)/deps/serialise/serialise.o
+
+$(OBJDIR_PROFILE)/editable_string.o: editable_string.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c editable_string.cpp -o $(OBJDIR_PROFILE)/editable_string.o
+
+$(OBJDIR_PROFILE)/font_cfg.o: font_cfg.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c font_cfg.cpp -o $(OBJDIR_PROFILE)/font_cfg.o
 
 clean_profile: 
 	rm -f $(OBJ_PROFILE) $(OUT_PROFILE)
 	rm -rf bin/Profile
 	rm -rf $(OBJDIR_PROFILE)
+	rm -rf $(OBJDIR_PROFILE)/deps/ImGuiColorTextEdit
+	rm -rf $(OBJDIR_PROFILE)/deps/imgui-sfml
+	rm -rf $(OBJDIR_PROFILE)/deps/imgui
+	rm -rf $(OBJDIR_PROFILE)/deps/imgui/misc/freetype
 	rm -rf $(OBJDIR_PROFILE)/deps/serialise
 
 before_deploy: 
 	test -d bin/Deploy || mkdir -p bin/Deploy
 	test -d $(OBJDIR_DEPLOY) || mkdir -p $(OBJDIR_DEPLOY)
+	test -d $(OBJDIR_DEPLOY)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_DEPLOY)/deps/ImGuiColorTextEdit
+	test -d $(OBJDIR_DEPLOY)/deps/imgui-sfml || mkdir -p $(OBJDIR_DEPLOY)/deps/imgui-sfml
+	test -d $(OBJDIR_DEPLOY)/deps/imgui || mkdir -p $(OBJDIR_DEPLOY)/deps/imgui
+	test -d $(OBJDIR_DEPLOY)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEPLOY)/deps/imgui/misc/freetype
 	test -d $(OBJDIR_DEPLOY)/deps/serialise || mkdir -p $(OBJDIR_DEPLOY)/deps/serialise
 
 after_deploy: 
 	build_release.bat
 
-deploy: before_deploy out_deploy after_deploy
+build_deploy: before_deploy out_deploy after_deploy
+
+deploy: before_build build_deploy after_build
 
 out_deploy: before_deploy $(OBJ_DEPLOY) $(DEP_DEPLOY)
 	$(LD) $(LIBDIR_DEPLOY) -o $(OUT_DEPLOY) $(OBJ_DEPLOY)  $(LDFLAGS_DEPLOY) $(LIB_DEPLOY)
 
-$(OBJDIR_DEPLOY)/auto_handlers.o: auto_handlers.cpp
-	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c auto_handlers.cpp -o $(OBJDIR_DEPLOY)/auto_handlers.o
-
-$(OBJDIR_DEPLOY)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
-	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/serialise/serialise.cpp -o $(OBJDIR_DEPLOY)/deps/serialise/serialise.o
-
-$(OBJDIR_DEPLOY)/http_beast_client.o: http_beast_client.cpp
-	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c http_beast_client.cpp -o $(OBJDIR_DEPLOY)/http_beast_client.o
+$(OBJDIR_DEPLOY)/format_cache.o: format_cache.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c format_cache.cpp -o $(OBJDIR_DEPLOY)/format_cache.o
 
 $(OBJDIR_DEPLOY)/icon.o: icon.res
 	$(WINDRES) -i icon.res -J rc -o $(OBJDIR_DEPLOY)/icon.o -O coff $(INC_DEPLOY)
 
+$(OBJDIR_DEPLOY)/imgui_ui_components.o: imgui_ui_components.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c imgui_ui_components.cpp -o $(OBJDIR_DEPLOY)/imgui_ui_components.o
+
+$(OBJDIR_DEPLOY)/local_commands.o: local_commands.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c local_commands.cpp -o $(OBJDIR_DEPLOY)/local_commands.o
+
 $(OBJDIR_DEPLOY)/main.o: main.cpp
 	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c main.cpp -o $(OBJDIR_DEPLOY)/main.o
 
+$(OBJDIR_DEPLOY)/stacktrace.o: stacktrace.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c stacktrace.cpp -o $(OBJDIR_DEPLOY)/stacktrace.o
+
 $(OBJDIR_DEPLOY)/string_helpers.o: string_helpers.cpp
 	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c string_helpers.cpp -o $(OBJDIR_DEPLOY)/string_helpers.o
+
+$(OBJDIR_DEPLOY)/text_editor.o: text_editor.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c text_editor.cpp -o $(OBJDIR_DEPLOY)/text_editor.o
+
+$(OBJDIR_DEPLOY)/tokeniser.o: tokeniser.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c tokeniser.cpp -o $(OBJDIR_DEPLOY)/tokeniser.o
+
+$(OBJDIR_DEPLOY)/window_context.o: window_context.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c window_context.cpp -o $(OBJDIR_DEPLOY)/window_context.o
+
+$(OBJDIR_DEPLOY)/auto_handlers.o: auto_handlers.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c auto_handlers.cpp -o $(OBJDIR_DEPLOY)/auto_handlers.o
+
+$(OBJDIR_DEPLOY)/copy_handler.o: copy_handler.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c copy_handler.cpp -o $(OBJDIR_DEPLOY)/copy_handler.o
+
+$(OBJDIR_DEPLOY)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_DEPLOY)/deps/ImGuiColorTextEdit/TextEditor.o
+
+$(OBJDIR_DEPLOY)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_DEPLOY)/deps/imgui-sfml/imgui-SFML.o
+
+$(OBJDIR_DEPLOY)/deps/imgui/imgui.o: deps/imgui/imgui.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/imgui/imgui.cpp -o $(OBJDIR_DEPLOY)/deps/imgui/imgui.o
+
+$(OBJDIR_DEPLOY)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/imgui/imgui_demo.cpp -o $(OBJDIR_DEPLOY)/deps/imgui/imgui_demo.o
+
+$(OBJDIR_DEPLOY)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_DEPLOY)/deps/imgui/imgui_draw.o
+
+$(OBJDIR_DEPLOY)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEPLOY)/deps/imgui/misc/freetype/imgui_freetype.o
+
+$(OBJDIR_DEPLOY)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/serialise/serialise.cpp -o $(OBJDIR_DEPLOY)/deps/serialise/serialise.o
+
+$(OBJDIR_DEPLOY)/editable_string.o: editable_string.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c editable_string.cpp -o $(OBJDIR_DEPLOY)/editable_string.o
+
+$(OBJDIR_DEPLOY)/font_cfg.o: font_cfg.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c font_cfg.cpp -o $(OBJDIR_DEPLOY)/font_cfg.o
 
 clean_deploy: 
 	rm -f $(OBJ_DEPLOY) $(OUT_DEPLOY)
 	rm -rf bin/Deploy
 	rm -rf $(OBJDIR_DEPLOY)
+	rm -rf $(OBJDIR_DEPLOY)/deps/ImGuiColorTextEdit
+	rm -rf $(OBJDIR_DEPLOY)/deps/imgui-sfml
+	rm -rf $(OBJDIR_DEPLOY)/deps/imgui
+	rm -rf $(OBJDIR_DEPLOY)/deps/imgui/misc/freetype
 	rm -rf $(OBJDIR_DEPLOY)/deps/serialise
 
 before_deployprofile: 
-	test -d bin/DeployProfile || mkdir -p bin/DeployProfile
+	test -d DebugDeploy || mkdir -p DebugDeploy
 	test -d $(OBJDIR_DEPLOYPROFILE) || mkdir -p $(OBJDIR_DEPLOYPROFILE)
+	test -d $(OBJDIR_DEPLOYPROFILE)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_DEPLOYPROFILE)/deps/ImGuiColorTextEdit
+	test -d $(OBJDIR_DEPLOYPROFILE)/deps/imgui-sfml || mkdir -p $(OBJDIR_DEPLOYPROFILE)/deps/imgui-sfml
+	test -d $(OBJDIR_DEPLOYPROFILE)/deps/imgui || mkdir -p $(OBJDIR_DEPLOYPROFILE)/deps/imgui
+	test -d $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype
 	test -d $(OBJDIR_DEPLOYPROFILE)/deps/serialise || mkdir -p $(OBJDIR_DEPLOYPROFILE)/deps/serialise
 
 after_deployprofile: 
 
-deployprofile: before_deployprofile out_deployprofile after_deployprofile
+build_deployprofile: before_deployprofile out_deployprofile after_deployprofile
+
+deployprofile: before_build build_deployprofile after_build
 
 out_deployprofile: before_deployprofile $(OBJ_DEPLOYPROFILE) $(DEP_DEPLOYPROFILE)
 	$(LD) $(LIBDIR_DEPLOYPROFILE) -o $(OUT_DEPLOYPROFILE) $(OBJ_DEPLOYPROFILE)  $(LDFLAGS_DEPLOYPROFILE) $(LIB_DEPLOYPROFILE)
 
-$(OBJDIR_DEPLOYPROFILE)/auto_handlers.o: auto_handlers.cpp
-	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c auto_handlers.cpp -o $(OBJDIR_DEPLOYPROFILE)/auto_handlers.o
+$(OBJDIR_DEPLOYPROFILE)/format_cache.o: format_cache.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c format_cache.cpp -o $(OBJDIR_DEPLOYPROFILE)/format_cache.o
 
-$(OBJDIR_DEPLOYPROFILE)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
-	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/serialise/serialise.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/serialise/serialise.o
+$(OBJDIR_DEPLOYPROFILE)/imgui_ui_components.o: imgui_ui_components.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c imgui_ui_components.cpp -o $(OBJDIR_DEPLOYPROFILE)/imgui_ui_components.o
 
-$(OBJDIR_DEPLOYPROFILE)/http_beast_client.o: http_beast_client.cpp
-	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c http_beast_client.cpp -o $(OBJDIR_DEPLOYPROFILE)/http_beast_client.o
+$(OBJDIR_DEPLOYPROFILE)/local_commands.o: local_commands.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c local_commands.cpp -o $(OBJDIR_DEPLOYPROFILE)/local_commands.o
 
 $(OBJDIR_DEPLOYPROFILE)/main.o: main.cpp
 	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c main.cpp -o $(OBJDIR_DEPLOYPROFILE)/main.o
 
+$(OBJDIR_DEPLOYPROFILE)/stacktrace.o: stacktrace.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c stacktrace.cpp -o $(OBJDIR_DEPLOYPROFILE)/stacktrace.o
+
 $(OBJDIR_DEPLOYPROFILE)/string_helpers.o: string_helpers.cpp
 	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c string_helpers.cpp -o $(OBJDIR_DEPLOYPROFILE)/string_helpers.o
 
+$(OBJDIR_DEPLOYPROFILE)/text_editor.o: text_editor.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c text_editor.cpp -o $(OBJDIR_DEPLOYPROFILE)/text_editor.o
+
+$(OBJDIR_DEPLOYPROFILE)/tokeniser.o: tokeniser.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c tokeniser.cpp -o $(OBJDIR_DEPLOYPROFILE)/tokeniser.o
+
+$(OBJDIR_DEPLOYPROFILE)/window_context.o: window_context.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c window_context.cpp -o $(OBJDIR_DEPLOYPROFILE)/window_context.o
+
+$(OBJDIR_DEPLOYPROFILE)/auto_handlers.o: auto_handlers.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c auto_handlers.cpp -o $(OBJDIR_DEPLOYPROFILE)/auto_handlers.o
+
+$(OBJDIR_DEPLOYPROFILE)/copy_handler.o: copy_handler.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c copy_handler.cpp -o $(OBJDIR_DEPLOYPROFILE)/copy_handler.o
+
+$(OBJDIR_DEPLOYPROFILE)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/ImGuiColorTextEdit/TextEditor.o
+
+$(OBJDIR_DEPLOYPROFILE)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/imgui-sfml/imgui-SFML.o
+
+$(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui.o: deps/imgui/imgui.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/imgui/imgui.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui.o
+
+$(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/imgui/imgui_demo.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_demo.o
+
+$(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_draw.o
+
+$(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype/imgui_freetype.o
+
+$(OBJDIR_DEPLOYPROFILE)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/serialise/serialise.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/serialise/serialise.o
+
+$(OBJDIR_DEPLOYPROFILE)/editable_string.o: editable_string.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c editable_string.cpp -o $(OBJDIR_DEPLOYPROFILE)/editable_string.o
+
+$(OBJDIR_DEPLOYPROFILE)/font_cfg.o: font_cfg.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c font_cfg.cpp -o $(OBJDIR_DEPLOYPROFILE)/font_cfg.o
+
 clean_deployprofile: 
 	rm -f $(OBJ_DEPLOYPROFILE) $(OUT_DEPLOYPROFILE)
-	rm -rf bin/DeployProfile
+	rm -rf DebugDeploy
 	rm -rf $(OBJDIR_DEPLOYPROFILE)
+	rm -rf $(OBJDIR_DEPLOYPROFILE)/deps/ImGuiColorTextEdit
+	rm -rf $(OBJDIR_DEPLOYPROFILE)/deps/imgui-sfml
+	rm -rf $(OBJDIR_DEPLOYPROFILE)/deps/imgui
+	rm -rf $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype
 	rm -rf $(OBJDIR_DEPLOYPROFILE)/deps/serialise
 
 before_deploytosteam: 
 	test -d bin/Deploy || mkdir -p bin/Deploy
 	test -d $(OBJDIR_DEPLOYTOSTEAM) || mkdir -p $(OBJDIR_DEPLOYTOSTEAM)
+	test -d $(OBJDIR_DEPLOYTOSTEAM)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_DEPLOYTOSTEAM)/deps/ImGuiColorTextEdit
+	test -d $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui-sfml || mkdir -p $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui-sfml
+	test -d $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui || mkdir -p $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui
+	test -d $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype
 	test -d $(OBJDIR_DEPLOYTOSTEAM)/deps/serialise || mkdir -p $(OBJDIR_DEPLOYTOSTEAM)/deps/serialise
 
 after_deploytosteam: 
 	build_release.bat
 	C:/Users/James/Downloads/steamworks_sdk_142/sdk/tools/ContentBuilder/run_build.bat
 
-deploytosteam: before_deploytosteam out_deploytosteam after_deploytosteam
+build_deploytosteam: before_deploytosteam out_deploytosteam after_deploytosteam
+
+deploytosteam: before_build build_deploytosteam after_build
 
 out_deploytosteam: before_deploytosteam $(OBJ_DEPLOYTOSTEAM) $(DEP_DEPLOYTOSTEAM)
 	$(LD) $(LIBDIR_DEPLOYTOSTEAM) -o $(OUT_DEPLOYTOSTEAM) $(OBJ_DEPLOYTOSTEAM)  $(LDFLAGS_DEPLOYTOSTEAM) $(LIB_DEPLOYTOSTEAM)
 
-$(OBJDIR_DEPLOYTOSTEAM)/auto_handlers.o: auto_handlers.cpp
-	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c auto_handlers.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/auto_handlers.o
+$(OBJDIR_DEPLOYTOSTEAM)/format_cache.o: format_cache.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c format_cache.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/format_cache.o
 
-$(OBJDIR_DEPLOYTOSTEAM)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
-	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/serialise/serialise.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/serialise/serialise.o
+$(OBJDIR_DEPLOYTOSTEAM)/imgui_ui_components.o: imgui_ui_components.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c imgui_ui_components.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/imgui_ui_components.o
 
-$(OBJDIR_DEPLOYTOSTEAM)/http_beast_client.o: http_beast_client.cpp
-	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c http_beast_client.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/http_beast_client.o
+$(OBJDIR_DEPLOYTOSTEAM)/local_commands.o: local_commands.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c local_commands.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/local_commands.o
 
 $(OBJDIR_DEPLOYTOSTEAM)/main.o: main.cpp
 	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c main.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/main.o
 
+$(OBJDIR_DEPLOYTOSTEAM)/stacktrace.o: stacktrace.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c stacktrace.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/stacktrace.o
+
 $(OBJDIR_DEPLOYTOSTEAM)/string_helpers.o: string_helpers.cpp
 	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c string_helpers.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/string_helpers.o
+
+$(OBJDIR_DEPLOYTOSTEAM)/text_editor.o: text_editor.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c text_editor.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/text_editor.o
+
+$(OBJDIR_DEPLOYTOSTEAM)/tokeniser.o: tokeniser.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c tokeniser.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/tokeniser.o
+
+$(OBJDIR_DEPLOYTOSTEAM)/window_context.o: window_context.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c window_context.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/window_context.o
+
+$(OBJDIR_DEPLOYTOSTEAM)/auto_handlers.o: auto_handlers.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c auto_handlers.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/auto_handlers.o
+
+$(OBJDIR_DEPLOYTOSTEAM)/copy_handler.o: copy_handler.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c copy_handler.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/copy_handler.o
+
+$(OBJDIR_DEPLOYTOSTEAM)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/ImGuiColorTextEdit/TextEditor.o
+
+$(OBJDIR_DEPLOYTOSTEAM)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui-sfml/imgui-SFML.o
+
+$(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui.o: deps/imgui/imgui.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/imgui/imgui.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui.o
+
+$(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/imgui/imgui_demo.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_demo.o
+
+$(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_draw.o
+
+$(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype/imgui_freetype.o
+
+$(OBJDIR_DEPLOYTOSTEAM)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/serialise/serialise.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/serialise/serialise.o
+
+$(OBJDIR_DEPLOYTOSTEAM)/editable_string.o: editable_string.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c editable_string.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/editable_string.o
+
+$(OBJDIR_DEPLOYTOSTEAM)/font_cfg.o: font_cfg.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c font_cfg.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/font_cfg.o
 
 clean_deploytosteam: 
 	rm -f $(OBJ_DEPLOYTOSTEAM) $(OUT_DEPLOYTOSTEAM)
 	rm -rf bin/Deploy
 	rm -rf $(OBJDIR_DEPLOYTOSTEAM)
+	rm -rf $(OBJDIR_DEPLOYTOSTEAM)/deps/ImGuiColorTextEdit
+	rm -rf $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui-sfml
+	rm -rf $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui
+	rm -rf $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype
 	rm -rf $(OBJDIR_DEPLOYTOSTEAM)/deps/serialise
 
 before_linux: 
 	test -d bin/Deploy || mkdir -p bin/Deploy
 	test -d $(OBJDIR_LINUX) || mkdir -p $(OBJDIR_LINUX)
+	test -d $(OBJDIR_LINUX)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_LINUX)/deps/ImGuiColorTextEdit
+	test -d $(OBJDIR_LINUX)/deps/imgui-sfml || mkdir -p $(OBJDIR_LINUX)/deps/imgui-sfml
+	test -d $(OBJDIR_LINUX)/deps/imgui || mkdir -p $(OBJDIR_LINUX)/deps/imgui
+	test -d $(OBJDIR_LINUX)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_LINUX)/deps/imgui/misc/freetype
 	test -d $(OBJDIR_LINUX)/deps/serialise || mkdir -p $(OBJDIR_LINUX)/deps/serialise
 
 after_linux: 
 
-linux: before_linux out_linux after_linux
+build_linux: before_linux out_linux after_linux
+
+linux: before_build build_linux after_build
 
 out_linux: before_linux $(OBJ_LINUX) $(DEP_LINUX)
 	$(LD) $(LIBDIR_LINUX) -o $(OUT_LINUX) $(OBJ_LINUX)  $(LDFLAGS_LINUX) $(LIB_LINUX)
 
-$(OBJDIR_LINUX)/auto_handlers.o: auto_handlers.cpp
-	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c auto_handlers.cpp -o $(OBJDIR_LINUX)/auto_handlers.o
-
-$(OBJDIR_LINUX)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
-	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c deps/serialise/serialise.cpp -o $(OBJDIR_LINUX)/deps/serialise/serialise.o
-
-$(OBJDIR_LINUX)/http_beast_client.o: http_beast_client.cpp
-	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c http_beast_client.cpp -o $(OBJDIR_LINUX)/http_beast_client.o
+$(OBJDIR_LINUX)/format_cache.o: format_cache.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c format_cache.cpp -o $(OBJDIR_LINUX)/format_cache.o
 
 $(OBJDIR_LINUX)/icon.o: icon.res
 	$(WINDRES) -i icon.res -J rc -o $(OBJDIR_LINUX)/icon.o -O coff $(INC_LINUX)
 
+$(OBJDIR_LINUX)/imgui_ui_components.o: imgui_ui_components.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c imgui_ui_components.cpp -o $(OBJDIR_LINUX)/imgui_ui_components.o
+
+$(OBJDIR_LINUX)/local_commands.o: local_commands.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c local_commands.cpp -o $(OBJDIR_LINUX)/local_commands.o
+
 $(OBJDIR_LINUX)/main.o: main.cpp
 	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c main.cpp -o $(OBJDIR_LINUX)/main.o
 
+$(OBJDIR_LINUX)/stacktrace.o: stacktrace.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c stacktrace.cpp -o $(OBJDIR_LINUX)/stacktrace.o
+
 $(OBJDIR_LINUX)/string_helpers.o: string_helpers.cpp
 	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c string_helpers.cpp -o $(OBJDIR_LINUX)/string_helpers.o
+
+$(OBJDIR_LINUX)/text_editor.o: text_editor.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c text_editor.cpp -o $(OBJDIR_LINUX)/text_editor.o
+
+$(OBJDIR_LINUX)/tokeniser.o: tokeniser.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c tokeniser.cpp -o $(OBJDIR_LINUX)/tokeniser.o
+
+$(OBJDIR_LINUX)/window_context.o: window_context.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c window_context.cpp -o $(OBJDIR_LINUX)/window_context.o
+
+$(OBJDIR_LINUX)/auto_handlers.o: auto_handlers.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c auto_handlers.cpp -o $(OBJDIR_LINUX)/auto_handlers.o
+
+$(OBJDIR_LINUX)/copy_handler.o: copy_handler.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c copy_handler.cpp -o $(OBJDIR_LINUX)/copy_handler.o
+
+$(OBJDIR_LINUX)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_LINUX)/deps/ImGuiColorTextEdit/TextEditor.o
+
+$(OBJDIR_LINUX)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_LINUX)/deps/imgui-sfml/imgui-SFML.o
+
+$(OBJDIR_LINUX)/deps/imgui/imgui.o: deps/imgui/imgui.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c deps/imgui/imgui.cpp -o $(OBJDIR_LINUX)/deps/imgui/imgui.o
+
+$(OBJDIR_LINUX)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c deps/imgui/imgui_demo.cpp -o $(OBJDIR_LINUX)/deps/imgui/imgui_demo.o
+
+$(OBJDIR_LINUX)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_LINUX)/deps/imgui/imgui_draw.o
+
+$(OBJDIR_LINUX)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_LINUX)/deps/imgui/misc/freetype/imgui_freetype.o
+
+$(OBJDIR_LINUX)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c deps/serialise/serialise.cpp -o $(OBJDIR_LINUX)/deps/serialise/serialise.o
+
+$(OBJDIR_LINUX)/editable_string.o: editable_string.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c editable_string.cpp -o $(OBJDIR_LINUX)/editable_string.o
+
+$(OBJDIR_LINUX)/font_cfg.o: font_cfg.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c font_cfg.cpp -o $(OBJDIR_LINUX)/font_cfg.o
 
 clean_linux: 
 	rm -f $(OBJ_LINUX) $(OUT_LINUX)
 	rm -rf bin/Deploy
 	rm -rf $(OBJDIR_LINUX)
+	rm -rf $(OBJDIR_LINUX)/deps/ImGuiColorTextEdit
+	rm -rf $(OBJDIR_LINUX)/deps/imgui-sfml
+	rm -rf $(OBJDIR_LINUX)/deps/imgui
+	rm -rf $(OBJDIR_LINUX)/deps/imgui/misc/freetype
 	rm -rf $(OBJDIR_LINUX)/deps/serialise
 
-.PHONY: before_debug after_debug clean_debug before_release after_release clean_release before_profile after_profile clean_profile before_deploy after_deploy clean_deploy before_deployprofile after_deployprofile clean_deployprofile before_deploytosteam after_deploytosteam clean_deploytosteam before_linux after_linux clean_linux
+before_deploytestdebug: 
+	test -d bin/DeployTestDebug || mkdir -p bin/DeployTestDebug
+	test -d $(OBJDIR_DEPLOYTESTDEBUG) || mkdir -p $(OBJDIR_DEPLOYTESTDEBUG)
+	test -d $(OBJDIR_DEPLOYTESTDEBUG)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_DEPLOYTESTDEBUG)/deps/ImGuiColorTextEdit
+	test -d $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui-sfml || mkdir -p $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui-sfml
+	test -d $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui || mkdir -p $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui
+	test -d $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype
+	test -d $(OBJDIR_DEPLOYTESTDEBUG)/deps/serialise || mkdir -p $(OBJDIR_DEPLOYTESTDEBUG)/deps/serialise
+
+after_deploytestdebug: 
+
+build_deploytestdebug: before_deploytestdebug out_deploytestdebug after_deploytestdebug
+
+deploytestdebug: before_build build_deploytestdebug after_build
+
+out_deploytestdebug: before_deploytestdebug $(OBJ_DEPLOYTESTDEBUG) $(DEP_DEPLOYTESTDEBUG)
+	$(LD) $(LIBDIR_DEPLOYTESTDEBUG) -o $(OUT_DEPLOYTESTDEBUG) $(OBJ_DEPLOYTESTDEBUG)  $(LDFLAGS_DEPLOYTESTDEBUG) $(LIB_DEPLOYTESTDEBUG)
+
+$(OBJDIR_DEPLOYTESTDEBUG)/format_cache.o: format_cache.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c format_cache.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/format_cache.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/imgui_ui_components.o: imgui_ui_components.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c imgui_ui_components.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/imgui_ui_components.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/local_commands.o: local_commands.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c local_commands.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/local_commands.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/main.o: main.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c main.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/main.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/stacktrace.o: stacktrace.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c stacktrace.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/stacktrace.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/string_helpers.o: string_helpers.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c string_helpers.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/string_helpers.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/text_editor.o: text_editor.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c text_editor.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/text_editor.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/tokeniser.o: tokeniser.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c tokeniser.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/tokeniser.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/window_context.o: window_context.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c window_context.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/window_context.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/auto_handlers.o: auto_handlers.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c auto_handlers.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/auto_handlers.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/copy_handler.o: copy_handler.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c copy_handler.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/copy_handler.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/ImGuiColorTextEdit/TextEditor.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui-sfml/imgui-SFML.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui.o: deps/imgui/imgui.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/imgui/imgui.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/imgui/imgui_demo.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_demo.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_draw.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype/imgui_freetype.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/serialise/serialise.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/serialise/serialise.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/editable_string.o: editable_string.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c editable_string.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/editable_string.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/font_cfg.o: font_cfg.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c font_cfg.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/font_cfg.o
+
+clean_deploytestdebug: 
+	rm -f $(OBJ_DEPLOYTESTDEBUG) $(OUT_DEPLOYTESTDEBUG)
+	rm -rf bin/DeployTestDebug
+	rm -rf $(OBJDIR_DEPLOYTESTDEBUG)
+	rm -rf $(OBJDIR_DEPLOYTESTDEBUG)/deps/ImGuiColorTextEdit
+	rm -rf $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui-sfml
+	rm -rf $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui
+	rm -rf $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype
+	rm -rf $(OBJDIR_DEPLOYTESTDEBUG)/deps/serialise
+
+before_deploytest: 
+	test -d bin/Deploy || mkdir -p bin/Deploy
+	test -d $(OBJDIR_DEPLOYTEST) || mkdir -p $(OBJDIR_DEPLOYTEST)
+	test -d $(OBJDIR_DEPLOYTEST)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_DEPLOYTEST)/deps/ImGuiColorTextEdit
+	test -d $(OBJDIR_DEPLOYTEST)/deps/imgui-sfml || mkdir -p $(OBJDIR_DEPLOYTEST)/deps/imgui-sfml
+	test -d $(OBJDIR_DEPLOYTEST)/deps/imgui || mkdir -p $(OBJDIR_DEPLOYTEST)/deps/imgui
+	test -d $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype
+	test -d $(OBJDIR_DEPLOYTEST)/deps/serialise || mkdir -p $(OBJDIR_DEPLOYTEST)/deps/serialise
+
+after_deploytest: 
+
+build_deploytest: before_deploytest out_deploytest after_deploytest
+
+deploytest: before_build build_deploytest after_build
+
+out_deploytest: before_deploytest $(OBJ_DEPLOYTEST) $(DEP_DEPLOYTEST)
+	$(LD) $(LIBDIR_DEPLOYTEST) -o $(OUT_DEPLOYTEST) $(OBJ_DEPLOYTEST)  $(LDFLAGS_DEPLOYTEST) $(LIB_DEPLOYTEST)
+
+$(OBJDIR_DEPLOYTEST)/format_cache.o: format_cache.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c format_cache.cpp -o $(OBJDIR_DEPLOYTEST)/format_cache.o
+
+$(OBJDIR_DEPLOYTEST)/icon.o: icon.res
+	$(WINDRES) -i icon.res -J rc -o $(OBJDIR_DEPLOYTEST)/icon.o -O coff $(INC_DEPLOYTEST)
+
+$(OBJDIR_DEPLOYTEST)/imgui_ui_components.o: imgui_ui_components.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c imgui_ui_components.cpp -o $(OBJDIR_DEPLOYTEST)/imgui_ui_components.o
+
+$(OBJDIR_DEPLOYTEST)/local_commands.o: local_commands.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c local_commands.cpp -o $(OBJDIR_DEPLOYTEST)/local_commands.o
+
+$(OBJDIR_DEPLOYTEST)/main.o: main.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c main.cpp -o $(OBJDIR_DEPLOYTEST)/main.o
+
+$(OBJDIR_DEPLOYTEST)/stacktrace.o: stacktrace.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c stacktrace.cpp -o $(OBJDIR_DEPLOYTEST)/stacktrace.o
+
+$(OBJDIR_DEPLOYTEST)/string_helpers.o: string_helpers.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c string_helpers.cpp -o $(OBJDIR_DEPLOYTEST)/string_helpers.o
+
+$(OBJDIR_DEPLOYTEST)/text_editor.o: text_editor.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c text_editor.cpp -o $(OBJDIR_DEPLOYTEST)/text_editor.o
+
+$(OBJDIR_DEPLOYTEST)/tokeniser.o: tokeniser.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c tokeniser.cpp -o $(OBJDIR_DEPLOYTEST)/tokeniser.o
+
+$(OBJDIR_DEPLOYTEST)/window_context.o: window_context.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c window_context.cpp -o $(OBJDIR_DEPLOYTEST)/window_context.o
+
+$(OBJDIR_DEPLOYTEST)/auto_handlers.o: auto_handlers.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c auto_handlers.cpp -o $(OBJDIR_DEPLOYTEST)/auto_handlers.o
+
+$(OBJDIR_DEPLOYTEST)/copy_handler.o: copy_handler.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c copy_handler.cpp -o $(OBJDIR_DEPLOYTEST)/copy_handler.o
+
+$(OBJDIR_DEPLOYTEST)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_DEPLOYTEST)/deps/ImGuiColorTextEdit/TextEditor.o
+
+$(OBJDIR_DEPLOYTEST)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_DEPLOYTEST)/deps/imgui-sfml/imgui-SFML.o
+
+$(OBJDIR_DEPLOYTEST)/deps/imgui/imgui.o: deps/imgui/imgui.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/imgui/imgui.cpp -o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui.o
+
+$(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/imgui/imgui_demo.cpp -o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_demo.o
+
+$(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_draw.o
+
+$(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype/imgui_freetype.o
+
+$(OBJDIR_DEPLOYTEST)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/serialise/serialise.cpp -o $(OBJDIR_DEPLOYTEST)/deps/serialise/serialise.o
+
+$(OBJDIR_DEPLOYTEST)/editable_string.o: editable_string.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c editable_string.cpp -o $(OBJDIR_DEPLOYTEST)/editable_string.o
+
+$(OBJDIR_DEPLOYTEST)/font_cfg.o: font_cfg.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c font_cfg.cpp -o $(OBJDIR_DEPLOYTEST)/font_cfg.o
+
+clean_deploytest: 
+	rm -f $(OBJ_DEPLOYTEST) $(OUT_DEPLOYTEST)
+	rm -rf bin/Deploy
+	rm -rf $(OBJDIR_DEPLOYTEST)
+	rm -rf $(OBJDIR_DEPLOYTEST)/deps/ImGuiColorTextEdit
+	rm -rf $(OBJDIR_DEPLOYTEST)/deps/imgui-sfml
+	rm -rf $(OBJDIR_DEPLOYTEST)/deps/imgui
+	rm -rf $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype
+	rm -rf $(OBJDIR_DEPLOYTEST)/deps/serialise
+
+before_deploytestsubmodules: 
+	git submodule foreach "(git checkout master; git pull)&"
+	test -d bin/Deploy || mkdir -p bin/Deploy
+	test -d $(OBJDIR_DEPLOYTESTSUBMODULES) || mkdir -p $(OBJDIR_DEPLOYTESTSUBMODULES)
+	test -d $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/ImGuiColorTextEdit
+	test -d $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui-sfml || mkdir -p $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui-sfml
+	test -d $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui || mkdir -p $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui
+	test -d $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype
+	test -d $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/serialise || mkdir -p $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/serialise
+
+after_deploytestsubmodules: 
+
+build_deploytestsubmodules: before_deploytestsubmodules out_deploytestsubmodules after_deploytestsubmodules
+
+deploytestsubmodules: before_build build_deploytestsubmodules after_build
+
+out_deploytestsubmodules: before_deploytestsubmodules $(OBJ_DEPLOYTESTSUBMODULES) $(DEP_DEPLOYTESTSUBMODULES)
+	$(LD) $(LIBDIR_DEPLOYTESTSUBMODULES) -o $(OUT_DEPLOYTESTSUBMODULES) $(OBJ_DEPLOYTESTSUBMODULES)  $(LDFLAGS_DEPLOYTESTSUBMODULES) $(LIB_DEPLOYTESTSUBMODULES)
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/format_cache.o: format_cache.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c format_cache.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/format_cache.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/icon.o: icon.res
+	$(WINDRES) -i icon.res -J rc -o $(OBJDIR_DEPLOYTESTSUBMODULES)/icon.o -O coff $(INC_DEPLOYTESTSUBMODULES)
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/imgui_ui_components.o: imgui_ui_components.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c imgui_ui_components.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/imgui_ui_components.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/local_commands.o: local_commands.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c local_commands.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/local_commands.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/main.o: main.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c main.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/main.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/stacktrace.o: stacktrace.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c stacktrace.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/stacktrace.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/string_helpers.o: string_helpers.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c string_helpers.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/string_helpers.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/text_editor.o: text_editor.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c text_editor.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/text_editor.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/tokeniser.o: tokeniser.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c tokeniser.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/tokeniser.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/window_context.o: window_context.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c window_context.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/window_context.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/auto_handlers.o: auto_handlers.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c auto_handlers.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/auto_handlers.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/copy_handler.o: copy_handler.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c copy_handler.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/copy_handler.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/ImGuiColorTextEdit/TextEditor.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui-sfml/imgui-SFML.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui.o: deps/imgui/imgui.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/imgui/imgui.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/imgui/imgui_demo.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_demo.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_draw.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/serialise/serialise.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/serialise/serialise.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/editable_string.o: editable_string.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c editable_string.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/editable_string.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/font_cfg.o: font_cfg.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c font_cfg.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/font_cfg.o
+
+clean_deploytestsubmodules: 
+	rm -f $(OBJ_DEPLOYTESTSUBMODULES) $(OUT_DEPLOYTESTSUBMODULES)
+	rm -rf bin/Deploy
+	rm -rf $(OBJDIR_DEPLOYTESTSUBMODULES)
+	rm -rf $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/ImGuiColorTextEdit
+	rm -rf $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui-sfml
+	rm -rf $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui
+	rm -rf $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype
+	rm -rf $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/serialise
+
+before_releasesubmodules: 
+	git submodule foreach "(git checkout master; git pull)&"
+	test -d bin/Release || mkdir -p bin/Release
+	test -d $(OBJDIR_RELEASESUBMODULES) || mkdir -p $(OBJDIR_RELEASESUBMODULES)
+	test -d $(OBJDIR_RELEASESUBMODULES)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_RELEASESUBMODULES)/deps/ImGuiColorTextEdit
+	test -d $(OBJDIR_RELEASESUBMODULES)/deps/imgui-sfml || mkdir -p $(OBJDIR_RELEASESUBMODULES)/deps/imgui-sfml
+	test -d $(OBJDIR_RELEASESUBMODULES)/deps/imgui || mkdir -p $(OBJDIR_RELEASESUBMODULES)/deps/imgui
+	test -d $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype
+	test -d $(OBJDIR_RELEASESUBMODULES)/deps/serialise || mkdir -p $(OBJDIR_RELEASESUBMODULES)/deps/serialise
+
+after_releasesubmodules: 
+	build_test.bat
+
+build_releasesubmodules: before_releasesubmodules out_releasesubmodules after_releasesubmodules
+
+releasesubmodules: before_build build_releasesubmodules after_build
+
+out_releasesubmodules: before_releasesubmodules $(OBJ_RELEASESUBMODULES) $(DEP_RELEASESUBMODULES)
+	$(LD) $(LIBDIR_RELEASESUBMODULES) -o $(OUT_RELEASESUBMODULES) $(OBJ_RELEASESUBMODULES)  $(LDFLAGS_RELEASESUBMODULES) $(LIB_RELEASESUBMODULES)
+
+$(OBJDIR_RELEASESUBMODULES)/format_cache.o: format_cache.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c format_cache.cpp -o $(OBJDIR_RELEASESUBMODULES)/format_cache.o
+
+$(OBJDIR_RELEASESUBMODULES)/imgui_ui_components.o: imgui_ui_components.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c imgui_ui_components.cpp -o $(OBJDIR_RELEASESUBMODULES)/imgui_ui_components.o
+
+$(OBJDIR_RELEASESUBMODULES)/local_commands.o: local_commands.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c local_commands.cpp -o $(OBJDIR_RELEASESUBMODULES)/local_commands.o
+
+$(OBJDIR_RELEASESUBMODULES)/main.o: main.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c main.cpp -o $(OBJDIR_RELEASESUBMODULES)/main.o
+
+$(OBJDIR_RELEASESUBMODULES)/stacktrace.o: stacktrace.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c stacktrace.cpp -o $(OBJDIR_RELEASESUBMODULES)/stacktrace.o
+
+$(OBJDIR_RELEASESUBMODULES)/string_helpers.o: string_helpers.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c string_helpers.cpp -o $(OBJDIR_RELEASESUBMODULES)/string_helpers.o
+
+$(OBJDIR_RELEASESUBMODULES)/text_editor.o: text_editor.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c text_editor.cpp -o $(OBJDIR_RELEASESUBMODULES)/text_editor.o
+
+$(OBJDIR_RELEASESUBMODULES)/tokeniser.o: tokeniser.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c tokeniser.cpp -o $(OBJDIR_RELEASESUBMODULES)/tokeniser.o
+
+$(OBJDIR_RELEASESUBMODULES)/window_context.o: window_context.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c window_context.cpp -o $(OBJDIR_RELEASESUBMODULES)/window_context.o
+
+$(OBJDIR_RELEASESUBMODULES)/auto_handlers.o: auto_handlers.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c auto_handlers.cpp -o $(OBJDIR_RELEASESUBMODULES)/auto_handlers.o
+
+$(OBJDIR_RELEASESUBMODULES)/copy_handler.o: copy_handler.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c copy_handler.cpp -o $(OBJDIR_RELEASESUBMODULES)/copy_handler.o
+
+$(OBJDIR_RELEASESUBMODULES)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/ImGuiColorTextEdit/TextEditor.o
+
+$(OBJDIR_RELEASESUBMODULES)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/imgui-sfml/imgui-SFML.o
+
+$(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui.o: deps/imgui/imgui.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/imgui/imgui.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui.o
+
+$(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/imgui/imgui_demo.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_demo.o
+
+$(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_draw.o
+
+$(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o
+
+$(OBJDIR_RELEASESUBMODULES)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/serialise/serialise.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/serialise/serialise.o
+
+$(OBJDIR_RELEASESUBMODULES)/editable_string.o: editable_string.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c editable_string.cpp -o $(OBJDIR_RELEASESUBMODULES)/editable_string.o
+
+$(OBJDIR_RELEASESUBMODULES)/font_cfg.o: font_cfg.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c font_cfg.cpp -o $(OBJDIR_RELEASESUBMODULES)/font_cfg.o
+
+clean_releasesubmodules: 
+	rm -f $(OBJ_RELEASESUBMODULES) $(OUT_RELEASESUBMODULES)
+	rm -rf bin/Release
+	rm -rf $(OBJDIR_RELEASESUBMODULES)
+	rm -rf $(OBJDIR_RELEASESUBMODULES)/deps/ImGuiColorTextEdit
+	rm -rf $(OBJDIR_RELEASESUBMODULES)/deps/imgui-sfml
+	rm -rf $(OBJDIR_RELEASESUBMODULES)/deps/imgui
+	rm -rf $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype
+	rm -rf $(OBJDIR_RELEASESUBMODULES)/deps/serialise
+
+.PHONY: before_build after_build before_debug after_debug clean_debug before_release after_release clean_release before_profile after_profile clean_profile before_deploy after_deploy clean_deploy before_deployprofile after_deployprofile clean_deployprofile before_deploytosteam after_deploytosteam clean_deploytosteam before_linux after_linux clean_linux before_deploytestdebug after_deploytestdebug clean_deploytestdebug before_deploytest after_deploytest clean_deploytest before_deploytestsubmodules after_deploytestsubmodules clean_deploytestsubmodules before_releasesubmodules after_releasesubmodules clean_releasesubmodules
 
