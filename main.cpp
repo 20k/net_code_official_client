@@ -452,7 +452,7 @@ int main()
 
         steam_api_pump_events(csapi);
 
-        if(steam_api_overlay_is_open(csapi))
+        if(steam_api_overlay_is_open(csapi) || steam_api_overlay_needs_present(csapi))
         {
             active_frames = active_frames_restart;
         }
@@ -470,14 +470,15 @@ int main()
                 }
 
                 if(sd_has_front_read(shared))
-                {
                     break;
-                }
 
                 steam_api_pump_events(csapi);
 
-                if(steam_api_overlay_is_open(csapi))
+                if(steam_api_overlay_is_open(csapi) || steam_api_overlay_needs_present(csapi))
+                {
+                    active_frames = active_frames_restart;
                     break;
+                }
             }
         }
         else
