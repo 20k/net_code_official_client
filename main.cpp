@@ -21,8 +21,6 @@
 #include <libncclient/nc_util.hpp>
 #include <libncclient/nc_string_interop.hpp>
 #include <libncclient/c_steam_api.h>
-#include <steamworks_sdk_142/sdk/public/steam/steam_api.h>
-#include <steamworks_sdk_142/sdk/public/steam/isteamuser.h>
 
 #include <imgui/imgui.h>
 #include <imgui-sfml/imgui-SFML.h>
