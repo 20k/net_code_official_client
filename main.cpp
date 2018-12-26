@@ -21,6 +21,8 @@
 #include <libncclient/nc_util.hpp>
 #include <libncclient/nc_string_interop.hpp>
 #include <libncclient/c_steam_api.h>
+#include <steamworks_sdk_142/sdk/public/steam/steam_api.h>
+#include <steamworks_sdk_142/sdk/public/steam/isteamuser.h>
 
 #include <imgui/imgui.h>
 #include <imgui-sfml/imgui-SFML.h>
@@ -450,19 +452,25 @@ int main()
 
         bool skip_first_event = false;
 
-        steam_api_pump_events(csapi);
-
-        if(steam_api_overlay_is_open(csapi) || steam_api_overlay_needs_present(csapi))
+        if(steam_api_overlay_is_open(csapi))
         {
             active_frames = active_frames_restart;
         }
 
+        ///doesn't work properly for some reason
+        /*if(steam_api_overlay_needs_present(csapi))
+        {
+            active_frames = active_frames_restart;
+
+            printf("Reset present\n");
+        }*/
+
+        steam_api_pump_events(csapi);
+
         if(active_frames <= 0)
         {
-            for(int i=0; i < 100; i++)
+            for(int i=0; i < 5; i++)
             {
-                sf::sleep(sf::milliseconds(4));
-
                 if(window.pollEvent(event))
                 {
                     skip_first_event = true;
@@ -470,15 +478,20 @@ int main()
                 }
 
                 if(sd_has_front_read(shared))
+                {
                     break;
+                }
 
                 steam_api_pump_events(csapi);
 
-                if(steam_api_overlay_is_open(csapi) || steam_api_overlay_needs_present(csapi))
+                if(steam_api_overlay_is_open(csapi))
                 {
                     active_frames = active_frames_restart;
+
                     break;
                 }
+
+                sf::sleep(sf::milliseconds(4));
             }
         }
         else

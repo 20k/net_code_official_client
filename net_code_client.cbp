@@ -230,7 +230,6 @@
 			<Add option="-lwinmm" />
 			<Add option="-lgdi32" />
 			<Add library="deps/libncclient/libncclient.a" />
-			<Add library="deps/steamworks_sdk_142/sdk/redistributable_bin/win64/libsteam_api64.a" />
 			<Add directory="deps/SFML/lib" />
 		</Linker>
 		<ExtraCommands>
