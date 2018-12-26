@@ -476,7 +476,7 @@ int main()
                 loops = 40;
             }
 
-            for(int i=0; i < 5; i++)
+            for(int i=0; i < loops; i++)
             {
                 if(window.pollEvent(event))
                 {
