@@ -469,6 +469,13 @@ int main()
 
         if(active_frames <= 0)
         {
+            int loops = 5;
+
+            if(!steam_api_enabled(csapi))
+            {
+                loops = 40;
+            }
+
             for(int i=0; i < 5; i++)
             {
                 if(window.pollEvent(event))
