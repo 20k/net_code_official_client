@@ -127,10 +127,12 @@ void main()
     ///maybe investigate if its the blend mode giving me grief
     vec3 fin = post_mult + luminance_error * colour_to_use;
 
+    vec3 decomponsed_tex = fin / in_col;
+
     //gl_FragColor = vec4(fin, 1);
 
     vec4 output_0 = vec4(in_col4.xyz, 1);
-    vec4 output_1 = vec4(tex_col.xyz * in_col4.aaa, 1);
+    vec4 output_1 = vec4(decomponsed_tex.xyz * in_col4.aaa, 1);
 
     outputColor0 = output_0;
     outputColor1 = output_1;
