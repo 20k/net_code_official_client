@@ -93,6 +93,14 @@ vec4 srgb_to_linear(vec4 i)
     return i;
 }
 
+float safe_div(float a, float b)
+{
+    if(abs(b) < 0.00001f)
+        return 0;
+
+    return a / b;
+}
+
 void main()
 {
     vec4 in_col4 = gl_Color;
@@ -103,7 +111,9 @@ void main()
     {
         //gl_FragColor = vec4(in_col * tex_col, in_col4.a);
 
-        outputColor0 = vec4(in_col * tex_col, in_col4.a);
+        vec4 res = vec4(in_col * tex_col, in_col4.a);
+
+        outputColor0 = res;
         return;
     }
 
@@ -127,12 +137,16 @@ void main()
     ///maybe investigate if its the blend mode giving me grief
     vec3 fin = post_mult + luminance_error * colour_to_use;
 
-    vec3 decomponsed_tex = fin / in_col;
+    vec3 decomposed_tex;
+
+    decomposed_tex.x = safe_div(fin.x, in_col.x);
+    decomposed_tex.y = safe_div(fin.y, in_col.y);
+    decomposed_tex.z = safe_div(fin.z, in_col.z);
 
     //gl_FragColor = vec4(fin, 1);
 
     vec4 output_0 = vec4(in_col4.xyz, 1);
-    vec4 output_1 = vec4(decomponsed_tex.xyz * in_col4.aaa, 1);
+    vec4 output_1 = vec4(decomposed_tex.xyz * in_col4.aaa, 1);
 
     outputColor0 = output_0;
     outputColor1 = output_1;
