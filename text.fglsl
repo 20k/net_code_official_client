@@ -1,5 +1,11 @@
+#version 330
+
 uniform sampler2D texture;
 uniform int check_use;
+
+layout(location = 0, index = 0) out vec4 outputColor0;
+layout(location = 0, index = 1) out vec4 outputColor1;
+
 
 float luminance(vec3 val)
 {
@@ -47,15 +53,57 @@ vec3 yuv_to_rgb(vec3 val)
     return vec3(R, G, B);
 }
 
+float linear_to_srgb_s(float C_lin)
+{
+    if (C_lin <= 0.0031308)
+        return C_lin * 12.92;
+    else
+        return 1.055 * pow(C_lin, 1.0 / 2.4) - 0.055;
+}
+
+float srgb_to_linear_s(float C_srgb)
+{
+    if(C_srgb <= 0.04045)
+    {
+        return C_srgb / 12.92;
+    }
+    else
+    {
+        return pow((C_srgb + 0.055) / 1.055, 2.4);
+    }
+}
+
+vec4 linear_to_srgb(vec4 i)
+{
+    i.x = linear_to_srgb_s(i.x);
+    i.y = linear_to_srgb_s(i.y);
+    i.z = linear_to_srgb_s(i.z);
+    i.w = linear_to_srgb_s(i.w);
+
+    return i;
+}
+
+vec4 srgb_to_linear(vec4 i)
+{
+    i.x = srgb_to_linear_s(i.x);
+    i.y = srgb_to_linear_s(i.y);
+    i.z = srgb_to_linear_s(i.z);
+    i.w = srgb_to_linear_s(i.w);
+
+    return i;
+}
+
 void main()
 {
     vec4 in_col4 = gl_Color;
     vec3 in_col = in_col4.xyz;
-    vec3 tex_col = texture2D(texture, gl_TexCoord[0].xy);
+    vec3 tex_col = texture2D(texture, gl_TexCoord[0].xy).xyz;
 
     if(check_use == 0)
     {
-        gl_FragColor = vec4(in_col * tex_col, in_col4.a);
+        //gl_FragColor = vec4(in_col * tex_col, in_col4.a);
+
+        outputColor0 = vec4(in_col * tex_col, in_col4.a);
         return;
     }
 
@@ -79,5 +127,11 @@ void main()
     ///maybe investigate if its the blend mode giving me grief
     vec3 fin = post_mult + luminance_error * colour_to_use;
 
-    gl_FragColor = vec4(fin, 1);
+    //gl_FragColor = vec4(fin, 1);
+
+    vec4 output_0 = vec4(in_col4.xyz, 1);
+    vec4 output_1 = vec4(tex_col.xyz * in_col4.aaa, 1);
+
+    outputColor0 = output_0;
+    outputColor1 = output_1;
 }
