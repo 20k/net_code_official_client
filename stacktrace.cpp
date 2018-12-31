@@ -1,12 +1,13 @@
 #include "stacktrace.hpp"
 
 #include <signal.h>     // ::signal, ::raise
-#include <boost/stacktrace.hpp>
-#include <boost/filesystem.hpp>
+//#include <boost/stacktrace.hpp>
+//#include <boost/filesystem.hpp>
 #include <iostream>
 
 void stack_on_start()
 {
+    #if 0
     ::signal(SIGSEGV, &signal_handler);
     ::signal(SIGABRT, &signal_handler);
 
@@ -26,11 +27,12 @@ void stack_on_start()
 
         rename("./backtrace.dump", "./backtrace_1.dump");
     }
+    #endif // 0
 }
 
 void signal_handler(int signum)
 {
     ::signal(signum, SIG_DFL);
-    boost::stacktrace::safe_dump_to("./backtrace.dump");
+    //boost::stacktrace::safe_dump_to("./backtrace.dump");
     ::raise(SIGABRT);
 }

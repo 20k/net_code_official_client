@@ -222,11 +222,8 @@
 			<Add option="-lflac" />
 			<Add option="-lopenal32" />
 			<Add option="-logg" />
-			<Add option="-lboost_system-mt" />
 			<Add option="-lole32" />
-			<Add option="-lboost_filesystem-mt" />
 			<Add option="-ldbgeng" />
-			<Add option="-lboost_stacktrace_windbg-mt" />
 			<Add option="-lwinmm" />
 			<Add option="-lgdi32" />
 			<Add library="deps/libncclient/libncclient.a" />
