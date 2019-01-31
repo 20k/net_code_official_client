@@ -1002,7 +1002,7 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
     focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
     hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
 
-    ImGui::BeginChild("left_selector", ImVec2(80, 0));
+    //ImGui::BeginChild("left_selector", ImVec2(80, 0));
 
     int max_width = 60;
 
@@ -1020,6 +1020,8 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
 
     max_width += ImGui::GetStyle().ItemInnerSpacing.x * 2;
 
+    ImGui::BeginChild("left_selector", ImVec2(max_width, 0));
+
     for(auto& i : side_buttons)
     {
         std::string name = i;
@@ -1032,7 +1034,11 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
             selected = i;
         }
 
-        ImGuiX::OutlineHoverTextAuto("TestButton", {1, 1, 1});
+        int width = ImGui::CalcTextSize(name.c_str()).x;
+
+        ImGui::SetCursorPosX(1);
+
+        ImGuiX::OutlineHoverTextAuto(name.c_str(), {1, 1, 1}, true, {(max_width - width) - 3, 0});
     }
 
     ImGui::EndChild();
