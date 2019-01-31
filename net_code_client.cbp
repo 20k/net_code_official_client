@@ -266,6 +266,8 @@
 		</Unit>
 		<Unit filename="imgui_ui_components.cpp" />
 		<Unit filename="imgui_ui_components.hpp" />
+		<Unit filename="imguix.cpp" />
+		<Unit filename="imguix.hpp" />
 		<Unit filename="local_commands.cpp" />
 		<Unit filename="local_commands.hpp" />
 		<Unit filename="main.cpp" />

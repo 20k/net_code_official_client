@@ -11,6 +11,7 @@
 #include <gl/glext.h>
 #include "window_context.hpp"
 #include "local_commands.hpp"
+#include "imguix.hpp"
 
 namespace ImGuiX
 {
@@ -1030,6 +1031,8 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
         {
             selected = i;
         }
+
+        ImGuiX::OutlineHoverTextAuto("TestButton", {1, 1, 1});
     }
 
     ImGui::EndChild();
