@@ -4,6 +4,8 @@
 #include <imgui/imgui.h>
 #include <string>
 #include <vec/vec.hpp>
+#include "imgui_internal.h"
+#include <map>
 
 namespace ImGuiX
 {
@@ -143,6 +145,34 @@ namespace ImGuiX
     void Text(const std::string& str)
     {
         ImGui::Text(str.c_str());
+    }
+
+    inline
+    void ClickText(const std::string& label, vec3f col, vec2f dim_extra)
+    {
+        ImGuiWindow* window = ImGui::GetCurrentWindow();
+
+        const ImGuiID id = window->GetID(label.c_str());
+
+        static std::map<ImGuiID, bool> clicked_state;
+
+        //ImGuiX::SolidToggleTextButton(fin, {1, 1, 1}, {1, 1, 1}, false);
+        //ImGuiX::OutlineHoverTextAuto(fin.c_str(), {1, 1, 1}, true, {(max_width - width) - 3, 0});
+
+        if(clicked_state[id])
+            ImGuiX::OutlineHoverText(label, col, col, true, dim_extra, 1, true, {1, 1, 1}, 1);
+        else
+            ImGuiX::OutlineHoverText(label, col, col, true, dim_extra, 1, false, (vec3f){1, 1, 1}/4.f, 1);
+
+        if(ImGui::IsItemClicked(0))
+        {
+            clicked_state[id] = true;
+        }
+
+        if(clicked_state[id] && !ImGui::IsMouseDown(0))
+        {
+            clicked_state[id] = false;
+        }
     }
 }
 

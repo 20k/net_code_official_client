@@ -1040,7 +1040,9 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
 
         ImGui::SetCursorPosX(1);
 
-        ImGuiX::OutlineHoverTextAuto(fin.c_str(), {1, 1, 1}, true, {(max_width - width) - 3, 0});
+        vec2f dim_extra = {(max_width - width) - 3, 0};
+
+        ImGuiX::ClickText(fin, {1,1,1}, dim_extra);
     }
 
     ImGui::EndChild();
