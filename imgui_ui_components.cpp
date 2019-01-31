@@ -1013,7 +1013,7 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
         if(threads[i].dirty && !show_chat_in_main_window)
             name += "*";
 
-        int width = ImGui::CalcTextSize(name.c_str()).x;
+        int width = ImGui::CalcTextSize(("(" + name + ")").c_str()).x;
 
         max_width = std::max(width, max_width);
     }
@@ -1034,11 +1034,13 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
             selected = i;
         }
 
-        int width = ImGui::CalcTextSize(name.c_str()).x;
+        std::string fin = "(" + name + ")";
+
+        int width = ImGui::CalcTextSize(fin.c_str()).x;
 
         ImGui::SetCursorPosX(1);
 
-        ImGuiX::OutlineHoverTextAuto(name.c_str(), {1, 1, 1}, true, {(max_width - width) - 3, 0});
+        ImGuiX::OutlineHoverTextAuto(fin.c_str(), {1, 1, 1}, true, {(max_width - width) - 3, 0});
     }
 
     ImGui::EndChild();
