@@ -174,13 +174,13 @@ std::string ImGuiX::SurroundText(const std::string& in, int idx, int max_idx, in
 {
     std::string ret = "";
 
-    std::string top = "/";
-    std::string bottom = "\\";
-
     int len = in.size();
 
     if(max_len > len)
         len = max_len;
+
+    /*std::string top = "/";
+    std::string bottom = "\\";
 
     for(int i=0; i < len; i++)
     {
@@ -189,7 +189,7 @@ std::string ImGuiX::SurroundText(const std::string& in, int idx, int max_idx, in
     }
 
     top += "\\";
-    bottom += "/";
+    bottom += "/";*/
 
     //std::string middle = "|" + in + "|";
 
@@ -219,7 +219,7 @@ std::string ImGuiX::SurroundText(const std::string& in, int idx, int max_idx, in
 
     std::string full = "";
 
-    if(idx == 0)
+    /*if(idx == 0)
         full += top + "\n";
 
     full += middle + "\n";
@@ -227,7 +227,9 @@ std::string ImGuiX::SurroundText(const std::string& in, int idx, int max_idx, in
     if(idx == max_idx - 1 || max_idx == 0)
         full += bottom + "\n";
 
-    return full;
+    return full;*/
+
+    return middle + "\n";
 }
 
 int ImGuiX::ClickableList(const std::vector<std::string>& in)
@@ -265,6 +267,24 @@ int ImGuiX::ClickableList(const std::vector<std::string>& in)
 
     int ridx = -1;
 
+    std::string top = "/";
+    std::string bottom = "\\";
+
+    for(int i=0; i < longest_name; i++)
+    {
+        top += "=";
+        bottom += "=";
+    }
+
+    top += "\\";
+    bottom += "/";
+
+    int fudge_x = 3;
+
+    ImGui::SetCursorPosX((max_width - ImGui::CalcTextSize(top.c_str()).x) - fudge_x);
+
+    ImGuiX::Text(top);
+
     for(auto& i : in)
     {
         std::string fin = ImGuiX::SurroundText(i, button_count, in.size(), longest_name);
@@ -273,7 +293,7 @@ int ImGuiX::ClickableList(const std::vector<std::string>& in)
 
         ImGui::SetCursorPosX(1);
 
-        vec2f dim_extra = {(max_width - width) - 3, 0};
+        vec2f dim_extra = {(max_width - width) - fudge_x, 0};
 
         if(ImGuiX::ClickText(fin, {1,1,1}, dim_extra))
         {
@@ -282,6 +302,10 @@ int ImGuiX::ClickableList(const std::vector<std::string>& in)
 
         button_count++;
     }
+
+    ImGui::SetCursorPosX((max_width - ImGui::CalcTextSize(bottom.c_str()).x) - fudge_x);
+
+    ImGuiX::Text(bottom);
 
     return ridx;
 }
