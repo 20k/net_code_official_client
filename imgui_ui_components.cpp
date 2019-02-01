@@ -983,9 +983,9 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
     ImGui::SetNextWindowSize(ImVec2(dim.x(), dim.y()), ImGuiCond_FirstUseEver);
     //ImGui::SetNextWindowPos(ImVec2(win.getSize().x - dim.x() * 1.08f, ImGuiCond_FirstUseEver));
 
-    std::string chat_str = selected + "###chat_window";
+    std::string chat_str = selected;
 
-    ImGuiX::BeginCustomEmbedded(chat_str);
+    ImGuiX::BeginCustomEmbedded(chat_str, "###chat_window");
 
     if(ImGui::BeginMenuBar())
     {
@@ -998,6 +998,8 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
 
         ImGui::EndMenuBar();
     }
+
+    ImGuiX::BeginCustomWrapper();
 
     focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
     hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);

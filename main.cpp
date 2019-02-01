@@ -211,10 +211,10 @@ int main()
     style.FrameRounding = 0;
     style.WindowRounding = 0;
     style.ChildRounding = 0;
-    /*style.ChildBorderSize = 0;
+    style.ChildBorderSize = 0;
     style.FrameBorderSize = 0;
     //style.PopupBorderSize = 0;
-    style.WindowBorderSize = 0;*/
+    style.WindowBorderSize = 0;
 
     /*ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 13.f);

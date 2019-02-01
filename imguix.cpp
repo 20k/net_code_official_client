@@ -319,17 +319,41 @@ int ImGuiX::ClickableList(const std::vector<std::string>& in)
     return ridx;
 }
 
-void ImGuiX::BeginCustomEmbedded(const std::string& title)
+void ImGuiX::BeginCustomEmbedded(const std::string& title, const std::string& identifier)
 {
     ImGui::PushStyleColor(ImGuiCol_TitleBg, ImGuiX::GetBgCol());
     ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImGuiX::GetBgCol());
     ImGui::PushStyleColor(ImGuiCol_TitleBgCollapsed, ImGuiX::GetBgCol());
 
-    ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_ResizeFromAnySide | ImGuiWindowFlags_MenuBar);
+    static vec2f last_size;
+
+    int pad_num = last_size.x() / ImGui::CalcTextSize(" ").x;
+
+    std::string to_show = title;
+
+    /*for(int i=0; i < pad_num; i++)
+    {
+        to_show += "=";
+    }*/
+
+    to_show += identifier;
+
+    ImGui::Begin(to_show.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_ResizeFromAnySide | ImGuiWindowFlags_MenuBar);
+
+    last_size = {ImGui::GetWindowWidth(), ImGui::GetWindowHeight()};
+}
+
+void ImGuiX::BeginCustomWrapper()
+{
+    ImGui::BeginChild("customchild");
+
+    ImGui::Text("============================================");
 }
 
 void ImGuiX::EndCustomEmbedded()
 {
+    ImGui::EndChild();
+
     ImGui::End();
 
     ImGui::PopStyleColor(3);
