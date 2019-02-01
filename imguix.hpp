@@ -25,6 +25,10 @@ namespace ImGuiX
     void Text(const std::string& str);
 
     bool ClickText(const std::string& label, vec3f col, vec2f dim_extra);
+
+    std::string SurroundText(const std::string& in, int idx, int max_idx, int max_len);
+
+    int ClickableList(const std::vector<std::string>& in);
 }
 
 #endif // IMGUIX_HPP_INCLUDED

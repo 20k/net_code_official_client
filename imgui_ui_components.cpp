@@ -1004,46 +1004,23 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
 
     //ImGui::BeginChild("left_selector", ImVec2(80, 0));
 
-    int max_width = 60;
+    std::vector<std::string> to_render = side_buttons;
 
-    for(auto& i : side_buttons)
+    for(int i=0; i < (int)side_buttons.size(); i++)
     {
-        std::string name = i;
-
-        if(threads[i].dirty && !show_chat_in_main_window)
-            name += "*";
-
-        int width = ImGui::CalcTextSize(("(" + name + ")").c_str()).x;
-
-        max_width = std::max(width, max_width);
-    }
-
-    max_width += ImGui::GetStyle().ItemInnerSpacing.x * 2;
-
-    ImGui::BeginChild("left_selector", ImVec2(max_width, 0));
-
-    for(auto& i : side_buttons)
-    {
-        std::string name = i;
-
-        if(threads[i].dirty && !show_chat_in_main_window)
-            name += "*";
-
-        if(ImGui::Button(name.c_str(), ImVec2(max_width, 0)))
+        if(threads[side_buttons[i]].dirty && !show_chat_in_main_window)
         {
-            selected = i;
+            to_render[i] += "*";
         }
-
-        std::string fin = "(" + name + ")";
-
-        int width = ImGui::CalcTextSize(fin.c_str()).x;
-
-        ImGui::SetCursorPosX(1);
-
-        vec2f dim_extra = {(max_width - width) - 3, 0};
-
-        ImGuiX::ClickText(fin, {1,1,1}, dim_extra);
     }
+
+    int idx = ImGuiX::ClickableList(to_render);
+
+    if(idx != -1)
+    {
+        selected = side_buttons[idx];
+    }
+
 
     ImGui::EndChild();
 

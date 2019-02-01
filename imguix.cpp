@@ -169,3 +169,119 @@ bool ImGuiX::ClickText(const std::string& label, vec3f col, vec2f dim_extra)
 
     return clicked;
 }
+
+std::string ImGuiX::SurroundText(const std::string& in, int idx, int max_idx, int max_len)
+{
+    std::string ret = "";
+
+    std::string top = "/";
+    std::string bottom = "\\";
+
+    int len = in.size();
+
+    if(max_len > len)
+        len = max_len;
+
+    for(int i=0; i < len; i++)
+    {
+        top += "=";
+        bottom += "=";
+    }
+
+    top += "\\";
+    bottom += "/";
+
+    //std::string middle = "|" + in + "|";
+
+    std::string middle = in;
+
+    int diff = (max_len - (int)in.size());
+
+    int midx = diff / 2;
+
+    if((diff % 2) == 1)
+        midx++;
+
+    ///uncomment this to centre adjust
+    midx = 0;
+
+    for(int i=0; i < midx; i++)
+    {
+        middle = " " + middle;
+    }
+
+    for(int i=middle.size(); i < len; i++)
+    {
+        middle = middle + " ";
+    }
+
+    middle = "|" + middle + "|";
+
+    std::string full = "";
+
+    if(idx == 0)
+        full += top + "\n";
+
+    full += middle + "\n";
+
+    if(idx == max_idx - 1 || max_idx == 0)
+        full += bottom + "\n";
+
+    return full;
+}
+
+int ImGuiX::ClickableList(const std::vector<std::string>& in)
+{
+    int longest_name = 0;
+
+    for(auto& i : in)
+    {
+        if((int)i.size() > longest_name)
+        {
+            longest_name = i.size();
+        }
+    }
+
+    int max_width = 60;
+
+    int size_idx = 0;
+
+    for(auto& i : in)
+    {
+        std::string fin = ImGuiX::SurroundText(i, size_idx, in.size(), longest_name);
+
+        int width = ImGui::CalcTextSize(fin.c_str()).x;
+
+        max_width = std::max(width, max_width);
+
+        size_idx++;
+    }
+
+    max_width += ImGui::GetStyle().ItemInnerSpacing.x * 2;
+
+    ImGui::BeginChild("left_selector", ImVec2(max_width, 0));
+
+    int button_count = 0;
+
+    int ridx = -1;
+
+    for(auto& i : in)
+    {
+        std::string fin = ImGuiX::SurroundText(i, button_count, in.size(), longest_name);
+
+        int width = ImGui::CalcTextSize(fin.c_str()).x;
+
+        ImGui::SetCursorPosX(1);
+
+        vec2f dim_extra = {(max_width - width) - 3, 0};
+
+        if(ImGuiX::ClickText(fin, {1,1,1}, dim_extra))
+        {
+            ridx = button_count;
+        }
+
+        button_count++;
+    }
+
+    return ridx;
+}
