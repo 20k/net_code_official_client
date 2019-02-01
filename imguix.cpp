@@ -2,6 +2,13 @@
 #include "imgui_internal.h"
 #include <map>
 
+ImVec4 ImGuiX::GetBgCol()
+{
+    vec3f bg_col = {30, 30, 30};
+
+    return ImVec4(bg_col.x()/255.f, bg_col.y()/255.f, bg_col.z()/255.f, 255/255.f);
+}
+
 ImVec4 ImGuiX::GetStyleCol(ImGuiCol name)
 {
     auto res = ImGui::GetColorU32(name, 1.f);
@@ -307,5 +314,23 @@ int ImGuiX::ClickableList(const std::vector<std::string>& in)
 
     ImGuiX::Text(bottom);
 
+    ImGui::EndChild();
+
     return ridx;
+}
+
+void ImGuiX::BeginCustomEmbedded(const std::string& title)
+{
+    ImGui::PushStyleColor(ImGuiCol_TitleBg, ImGuiX::GetBgCol());
+    ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImGuiX::GetBgCol());
+    ImGui::PushStyleColor(ImGuiCol_TitleBgCollapsed, ImGuiX::GetBgCol());
+
+    ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_ResizeFromAnySide | ImGuiWindowFlags_MenuBar);
+}
+
+void ImGuiX::EndCustomEmbedded()
+{
+    ImGui::End();
+
+    ImGui::PopStyleColor(3);
 }

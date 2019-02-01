@@ -985,7 +985,7 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
 
     std::string chat_str = selected + "###chat_window";
 
-    ImGui::Begin(chat_str.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_ResizeFromAnySide | ImGuiWindowFlags_MenuBar);
+    ImGuiX::BeginCustomEmbedded(chat_str);
 
     if(ImGui::BeginMenuBar())
     {
@@ -1021,9 +1021,6 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
         selected = side_buttons[idx];
     }
 
-
-    ImGui::EndChild();
-
     ImGui::SameLine(0, 0);
 
     if(refocus)
@@ -1031,7 +1028,7 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
 
     bool child_focused = render_handle_imgui(font_select, scroll_hack, command.command, command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this, 80);
 
-    ImGui::End();
+    ImGuiX::EndCustomEmbedded();
 
     if(focused && child_focused)
         handle->process_formatted(thread.cache.out);

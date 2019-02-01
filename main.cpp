@@ -33,6 +33,7 @@
 #include "font_cfg.hpp"
 #include <iomanip>
 #include "window_context.hpp"
+#include "imguix.hpp"
 
 bool is_focused(bool in_focus)
 {
@@ -203,9 +204,7 @@ int main()
 
     ImGui::SetStyleSrgb(window_ctx.is_srgb);
 
-    vec3f bg_col = {30, 30, 30};
-
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(bg_col.x()/255.f, bg_col.y()/255.f, bg_col.z()/255.f, 255/255.f));
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImGuiX::GetBgCol());
 
     ImGuiStyle& style = ImGui::GetStyle();
 
