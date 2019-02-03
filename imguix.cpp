@@ -351,9 +351,6 @@ void ImGuiX::BeginCustomWrapper()
     ImGui::BeginChild("customchild");
 
     int width = ImGui::GetWindowWidth();
-    //int height = ImGui::GetWindowHeight();
-    //int height = ImGui::GetContentRegionAvail().y;
-
 
     int wnum = width / char_inf::cwidth;
 
@@ -370,10 +367,30 @@ void ImGuiX::BeginCustomWrapper()
 
     ImVec2 cursor = ImGui::GetCursorPos();
 
-    while(true)
+    int cnt = 0;
+
+    for(cnt = 0; cnt < 100000; cnt++)
     {
         if(ImGui::GetCursorPosY() + char_inf::cheight >= ImGui::GetWindowHeight())
             break;
+
+        ImGui::Text("|");
+
+        /*ImVec2 backup_pos = ImGui::GetCursorPos();
+
+        ImGui::SetCursorPosX(vertical_cursor.x + width);
+        ImGui::SetCursorPosY(vertical_cursor.y);
+
+        ImGui::Text("|");
+
+        ImGui::SetCursorPos(backup_pos);*/
+    }
+
+    ImGui::SetCursorPos(cursor);
+
+    for(int i=0; i < cnt; i++)
+    {
+        ImGui::SetCursorPosX(cursor.x + width - (int)(ImGui::CalcTextSize(" ").x));
 
         ImGui::Text("|");
     }
