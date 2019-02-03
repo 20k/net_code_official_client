@@ -1,6 +1,7 @@
 #include "imguix.hpp"
 #include "imgui_internal.h"
 #include <map>
+#include "string_helpers.hpp"
 
 ImVec4 ImGuiX::GetBgCol()
 {
@@ -345,9 +346,44 @@ void ImGuiX::BeginCustomEmbedded(const std::string& title, const std::string& id
 
 void ImGuiX::BeginCustomWrapper()
 {
+    ImVec2 spos = ImGui::GetWindowPos();
+
     ImGui::BeginChild("customchild");
 
-    ImGui::Text("============================================");
+    int width = ImGui::GetWindowWidth();
+    //int height = ImGui::GetWindowHeight();
+    //int height = ImGui::GetContentRegionAvail().y;
+
+
+    int wnum = width / char_inf::cwidth;
+
+    wnum -= 1;
+
+    std::string str = "";
+
+    for(int i=0; i < wnum; i++)
+    {
+        str += "=";
+    }
+
+    ImGui::Text(str.c_str());
+
+    ImVec2 cursor = ImGui::GetCursorPos();
+
+    while(true)
+    {
+        if(ImGui::GetCursorPosY() + char_inf::cheight >= ImGui::GetWindowHeight())
+            break;
+
+        ImGui::Text("|");
+    }
+
+    cursor.x += ImGui::CalcTextSize(" ").x;
+
+    ImGui::SetCursorPos(cursor);
+
+
+    //ImGui::Text("============================================");
 }
 
 void ImGuiX::EndCustomEmbedded()
