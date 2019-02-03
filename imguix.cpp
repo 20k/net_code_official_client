@@ -157,10 +157,7 @@ bool ImGuiX::ClickText(const std::string& label, vec3f col, vec2f dim_extra)
     if(clicked_state[id])
         ImGuiX::OutlineHoverText(label, col, col, true, dim_extra, 1, true, {1, 1, 1}, 1);
     else
-        ImGuiX::OutlineHoverText(label, col, col, true, dim_extra, 1, false, (vec3f)
-    {
-        1, 1, 1
-    }/4.f, 1);
+        ImGuiX::OutlineHoverText(label, col, col, true, dim_extra, 1, false, (vec3f){1, 1, 1}/4.f, 1);
 
     bool clicked = false;
 
@@ -289,9 +286,13 @@ int ImGuiX::ClickableList(const std::vector<std::string>& in)
 
     int fudge_x = 3;
 
-    ImGui::SetCursorPosX((max_width - ImGui::CalcTextSize(top.c_str()).x) - fudge_x);
+    /*ImGui::SetCursorPosX((max_width - ImGui::CalcTextSize(top.c_str()).x) - fudge_x);
 
-    ImGuiX::Text(top);
+    ImGuiX::Text(top);*/
+
+    ImGui::SetCursorPosX(1);
+
+    ImGuiX::OutlineHoverText(top, {1,1,1}, {1,1,1}, false, {(max_width - ImGui::CalcTextSize(top.c_str()).x) - fudge_x, 0}, 1, false);
 
     for(auto& i : in)
     {
@@ -311,9 +312,9 @@ int ImGuiX::ClickableList(const std::vector<std::string>& in)
         button_count++;
     }
 
-    ImGui::SetCursorPosX((max_width - ImGui::CalcTextSize(bottom.c_str()).x) - fudge_x);
+    ImGui::SetCursorPosX(1);
 
-    ImGuiX::Text(bottom);
+    ImGuiX::OutlineHoverText(bottom, {1,1,1}, {1,1,1}, false, {(max_width - ImGui::CalcTextSize(bottom.c_str()).x) - fudge_x, 0}, 1, false);
 
     ImGui::EndChild();
 
@@ -348,7 +349,9 @@ void ImGuiX::BeginCustomWrapper()
 {
     ImVec2 spos = ImGui::GetWindowPos();
 
-    ImGui::BeginChild("customchild");
+    ImGui::BeginChild("customchild", ImVec2(0,0), false, ImGuiWindowFlags_NoScrollbar);
+
+    ImVec2 start_pos = ImGui::GetCursorPos();
 
     int width = ImGui::GetWindowWidth();
 
@@ -371,7 +374,7 @@ void ImGuiX::BeginCustomWrapper()
 
     for(cnt = 0; cnt < 100000; cnt++)
     {
-        if(ImGui::GetCursorPosY() + char_inf::cheight >= ImGui::GetWindowHeight())
+        if(ImGui::GetCursorPosY() + char_inf::cheight*2 >= ImGui::GetWindowHeight())
             break;
 
         ImGui::Text("|");
@@ -386,6 +389,8 @@ void ImGuiX::BeginCustomWrapper()
         ImGui::SetCursorPos(backup_pos);*/
     }
 
+    ImVec2 bottom_pos = ImGui::GetCursorPos();
+
     ImGui::SetCursorPos(cursor);
 
     for(int i=0; i < cnt; i++)
@@ -397,8 +402,20 @@ void ImGuiX::BeginCustomWrapper()
 
     cursor.x += ImGui::CalcTextSize(" ").x;
 
-    ImGui::SetCursorPos(cursor);
+    //ImGui::SetCursorPos(cursor);
 
+    ImVec2 screen_bottom = ImVec2(start_pos.x, ImGui::GetWindowHeight());
+
+    screen_bottom.y -= (int)(char_inf::cheight/1.5);
+    screen_bottom.y -= 2;
+
+    //ImGui::SetCursorScreenPos(screen_bottom);
+
+    ImGui::SetCursorPos(screen_bottom);
+
+    ImGui::Text(str.c_str());
+
+    ImGui::SetCursorPos(cursor);
 
     //ImGui::Text("============================================");
 }
