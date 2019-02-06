@@ -987,19 +987,23 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
 
     ImGuiX::BeginCustomEmbedded(chat_str, "###chat_window");
 
+    #if 0
     if(ImGui::BeginMenuBar())
     {
-        if(ImGui::BeginMenu("Settings"))
+        ImGuiX::Text(chat_str);
+
+        /*if(ImGui::BeginMenu("Settings"))
         {
             ImGui::Checkbox("Show in main window", &show_chat_in_main_window);
 
             ImGui::EndMenu();
-        }
+        }*/
 
         ImGui::EndMenuBar();
     }
+    #endif // 0
 
-    ImGuiX::BeginCustomWrapper();
+    ImGuiX::BeginCustomWrapper(chat_str);
 
     focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
     hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);

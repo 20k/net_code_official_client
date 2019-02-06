@@ -33,7 +33,7 @@ namespace ImGuiX
     int ClickableList(const std::vector<std::string>& in);
 
     void BeginCustomEmbedded(const std::string& title, const std::string& identifier);
-    void BeginCustomWrapper();
+    void BeginCustomWrapper(const std::string& title);
     void EndCustomEmbedded();
 }
 

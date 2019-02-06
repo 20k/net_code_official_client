@@ -340,13 +340,39 @@ void ImGuiX::BeginCustomEmbedded(const std::string& title, const std::string& id
 
     to_show += identifier;
 
-    ImGui::Begin(to_show.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_ResizeFromAnySide | ImGuiWindowFlags_MenuBar);
+    //int width = ImGui::GetWindowWidth();
+
+    int width = last_size.x();
+
+    int wnum = width / char_inf::cwidth;
+
+    wnum -= 1;
+
+    std::string base_str = "";
+
+    for(int i=0; i < wnum; i++)
+    {
+        base_str += "=";
+    }
+
+    std::string title_str = base_str;
+
+    for(int i=0; i < (int)title.size() && i < (int)title_str.size(); i++)
+    {
+        title_str[i] = title[i];
+    }
+
+    title_str += identifier;
+
+    ImGui::Begin(title_str.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_ResizeFromAnySide);
 
     last_size = {ImGui::GetWindowWidth(), ImGui::GetWindowHeight()};
 }
 
-void ImGuiX::BeginCustomWrapper()
+void ImGuiX::BeginCustomWrapper(const std::string& title)
 {
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+
     ImVec2 spos = ImGui::GetWindowPos();
 
     ImGui::BeginChild("customchild", ImVec2(0,0), false, ImGuiWindowFlags_NoScrollbar);
@@ -359,14 +385,12 @@ void ImGuiX::BeginCustomWrapper()
 
     wnum -= 1;
 
-    std::string str = "";
+    std::string base_str = "";
 
     for(int i=0; i < wnum; i++)
     {
-        str += "=";
+        base_str += "=";
     }
-
-    ImGui::Text(str.c_str());
 
     ImVec2 cursor = ImGui::GetCursorPos();
 
@@ -413,7 +437,7 @@ void ImGuiX::BeginCustomWrapper()
 
     ImGui::SetCursorPos(screen_bottom);
 
-    ImGui::Text(str.c_str());
+    ImGui::Text(base_str.c_str());
 
     ImGui::SetCursorPos(cursor);
 
