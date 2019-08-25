@@ -11,12 +11,13 @@ do
   pkg=`pacman -Qo $dll | sed 's/.* is owned by //' | tr ' ' '-'`
   pkglist="$pkglist $pkg"
 done
-printf "$pkglist out"
 # remove duplicates
 pkglist=`echo $pkglist | tr ' ' '\n' | sort | uniq`
 printf "$pkglist\n"
 
 mkdir -p "$2"
+
+MWD=$PWD/$2
 
 for pkg in $pkglist
 do
@@ -24,9 +25,9 @@ do
   cd $tmp
   printf "ooo $pkg\n"
   tar -xf /c/msys64/var/cache/pacman/pkg/$pkg-any.pkg.tar.xz
-  # more fine-grained control is possible here
-  cp -r $PWD/mingw64/bin/*.dll $2
-  cp -r $PWD/mingw64/share/*.dll $2
+  # more fine-grained control is possible here  
+  cp -r $PWD/mingw64/bin/*.dll $MWD
+  cp -r $PWD/mingw64/share/*.dll $MWD
   cd ..
   rm -r $tmp
 done
