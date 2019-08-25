@@ -11,36 +11,6 @@
 #include <tinydir/tinydir.h>
 #include "window_context.hpp"
 
-void update_font_texture_safe()
-{
-    /*sf::Texture& texture = get_font_atlas();
-
-    ImGuiIO& io = ImGui::GetIO();
-    unsigned char* pixels;
-    int width, height;
-
-    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-
-    std::cout << "fwidth " << width << " fheight " << height << std::endl;
-
-    sf::Image bad_pixels;
-
-    bad_pixels = texture.copyToImage();
-
-    const sf::Uint8* bad_pixels_ptr = bad_pixels.getPixelsPtr();
-
-    for(int i=0; i < 100; i++)
-    {
-        std::cout << "f1 " << (int)bad_pixels_ptr[i] << " f2 " << (int)pixels[i] << std::endl;
-    }
-
-
-    //texture.create(width, height);
-    //texture.update(pixels);
-
-    io.Fonts->TexID = reinterpret_cast<void*>(texture.getNativeHandle());*/
-}
-
 font_selector::font_selector()
 {
     fonts_flags = ImGuiFreeType::ForceAutoHint;
@@ -159,17 +129,29 @@ bool font_selector::update_rebuild(sf::RenderWindow& win, float editor_font_size
         //io.Fonts->Fonts[n]->ConfigData->RasterizerFlags = (BuildMode == FontBuildMode_FreeType) ? fonts_flags : 0x00;
     }
 
+    ImFontAtlas* atlas = ImGui::SFML::GetFontAtlas();
 
-    ImGuiFreeType::BuildFontAtlas(font_atlas, io.Fonts, fonts_flags, subpixel_flags);
+    ImGuiFreeType::BuildFontAtlas(atlas, fonts_flags, subpixel_flags);
 
     wants_rebuild = false;
-    update_font_texture_safe();
+
+    auto write_data =  [](unsigned char* data, void* tex_id, int width, int height)
+    {
+        sf::Texture* tex = (sf::Texture*)tex_id;
+
+        tex->create(width, height);
+        tex->update((const unsigned char*)data);
+    };
+
+
+    ImGuiFreeType::BuildFontAtlas(atlas, ImGuiFreeType::ForceAutoHint, ImGuiFreeType::LEGACY);
+
+    write_data((unsigned char*)atlas->TexPixelsNewRGBA32, (void*)&font_atlas, atlas->TexWidth, atlas->TexHeight);
+
+    atlas->TexID = (void*)font_atlas.getNativeHandle();
 
     win.popGLStates();
 
-    //io.Fonts->TexID = reinterpret_cast<void*>(backing.getNativeHandle());
-
-    //ImGui::PushFont(io.Fonts->Fonts[0]);
     return true;
 }
 

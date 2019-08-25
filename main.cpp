@@ -202,7 +202,7 @@ int main()
     //ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0,0,0,0));
     //printf("%f %f %f %f\n", vec.x, vec.y, vec.z, vec.w);
 
-    ImGui::SetStyleSrgb(window_ctx.is_srgb);
+    ImGui::SetStyleLinearColor(window_ctx.is_srgb);
 
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImGuiX::GetBgCol());
 
@@ -866,7 +866,7 @@ int main()
         if(window_ctx.srgb_dirty)
         {
             text_editor.set_is_srgb(window_ctx.is_srgb);
-            ImGui::SetStyleSrgb(window_ctx.is_srgb);
+            ImGui::SetStyleLinearColor(window_ctx.is_srgb);
 
             active_frames = active_frames_restart;
         }

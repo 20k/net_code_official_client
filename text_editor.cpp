@@ -222,8 +222,8 @@ void editable_script::schedule_run_after_upload(text_editor_manager& text_editor
 
 editable_script::editable_script()
 {
-    TextEditor::LanguageDefinition lang = TextEditor::LanguageDefinition::JavaScript();
-    editor.SetLanguageDefinition(lang);
+    /*TextEditor::LanguageDefinition lang = TextEditor::LanguageDefinition::JavaScript();
+    editor.SetLanguageDefinition(lang);*/
 
     TextEditor::Palette palette = editor.GetPalette();
     palette[(int)TextEditor::PaletteIndex::Identifier] = 0xFFFFFFFF;
@@ -362,7 +362,7 @@ void text_editor_manager::render(c_shared_data data)
     if(!is_open)
         return;
 
-    ImGui::Begin("Text Editor", &is_open, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_ResizeFromAnySide);
+    ImGui::Begin("Text Editor", &is_open, ImGuiWindowFlags_MenuBar);
 
     //ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
 
@@ -778,14 +778,14 @@ void text_editor_manager::tick()
         editable.set_contents(editable.editor.GetText());
     }
 
-    for(auto& i : all_scripts)
+    /*for(auto& i : all_scripts)
     {
         for(auto& script : i.second.all_scripts)
         {
             if(script.editor.IsSrgb() != is_srgb)
                 script.editor.SetIsSrgb(is_srgb);
         }
-    }
+    }*/
 }
 
 void text_editor_manager::on_focus_window()
@@ -959,7 +959,7 @@ void text_editor_manager::update_auto_indent()
     {
         for(auto& k : i.second.all_scripts)
         {
-            k.editor.SetShouldAutoIndent(should_auto_indent);
+            //k.editor.SetShouldAutoIndent(should_auto_indent);
         }
     }
 }

@@ -373,7 +373,7 @@ void ImGuiX::BeginCustomEmbedded(const std::string& title, const std::string& id
 
     title_str += identifier;
 
-    ImGui::Begin(title_str.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_ResizeFromAnySide);
+    ImGui::Begin(title_str.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar);
 
     last_size = {ImGui::GetWindowWidth(), ImGui::GetWindowHeight()};
 }

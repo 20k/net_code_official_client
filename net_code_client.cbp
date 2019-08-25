@@ -247,6 +247,7 @@
 		<Unit filename="deps/imgui/imgui.h" />
 		<Unit filename="deps/imgui/imgui_demo.cpp" />
 		<Unit filename="deps/imgui/imgui_draw.cpp" />
+		<Unit filename="deps/imgui/imgui_widgets.cpp" />
 		<Unit filename="deps/imgui/misc/freetype/imgui_freetype.cpp" />
 		<Unit filename="deps/imgui/misc/freetype/imgui_freetype.h" />
 		<Unit filename="deps/serialise/serialise.cpp" />

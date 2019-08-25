@@ -985,7 +985,7 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
 
     std::string chat_str = selected;
 
-    ImGuiX::BeginCustomEmbedded(chat_str, "###chat_window");
+    ImGui::Begin((chat_str + "###chat_window").c_str());
 
     #if 0
     if(ImGui::BeginMenuBar())
@@ -1003,12 +1003,10 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
     }
     #endif // 0
 
-    ImGuiX::BeginCustomWrapper(chat_str);
+    ImGui::BeginChild(chat_str.c_str());
 
     focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
     hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
-
-    //ImGui::BeginChild("left_selector", ImVec2(80, 0));
 
     std::vector<std::string> to_render = side_buttons;
 
@@ -1034,7 +1032,8 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
 
     bool child_focused = render_handle_imgui(font_select, scroll_hack, command.command, command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this, 80);
 
-    ImGuiX::EndCustomEmbedded();
+    ImGui::EndChild();
+    ImGui::End();
 
     if(focused && child_focused)
         handle->process_formatted(thread.cache.out);
