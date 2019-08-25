@@ -31,3 +31,5 @@ do
   cd ..
   rm -r $tmp
 done
+
+# harvest dlls sdkencryptedappticket64.dll ncclient.dll steam_api64.dll
