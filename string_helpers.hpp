@@ -13,7 +13,7 @@ namespace char_inf
 
     inline int font_size = 12;
 
-    inline float extra_glyph_spacing = 4;
+    inline float extra_glyph_spacing = 0;
 }
 
 struct formatted_char

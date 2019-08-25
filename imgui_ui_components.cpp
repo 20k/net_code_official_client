@@ -113,6 +113,7 @@ struct render_command
     std::string str;
     vec3f col;
     vec2f absolute_pos;
+    bool copyable = true;
 };
 
 void render_copy_aware(font_render_context& font_select, vec3f col, const std::string& str, vec2f start_pos, vec2f end_pos, vec2f render_pos)
@@ -217,6 +218,7 @@ void imgui_render_str(font_render_context& font_select, const std::vector<format
             next.col = {255, 255, 255};
             next.str = "|";
             next.absolute_pos = fchar.render_pos;
+            next.copyable = fchar.copyable;
 
             commands.push_back(next);
             continue;
@@ -281,7 +283,7 @@ void imgui_render_str(font_render_context& font_select, const std::vector<format
         float width = ImGui::CalcTextSize(str.c_str(), nullptr, false, window_width).x;
         //float width = str.size() * char_inf::cwidth;
 
-        if(handle->held && ImGui::IsWindowFocused())
+        if(handle->held && ImGui::IsWindowFocused() && next.copyable)
             render_copy_aware(font_select, col, str, pos, (vec2f){pos.x(), pos.y()} + (vec2f){width, 0.f}, pos);
         else
             render_copy_blind(font_select, col, str, pos);
