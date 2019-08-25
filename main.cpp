@@ -214,7 +214,7 @@ int main()
     style.ChildBorderSize = 0;
     style.FrameBorderSize = 0;
     //style.PopupBorderSize = 0;
-    style.WindowBorderSize = 0;
+    style.WindowBorderSize = 1;
 
     /*style.FramePadding = ImVec2(0,0);
     style.DisplaySafeAreaPadding = ImVec2(0,0);
