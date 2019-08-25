@@ -204,7 +204,7 @@ int main()
 
     ImGui::SetStyleLinearColor(window_ctx.is_srgb);
 
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImGuiX::GetBgCol());
+    ImGui::PushSrgbStyleColor(ImGuiCol_WindowBg, ImGuiX::GetBgCol());
 
     ImGuiStyle& style = ImGui::GetStyle();
 
