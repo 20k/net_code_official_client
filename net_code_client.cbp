@@ -238,8 +238,6 @@
 		<Unit filename="colour_interop.hpp" />
 		<Unit filename="copy_handler.cpp" />
 		<Unit filename="copy_handler.hpp" />
-		<Unit filename="deps/ImGuiColorTextEdit/TextEditor.cpp" />
-		<Unit filename="deps/ImGuiColorTextEdit/TextEditor.h" />
 		<Unit filename="deps/imgui-sfml/imgui-SFML.cpp" />
 		<Unit filename="deps/imgui-sfml/imgui-SFML.h" />
 		<Unit filename="deps/imgui/imconfig.h" />
