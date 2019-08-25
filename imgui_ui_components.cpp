@@ -199,7 +199,7 @@ void render_copy_blind(font_render_context& font_select, vec3f col, const std::s
     imlist->AddText(ImVec2(render_pos.x(), render_pos.y()), IM_COL32((int)col.x(), (int)col.y(), (int)col.z(), 255), str.c_str());
 }
 
-void imgui_render_str(font_render_context& font_select, const std::vector<formatted_char>& text, std::vector<std::vector<formatted_char>>& formatted_text, float window_width)
+void imgui_render_str(font_render_context& font_select, const std::vector<formatted_char>& text, float window_width)
 {
     copy_handler* handle = get_global_copy_handler();
 
@@ -268,10 +268,6 @@ void imgui_render_str(font_render_context& font_select, const std::vector<format
         return;
     }
 
-    formatted_text.emplace_back();
-
-    std::vector<formatted_char>& chars = formatted_text.back();
-
     for(int kk=0; kk < (int)commands.size(); kk++)
     {
         render_command& next = commands[kk];
@@ -289,24 +285,6 @@ void imgui_render_str(font_render_context& font_select, const std::vector<format
             render_copy_aware(font_select, col, str, pos, (vec2f){pos.x(), pos.y()} + (vec2f){width, 0.f}, pos);
         else
             render_copy_blind(font_select, col, str, pos);
-
-        float x_start = pos.x();
-        float x_end = pos.x() + width;
-
-        float y_coord = pos.y();
-
-        for(int ccount = 0; ccount < (int)str.size(); ccount++)
-        {
-            float ffrac = (float)ccount / (float)str.size();
-
-            formatted_char chr;
-            chr.ioc.c = str[ccount];
-
-            chr.render_pos.y() = y_coord;
-            chr.render_pos.x() = ffrac * x_end + (1.f - ffrac) * x_start;
-
-            chars.push_back(chr);
-        }
 
         if(kk != (int)commands.size()-1)
             ImGui::SameLine(0, char_inf::extra_glyph_spacing);
@@ -412,8 +390,10 @@ bool render_handle_imgui(font_render_context& font_select, scrollbar_hack& scrol
 
     for(auto& i : ccache)
     {
-        imgui_render_str(font_select, i, cache.out, ImGui::GetWindowWidth());
+        imgui_render_str(font_select, i, ImGui::GetWindowWidth());
     }
+
+    cache.out = ccache;
 
     //std::cout << "dsize " << imlist->CmdBuffer[imlist->CmdBuffer.size() - 1].ElemCount << std::endl;
 
