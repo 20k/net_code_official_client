@@ -184,7 +184,9 @@ void render_copy_aware(font_render_context& font_select, vec3f col, const std::s
         ImDrawList* imlist = ImGui::GetWindowDrawList();
         imlist->AddText(ImVec2(c_pos.x(), c_pos.y()), IM_COL32((int)ccol.x(), (int)ccol.y(), (int)ccol.z(), 255), cstr.c_str());
 
-        c_pos.x() += cstr.size() * char_inf::cwidth;
+        //c_pos.x() += cstr.size() * char_inf::cwidth;
+
+        c_pos.x() += ImGui::CalcTextSize(cstr.c_str(), nullptr).x;
 
         if(i != (int)cols.size() - 1)
             ImGui::SameLine(0, char_inf::extra_glyph_spacing);
@@ -291,6 +293,7 @@ void imgui_render_str(font_render_context& font_select, const std::vector<format
     {
         render_command& next = commands[kk];
 
+        ///can probably delete newline
         if(next.type == newline)
         {
             //ImGui::Text("\n");
@@ -308,6 +311,7 @@ void imgui_render_str(font_render_context& font_select, const std::vector<format
         ///need to predict here if the text is hilighted or not
         ///then if it is, replace spaces with "-" and colour blue
         float width = ImGui::CalcTextSize(str.c_str(), nullptr, false, window_width).x;
+        //float width = str.size() * char_inf::cwidth;
 
         if(handle->held && ImGui::IsWindowFocused())
             render_copy_aware(font_select, col, str, spos, (vec2f){spos.x(), spos.y()} + (vec2f){width, 0.f}, pos);
