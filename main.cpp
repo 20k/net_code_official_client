@@ -1154,9 +1154,9 @@ int main()
         int was_closed_id = -1;
 
         //test_imgui_term.render(window);
-        term.render_realtime_windows(font_context, shared, was_closed_id);
-        chat_win.render(font_context, window, term.chat_threads, should_coordinate_focus);
-        term.render(font_context, window, should_coordinate_focus);
+        term.render_realtime_windows(shared, was_closed_id);
+        chat_win.render(window, term.chat_threads, should_coordinate_focus);
+        term.render(window, should_coordinate_focus);
 
         //window.display();
         //window.clear();

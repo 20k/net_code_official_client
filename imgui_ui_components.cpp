@@ -116,7 +116,7 @@ struct render_command
     bool copyable = true;
 };
 
-void render_copy_aware(font_render_context& font_select, vec3f col, const std::string& str, vec2f start_pos, vec2f end_pos, vec2f render_pos)
+void render_copy_aware(vec3f col, const std::string& str, vec2f start_pos, vec2f end_pos, vec2f render_pos)
 {
     std::vector<std::pair<std::string, vec3f>> cols;
 
@@ -172,7 +172,7 @@ void render_copy_aware(font_render_context& font_select, vec3f col, const std::s
 
         //ImGuiX::TextColoredUnformatted(ImVec4(ccol.x()/255.f, ccol.y()/255.f, ccol.z()/255.f, 1.f), cstr.c_str());
 
-        if(font_select.window_ctx.win.getSettings().sRgbCapable)
+        if(ImGui::IsStyleLinearColor())
             ccol = srgb_to_lin(ccol/255.f) * 255.f;
 
         ImDrawList* imlist = ImGui::GetWindowDrawList();
@@ -187,20 +187,20 @@ void render_copy_aware(font_render_context& font_select, vec3f col, const std::s
     }
 }
 
-void render_copy_blind(font_render_context& font_select, vec3f col, const std::string& str, vec2f render_pos)
+void render_copy_blind(vec3f col, const std::string& str, vec2f render_pos)
 {
     ImGui::SetCursorScreenPos(ImVec2(render_pos.x(), render_pos.y()));
 
     //ImGuiX::TextColoredUnformatted(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
 
-    if(font_select.window_ctx.win.getSettings().sRgbCapable)
+    if(ImGui::IsStyleLinearColor())
         col = srgb_to_lin(col/255.f) * 255.f;
 
     ImDrawList* imlist = ImGui::GetWindowDrawList();
     imlist->AddText(ImVec2(render_pos.x(), render_pos.y()), IM_COL32((int)col.x(), (int)col.y(), (int)col.z(), 255), str.c_str());
 }
 
-void imgui_render_str(font_render_context& font_select, const std::vector<formatted_char>& text, float window_width)
+void imgui_render_str(const std::vector<formatted_char>& text, float window_width)
 {
     copy_handler* handle = get_global_copy_handler();
 
@@ -284,16 +284,16 @@ void imgui_render_str(font_render_context& font_select, const std::vector<format
         //float width = str.size() * char_inf::cwidth;
 
         if(handle->held && ImGui::IsWindowFocused() && next.copyable)
-            render_copy_aware(font_select, col, str, pos, (vec2f){pos.x(), pos.y()} + (vec2f){width, 0.f}, pos);
+            render_copy_aware(col, str, pos, (vec2f){pos.x(), pos.y()} + (vec2f){width, 0.f}, pos);
         else
-            render_copy_blind(font_select, col, str, pos);
+            render_copy_blind(col, str, pos);
 
         if(kk != (int)commands.size()-1)
             ImGui::SameLine(0, char_inf::extra_glyph_spacing);
     }
 }
 
-bool render_handle_imgui(font_render_context& font_select, scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, format_cache& cache, frameable& frame, float extra_shrink = 0, std::string command_padding = "")
+bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, format_cache& cache, frameable& frame, float extra_shrink = 0, std::string command_padding = "")
 {
     float overall_width = ImGui::GetWindowWidth();
 
@@ -386,7 +386,7 @@ bool render_handle_imgui(font_render_context& font_select, scrollbar_hack& scrol
 
     for(auto& i : ccache)
     {
-        imgui_render_str(font_select, i, ImGui::GetWindowWidth());
+        imgui_render_str(i, ImGui::GetWindowWidth());
     }
 
     cache.out.clear();
@@ -411,7 +411,7 @@ bool render_handle_imgui(font_render_context& font_select, scrollbar_hack& scrol
     return text_area_focused;
 }
 
-void terminal_imgui::render(font_render_context& font_select, sf::RenderWindow& win, bool refocus)
+void terminal_imgui::render(sf::RenderWindow& win, bool refocus)
 {
     copy_handler* handle = get_global_copy_handler();
 
@@ -429,7 +429,7 @@ void terminal_imgui::render(font_render_context& font_select, sf::RenderWindow& 
     if(refocus)
         ImGui::SetNextWindowFocus();
 
-    bool child_focused = render_handle_imgui(font_select, scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, *this, 0.f, colour_string(current_user) + "> ");
+    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, *this, 0.f, colour_string(current_user) + "> ");
 
     ImGui::End();
 
@@ -437,7 +437,7 @@ void terminal_imgui::render(font_render_context& font_select, sf::RenderWindow& 
         handle->process_formatted(cache.out);
 }
 
-void terminal_imgui::render_realtime_windows(font_render_context& font_select, c_shared_data data, int& was_closed_id)
+void terminal_imgui::render_realtime_windows(c_shared_data data, int& was_closed_id)
 {
     was_closed_id = -1;
 
@@ -492,7 +492,7 @@ void terminal_imgui::render_realtime_windows(font_render_context& font_select, c
 
         run.cache.invalidate();
 
-        bool child_focused = render_handle_imgui(font_select, run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, run.cache, *this);
+        bool child_focused = render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, run.cache, *this);
 
         if(run.focused && child_focused)
             handle->process_formatted(run.cache.out);
@@ -914,7 +914,7 @@ void chat_window::tick()
 
 }
 
-void chat_window::render(font_render_context& font_select, sf::RenderWindow& win, std::map<std::string, chat_thread>& threads, bool refocus)
+void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads, bool refocus)
 {
     copy_handler* handle = get_global_copy_handler();
 
@@ -984,7 +984,7 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
     if(refocus)
         ImGui::SetNextWindowFocus();
 
-    bool child_focused = render_handle_imgui(font_select, scroll_hack, command.command, command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this, 80);
+    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this, 80);
 
     ImGui::End();
 

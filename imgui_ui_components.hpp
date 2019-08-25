@@ -87,8 +87,8 @@ struct terminal_imgui : serialisable, cacheable, frameable
     void clear_text();
 
     terminal_imgui();
-    void render(font_render_context& font_select, sf::RenderWindow& win, bool refocus);
-    void render_realtime_windows(font_render_context& font_select, c_shared_data data, int& was_closed_id);
+    void render(sf::RenderWindow& win, bool refocus);
+    void render_realtime_windows(c_shared_data data, int& was_closed_id);
     void bump_command_to_history();
 
     void add_text_from_server(c_shared_data shared, const std::string& in, chat_window& chat_win, bool server_command = true);
@@ -148,7 +148,7 @@ struct chat_window : serialisable, frameable
 
     void tick();
 
-    void render(font_render_context& font_select, sf::RenderWindow& win, std::map<std::string, chat_thread>& threads, bool refocus);
+    void render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads, bool refocus);
 
     void set_side_channels(const std::vector<std::string>& sides);
 
