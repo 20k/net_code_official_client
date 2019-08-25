@@ -382,12 +382,6 @@ bool render_handle_imgui(font_render_context& font_select, scrollbar_hack& scrol
         cache.ensure_built(current, {start.x, start.y}, {wrap_dim.x, wrap_dim.y}, all_interop, scroll_hack, vertical_rows);
     }
 
-    cache.out.clear();
-
-    //ImDrawList* imlist = ImGui::GetWindowDrawList();
-
-    //imlist->AddDrawCmd();
-
     auto ccache = cache.get_render_cache();
 
     for(auto& i : ccache)
@@ -395,11 +389,8 @@ bool render_handle_imgui(font_render_context& font_select, scrollbar_hack& scrol
         imgui_render_str(font_select, i, ImGui::GetWindowWidth());
     }
 
+    cache.out.clear();
     cache.out = ccache;
-
-    //std::cout << "dsize " << imlist->CmdBuffer[imlist->CmdBuffer.size() - 1].ElemCount << std::endl;
-
-    //imlist->AddDrawCmd();
 
     bool text_area_focused = ImGui::IsWindowFocused();
 
