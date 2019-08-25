@@ -280,26 +280,20 @@ void imgui_render_str(font_render_context& font_select, const std::vector<format
         std::string str = next.str;
         vec3f col = next.col;
 
-        //auto spos = ImGui::GetCursorScreenPos();
-
-        auto spos = pos;
-
         ///need to predict here if the text is hilighted or not
         ///then if it is, replace spaces with "-" and colour blue
         float width = ImGui::CalcTextSize(str.c_str(), nullptr, false, window_width).x;
         //float width = str.size() * char_inf::cwidth;
 
         if(handle->held && ImGui::IsWindowFocused())
-            render_copy_aware(font_select, col, str, spos, (vec2f){spos.x(), spos.y()} + (vec2f){width, 0.f}, pos);
+            render_copy_aware(font_select, col, str, pos, (vec2f){pos.x(), pos.y()} + (vec2f){width, 0.f}, pos);
         else
             render_copy_blind(font_select, col, str, pos);
 
-        //std::cout << "pos " << pos << std::endl;
+        float x_start = pos.x();
+        float x_end = pos.x() + width;
 
-        float x_start = spos.x();
-        float x_end = spos.x() + width;
-
-        float y_coord = spos.y();
+        float y_coord = pos.y();
 
         for(int ccount = 0; ccount < (int)str.size(); ccount++)
         {
@@ -313,9 +307,6 @@ void imgui_render_str(font_render_context& font_select, const std::vector<format
 
             chars.push_back(chr);
         }
-
-        /*if(kk == (int)commands.size()-1)
-            ImGui::NewLine();*/
 
         if(kk != (int)commands.size()-1)
             ImGui::SameLine(0, char_inf::extra_glyph_spacing);
