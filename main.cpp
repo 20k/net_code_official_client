@@ -29,7 +29,6 @@
 #include <json/json.hpp>
 #include <objbase.h>
 #include <stdio.h>
-#include "text_editor.hpp"
 #include "font_cfg.hpp"
 #include <iomanip>
 #include "window_context.hpp"
@@ -331,9 +330,6 @@ int main()
     MMAP(Right, rmouse);
     MMAP(Middle, mmouse);
 
-    text_editor_manager text_editor(font_select);
-    text_editor.set_is_srgb(window_ctx.is_srgb);
-
     std::string terminal_file = "./terminal_v5.txt";
     std::string chat_file = "./chat_v5.txt";
     std::string settings_file = "./text_sett.txt";
@@ -359,8 +355,6 @@ int main()
         sfont.load(font_file);
         sfont.handle_serialise(font_select, false);
     }
-
-    text_editor.load();
 
     sf::Clock render_clock;
 
@@ -406,14 +400,7 @@ int main()
 
     while(running)
     {
-        if(text_editor.dirty_font)
-        {
-            font_select.reset_default_fonts(text_editor.current_font_size);
-
-            text_editor.dirty_font = false;
-        }
-
-        if(font_select.update_rebuild(window, text_editor.current_font_size))
+        if(font_select.update_rebuild(window, font_select.current_base_font_size))
         {
             term.invalidate();
 
@@ -517,7 +504,6 @@ int main()
 
             if(event.type == sf::Event::GainedFocus)
             {
-                text_editor.on_focus_window();
                 focused = true;
 
                 term.invalidate();
@@ -599,19 +585,6 @@ int main()
 
             if(event.type == sf::Event::KeyPressed)
             {
-                if(text_editor.is_open && text_editor.is_focused)
-                {
-                    if(event.key.code == sf::Keyboard::Z && key.isKeyPressed(sf::Keyboard::LControl))
-                    {
-                        text_editor.should_undo = true;
-                    }
-
-                    if(event.key.code == sf::Keyboard::Y && key.isKeyPressed(sf::Keyboard::LControl))
-                    {
-                        text_editor.should_redo = true;
-                    }
-                }
-
                 if(on_input_map.find(event.key.code) != on_input_map.end())
                     realtime_str.push_back(on_input_map[event.key.code]);
 
@@ -687,11 +660,6 @@ int main()
                 if(event.key.code == sf::Keyboard::F1)
                 {
                     font_select.is_open = !font_select.is_open;
-                }
-
-                if(event.key.code == sf::Keyboard::F2)
-                {
-                    text_editor.is_open = !text_editor.is_open;
                 }
 
                 if(event.key.code == sf::Keyboard::Return)
@@ -865,15 +833,10 @@ int main()
 
         if(window_ctx.srgb_dirty)
         {
-            text_editor.set_is_srgb(window_ctx.is_srgb);
             ImGui::SetStyleLinearColor(window_ctx.is_srgb);
 
             active_frames = active_frames_restart;
         }
-
-        text_editor.tick();
-        text_editor.render(shared);
-        text_editor.check_for_external_modifications();
 
         term.check_insert_user_command();
 
@@ -918,7 +881,6 @@ int main()
                 if(spl.size() >= 2)
                 {
                     sd_set_user(shared, make_view(spl[1]));
-                    text_editor.set_current_user(spl[1]);
                 }
             }
 
@@ -1153,9 +1115,6 @@ int main()
             swindow.handle_serialise(chat_win, true);
             swindow.save(chat_file);
 
-            text_editor.save_settings();
-            //text_editor.save();
-
             write_clock.restart();
         }
 
@@ -1234,18 +1193,6 @@ int main()
 
         ImGui::SFML::Render(window);
 
-        /*sf::Text txt;
-        txt.setFont(*font_select.get_base_sfml_font());
-        txt.setString("Hi there hello there\nMy name is {3, 3}");
-        txt.setCharacterSize(8);
-
-        txt.setPosition(600, 650);
-        window.draw(txt, sf::BlendAdd);*/
-
-        //sf::Sprite spr(get_font_atlas());
-
-        //window.draw(spr);
-
         window.display();
         //window.clear(sf::Color(bg_col.x(), bg_col.y(), bg_col.z()));
         window.clear();
@@ -1263,8 +1210,6 @@ int main()
             active_frames = active_frames_restart;
             term.invalidate();
         }
-
-        text_editor.set_current_user(c_str_consume(sd_get_user(shared)));
     }
 
     serialise sterm;
@@ -1274,9 +1219,6 @@ int main()
     serialise swindow;
     swindow.handle_serialise(chat_win, true);
     swindow.save(chat_file);
-
-    text_editor.save_only_modified();
-    //text_editor.save(true);
 
     //sd_set_termination(shared);
 
