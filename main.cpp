@@ -216,6 +216,11 @@ int main()
     //style.PopupBorderSize = 0;
     style.WindowBorderSize = 0;
 
+    /*style.FramePadding = ImVec2(0,0);
+    style.DisplaySafeAreaPadding = ImVec2(0,0);
+    style.DisplayWindowPadding = ImVec2(0,0);
+    style.ItemInnerSpacing = ImVec2(0,0);*/
+
     /*ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 13.f);
     io.Fonts->AddFontDefault();*/

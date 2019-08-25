@@ -155,9 +155,9 @@ bool ImGuiX::ClickText(const std::string& label, vec3f col, vec2f dim_extra)
     //ImGuiX::OutlineHoverTextAuto(fin.c_str(), {1, 1, 1}, true, {(max_width - width) - 3, 0});
 
     if(clicked_state[id])
-        ImGuiX::OutlineHoverText(label, col, col, true, dim_extra, 1, true, {1, 1, 1}, 1);
+        ImGuiX::OutlineHoverText(label, {1,1,1}, col, true, dim_extra, 1, true, {1, 1, 1}, 1);
     else
-        ImGuiX::OutlineHoverText(label, col, col, true, dim_extra, 1, false, (vec3f){1, 1, 1}/4.f, 1);
+        ImGuiX::OutlineHoverText(label, {1,1,1}, col, true, dim_extra, 1, false, (vec3f){1, 1, 1}/4.f, 1);
 
     bool clicked = false;
 
@@ -290,6 +290,8 @@ int ImGuiX::ClickableList(const std::vector<std::string>& in)
 
     ImGuiX::Text(top);*/
 
+    vec3f text_colour = (vec3f){8, 143, 242} / 255.f;
+
     ImGui::SetCursorPosX(1);
 
     ImGuiX::OutlineHoverText(top, {1,1,1}, {1,1,1}, false, {(max_width - ImGui::CalcTextSize(top.c_str()).x) - fudge_x, 0}, 1, false);
@@ -323,9 +325,16 @@ int ImGuiX::ClickableList(const std::vector<std::string>& in)
 
 void ImGuiX::BeginCustomEmbedded(const std::string& title, const std::string& identifier)
 {
-    ImGui::PushStyleColor(ImGuiCol_TitleBg, ImGuiX::GetBgCol());
-    ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImGuiX::GetBgCol());
-    ImGui::PushStyleColor(ImGuiCol_TitleBgCollapsed, ImGuiX::GetBgCol());
+    ImVec4 TitleCol = ImGuiX::GetBgCol();
+
+    /*TitleCol.x = 20.f/255;
+    TitleCol.y = 20.f/255;
+    TitleCol.z = 20.f/255;*/
+
+    /*ImGui::PushStyleColor(ImGuiCol_TitleBg, TitleCol);
+    ImGui::PushStyleColor(ImGuiCol_TitleBgActive, TitleCol);
+    ImGui::PushStyleColor(ImGuiCol_TitleBgCollapsed, TitleCol);*/
+    //ImGui::PushStyleColor(ImGuiCol_WindowBg, TitleCol);
 
     static vec2f last_size;
 
@@ -450,5 +459,5 @@ void ImGuiX::EndCustomEmbedded()
 
     ImGui::End();
 
-    ImGui::PopStyleColor(3);
+    //ImGui::PopStyleColor(3);
 }
