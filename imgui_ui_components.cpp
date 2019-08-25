@@ -108,15 +108,8 @@ terminal_imgui::terminal_imgui()
     auto_handle.use_autocolour = true;
 }
 
-enum render_instruction
-{
-    imgui_text,
-    newline,
-};
-
 struct render_command
 {
-    render_instruction type = imgui_text;
     std::string str;
     vec3f col;
     vec2f absolute_pos;
@@ -230,7 +223,6 @@ void imgui_render_str(font_render_context& font_select, const std::vector<format
 
             if(current.str.size() > 0 && fchar.ioc.c != '\n')
             {
-                current.type = imgui_text;
                 commands.push_back(current);
                 current = render_command();
             }
@@ -239,15 +231,9 @@ void imgui_render_str(font_render_context& font_select, const std::vector<format
             {
                 if(current.str.size() > 0)
                 {
-                    current.type = imgui_text;
                     commands.push_back(current);
                     current = render_command();
                 }
-
-                render_command next;
-                next.type = newline;
-                commands.push_back(next);
-                //continue;
             }
         }
 
@@ -260,7 +246,6 @@ void imgui_render_str(font_render_context& font_select, const std::vector<format
         if(fchar.ioc.is_cursor)
         {
             render_command next;
-            next.type = imgui_text;
             next.col = {255, 255, 255};
             next.str = "|";
             next.absolute_pos = fchar.render_pos;
@@ -280,9 +265,7 @@ void imgui_render_str(font_render_context& font_select, const std::vector<format
 
     if(commands.size() == 0)
     {
-        render_command next;
-        next.type = newline;
-        commands.push_back(next);
+        return;
     }
 
     formatted_text.emplace_back();
@@ -292,13 +275,6 @@ void imgui_render_str(font_render_context& font_select, const std::vector<format
     for(int kk=0; kk < (int)commands.size(); kk++)
     {
         render_command& next = commands[kk];
-
-        ///can probably delete newline
-        if(next.type == newline)
-        {
-            //ImGui::Text("\n");
-            continue;
-        }
 
         vec2f pos = next.absolute_pos;
         std::string str = next.str;
