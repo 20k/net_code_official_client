@@ -987,43 +987,53 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
 
     ImGui::Begin((chat_str + "###chat_window").c_str());
 
-    #if 0
     if(ImGui::BeginMenuBar())
     {
         ImGuiX::Text(chat_str);
 
-        /*if(ImGui::BeginMenu("Settings"))
+        if(ImGui::BeginMenu("Settings"))
         {
             ImGui::Checkbox("Show in main window", &show_chat_in_main_window);
 
             ImGui::EndMenu();
-        }*/
+        }
 
         ImGui::EndMenuBar();
     }
-    #endif // 0
 
-    ImGui::BeginChild(chat_str.c_str());
+    ImGui::BeginChild("chat_child", ImVec2(80, 0));
 
     focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
     hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
 
-    std::vector<std::string> to_render = side_buttons;
+    int max_len = 0;
 
     for(int i=0; i < (int)side_buttons.size(); i++)
     {
+        max_len = std::max(side_buttons[i].size(), (size_t)max_len);
+    }
+
+    for(int i=0; i < (int)side_buttons.size(); i++)
+    {
+        std::string text = side_buttons[i];
+
         if(threads[side_buttons[i]].dirty && !show_chat_in_main_window)
         {
-            to_render[i] += "*";
+            text += "*";
+        }
+
+        for(int kk=(int)text.size(); kk < max_len; kk++)
+        {
+            text += " ";
+        }
+
+        if(ImGui::Button(text.c_str()))
+        {
+            selected = side_buttons[i];
         }
     }
 
-    int idx = ImGuiX::ClickableList(to_render);
-
-    if(idx != -1)
-    {
-        selected = side_buttons[idx];
-    }
+    ImGui::EndChild();
 
     ImGui::SameLine(0, 0);
 
@@ -1032,7 +1042,6 @@ void chat_window::render(font_render_context& font_select, sf::RenderWindow& win
 
     bool child_focused = render_handle_imgui(font_select, scroll_hack, command.command, command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this, 80);
 
-    ImGui::EndChild();
     ImGui::End();
 
     if(focused && child_focused)
