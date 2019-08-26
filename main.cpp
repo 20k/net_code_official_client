@@ -77,60 +77,6 @@ std::string make_lower(std::string in)
 #define HOST_PORT_SSL "6781"
 #endif // LOCAL_IP
 
-#ifdef FONT_TEST
-void test()
-{
-    sf::RenderWindow window(sf::VideoMode(800, 600), "hi");
-
-    ImGui::SFML::Init(window, false);
-
-    ImGuiIO& io = ImGui::GetIO();
-    //io.Fonts->AddFontDefault();
-    ImFont* font = io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 14.f);
-
-    ImGuiFreeType::BuildFontAtlas(io.Fonts, 0);
-
-    assert(font != nullptr);
-    update_font_texture_safe();
-
-    //assert(font->ConfigData.size() != 0);
-
-    font_selector font_select;
-    font_select.WantRebuild = false;
-
-    sf::Clock imgui_delta;
-
-    while(1)
-    {
-        if(font_select.UpdateRebuild())
-        {
-            update_font_texture_safe();
-        }
-
-        sf::Event event;
-
-        while(window.pollEvent(event))
-        {
-            ImGui::SFML::ProcessEvent(event);
-        }
-
-        ImGui::SFML::Update(window,  imgui_delta.restart());
-
-        ImGui::Begin("Hi");
-
-        ImGui::Text("Test");
-
-        ImGui::End();
-
-        font_select.ShowFreetypeOptionsWindow();
-
-        ImGui::SFML::Render(window);
-        window.display();
-        window.clear();
-    }
-}
-#endif // FONT_TEST
-
 ///test new repo
 int main()
 {
