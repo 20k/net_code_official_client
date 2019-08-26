@@ -276,9 +276,7 @@ void font_selector::render(window_context& window_ctx)
 
     if(wants_rebuild)
     {
-        serialise sfont;
-        sfont.handle_serialise(*this, true);
-        sfont.save("./font_sett.txt");
+        save_to_file_json("./font_sett.txt", ::serialise(*this, serialise_mode::DISK));
     }
 
     ImGui::End();

@@ -6,7 +6,6 @@
 
 #include "colour_interop.hpp"
 #include "string_helpers.hpp"
-#include <serialise/serialise.hpp>
 
 #include "auto_handlers.hpp"
 #include "copy_handler.hpp"
@@ -26,7 +25,7 @@
 #include <imgui-sfml/imgui-SFML.h>
 
 #include "imgui_ui_components.hpp"
-#include <json/json.hpp>
+#include <nlohmann/json.hpp>
 #include <objbase.h>
 #include <stdio.h>
 #include "font_cfg.hpp"
@@ -283,23 +282,20 @@ int main()
 
     if(file_exists(terminal_file))
     {
-        serialise sterm;
-        sterm.load(terminal_file);
-        sterm.handle_serialise(term, false);
+        nlohmann::json dat = load_from_file_json(terminal_file);
+        deserialise(dat, term, serialise_mode::DISK);
     }
 
     if(file_exists(chat_file))
     {
-        serialise swindow;
-        swindow.load(chat_file);
-        swindow.handle_serialise(chat_win, false);
+        nlohmann::json dat = load_from_file_json(chat_file);
+        deserialise(dat, chat_win, serialise_mode::DISK);
     }
 
     if(file_exists(font_file))
     {
-        serialise sfont;
-        sfont.load(font_file);
-        sfont.handle_serialise(font_select, false);
+        nlohmann::json dat = load_from_file_json(font_file);
+        deserialise(dat, font_select, serialise_mode::DISK);
     }
 
     sf::Clock render_clock;
@@ -991,13 +987,8 @@ int main()
                 }
             }
 
-            serialise sterm;
-            sterm.handle_serialise(term, true);
-            sterm.save(terminal_file);
-
-            serialise swindow;
-            swindow.handle_serialise(chat_win, true);
-            swindow.save(chat_file);
+            save_to_file_json(terminal_file, serialise(term, serialise_mode::DISK));
+            save_to_file_json(chat_file, serialise(chat_win, serialise_mode::DISK));
         }
         else if(enter && to_edit->command.size() == 0)
         {
@@ -1053,13 +1044,8 @@ int main()
 
         if(write_clock.getElapsedTime().asMilliseconds() > 2000)
         {
-            serialise sterm;
-            sterm.handle_serialise(term, true);
-            sterm.save(terminal_file);
-
-            serialise swindow;
-            swindow.handle_serialise(chat_win, true);
-            swindow.save(chat_file);
+            save_to_file_json(terminal_file, serialise(term, serialise_mode::DISK));
+            save_to_file_json(chat_file, serialise(chat_win, serialise_mode::DISK));
 
             write_clock.restart();
         }
@@ -1158,13 +1144,8 @@ int main()
         }
     }
 
-    serialise sterm;
-    sterm.handle_serialise(term, true);
-    sterm.save(terminal_file);
-
-    serialise swindow;
-    swindow.handle_serialise(chat_win, true);
-    swindow.save(chat_file);
+    save_to_file_json(terminal_file, serialise(term, serialise_mode::DISK));
+    save_to_file_json(chat_file, serialise(chat_win, serialise_mode::DISK));
 
     //sd_set_termination(shared);
 

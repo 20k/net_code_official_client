@@ -1,7 +1,7 @@
 #ifndef EDITABLE_STRING_HPP_INCLUDED
 #define EDITABLE_STRING_HPP_INCLUDED
 
-#include <serialise/serialise.hpp>
+#include <networking/serialisable.hpp>
 
 struct editable_string : serialisable
 {
@@ -10,7 +10,14 @@ struct editable_string : serialisable
     std::vector<std::string> command_history;
     int command_history_idx = 0;
 
-    virtual void do_serialise(serialise& s, bool ser);
+    SERIALISE_SIGNATURE(editable_string)
+    {
+        DO_SERIALISE(cursor_pos_idx);
+        DO_SERIALISE(command);
+        DO_SERIALISE(command_history);
+        DO_SERIALISE(command_history_idx);
+    }
+
     void add_to_command(char c);
     void remove_back();
     void move_cursor(int dir);

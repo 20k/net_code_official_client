@@ -5,7 +5,7 @@
 #include <map>
 #include <set>
 #include <string>
-#include <serialise/serialise.hpp>
+#include <networking/serialisable.hpp>
 
 struct interop_char;
 
@@ -18,10 +18,10 @@ struct autocomplete_args : serialisable
 
     autocomplete_args(const std::string& key_, const std::string& arg_) : key(key_), arg(arg_) {}
 
-    virtual void do_serialise(serialise& s, bool ser)
+    SERIALISE_SIGNATURE(autocomplete_args)
     {
-        s.handle_serialise(key, ser);
-        s.handle_serialise(arg, ser);
+        DO_SERIALISE(key);
+        DO_SERIALISE(arg);
     }
 };
 
@@ -34,7 +34,7 @@ struct specials_status
     bool has_trailing_comma = false;
 };
 
-struct auto_handler : serialisable
+struct auto_handler : serialisable, owned
 {
     bool tab_pressed = false;
 
@@ -43,9 +43,9 @@ struct auto_handler : serialisable
 
     bool window_in_focus = false;
 
-    std::set<std::string> found_unprocessed_autocompletes;
+    std::vector<std::string> found_unprocessed_autocompletes;
     std::map<std::string, std::vector<autocomplete_args>> found_args;
-    std::map<std::string, bool> is_valid;
+    std::map<std::string, int> is_valid;
 
     ///returns autocomplete
     void auto_colour(std::vector<interop_char>& in, bool colour_special = false, bool parse_for_autocompletes = true);
@@ -58,7 +58,12 @@ struct auto_handler : serialisable
                     const std::vector<autocomplete_args>& found, const specials_status& specials, std::string& command_str,
                     const std::vector<std::string>& to_skip);*/
 
-    virtual void do_serialise(serialise& s, bool ser) override;
+    SERIALISE_SIGNATURE(auto_handler)
+    {
+        DO_SERIALISE(found_unprocessed_autocompletes);
+        DO_SERIALISE(found_args);
+        DO_SERIALISE(is_valid);
+    }
 };
 
 #endif // AUTO_HANDLERS_HPP_INCLUDED

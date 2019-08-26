@@ -5,6 +5,7 @@
 #include <vec/vec.hpp>
 #include <string>
 #include <vector>
+#include <networking/serialisable.hpp>
 
 inline
 std::map<char, vec3f> get_cmap()
@@ -76,12 +77,20 @@ std::map<char, vec3f> get_cmap()
     return colour_map;
 }
 
-struct interop_char
+struct interop_char : serialisable
 {
-    char c = 'A';
+    int c = 'A';
     vec3f col = {255,255,255};
     bool is_cursor = false;
     bool coloured = false;
+
+    SERIALISE_SIGNATURE(interop_char)
+    {
+        DO_SERIALISE(c);
+        DO_SERIALISE(col);
+        DO_SERIALISE(is_cursor);
+        DO_SERIALISE(coloured);
+    }
 };
 
 using interop_vec_t = std::vector<interop_char>;

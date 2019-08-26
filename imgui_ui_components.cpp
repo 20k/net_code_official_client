@@ -55,23 +55,6 @@ void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar)
     ImGui::EndChild();
 }
 
-void terminal_imgui::do_serialise(serialise& s, bool ser)
-{
-    if(ser == false)
-    {
-        auto_handle.found_unprocessed_autocompletes.clear();
-        auto_handle.found_args.clear();
-        auto_handle.is_valid.clear();
-    }
-
-    s.handle_serialise(history, ser);
-    s.handle_serialise(chat_threads, ser);
-    s.handle_serialise(command, ser);
-    s.handle_serialise_no_clear(auto_handle, ser);
-
-    //std::cout << "loaded hist " << text_history.size() << std::endl;
-}
-
 void terminal_imgui::check_insert_user_command()
 {
     if(one_time_user_insertion)
@@ -800,7 +783,7 @@ void terminal_imgui::add_text_from_server(c_shared_data shared, const std::strin
 
             if(name.size() > 0)
             {
-                auto_handle.found_unprocessed_autocompletes.insert(name);
+                auto_handle.found_unprocessed_autocompletes.push_back(name);
             }
         }
         else if(command_info.type == server_command_command_tagged)
@@ -882,21 +865,6 @@ void terminal_imgui::add_text_to_current_chat_thread(chat_window& chat_win, cons
 
     thr.history.push_back(string_to_interop(text, false, auto_handle, false));
     thr.dirty = true;
-}
-
-void chat_thread::do_serialise(serialise& s, bool ser)
-{
-    s.handle_serialise(history, ser);
-}
-
-void chat_window::do_serialise(serialise& s, bool ser)
-{
-    s.handle_serialise(render_start, ser);
-    s.handle_serialise(side_buttons, ser);
-    s.handle_serialise(selected, ser);
-    s.handle_serialise(command, ser);
-    s.handle_serialise(show_chat_in_main_window, ser);
-    //s.handle_serialise(focus_once, ser);
 }
 
 sf::Color chat_window::get_frame_col()

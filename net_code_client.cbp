@@ -226,6 +226,7 @@
 			<Add option="-ldbgeng" />
 			<Add option="-lwinmm" />
 			<Add option="-lgdi32" />
+			<Add option="-lws2_32" />
 			<Add library="deps/libncclient/libncclient.a" />
 			<Add directory="deps/SFML/lib" />
 		</Linker>
@@ -248,8 +249,11 @@
 		<Unit filename="deps/imgui/imgui_widgets.cpp" />
 		<Unit filename="deps/imgui/misc/freetype/imgui_freetype.cpp" />
 		<Unit filename="deps/imgui/misc/freetype/imgui_freetype.h" />
-		<Unit filename="deps/serialise/serialise.cpp" />
-		<Unit filename="deps/serialise/serialise.hpp" />
+		<Unit filename="deps/networking/networking.cpp" />
+		<Unit filename="deps/networking/networking.hpp" />
+		<Unit filename="deps/networking/serialisable.cpp" />
+		<Unit filename="deps/networking/serialisable.hpp" />
+		<Unit filename="deps/networking/serialisable_fwd.hpp" />
 		<Unit filename="editable_string.cpp" />
 		<Unit filename="editable_string.hpp" />
 		<Unit filename="font_cfg.cpp" />

@@ -133,7 +133,7 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
                     {
                         //std::cout << "fauto " << str << std::endl;
 
-                        found_unprocessed_autocompletes.insert(str);
+                        found_unprocessed_autocompletes.push_back(str);
                     }
                 }
             }
@@ -561,11 +561,4 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
             handle_tab_cycling(*this, tokens, in, cursor_idx, cursor_offset);
         }
     }
-}
-
-void auto_handler::do_serialise(serialise& s, bool ser)
-{
-    s.handle_serialise(found_unprocessed_autocompletes, ser);
-    s.handle_serialise(found_args, ser);
-    s.handle_serialise(is_valid, ser);
 }

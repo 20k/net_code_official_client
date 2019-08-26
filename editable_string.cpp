@@ -1,13 +1,5 @@
 #include "editable_string.hpp"
 
-void editable_string::do_serialise(serialise& s, bool ser)
-{
-    s.handle_serialise(cursor_pos_idx, ser);
-    s.handle_serialise(command, ser);
-    s.handle_serialise(command_history, ser);
-    s.handle_serialise(command_history_idx, ser);
-}
-
 void editable_string::add_to_command(char c)
 {
     if(cursor_pos_idx >= (int)command.size())

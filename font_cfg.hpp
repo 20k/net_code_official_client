@@ -1,7 +1,8 @@
 #ifndef FONT_CFG_HPP_INCLUDED
 #define FONT_CFG_HPP_INCLUDED
 
-#include <serialise/serialise.hpp>
+#include <networking/serialisable.hpp>
+#include <SFML/Graphics.hpp>
 
 struct ImFont;
 
@@ -42,10 +43,10 @@ struct font_selector : serialisable
     // Call to draw interface
     void render(window_context& window_ctx);
 
-    virtual void do_serialise(serialise& s, bool ser) override
+    SERIALISE_SIGNATURE(font_selector)
     {
-        s.handle_serialise(current_base_font_size, ser);
-        s.handle_serialise(current_base_font, ser);
+        DO_SERIALISE(current_base_font_size);
+        DO_SERIALISE(current_base_font);
     }
 
     std::vector<sf::Font> sfml_fonts;

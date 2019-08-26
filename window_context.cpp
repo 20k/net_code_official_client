@@ -1,6 +1,6 @@
 #include "window_context.hpp"
 #include <libncclient/nc_util.hpp>
-#include <json/json.hpp>
+#include <nlohmann/json.hpp>
 #include <libncclient/nc_util.hpp>
 
 window_context::window_context()
