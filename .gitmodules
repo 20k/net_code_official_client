@@ -7,9 +7,6 @@
 [submodule "deps/tinydir"]
 	path = deps/tinydir
 	url = https://github.com/cxong/tinydir
-[submodule "deps/serialise"]
-	path = deps/serialise
-	url = https://github.com/20k/funserialisation
 [submodule "deps/libncclient"]
 	path = deps/libncclient
 	url = https://github.com/20k/libncclient.git
@@ -25,9 +22,3 @@
 [submodule "deps/ImGuiColorTextEdit"]
 	path = deps/ImGuiColorTextEdit
 	url = https://github.com/20k/ImGuiColorTextEdit
-[submodule "deps/SFML"]
-	path = deps/SFML
-	url = https://github.com/20k/SFML
-[submodule "deps/SFML-src"]
-	path = deps/SFML-src
-	url = https://github.com/20k/SFML
