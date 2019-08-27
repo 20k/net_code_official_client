@@ -72,6 +72,7 @@ void terminal_imgui::check_insert_user_command()
 void terminal_imgui::clear_terminal()
 {
     history.clear();
+    raw_history.clear();
 }
 
 void terminal_imgui::clear_chat()
@@ -549,10 +550,12 @@ void terminal_imgui::bump_command_to_history()
     std::string ccommand = command.command;
 
     interop_vec_t interop;
+    std::string raw;
 
     if(ccommand != "" && current_user != "")
     {
-        interop = string_to_interop_no_autos(colour_string(current_user) + "> ", false);
+        raw = colour_string(current_user) + "> ";
+        interop = string_to_interop_no_autos(raw, false);
     }
 
     auto interop_command = string_to_interop(ccommand, true, auto_handle);
@@ -562,9 +565,11 @@ void terminal_imgui::bump_command_to_history()
         interop.push_back(i);
     }
 
+    raw_history.push_back(raw + ccommand);
     history.push_back(interop);
     command.clear_command();
 
+    limit_size(raw_history, MAX_TEXT_HISTORY);
     limit_size(history, MAX_TEXT_HISTORY);
     de_newline(history);
 }
@@ -698,6 +703,7 @@ void terminal_imgui::add_text_from_server(c_shared_data shared, const std::strin
 
             for(int i=0; i < chat_info.num_notifs; i++)
             {
+                raw_history.push_back(c_str_sized_to_cpp(chat_info.notifs[i].msg) + "\n");
                 history.push_back(string_to_interop_no_autos(c_str_sized_to_cpp(chat_info.notifs[i].msg) + "\n", false));
             }
 
@@ -724,17 +730,23 @@ void terminal_imgui::add_text_from_server(c_shared_data shared, const std::strin
             for(int i=0; i < (int)chnls.size(); i++)
             {
                 if(chat_win.show_chat_in_main_window)
+                {
+                    raw_history.push_back(msgs[i]);
                     history.push_back(string_to_interop(msgs[i] + "\n", false, chat_win.auto_handle));
+                }
 
+                chat_threads[chnls[i]].raw_history.push_back(msgs[i]);
                 chat_threads[chnls[i]].history.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
                 chat_threads[chnls[i]].dirty = true;
             }
 
             for(auto& i : tell_msgs)
             {
+                raw_history.push_back(i + "\n");
                 history.push_back(string_to_interop_no_autos(i + "\n", false));
             }
 
+            limit_size(raw_history, MAX_TEXT_HISTORY);
             limit_size(history, MAX_TEXT_HISTORY);
             de_newline(history);
         }
@@ -846,8 +858,10 @@ void terminal_imgui::add_text_from_server(c_shared_data shared, const std::strin
 
     if(push)
     {
+        raw_history.push_back(str);
         history.push_back(string_to_interop(str, false, auto_handle));
 
+        limit_size(raw_history, MAX_TEXT_HISTORY);
         limit_size(history, MAX_TEXT_HISTORY);
         consider_resetting_scrollbar = true;
 
@@ -863,6 +877,7 @@ void terminal_imgui::add_text_to_current_chat_thread(chat_window& chat_win, cons
 {
     chat_thread& thr = chat_threads[chat_win.selected];
 
+    thr.raw_history.push_back(text);
     thr.history.push_back(string_to_interop(text, false, auto_handle, false));
     thr.dirty = true;
 }

@@ -23,11 +23,11 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-O2" />
+					<Add option="-O3" />
 					<Add option="-DLOCAL_IP" />
 				</Compiler>
 				<Linker>
-					<Add option="-O2" />
+					<Add option="-O3" />
 					<Add option="-s" />
 				</Linker>
 				<ExtraCommands>
@@ -138,12 +138,12 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-O3" />
 					<Add option="-g" />
-					<Add option="-O2" />
 					<Add option="-DEXTERN_IP" />
 				</Compiler>
 				<Linker>
-					<Add option="-O2" />
+					<Add option="-O3" />
 				</Linker>
 			</Target>
 			<Target title="DeployTestSubmodules">
@@ -279,6 +279,8 @@
 		<Unit filename="local_commands.cpp" />
 		<Unit filename="local_commands.hpp" />
 		<Unit filename="main.cpp" />
+		<Unit filename="serialisables.cpp" />
+		<Unit filename="serialisables.hpp" />
 		<Unit filename="stacktrace.cpp" />
 		<Unit filename="stacktrace.hpp" />
 		<Unit filename="string_helpers.cpp" />

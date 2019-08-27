@@ -64,6 +64,7 @@ struct cacheable
 {
     format_cache cache;
 
+    std::vector<std::string> raw_history;
     std::vector<interop_vec_t> history;
 };
 

@@ -57,14 +57,9 @@ struct realtime_script_run : frameable
     format_cache cache;
 };
 
-struct chat_thread : serialisable, cacheable
+struct chat_thread : serialisable, cacheable, free_function
 {
     bool dirty = false;
-
-    SERIALISE_SIGNATURE(chat_thread)
-    {
-        DO_SERIALISE(history);
-    }
 };
 
 struct chat_window : serialisable, frameable
@@ -115,7 +110,7 @@ struct chat_window : serialisable, frameable
     void invalidate();
 };
 
-struct terminal_imgui : serialisable, cacheable, frameable
+struct terminal_imgui : serialisable, cacheable, frameable, free_function
 {
     scrollbar_hack scroll_hack;
 
@@ -135,21 +130,6 @@ struct terminal_imgui : serialisable, cacheable, frameable
     editable_string command;
 
     auto_handler auto_handle;
-
-    SERIALISE_SIGNATURE(terminal_imgui)
-    {
-        if(ctx.serialisation && !ctx.encode)
-        {
-            auto_handle.found_unprocessed_autocompletes.clear();
-            auto_handle.found_args.clear();
-            auto_handle.is_valid.clear();
-        }
-
-        DO_SERIALISE(history);
-        DO_SERIALISE(chat_threads);
-        DO_SERIALISE(command);
-        DO_SERIALISE(auto_handle); ///no clearing?
-    }
 
     void check_insert_user_command();
 

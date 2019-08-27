@@ -12,6 +12,7 @@
 #include "stacktrace.hpp"
 #include "editable_string.hpp"
 #include "tokeniser.hpp"
+#include "serialisables.hpp"
 
 ///ruh roh
 ///need to structure this project properly
