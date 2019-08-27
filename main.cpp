@@ -97,54 +97,11 @@ int main()
 
     //steam_api_context.handle_auth(shared);
 
-    /*int window_width = 1200;
-    int window_height = 600;
-
-    std::string general_file = "./window.txt";
-
-    if(file_exists(general_file))
-    {
-        using nlohmann::json;
-
-        std::string str = read_file_bin(general_file);
-
-        try
-        {
-            json j;
-            j = json::parse(str);
-
-            if(j.find("width_px") != j.end() && j.find("height_px") != j.end())
-            {
-                window_width = j["width_px"];
-                window_height = j["height_px"];
-                //window.setSize(sf::Vector2u((int)j["width_px"], (int)j["height_px"]));
-            }
-        }
-        catch(...){}
-    }
-
-    sf::ContextSettings sett;
-    sett.antialiasingLevel = 1;
-    sett.sRgbCapable = use_srgb;
-
-    sf::RenderWindow window;
-    window.create(sf::VideoMode(window_width, window_height), "net_code", sf::Style::Default, sett);
-    window.resetGLStates();*/
-
     window_context window_ctx;
 
     sf::RenderWindow& window = window_ctx.win;
 
     ImGui::SFML::Init(window, false);
-
-    //ImGuiFreeType::BuildFontAtlas(io.Fonts, 0);
-    //ImGui::SFML::UpdateFontTexture();
-
-    //My name is
-
-    //ImVec4 vec = ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive);
-    //ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0,0,0,0));
-    //printf("%f %f %f %f\n", vec.x, vec.y, vec.z, vec.w);
 
     ImGui::SetStyleLinearColor(window_ctx.is_srgb);
 
@@ -305,9 +262,6 @@ int main()
     sf::Clock request_clock;
 
     sf::Clock write_clock;
-
-    //sf::Clock inactivity_timer;
-    //double inactivity_time_ms = 100;
 
     int active_frames_restart = 1;
     int active_frames = active_frames_restart;
@@ -689,15 +643,11 @@ int main()
             for(int i=0; i < (int)realtime_str.size(); i++)
             {
                 view[i] = make_view(realtime_str[i]);
-
-                //std::cout << realtime_str[i] << std::endl;
             }
 
             for(int i=0; i < (int)on_pressed.size(); i++)
             {
                 pressed_view[i] = make_view(on_pressed[i]);
-
-                //std::cout << "pressed " << on_pressed[i] << std::endl;
             }
 
             for(int i=0; i < (int)on_released.size(); i++)
@@ -753,8 +703,6 @@ int main()
 
         if(!is_focused(focused) || term.get_id_of_focused_realtime_window() == -1)
             script_mousewheel_delta = 0;
-
-        //printf("delta %f\n", mouse_delta);
 
         term.scroll_hack.scrolled_this_frame = mouse_delta;
         chat_win.scroll_hack.scrolled_this_frame = mouse_delta;
@@ -997,17 +945,6 @@ int main()
             //to_edit->push_command_to_history(to_edit->command);
         }
 
-        #ifdef TESTING
-        ImGui::Begin("Debug_window");
-
-        for(auto& i : api_calls)
-        {
-            ImGui::Text(i.c_str());
-        }
-
-        ImGui::End();
-        #endif // TESTING
-
         chat_win.tick();
 
         auto sf_mpos = mouse.getPosition(window);
@@ -1090,9 +1027,6 @@ int main()
         chat_win.render(window, term.chat_threads, should_coordinate_focus);
         term.render(window, should_coordinate_focus);
 
-        //window.display();
-        //window.clear();
-
         should_coordinate_focus = false;
 
         if(was_closed_id != -1)
@@ -1146,8 +1080,6 @@ int main()
 
     save_to_file_json(terminal_file, serialise(term, serialise_mode::DISK));
     save_to_file_json(chat_file, serialise(chat_win, serialise_mode::DISK));
-
-    //sd_set_termination(shared);
 
     nc_shutdown(shared);
 
