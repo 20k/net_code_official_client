@@ -227,6 +227,8 @@
 			<Add option="-lwinmm" />
 			<Add option="-lgdi32" />
 			<Add option="-lws2_32" />
+			<Add option="-lcrypto" />
+			<Add option="-lssl" />
 			<Add library="deps/libncclient/libncclient.a" />
 			<Add directory="deps/SFML/lib" />
 		</Linker>
