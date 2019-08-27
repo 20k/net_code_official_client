@@ -257,8 +257,6 @@ int main()
 
     sf::Clock render_clock;
 
-    sf::Clock client_poll_clock;
-
     sf::Clock request_clock;
 
     sf::Clock write_clock;
@@ -970,13 +968,6 @@ int main()
             #endif // TESTING
 
             term.add_text_from_server(shared, fdata, chat_win);
-        }
-
-        if(client_poll_clock.getElapsedTime().asMilliseconds() > 500)
-        {
-            sa_do_poll_server(shared);
-
-            client_poll_clock.restart();
         }
 
         if(write_clock.getElapsedTime().asMilliseconds() > 2000)

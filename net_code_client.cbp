@@ -27,6 +27,7 @@
 				</Compiler>
 				<Linker>
 					<Add option="-O2" />
+					<Add option="-s" />
 				</Linker>
 				<ExtraCommands>
 					<Add after="build_test.bat" />
@@ -251,6 +252,7 @@
 		<Unit filename="deps/imgui/imgui_widgets.cpp" />
 		<Unit filename="deps/imgui/misc/freetype/imgui_freetype.cpp" />
 		<Unit filename="deps/imgui/misc/freetype/imgui_freetype.h" />
+		<Unit filename="deps/networking/beast_compilation_unit.cpp" />
 		<Unit filename="deps/networking/networking.cpp" />
 		<Unit filename="deps/networking/networking.hpp" />
 		<Unit filename="deps/networking/serialisable.cpp" />
