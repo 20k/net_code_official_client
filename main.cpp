@@ -934,17 +934,11 @@ int main()
                 }
             }
 
-            printf("Renter\n");
-
             nlohmann::json d1 = serialise(term, serialise_mode::DISK);
             nlohmann::json d2 = serialise(chat_win, serialise_mode::DISK);
 
-            printf("R3fer\n");
-
             save_to_file_json(terminal_file, d1);
             save_to_file_json(chat_file, d2);
-
-            printf("EndEnter\n");
         }
         else if(enter && to_edit->command.size() == 0)
         {

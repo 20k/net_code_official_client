@@ -83,14 +83,6 @@ struct interop_char : serialisable, free_function
     vec3f col = {255,255,255};
     bool is_cursor = false;
     bool coloured = false;
-
-    /*SERIALISE_SIGNATURE(interop_char)
-    {
-        DO_SERIALISE(c);
-        DO_SERIALISE(col);
-        DO_SERIALISE(is_cursor);
-        DO_SERIALISE(coloured);
-    }*/
 };
 
 using interop_vec_t = std::vector<interop_char>;
