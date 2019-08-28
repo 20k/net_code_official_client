@@ -122,28 +122,8 @@ std::string default_up_handling(const std::string& user, const std::string& serv
     return server_msg;
 }
 
-///test new repo
-int main()
+void handle_auth(c_steam_api csapi, connection& conn)
 {
-    //test();
-
-    CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-
-    stack_on_start();
-
-    //token_tests();
-
-    c_steam_api csapi = steam_api_alloc();
-
-    //c_shared_data shared = sd_alloc();
-
-    //font.loadFromFile("VeraMono.ttf");
-
-    //nc_start_ssl_steam_auth(shared, csapi, HOST_IP, HOST_PORT_SSL);
-
-    connection conn;
-    conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
-
     if(steam_api_enabled(csapi))
     {
         ///embed key.key
@@ -165,7 +145,7 @@ int main()
         if(!steam_api_has_encrypted_token(csapi))
         {
             printf("Failed to get encrypted token");
-            return 1;
+            throw std::runtime_error("Could not fetch steam token");
         }
 
         sized_string str = steam_api_get_encrypted_token(csapi);
@@ -194,12 +174,29 @@ int main()
     {
         ///no auth available
         printf("No auth methods available, use steam or key.key file");
-        return 1;
+        throw std::runtime_error("No auth method available");
     }
+}
+
+///test new repo
+int main()
+{
+    //test();
+
+    CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+
+    stack_on_start();
+
+    //token_tests();
+
+    c_steam_api csapi = steam_api_alloc();
+
+    connection conn;
+    conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
+
+    handle_auth(csapi, conn);
 
     ///need to write auth data here!
-
-    //steam_api_context.handle_auth(shared);
 
     window_context window_ctx;
 
@@ -398,6 +395,8 @@ int main()
 
     std::string current_user = "";
 
+    sf::Clock connection_clock;
+
     while(running)
     {
         if(font_select.update_rebuild(window, font_select.current_base_font_size))
@@ -405,6 +404,16 @@ int main()
             term.invalidate();
 
             active_frames = active_frames_restart;
+        }
+
+        if(connection_clock.getElapsedTime().asSeconds() > 5 && !conn.client_connected_to_server)
+        {
+            conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
+            connection_clock.restart();
+
+            handle_auth(csapi, conn);
+
+            term.add_text("Connecting...");
         }
 
         realtime_shim.clear_command();
