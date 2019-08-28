@@ -1066,8 +1066,6 @@ int main()
             ///this is temporary before the other end of the api gets changed
             nlohmann::json data = nlohmann::json::parse(fdata);
 
-            std::cout << "serv " << data << std::endl;
-
             if(data["type"] == "auth")
             {
                 std::string key = data["data"];
