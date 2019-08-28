@@ -592,6 +592,20 @@ void fix_tabs(std::string& str)
     }
 }
 
+void terminal_imgui::add_text(const std::string& str)
+{
+    raw_history.push_back(str);
+    history.push_back(string_to_interop(str, false, auto_handle));
+
+    limit_size(raw_history, MAX_TEXT_HISTORY);
+    limit_size(history, MAX_TEXT_HISTORY);
+    consider_resetting_scrollbar = true;
+
+    de_newline(history);
+
+    invalidate();
+}
+
 void terminal_imgui::add_text_from_server(c_shared_data shared, const std::string& in, chat_window& chat_win, bool server_command)
 {
     if(in == "")

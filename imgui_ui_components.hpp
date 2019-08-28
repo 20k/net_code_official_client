@@ -142,6 +142,7 @@ struct terminal_imgui : serialisable, cacheable, frameable, free_function
     void render_realtime_windows(c_shared_data data, int& was_closed_id);
     void bump_command_to_history();
 
+    void add_text(const std::string& str);
     void add_text_from_server(c_shared_data shared, const std::string& in, chat_window& chat_win, bool server_command = true);
 
     void add_text_to_current_chat_thread(chat_window& chat_win, const std::string& text);

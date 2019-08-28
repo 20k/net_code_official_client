@@ -13,6 +13,7 @@
 #include "editable_string.hpp"
 #include "tokeniser.hpp"
 #include "serialisables.hpp"
+#include <networking/networking.hpp>
 
 ///ruh roh
 ///need to structure this project properly
@@ -68,14 +69,58 @@ std::string make_lower(std::string in)
 #endif // LOCAL_IP
 
 #ifdef EXTERN_IP
-#define HOST_PORT "6760"
-#define HOST_PORT_SSL "6780"
+#define HOST_PORT 6760
+#define HOST_PORT_SSL 6780
 #endif // EXTERN_IP
 
 #ifdef LOCAL_IP
-#define HOST_PORT "6761"
-#define HOST_PORT_SSL "6781"
+#define HOST_PORT 6761
+#define HOST_PORT_SSL 6781
 #endif // LOCAL_IP
+
+std::string default_up_handling(const std::string& user, const std::string& server_msg, const std::string& scripts_dir)
+{
+    std::string up = "#up ";
+    std::string up_es6 = "#up_es6 ";
+    std::string dry = "#dry ";
+
+    std::vector<std::string> strings = no_ss_split(server_msg, " ");
+
+    if((starts_with(server_msg, up) || starts_with(server_msg, dry)) && strings.size() == 2)
+    {
+        std::string name = strings[1];
+
+        std::string diskname = scripts_dir + user + "." + name + ".es5.js";
+        std::string diskname_es6 = scripts_dir + user + "." + name + ".js";
+        std::string diskname_ts = scripts_dir + user + "." + name + ".ts";
+
+        std::string comm = up;
+
+        if(starts_with(server_msg, dry))
+            comm = dry;
+
+        std::string data = "";
+
+        if(file_exists(diskname))
+            data = read_file(diskname);
+
+        if(file_exists(diskname_es6))
+        {
+            data = read_file(diskname_es6);
+            comm = up_es6;
+        }
+
+        if(file_exists(diskname_ts))
+        {
+            data = read_file(diskname_ts);
+            comm = up_es6;
+        }
+
+        return comm + name + " " + data;
+    }
+
+    return server_msg;
+}
 
 ///test new repo
 int main()
@@ -90,11 +135,14 @@ int main()
 
     c_steam_api csapi = steam_api_alloc();
 
-    c_shared_data shared = sd_alloc();
+    //c_shared_data shared = sd_alloc();
 
     //font.loadFromFile("VeraMono.ttf");
 
-    nc_start_ssl_steam_auth(shared, csapi, HOST_IP, HOST_PORT_SSL);
+    //nc_start_ssl_steam_auth(shared, csapi, HOST_IP, HOST_PORT_SSL);
+
+    connection conn;
+    conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
 
     //steam_api_context.handle_auth(shared);
 
@@ -293,6 +341,8 @@ int main()
 
     font_render_context font_context(font_select, window_ctx);
 
+    std::string current_user = "";
+
     while(running)
     {
         if(font_select.update_rebuild(window, font_select.current_base_font_size))
@@ -368,10 +418,8 @@ int main()
                     break;
                 }
 
-                if(sd_has_front_read(shared))
-                {
+                if(conn.has_read())
                     break;
-                }
 
                 steam_api_pump_events(csapi);
 
@@ -635,38 +683,14 @@ int main()
 
         if(term.get_id_of_focused_realtime_window() != -1 && (realtime_str.size() > 0 || on_pressed.size() > 0 || on_released.size() > 0))
         {
-            sized_view* view = new sized_view[realtime_str.size()];
-            sized_view* pressed_view = new sized_view[on_pressed.size()];
-            sized_view* released_view = new sized_view[on_released.size()];
+            nlohmann::json data;
+            data["type"] = "send_keystrokes_to_script";
+            data["id"] = term.get_id_of_focused_realtime_window();
+            data["input_keys"] = realtime_str;
+            data["pressed_keys"] = on_pressed;
+            data["released_keys"] = on_released;
 
-            for(int i=0; i < (int)realtime_str.size(); i++)
-            {
-                view[i] = make_view(realtime_str[i]);
-            }
-
-            for(int i=0; i < (int)on_pressed.size(); i++)
-            {
-                pressed_view[i] = make_view(on_pressed[i]);
-            }
-
-            for(int i=0; i < (int)on_released.size(); i++)
-            {
-                released_view[i] = make_view(on_released[i]);
-            }
-
-            ///pipe keys to server
-            ///todo make enter work
-            sa_do_send_keystrokes_to_script(shared, term.get_id_of_focused_realtime_window(),
-                                            view, realtime_str.size(),
-                                            pressed_view, on_pressed.size(),
-                                            released_view, on_released.size());
-
-            delete [] view;
-            delete [] pressed_view;
-            delete [] released_view;
-            realtime_str.clear();
-            on_pressed.clear();
-            on_released.clear();
+            conn.write(data.dump());
         }
 
         if(term.get_id_of_focused_realtime_window() != -1 && mouse_clock.getElapsedTime().asMicroseconds() / 1000. >= mouse_send_time_ms && is_focused(focused))
@@ -694,7 +718,15 @@ int main()
             {
                 vec2f char_mpos = mpos / (vec2f){char_inf::cwidth, char_inf::cheight};
 
-                sa_do_update_mouse_to_script(shared, term.get_id_of_focused_realtime_window(), 0.f, script_mousewheel_delta, char_mpos.x(), char_mpos.y());
+                nlohmann::json data;
+                data["type"] = "update_mouse_to_script";
+                data["id"] = term.get_id_of_focused_realtime_window();
+                data["mouse_x"] = char_mpos.x();
+                data["mouse_y"] = char_mpos.y();
+                data["mousewheel_x"] = 0.f;
+                data["mousewheel_y"] = script_mousewheel_delta;
+
+                conn.write(data.dump());
             }
 
             script_mousewheel_delta = 0;
@@ -769,7 +801,7 @@ int main()
                 ///NEED TO WAIT FOR SERVER CONFIRMATION
                 if(spl.size() >= 2)
                 {
-                    sd_set_user(shared, make_view(spl[1]));
+                    current_user = spl[1];
                 }
             }
 
@@ -777,19 +809,13 @@ int main()
             {
                 if(!sa_is_local_command(make_view(term.command.command)))
                 {
-                    sized_string current_user = sd_get_user(shared);
+                    std::string up_data = default_up_handling(current_user, term.command.command, "./scripts/");
 
-                    sized_string up_handled = sa_default_up_handling(make_view(current_user), make_view(term.command.command), make_view_from_raw("./scripts/"));
+                    nlohmann::json data;
+                    data["type"] = "generic_server_command";
+                    data["data"] = up_data;
 
-                    sized_string server_command = sa_make_generic_server_command(make_view(up_handled));
-
-                    std::string str = c_str_sized_to_cpp(server_command);
-
-                    free_sized_string(server_command);
-                    free_sized_string(up_handled);
-                    free_sized_string(current_user);
-
-                    sd_add_back_write(shared, make_view(str));
+                    conn.write(data.dump());
                 }
             }
             else
@@ -803,17 +829,17 @@ int main()
 
                 if(command == "/join")
                 {
-                    sd_add_back_read(shared, make_view("command Syntax is /join channel password"));
+                    term.add_text("Syntax is /join channel password");
                     bump = true;
                 }
                 else if(command == "/leave")
                 {
-                    sd_add_back_read(shared, make_view("command Syntax is /leave channel"));
+                    term.add_text("Syntax is /leave channel");
                     bump = true;
                 }
                 else if(command == "/create")
                 {
-                    sd_add_back_read(shared, make_view("command Syntax is /create channel password"));
+                    term.add_text("Syntax is /create channel password");
                     bump = true;
                 }
                 else if(starts_with(command, "/"))
@@ -826,7 +852,7 @@ int main()
 
                     if(idx + 1 >= (int)command.size())
                     {
-                        sd_add_back_read(shared, make_view("command First argument must be a channel name, eg /join global"));
+                        term.add_text("First argument must be a channel name, eg /join global");
                     }
                     else
                     {
@@ -879,12 +905,16 @@ int main()
                         }
                         else
                         {
-                            sd_add_back_read(shared, make_view("command Not a valid command, try /join, /leave or /create"));
+                            term.add_text("Not a valid command, try /join, /leave or /create");
                         }
 
                         if(final_command != "")
                         {
-                            sd_add_back_write(shared, make_view("client_chat_respond " + final_command));
+                            nlohmann::json data;
+                            data["type"] = "client_chat_respond";
+                            data["data"] = final_command;
+
+                            conn.write(data.dump());
                         }
                     }
                 }
@@ -892,12 +922,11 @@ int main()
                 {
                     std::string escaped_string = escape_str(chat_win.command.command);
 
-                    sized_string chat_command = sa_make_chat_command(make_view(chat_win.selected), make_view(escaped_string));
+                    nlohmann::json data;
+                    data["type"] = "client_chat";
+                    data["data"] = escaped_string;
 
-                    ///TODO
-                    sd_add_back_write(shared, make_view(chat_command));
-
-                    free_sized_string(chat_command);
+                    conn.write(data.dump());
                 }
 
                 if(bump)
