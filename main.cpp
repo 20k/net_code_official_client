@@ -951,11 +951,9 @@ int main()
             {
                 bool should_shutdown = false;
 
-                sized_string found_user = sd_get_user(shared);
-                std::string data = handle_local_command(c_str_sized_to_cpp(found_user), cmd, term.auto_handle, should_shutdown, term);
-                free_sized_string(found_user);
+                std::string data = handle_local_command(current_user, cmd, term.auto_handle, should_shutdown, term);
 
-                term.add_text_from_server(shared, data, chat_win, false);
+                term.add_text_from_server(current_user, data, chat_win, false);
 
                 if(should_shutdown)
                 {
@@ -971,9 +969,7 @@ int main()
         }
         else if(enter && to_edit->command.size() == 0)
         {
-            sd_add_back_read(shared, make_view("command "));
-
-            //to_edit->push_command_to_history(to_edit->command);
+            term.add_text(" ");
         }
 
         chat_win.tick();
@@ -988,19 +984,17 @@ int main()
             get_global_copy_handler()->on_hold_lclick(window,  vpos);
         }
 
-        while(sd_has_front_read(shared))
+        while(conn.has_read())
         {
             active_frames = active_frames_restart;
 
-            sized_string c_data = sd_get_front_read(shared);
-            std::string fdata = c_str_sized_to_cpp(c_data);
-            free_sized_string(c_data);
+            std::string fdata = conn.read_from().data;
 
             #ifdef TESTING
             api_calls.push_back(fdata);
             #endif // TESTING
 
-            term.add_text_from_server(shared, fdata, chat_win);
+            term.add_text_from_server(current_user, fdata, chat_win);
         }
 
         if(write_clock.getElapsedTime().asMilliseconds() > 2000)
