@@ -1018,7 +1018,7 @@ int main()
 
                 std::string data = handle_local_command(current_user, cmd, term.auto_handle, should_shutdown, term);
 
-                term.add_text_from_server(current_user, data, chat_win, false);
+                term.add_text(data);
 
                 if(should_shutdown)
                 {
@@ -1066,6 +1066,8 @@ int main()
             ///this is temporary before the other end of the api gets changed
             nlohmann::json data = nlohmann::json::parse(fdata);
 
+            std::cout << "serv " << data << std::endl;
+
             if(data["type"] == "auth")
             {
                 std::string key = data["data"];
@@ -1083,7 +1085,7 @@ int main()
                 }
             }
 
-            term.add_text_from_server(current_user, fdata, chat_win);
+            term.add_text_from_server(current_user, data, chat_win);
         }
 
         if(write_clock.getElapsedTime().asMilliseconds() > 2000)
