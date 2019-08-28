@@ -966,7 +966,8 @@ int main()
                         if(final_command != "")
                         {
                             nlohmann::json data;
-                            data["type"] = "client_chat_respond";
+                            data["type"] = "client_chat";
+                            data["respond"] = 1;
                             data["data"] = final_command;
 
                             conn.write(data.dump());
