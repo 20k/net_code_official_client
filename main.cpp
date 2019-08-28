@@ -1094,7 +1094,7 @@ int main()
         {
             request_clock.restart();
 
-            for(auto& str : term.auto_handle.found_unprocessed_autocompletes)
+            for(const std::string& str : term.auto_handle.found_unprocessed_autocompletes)
             {
                 nlohmann::json data;
                 data["type"] = "autocomplete_request";
