@@ -1044,7 +1044,11 @@ int main()
         {
             active_frames = active_frames_restart;
 
-            std::string fdata = conn.read_from().data;
+            write_data dat = conn.read_from();
+
+            std::string fdata = dat.data;
+
+            conn.pop_read(dat.id);
 
             #ifdef TESTING
             api_calls.push_back(fdata);
