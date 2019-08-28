@@ -613,125 +613,126 @@ void terminal_imgui::add_text(const std::string& str)
     invalidate();
 }
 
-void terminal_imgui::add_text_from_server(std::string& in_user, const std::string& in, chat_window& chat_win, bool server_command)
+void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::json& in, chat_window& chat_win, bool server_command)
 {
     if(in == "")
         return;
 
-    std::string str = in;
+    std::string str;
 
-    fix_tabs(str);
+    /*std::string str = in;
 
-    server_command_info command_info = sa_server_response_to_info(make_view(in));
+    fix_tabs(str);*/
+
+    //server_command_info command_info = sa_server_response_to_info(make_view(in));
+
+    std::string type = in["type"];
 
     bool push = false;
 
     if(server_command)
     {
-        if(command_info.type == server_command_command)
+        if(type == "server_msg")
         {
-            str = c_str_consume(sa_command_to_human_readable(command_info)) + "\n";
+            str = in["data"];
+
+            if(in.count("pad") == 0 || in["pad"] == 0)
+            {
+                str += "\n";
+            }
 
             invalidate();
 
             push = true;
         }
-        else if(command_info.type == server_command_command_no_pad)
+        else if(type == "command_realtime")
         {
-            str = c_str_consume(sa_command_to_human_readable(command_info));
+            int id = in["id"];
 
-            invalidate();
+            int width = 0;
+            int height = 0;
 
-            push = true;
-        }
-        else if(command_info.type == server_command_command_realtime)
-        {
-            realtime_info info = sa_command_realtime_to_info(command_info);
+            bool should_close = false;
 
-            realtime_script_windows[info.id].last_message.restart();
+            if(in.count("width") > 0)
+                width = in["width"];
+            if(in.count("height") > 0)
+                height = in["height"];
+            if(in.count("close") > 0)
+                should_close = in["close"];
 
-            if(!info.should_close && info.msg.num > 0)
-                realtime_script_windows[info.id].parsed_data = string_to_interop_no_autos(c_str_sized_to_cpp(info.msg), false);
+            realtime_script_windows[id].last_message.restart();
 
-            if(info.should_close)
+            if(!should_close && in.count("msg") > 0)
+                realtime_script_windows[id].parsed_data = string_to_interop_no_autos(in["msg"], false);
+
+            if(should_close)
             {
                 for(auto& i : realtime_script_windows)
                 {
                     int id = i.first;
                     realtime_script_run& run = i.second;
 
-                    if(id == info.id)
+                    if(id == id)
                     {
                         run.open = false;
                     }
                 }
             }
 
-            if(info.width != 0 && info.height != 0)
+            if(width != 0 && height != 0)
             {
-                if(info.width < 5)
-                    info.width = 5;
-                if(info.height < 5)
-                    info.height = 5;
+                if(width < 5)
+                    width = 5;
+                if(height < 5)
+                    height = 5;
 
-                if(info.width > 300)
-                    info.width = 300;
-                if(info.height > 300)
-                    info.height = 300;
+                if(width > 300)
+                    width = 300;
+                if(height > 300)
+                    height = 300;
 
-                realtime_script_windows[info.id].set_size = true;
+                realtime_script_windows[id].set_size = true;
 
-                int rwidth = info.width * char_inf::cwidth;
-                int rheight = info.height * char_inf::cheight;
+                int rwidth = width * char_inf::cwidth;
+                int rheight = height * char_inf::cheight;
 
-                realtime_script_windows[info.id].dim.x() = rwidth;
-                realtime_script_windows[info.id].dim.y() = rheight;
+                realtime_script_windows[id].dim.x() = rwidth;
+                realtime_script_windows[id].dim.y() = rheight;
             }
 
-            if(info.name.num > 0)
+            if(in.count("name") > 0)
             {
-                realtime_script_windows[info.id].script_name = c_str_sized_to_cpp(info.name);
+                realtime_script_windows[id].script_name = in["name"];
             }
-
-            sa_destroy_realtime_info(info);
         }
-        else if(command_info.type == server_command_chat_api)
+        else if(in["type"] == "chat_api")
         {
             std::vector<std::string> chnls;
             std::vector<std::string> msgs;
 
-            std::vector<std::string> in_channels;
+            std::vector<std::string> in_channels = in["channels"];
 
-            std::vector<std::string> tell_msgs;
+            std::vector<std::string> tell_msgs = in["tells"];
 
-            chat_api_info chat_info = sa_chat_api_to_info(command_info);
+            std::vector<std::string> notifs = in["notifs"];
 
-            for(int i=0; i < chat_info.num_msgs; i++)
+            for(int i=0; i < (int)in["data"].size(); i++)
             {
-                chnls.push_back(c_str_sized_to_cpp(chat_info.msgs[i].channel));
-                msgs.push_back(c_str_sized_to_cpp(chat_info.msgs[i].msg));
+                chnls.push_back(in["data"][i]["channel"]);
+                msgs.push_back(in["data"][i]["text"]);
             }
 
-            for(int i=0; i < chat_info.num_in_channels; i++)
+            for(const std::string& i : notifs)
             {
-                in_channels.push_back(c_str_sized_to_cpp(chat_info.in_channels[i].channel));
+                raw_history.push_back(i + "\n");
+                history.push_back(string_to_interop_no_autos(i + "\n", false));
             }
 
-            for(int i=0; i < chat_info.num_tells; i++)
-            {
-                tell_msgs.push_back(c_str_sized_to_cpp(chat_info.tells[i].msg));
-            }
-
-            for(int i=0; i < chat_info.num_notifs; i++)
-            {
-                raw_history.push_back(c_str_sized_to_cpp(chat_info.notifs[i].msg) + "\n");
-                history.push_back(string_to_interop_no_autos(c_str_sized_to_cpp(chat_info.notifs[i].msg) + "\n", false));
-            }
-
-            if(chat_info.num_tells > 0 || chat_info.num_notifs > 0 || chat_info.num_msgs > 0)
+            if(tell_msgs.size() > 0 || notifs.size() > 0 || msgs.size() > 0)
                 invalidate();
 
-            std::string next_user = c_str_sized_to_cpp(chat_info.current_user);
+            std::string next_user = in["user"];
 
             if(next_user != current_user)
             {
@@ -739,11 +740,9 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const std::strin
                 current_user = next_user;
             }
 
-            std::string root_user = c_str_sized_to_cpp(chat_info.root_user);
+            std::string root_user = in["root_user"];
 
             in_user = root_user;
-
-            sa_destroy_chat_api_info(chat_info);
 
             chat_win.set_side_channels(in_channels);
 

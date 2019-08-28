@@ -1064,13 +1064,12 @@ int main()
             #endif // TESTING
 
             ///this is temporary before the other end of the api gets changed
-            std::string auth_str = "command_auth secret ";
+            nlohmann::json data = nlohmann::json::parse(fdata);
 
-            if(fdata.size() >= auth_str.size() && fdata.substr(0, auth_str.size()) == auth_str)
+            if(data["type"] == "auth")
             {
-                auto start = fdata.begin() + auth_str.size();
+                std::string key = data["data"];
                 std::string key_file = "key.key";
-                std::string key(start, fdata.end());
 
                 if(!file_exists(key_file))
                 {

@@ -145,7 +145,7 @@ struct terminal_imgui : serialisable, cacheable, frameable, free_function
     void bump_command_to_history();
 
     void add_text(const std::string& str);
-    void add_text_from_server(std::string& current_user, const std::string& in, chat_window& chat_win, bool server_command = true);
+    void add_text_from_server(std::string& current_user, const nlohmann::json& in, chat_window& chat_win, bool server_command = true);
 
     void add_text_to_current_chat_thread(chat_window& chat_win, const std::string& text);
 
