@@ -1049,6 +1049,27 @@ int main()
             api_calls.push_back(fdata);
             #endif // TESTING
 
+            ///this is temporary before the other end of the api gets changed
+            std::string auth_str = "command_auth secret ";
+
+            if(fdata.size() >= auth_str.size() && fdata.substr(0, auth_str.size()) == auth_str)
+            {
+                auto start = fdata.begin() + auth_str.size();
+                std::string key_file = "key.key";
+                std::string key(start, fdata.end());
+
+                if(!file_exists(key_file))
+                {
+                    write_all_bin(key_file, key);
+
+                    term.add_text(make_success_col("Success! Try user lowercase_name to get started, and then #scripts.core()"));
+                }
+                else
+                {
+                    term.add_text(make_error_col("Did not overwrite existing key file, you are already registered"));
+                }
+            }
+
             term.add_text_from_server(current_user, fdata, chat_win);
         }
 
