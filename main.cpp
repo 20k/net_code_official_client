@@ -980,7 +980,7 @@ int main()
 
                     nlohmann::json data;
                     data["type"] = "client_chat";
-                    data["data"] = escaped_string;
+                    data["data"] = "#hs.msg.send({channel:\"" + chat_win.selected + "\", msg:\"" + escaped_string + "\"})";
 
                     conn.write(data.dump());
                 }
