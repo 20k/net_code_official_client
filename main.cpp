@@ -1088,8 +1088,8 @@ int main()
 
         if(write_clock.getElapsedTime().asMilliseconds() > 2000)
         {
-            save_to_file_json(terminal_file, serialise(term, serialise_mode::DISK));
-            save_to_file_json(chat_file, serialise(chat_win, serialise_mode::DISK));
+            atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK).dump());
+            atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK).dump());
 
             write_clock.restart();
         }
@@ -1197,8 +1197,8 @@ int main()
         }
     }
 
-    save_to_file_json(terminal_file, serialise(term, serialise_mode::DISK));
-    save_to_file_json(chat_file, serialise(chat_win, serialise_mode::DISK));
+    atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK).dump());
+    atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK).dump());
 
     CoUninitialize();
 
