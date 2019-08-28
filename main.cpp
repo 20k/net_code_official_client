@@ -144,6 +144,61 @@ int main()
     connection conn;
     conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
 
+    if(steam_api_enabled(csapi))
+    {
+        ///embed key.key
+        if(file_exists("key.key"))
+        {
+            printf("Embedding key auth in steam auth\n");
+
+            steam_api_request_encrypted_token(csapi, make_view(read_file_bin("key.key")));
+        }
+        else
+        {
+            printf("Steam auth, no key auth");
+
+            steam_api_request_encrypted_token(csapi, make_view_from_raw(""));
+        }
+
+        while(steam_api_should_wait_for_encrypted_token(csapi)){}
+
+        if(!steam_api_has_encrypted_token(csapi))
+        {
+            printf("Failed to get encrypted token");
+            return 1;
+        }
+
+        sized_string str = steam_api_get_encrypted_token(csapi);
+
+        std::string etoken = c_str_consume(str);
+        etoken = binary_to_hex(etoken);
+
+        nlohmann::json data;
+        data["type"] = "steam_auth";
+        data["data"] = etoken;
+
+        conn.write(data.dump());
+    }
+    ///use key based auth
+    else if(file_exists("key.key"))
+    {
+        printf("Pure key auth\n");
+
+        nlohmann::json data;
+        data["type"] = "key_auth";
+        data["data"] = binary_to_hex(read_file_bin("key.key"));
+
+        conn.write(data.dump());
+    }
+    else
+    {
+        ///no auth available
+        printf("No auth methods available, use steam or key.key file");
+        return 1;
+    }
+
+    ///need to write auth data here!
+
     //steam_api_context.handle_auth(shared);
 
     window_context window_ctx;
