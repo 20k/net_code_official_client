@@ -1057,7 +1057,11 @@ int main()
 
         if(was_closed_id != -1)
         {
-            sa_do_terminate_script(shared, was_closed_id);
+            nlohmann::json data;
+            data["type"] = "client_terminate_scripts";
+            data["id"] = was_closed_id;
+
+            conn.write(data.dump());
         }
 
         if(term.auto_handle.tab_pressed)
@@ -1106,8 +1110,6 @@ int main()
 
     save_to_file_json(terminal_file, serialise(term, serialise_mode::DISK));
     save_to_file_json(chat_file, serialise(chat_win, serialise_mode::DISK));
-
-    nc_shutdown(shared);
 
     CoUninitialize();
 
