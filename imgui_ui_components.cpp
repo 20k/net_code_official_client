@@ -624,8 +624,6 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
 
     fix_tabs(str);*/
 
-    //server_command_info command_info = sa_server_response_to_info(make_view(in));
-
     std::string type = in["type"];
 
     bool push = false;
@@ -635,6 +633,17 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
         if(type == "server_msg")
         {
             str = in["data"];
+
+            fix_tabs(str);
+
+            if(in.count("tag") > 0)
+            {
+                std::string tag = in["tag"];
+
+                tag_manager& tag_manage = get_global_tag_manager();
+
+                tag_manage.add_tagged(tag, str);
+            }
 
             if(in.count("pad") == 0 || in["pad"] == 0)
             {
@@ -670,10 +679,10 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
             {
                 for(auto& i : realtime_script_windows)
                 {
-                    int id = i.first;
+                    int fid = i.first;
                     realtime_script_run& run = i.second;
 
-                    if(id == id)
+                    if(id == fid)
                     {
                         run.open = false;
                     }
@@ -723,8 +732,10 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
                 msgs.push_back(in["data"][i]["text"]);
             }
 
-            for(const std::string& i : notifs)
+            for(auto& i : notifs)
             {
+                fix_tabs(i);
+
                 raw_history.push_back(i + "\n");
                 history.push_back(string_to_interop_no_autos(i + "\n", false));
             }
@@ -748,6 +759,8 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
 
             for(int i=0; i < (int)chnls.size(); i++)
             {
+                fix_tabs(msgs[i]);
+
                 if(chat_win.show_chat_in_main_window)
                 {
                     raw_history.push_back(msgs[i]);
@@ -761,6 +774,8 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
 
             for(auto& i : tell_msgs)
             {
+                fix_tabs(i);
+
                 raw_history.push_back(i + "\n");
                 history.push_back(string_to_interop_no_autos(i + "\n", false));
             }
@@ -769,46 +784,42 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
             limit_size(history, MAX_TEXT_HISTORY);
             de_newline(history);
         }
-        else if(command_info.type == server_command_server_scriptargs)
+        else if(in["type"] == "script_args")
         {
-            std::cout << str << std::endl;
+            std::string scriptname = in["script"];
 
-            script_argument_list args = sa_server_scriptargs_to_list(command_info);
+            std::cout << scriptname << std::endl;
 
-            if(args.scriptname.str != nullptr && args.scriptname.num > 0)
+            if(scriptname.size() > 0)
             {
                 std::vector<autocomplete_args> auto_args;
 
-                for(int i=0; i < args.num; i++)
+                for(int i=0; i < (int)in["keys"].size(); i++)
                 {
-                    std::string key = c_str_sized_to_cpp(args.args[i].key);
-                    std::string val = c_str_sized_to_cpp(args.args[i].val);
+                    std::string key = in["keys"][i];
+                    std::string val = in["vals"][i];
 
                     auto_args.push_back({key, val});
                 }
 
-                std::string scriptname = c_str_sized_to_cpp(args.scriptname);
-
                 auto_handle.found_args[scriptname] = auto_args;
                 auto_handle.is_valid[scriptname] = true;
             }
-
-            sa_destroy_script_argument_list(args);
         }
-        else if(command_info.type == server_command_server_scriptargs_invalid)
+        else if(in["type"] == "script_args_invalid")
         {
-            std::cout << "inv " << str << std::endl;
+            std::string scriptname = in["script"];
 
-            std::string name = c_str_consume(sa_server_scriptargs_invalid_to_script_name(command_info));
+            std::cout << "inv " << scriptname << std::endl;
 
-            if(name.size() > 0)
+            if(scriptname.size() > 0)
             {
-                auto_handle.is_valid[name] = false;
+                auto_handle.is_valid[scriptname] = false;
             }
         }
-        else if(command_info.type == server_command_server_scriptargs_ratelimit)
+        else if(in["type"] == "script_args_ratelimit")
         {
-            std::string name = c_str_consume(sa_server_scriptargs_ratelimit_to_script_name(command_info));
+            std::string name = in["script"];
 
             std::cout << "rl name " << name << std::endl;
 
@@ -817,49 +828,33 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
                 auto_handle.found_unprocessed_autocompletes.push_back(name);
             }
         }
-        else if(command_info.type == server_command_command_tagged)
-        {
-            command_tagged_info tag_info = sa_command_tagged_to_info(command_info);
-
-            str = c_str_sized_to_cpp(tag_info.val);
-
-            std::string tag = c_str_sized_to_cpp(tag_info.tag);
-
-            tag_manager& tag_manage = get_global_tag_manager();
-
-            tag_manage.add_tagged(tag, str);
-
-            push = true;
-        }
-        else if(command_info.type == server_command_command_ping)
+        else if(in["type"] == "server_ping")
         {
             ///do nothing
         }
-        else if(command_info.type == server_command_command_down)
+        else if(in["type"] == "script_down")
         {
-            command_down_info down = sa_command_down_to_info(command_info);
-
-            std::string name = c_str_sized_to_cpp(down.full_name);
-            std::string data = c_str_sized_to_cpp(down.script_data);
+            std::string name = in["name"];
+            std::string data = in["data"];
 
             std::string save_name = get_scripts_directory() + "/" + name + ".down.js";
 
             write_all_bin(save_name, data);
 
-            sa_destroy_command_down_info(down);
-
             str = make_success_col("Downloaded and saved script to " + name + ".down.js") + "\n";
             push = true;
         }
-        else if(command_info.type == server_command_chat_api_response)
+        else if(in["type"] == "chat_api_response")
         {
-            std::string data = c_str_sized_to_cpp(command_info.data);
+            std::string data = in["data"];
+
+            fix_tabs(data);
 
             add_text_to_current_chat_thread(chat_win, data);
 
             invalidate();
         }
-        else if(starts_with(str, "command_auth"))
+        else if(in["type"] == "auth")
         {
             ///do nothing
         }
@@ -877,6 +872,8 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
 
     if(push)
     {
+        fix_tabs(str);
+
         raw_history.push_back(str);
         history.push_back(string_to_interop(str, false, auto_handle));
 
@@ -888,8 +885,6 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
 
         invalidate();
     }
-
-    sa_destroy_server_command_info(command_info);
 }
 
 void terminal_imgui::add_text_to_current_chat_thread(chat_window& chat_win, const std::string& text)
