@@ -1015,7 +1015,11 @@ int main()
 
             for(auto& str : term.auto_handle.found_unprocessed_autocompletes)
             {
-                sa_do_autocomplete_request(shared, make_view(str));
+                nlohmann::json data;
+                data["type"] = "autocomplete_request";
+                data["data"] = str;
+
+                conn.write(data.dump());
 
                 break;
             }
@@ -1028,7 +1032,11 @@ int main()
 
         if((term.focused || term.get_id_of_focused_realtime_window() != 1) && is_focused(focused) && key.isKeyPressed(sf::Keyboard::LControl) && ONCE_MACRO(sf::Keyboard::C))
         {
-            sa_do_terminate_all_scripts(shared);
+            nlohmann::json data;
+            data["type"] = "client_terminate_scripts";
+            data["id"] = -1;
+
+            conn.write(data.dump());
         }
 
         //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
@@ -1041,7 +1049,7 @@ int main()
         int was_closed_id = -1;
 
         //test_imgui_term.render(window);
-        term.render_realtime_windows(shared, was_closed_id);
+        term.render_realtime_windows(conn, was_closed_id);
         chat_win.render(window, term.chat_threads, should_coordinate_focus);
         term.render(window, should_coordinate_focus);
 

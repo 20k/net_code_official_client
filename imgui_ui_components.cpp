@@ -12,6 +12,7 @@
 #include "window_context.hpp"
 #include "local_commands.hpp"
 #include "imguix.hpp"
+#include <networking/networking.hpp>
 
 namespace ImGuiX
 {
@@ -421,7 +422,7 @@ void terminal_imgui::render(sf::RenderWindow& win, bool refocus)
         handle->process_formatted(cache.out);
 }
 
-void terminal_imgui::render_realtime_windows(c_shared_data data, int& was_closed_id)
+void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_id)
 {
     was_closed_id = -1;
 
@@ -498,7 +499,13 @@ void terminal_imgui::render_realtime_windows(c_shared_data data, int& was_closed
 
             vec2f dim = relative_dim;
 
-            sa_do_send_script_info(data, i.first, (dim.x() / char_inf::cwidth) - 5, dim.y() / char_inf::cheight);
+            nlohmann::json data;
+            data["type"] = "send_script_info";
+            data["id"] = i.first;
+            data["width"] = (dim.x() / char_inf::cwidth) - 5;
+            data["height"] = dim.y() / char_inf::cheight;
+
+            conn.write(data.dump());
 
             run.last_resize.restart();
             run.should_send_new_size = false;

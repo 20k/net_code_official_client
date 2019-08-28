@@ -110,6 +110,8 @@ struct chat_window : serialisable, frameable
     void invalidate();
 };
 
+struct connection;
+
 struct terminal_imgui : serialisable, cacheable, frameable, free_function
 {
     scrollbar_hack scroll_hack;
@@ -139,7 +141,7 @@ struct terminal_imgui : serialisable, cacheable, frameable, free_function
 
     terminal_imgui();
     void render(sf::RenderWindow& win, bool refocus);
-    void render_realtime_windows(c_shared_data data, int& was_closed_id);
+    void render_realtime_windows(connection& conn, int& was_closed_id);
     void bump_command_to_history();
 
     void add_text(const std::string& str);
