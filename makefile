@@ -15,11 +15,11 @@ INC = -Ideps -Ideps/SFML/include -Ideps/freetype/include/freetype -Ideps/imgui -
 CFLAGS = -Wall -fexceptions -Wno-narrowing -std=gnu++1z -Werror=return-type -Wno-strict-aliasing -DNET_CLIENT -DNO_COMPRESSION -DBOOST_STACKTRACE_USE_WINDBG -DSFML_STATIC
 RESINC = 
 LIBDIR = -Ldeps/SFML/lib
-LIB = deps/libncclient/libncclient.a deps/steamworks_sdk_142/sdk/redistributable_bin/win64/libsteam_api64.a
-LDFLAGS = -lmingw32 -lsfml-audio-s -lsfml-graphics-s -lsfml-window-s -lsfml-system-s -lfreetype -lopengl32 -lflac -lopenal32 -logg -lboost_system-mt -lole32 -lboost_filesystem-mt -ldbgeng -lboost_stacktrace_windbg-mt -lwinmm -lgdi32
+LIB = deps/libncclient/libncclient.a
+LDFLAGS = -lmingw32 -lsfml-audio-s -lsfml-graphics-s -lsfml-window-s -lsfml-system-s -lfreetype -lopengl32 -lflac -lopenal32 -logg -lole32 -ldbgeng -lwinmm -lgdi32 -lws2_32 -lcrypto -lssl
 
 INC_DEBUG = $(INC)
-CFLAGS_DEBUG = $(CFLAGS) -g -DLOCAL_IP
+CFLAGS_DEBUG = $(CFLAGS) -g -Og -DLOCAL_IP
 RESINC_DEBUG = $(RESINC)
 RCFLAGS_DEBUG = $(RCFLAGS)
 LIBDIR_DEBUG = $(LIBDIR)
@@ -30,12 +30,12 @@ DEP_DEBUG =
 OUT_DEBUG = bin/Debug/crapmud_client
 
 INC_RELEASE = $(INC)
-CFLAGS_RELEASE = $(CFLAGS) -DLOCAL_IP
+CFLAGS_RELEASE = $(CFLAGS) -O3 -DLOCAL_IP
 RESINC_RELEASE = $(RESINC)
 RCFLAGS_RELEASE = $(RCFLAGS)
 LIBDIR_RELEASE = $(LIBDIR)
 LIB_RELEASE = $(LIB)
-LDFLAGS_RELEASE = $(LDFLAGS) -O2
+LDFLAGS_RELEASE = $(LDFLAGS) -O3 -s
 OBJDIR_RELEASE = obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = bin/Release/crapmud_client
@@ -107,12 +107,12 @@ DEP_DEPLOYTESTDEBUG =
 OUT_DEPLOYTESTDEBUG = bin/DeployTestDebug/crapmud_client
 
 INC_DEPLOYTEST = $(INC)
-CFLAGS_DEPLOYTEST = $(CFLAGS) -g -O2 -DEXTERN_IP
+CFLAGS_DEPLOYTEST = $(CFLAGS) -O3 -g -DEXTERN_IP
 RESINC_DEPLOYTEST = $(RESINC)
 RCFLAGS_DEPLOYTEST = $(RCFLAGS)
 LIBDIR_DEPLOYTEST = $(LIBDIR)
 LIB_DEPLOYTEST = $(LIB)
-LDFLAGS_DEPLOYTEST = $(LDFLAGS) -O2
+LDFLAGS_DEPLOYTEST = $(LDFLAGS) -O3
 OBJDIR_DEPLOYTEST = obj/Deploy
 DEP_DEPLOYTEST = 
 OUT_DEPLOYTEST = bin/Deploy/crapmud_client
@@ -139,27 +139,27 @@ OBJDIR_RELEASESUBMODULES = obj/Release
 DEP_RELEASESUBMODULES = 
 OUT_RELEASESUBMODULES = bin/Release/crapmud_client
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/format_cache.o $(OBJDIR_DEBUG)/imgui_ui_components.o $(OBJDIR_DEBUG)/local_commands.o $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/stacktrace.o $(OBJDIR_DEBUG)/string_helpers.o $(OBJDIR_DEBUG)/text_editor.o $(OBJDIR_DEBUG)/tokeniser.o $(OBJDIR_DEBUG)/window_context.o $(OBJDIR_DEBUG)/auto_handlers.o $(OBJDIR_DEBUG)/copy_handler.o $(OBJDIR_DEBUG)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_DEBUG)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEBUG)/deps/imgui/imgui.o $(OBJDIR_DEBUG)/deps/imgui/imgui_demo.o $(OBJDIR_DEBUG)/deps/imgui/imgui_draw.o $(OBJDIR_DEBUG)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEBUG)/deps/serialise/serialise.o $(OBJDIR_DEBUG)/editable_string.o $(OBJDIR_DEBUG)/font_cfg.o
+OBJ_DEBUG = $(OBJDIR_DEBUG)/format_cache.o $(OBJDIR_DEBUG)/imgui_ui_components.o $(OBJDIR_DEBUG)/imguix.o $(OBJDIR_DEBUG)/local_commands.o $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/serialisables.o $(OBJDIR_DEBUG)/stacktrace.o $(OBJDIR_DEBUG)/string_helpers.o $(OBJDIR_DEBUG)/tokeniser.o $(OBJDIR_DEBUG)/window_context.o $(OBJDIR_DEBUG)/auto_handlers.o $(OBJDIR_DEBUG)/copy_handler.o $(OBJDIR_DEBUG)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEBUG)/deps/imgui/imgui.o $(OBJDIR_DEBUG)/deps/imgui/imgui_demo.o $(OBJDIR_DEBUG)/deps/imgui/imgui_draw.o $(OBJDIR_DEBUG)/deps/imgui/imgui_widgets.o $(OBJDIR_DEBUG)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEBUG)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEBUG)/deps/networking/networking.o $(OBJDIR_DEBUG)/deps/networking/serialisable.o $(OBJDIR_DEBUG)/editable_string.o $(OBJDIR_DEBUG)/font_cfg.o
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)/format_cache.o $(OBJDIR_RELEASE)/imgui_ui_components.o $(OBJDIR_RELEASE)/local_commands.o $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/stacktrace.o $(OBJDIR_RELEASE)/string_helpers.o $(OBJDIR_RELEASE)/text_editor.o $(OBJDIR_RELEASE)/tokeniser.o $(OBJDIR_RELEASE)/window_context.o $(OBJDIR_RELEASE)/auto_handlers.o $(OBJDIR_RELEASE)/copy_handler.o $(OBJDIR_RELEASE)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_RELEASE)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_RELEASE)/deps/imgui/imgui.o $(OBJDIR_RELEASE)/deps/imgui/imgui_demo.o $(OBJDIR_RELEASE)/deps/imgui/imgui_draw.o $(OBJDIR_RELEASE)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_RELEASE)/deps/serialise/serialise.o $(OBJDIR_RELEASE)/editable_string.o $(OBJDIR_RELEASE)/font_cfg.o
+OBJ_RELEASE = $(OBJDIR_RELEASE)/format_cache.o $(OBJDIR_RELEASE)/imgui_ui_components.o $(OBJDIR_RELEASE)/imguix.o $(OBJDIR_RELEASE)/local_commands.o $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/serialisables.o $(OBJDIR_RELEASE)/stacktrace.o $(OBJDIR_RELEASE)/string_helpers.o $(OBJDIR_RELEASE)/tokeniser.o $(OBJDIR_RELEASE)/window_context.o $(OBJDIR_RELEASE)/auto_handlers.o $(OBJDIR_RELEASE)/copy_handler.o $(OBJDIR_RELEASE)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_RELEASE)/deps/imgui/imgui.o $(OBJDIR_RELEASE)/deps/imgui/imgui_demo.o $(OBJDIR_RELEASE)/deps/imgui/imgui_draw.o $(OBJDIR_RELEASE)/deps/imgui/imgui_widgets.o $(OBJDIR_RELEASE)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_RELEASE)/deps/networking/beast_compilation_unit.o $(OBJDIR_RELEASE)/deps/networking/networking.o $(OBJDIR_RELEASE)/deps/networking/serialisable.o $(OBJDIR_RELEASE)/editable_string.o $(OBJDIR_RELEASE)/font_cfg.o
 
-OBJ_PROFILE = $(OBJDIR_PROFILE)/format_cache.o $(OBJDIR_PROFILE)/imgui_ui_components.o $(OBJDIR_PROFILE)/local_commands.o $(OBJDIR_PROFILE)/main.o $(OBJDIR_PROFILE)/stacktrace.o $(OBJDIR_PROFILE)/string_helpers.o $(OBJDIR_PROFILE)/text_editor.o $(OBJDIR_PROFILE)/tokeniser.o $(OBJDIR_PROFILE)/window_context.o $(OBJDIR_PROFILE)/auto_handlers.o $(OBJDIR_PROFILE)/copy_handler.o $(OBJDIR_PROFILE)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_PROFILE)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_PROFILE)/deps/imgui/imgui.o $(OBJDIR_PROFILE)/deps/imgui/imgui_demo.o $(OBJDIR_PROFILE)/deps/imgui/imgui_draw.o $(OBJDIR_PROFILE)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_PROFILE)/deps/serialise/serialise.o $(OBJDIR_PROFILE)/editable_string.o $(OBJDIR_PROFILE)/font_cfg.o
+OBJ_PROFILE = $(OBJDIR_PROFILE)/format_cache.o $(OBJDIR_PROFILE)/imgui_ui_components.o $(OBJDIR_PROFILE)/imguix.o $(OBJDIR_PROFILE)/local_commands.o $(OBJDIR_PROFILE)/main.o $(OBJDIR_PROFILE)/serialisables.o $(OBJDIR_PROFILE)/stacktrace.o $(OBJDIR_PROFILE)/string_helpers.o $(OBJDIR_PROFILE)/tokeniser.o $(OBJDIR_PROFILE)/window_context.o $(OBJDIR_PROFILE)/auto_handlers.o $(OBJDIR_PROFILE)/copy_handler.o $(OBJDIR_PROFILE)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_PROFILE)/deps/imgui/imgui.o $(OBJDIR_PROFILE)/deps/imgui/imgui_demo.o $(OBJDIR_PROFILE)/deps/imgui/imgui_draw.o $(OBJDIR_PROFILE)/deps/imgui/imgui_widgets.o $(OBJDIR_PROFILE)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_PROFILE)/deps/networking/beast_compilation_unit.o $(OBJDIR_PROFILE)/deps/networking/networking.o $(OBJDIR_PROFILE)/deps/networking/serialisable.o $(OBJDIR_PROFILE)/editable_string.o $(OBJDIR_PROFILE)/font_cfg.o
 
-OBJ_DEPLOY = $(OBJDIR_DEPLOY)/format_cache.o $(OBJDIR_DEPLOY)/icon.o $(OBJDIR_DEPLOY)/imgui_ui_components.o $(OBJDIR_DEPLOY)/local_commands.o $(OBJDIR_DEPLOY)/main.o $(OBJDIR_DEPLOY)/stacktrace.o $(OBJDIR_DEPLOY)/string_helpers.o $(OBJDIR_DEPLOY)/text_editor.o $(OBJDIR_DEPLOY)/tokeniser.o $(OBJDIR_DEPLOY)/window_context.o $(OBJDIR_DEPLOY)/auto_handlers.o $(OBJDIR_DEPLOY)/copy_handler.o $(OBJDIR_DEPLOY)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_DEPLOY)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEPLOY)/deps/imgui/imgui.o $(OBJDIR_DEPLOY)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOY)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOY)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOY)/deps/serialise/serialise.o $(OBJDIR_DEPLOY)/editable_string.o $(OBJDIR_DEPLOY)/font_cfg.o
+OBJ_DEPLOY = $(OBJDIR_DEPLOY)/format_cache.o $(OBJDIR_DEPLOY)/icon.o $(OBJDIR_DEPLOY)/imgui_ui_components.o $(OBJDIR_DEPLOY)/imguix.o $(OBJDIR_DEPLOY)/local_commands.o $(OBJDIR_DEPLOY)/main.o $(OBJDIR_DEPLOY)/serialisables.o $(OBJDIR_DEPLOY)/stacktrace.o $(OBJDIR_DEPLOY)/string_helpers.o $(OBJDIR_DEPLOY)/tokeniser.o $(OBJDIR_DEPLOY)/window_context.o $(OBJDIR_DEPLOY)/auto_handlers.o $(OBJDIR_DEPLOY)/copy_handler.o $(OBJDIR_DEPLOY)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEPLOY)/deps/imgui/imgui.o $(OBJDIR_DEPLOY)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOY)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOY)/deps/imgui/imgui_widgets.o $(OBJDIR_DEPLOY)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOY)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEPLOY)/deps/networking/networking.o $(OBJDIR_DEPLOY)/deps/networking/serialisable.o $(OBJDIR_DEPLOY)/editable_string.o $(OBJDIR_DEPLOY)/font_cfg.o
 
-OBJ_DEPLOYPROFILE = $(OBJDIR_DEPLOYPROFILE)/format_cache.o $(OBJDIR_DEPLOYPROFILE)/imgui_ui_components.o $(OBJDIR_DEPLOYPROFILE)/local_commands.o $(OBJDIR_DEPLOYPROFILE)/main.o $(OBJDIR_DEPLOYPROFILE)/stacktrace.o $(OBJDIR_DEPLOYPROFILE)/string_helpers.o $(OBJDIR_DEPLOYPROFILE)/text_editor.o $(OBJDIR_DEPLOYPROFILE)/tokeniser.o $(OBJDIR_DEPLOYPROFILE)/window_context.o $(OBJDIR_DEPLOYPROFILE)/auto_handlers.o $(OBJDIR_DEPLOYPROFILE)/copy_handler.o $(OBJDIR_DEPLOYPROFILE)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYPROFILE)/deps/serialise/serialise.o $(OBJDIR_DEPLOYPROFILE)/editable_string.o $(OBJDIR_DEPLOYPROFILE)/font_cfg.o
+OBJ_DEPLOYPROFILE = $(OBJDIR_DEPLOYPROFILE)/format_cache.o $(OBJDIR_DEPLOYPROFILE)/imgui_ui_components.o $(OBJDIR_DEPLOYPROFILE)/imguix.o $(OBJDIR_DEPLOYPROFILE)/local_commands.o $(OBJDIR_DEPLOYPROFILE)/main.o $(OBJDIR_DEPLOYPROFILE)/serialisables.o $(OBJDIR_DEPLOYPROFILE)/stacktrace.o $(OBJDIR_DEPLOYPROFILE)/string_helpers.o $(OBJDIR_DEPLOYPROFILE)/tokeniser.o $(OBJDIR_DEPLOYPROFILE)/window_context.o $(OBJDIR_DEPLOYPROFILE)/auto_handlers.o $(OBJDIR_DEPLOYPROFILE)/copy_handler.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_widgets.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYPROFILE)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEPLOYPROFILE)/deps/networking/networking.o $(OBJDIR_DEPLOYPROFILE)/deps/networking/serialisable.o $(OBJDIR_DEPLOYPROFILE)/editable_string.o $(OBJDIR_DEPLOYPROFILE)/font_cfg.o
 
-OBJ_DEPLOYTOSTEAM = $(OBJDIR_DEPLOYTOSTEAM)/format_cache.o $(OBJDIR_DEPLOYTOSTEAM)/imgui_ui_components.o $(OBJDIR_DEPLOYTOSTEAM)/local_commands.o $(OBJDIR_DEPLOYTOSTEAM)/main.o $(OBJDIR_DEPLOYTOSTEAM)/stacktrace.o $(OBJDIR_DEPLOYTOSTEAM)/string_helpers.o $(OBJDIR_DEPLOYTOSTEAM)/text_editor.o $(OBJDIR_DEPLOYTOSTEAM)/tokeniser.o $(OBJDIR_DEPLOYTOSTEAM)/window_context.o $(OBJDIR_DEPLOYTOSTEAM)/auto_handlers.o $(OBJDIR_DEPLOYTOSTEAM)/copy_handler.o $(OBJDIR_DEPLOYTOSTEAM)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTOSTEAM)/deps/serialise/serialise.o $(OBJDIR_DEPLOYTOSTEAM)/editable_string.o $(OBJDIR_DEPLOYTOSTEAM)/font_cfg.o
+OBJ_DEPLOYTOSTEAM = $(OBJDIR_DEPLOYTOSTEAM)/format_cache.o $(OBJDIR_DEPLOYTOSTEAM)/imgui_ui_components.o $(OBJDIR_DEPLOYTOSTEAM)/imguix.o $(OBJDIR_DEPLOYTOSTEAM)/local_commands.o $(OBJDIR_DEPLOYTOSTEAM)/main.o $(OBJDIR_DEPLOYTOSTEAM)/serialisables.o $(OBJDIR_DEPLOYTOSTEAM)/stacktrace.o $(OBJDIR_DEPLOYTOSTEAM)/string_helpers.o $(OBJDIR_DEPLOYTOSTEAM)/tokeniser.o $(OBJDIR_DEPLOYTOSTEAM)/window_context.o $(OBJDIR_DEPLOYTOSTEAM)/auto_handlers.o $(OBJDIR_DEPLOYTOSTEAM)/copy_handler.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_widgets.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTOSTEAM)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEPLOYTOSTEAM)/deps/networking/networking.o $(OBJDIR_DEPLOYTOSTEAM)/deps/networking/serialisable.o $(OBJDIR_DEPLOYTOSTEAM)/editable_string.o $(OBJDIR_DEPLOYTOSTEAM)/font_cfg.o
 
-OBJ_LINUX = $(OBJDIR_LINUX)/format_cache.o $(OBJDIR_LINUX)/icon.o $(OBJDIR_LINUX)/imgui_ui_components.o $(OBJDIR_LINUX)/local_commands.o $(OBJDIR_LINUX)/main.o $(OBJDIR_LINUX)/stacktrace.o $(OBJDIR_LINUX)/string_helpers.o $(OBJDIR_LINUX)/text_editor.o $(OBJDIR_LINUX)/tokeniser.o $(OBJDIR_LINUX)/window_context.o $(OBJDIR_LINUX)/auto_handlers.o $(OBJDIR_LINUX)/copy_handler.o $(OBJDIR_LINUX)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_LINUX)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_LINUX)/deps/imgui/imgui.o $(OBJDIR_LINUX)/deps/imgui/imgui_demo.o $(OBJDIR_LINUX)/deps/imgui/imgui_draw.o $(OBJDIR_LINUX)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_LINUX)/deps/serialise/serialise.o $(OBJDIR_LINUX)/editable_string.o $(OBJDIR_LINUX)/font_cfg.o
+OBJ_LINUX = $(OBJDIR_LINUX)/format_cache.o $(OBJDIR_LINUX)/icon.o $(OBJDIR_LINUX)/imgui_ui_components.o $(OBJDIR_LINUX)/imguix.o $(OBJDIR_LINUX)/local_commands.o $(OBJDIR_LINUX)/main.o $(OBJDIR_LINUX)/serialisables.o $(OBJDIR_LINUX)/stacktrace.o $(OBJDIR_LINUX)/string_helpers.o $(OBJDIR_LINUX)/tokeniser.o $(OBJDIR_LINUX)/window_context.o $(OBJDIR_LINUX)/auto_handlers.o $(OBJDIR_LINUX)/copy_handler.o $(OBJDIR_LINUX)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_LINUX)/deps/imgui/imgui.o $(OBJDIR_LINUX)/deps/imgui/imgui_demo.o $(OBJDIR_LINUX)/deps/imgui/imgui_draw.o $(OBJDIR_LINUX)/deps/imgui/imgui_widgets.o $(OBJDIR_LINUX)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_LINUX)/deps/networking/beast_compilation_unit.o $(OBJDIR_LINUX)/deps/networking/networking.o $(OBJDIR_LINUX)/deps/networking/serialisable.o $(OBJDIR_LINUX)/editable_string.o $(OBJDIR_LINUX)/font_cfg.o
 
-OBJ_DEPLOYTESTDEBUG = $(OBJDIR_DEPLOYTESTDEBUG)/format_cache.o $(OBJDIR_DEPLOYTESTDEBUG)/imgui_ui_components.o $(OBJDIR_DEPLOYTESTDEBUG)/local_commands.o $(OBJDIR_DEPLOYTESTDEBUG)/main.o $(OBJDIR_DEPLOYTESTDEBUG)/stacktrace.o $(OBJDIR_DEPLOYTESTDEBUG)/string_helpers.o $(OBJDIR_DEPLOYTESTDEBUG)/text_editor.o $(OBJDIR_DEPLOYTESTDEBUG)/tokeniser.o $(OBJDIR_DEPLOYTESTDEBUG)/window_context.o $(OBJDIR_DEPLOYTESTDEBUG)/auto_handlers.o $(OBJDIR_DEPLOYTESTDEBUG)/copy_handler.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/serialise/serialise.o $(OBJDIR_DEPLOYTESTDEBUG)/editable_string.o $(OBJDIR_DEPLOYTESTDEBUG)/font_cfg.o
+OBJ_DEPLOYTESTDEBUG = $(OBJDIR_DEPLOYTESTDEBUG)/format_cache.o $(OBJDIR_DEPLOYTESTDEBUG)/imgui_ui_components.o $(OBJDIR_DEPLOYTESTDEBUG)/imguix.o $(OBJDIR_DEPLOYTESTDEBUG)/local_commands.o $(OBJDIR_DEPLOYTESTDEBUG)/main.o $(OBJDIR_DEPLOYTESTDEBUG)/serialisables.o $(OBJDIR_DEPLOYTESTDEBUG)/stacktrace.o $(OBJDIR_DEPLOYTESTDEBUG)/string_helpers.o $(OBJDIR_DEPLOYTESTDEBUG)/tokeniser.o $(OBJDIR_DEPLOYTESTDEBUG)/window_context.o $(OBJDIR_DEPLOYTESTDEBUG)/auto_handlers.o $(OBJDIR_DEPLOYTESTDEBUG)/copy_handler.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_widgets.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking/networking.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking/serialisable.o $(OBJDIR_DEPLOYTESTDEBUG)/editable_string.o $(OBJDIR_DEPLOYTESTDEBUG)/font_cfg.o
 
-OBJ_DEPLOYTEST = $(OBJDIR_DEPLOYTEST)/format_cache.o $(OBJDIR_DEPLOYTEST)/icon.o $(OBJDIR_DEPLOYTEST)/imgui_ui_components.o $(OBJDIR_DEPLOYTEST)/local_commands.o $(OBJDIR_DEPLOYTEST)/main.o $(OBJDIR_DEPLOYTEST)/stacktrace.o $(OBJDIR_DEPLOYTEST)/string_helpers.o $(OBJDIR_DEPLOYTEST)/text_editor.o $(OBJDIR_DEPLOYTEST)/tokeniser.o $(OBJDIR_DEPLOYTEST)/window_context.o $(OBJDIR_DEPLOYTEST)/auto_handlers.o $(OBJDIR_DEPLOYTEST)/copy_handler.o $(OBJDIR_DEPLOYTEST)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_DEPLOYTEST)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTEST)/deps/serialise/serialise.o $(OBJDIR_DEPLOYTEST)/editable_string.o $(OBJDIR_DEPLOYTEST)/font_cfg.o
+OBJ_DEPLOYTEST = $(OBJDIR_DEPLOYTEST)/format_cache.o $(OBJDIR_DEPLOYTEST)/icon.o $(OBJDIR_DEPLOYTEST)/imgui_ui_components.o $(OBJDIR_DEPLOYTEST)/imguix.o $(OBJDIR_DEPLOYTEST)/local_commands.o $(OBJDIR_DEPLOYTEST)/main.o $(OBJDIR_DEPLOYTEST)/serialisables.o $(OBJDIR_DEPLOYTEST)/stacktrace.o $(OBJDIR_DEPLOYTEST)/string_helpers.o $(OBJDIR_DEPLOYTEST)/tokeniser.o $(OBJDIR_DEPLOYTEST)/window_context.o $(OBJDIR_DEPLOYTEST)/auto_handlers.o $(OBJDIR_DEPLOYTEST)/copy_handler.o $(OBJDIR_DEPLOYTEST)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_widgets.o $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTEST)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEPLOYTEST)/deps/networking/networking.o $(OBJDIR_DEPLOYTEST)/deps/networking/serialisable.o $(OBJDIR_DEPLOYTEST)/editable_string.o $(OBJDIR_DEPLOYTEST)/font_cfg.o
 
-OBJ_DEPLOYTESTSUBMODULES = $(OBJDIR_DEPLOYTESTSUBMODULES)/format_cache.o $(OBJDIR_DEPLOYTESTSUBMODULES)/icon.o $(OBJDIR_DEPLOYTESTSUBMODULES)/imgui_ui_components.o $(OBJDIR_DEPLOYTESTSUBMODULES)/local_commands.o $(OBJDIR_DEPLOYTESTSUBMODULES)/main.o $(OBJDIR_DEPLOYTESTSUBMODULES)/stacktrace.o $(OBJDIR_DEPLOYTESTSUBMODULES)/string_helpers.o $(OBJDIR_DEPLOYTESTSUBMODULES)/text_editor.o $(OBJDIR_DEPLOYTESTSUBMODULES)/tokeniser.o $(OBJDIR_DEPLOYTESTSUBMODULES)/window_context.o $(OBJDIR_DEPLOYTESTSUBMODULES)/auto_handlers.o $(OBJDIR_DEPLOYTESTSUBMODULES)/copy_handler.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/serialise/serialise.o $(OBJDIR_DEPLOYTESTSUBMODULES)/editable_string.o $(OBJDIR_DEPLOYTESTSUBMODULES)/font_cfg.o
+OBJ_DEPLOYTESTSUBMODULES = $(OBJDIR_DEPLOYTESTSUBMODULES)/format_cache.o $(OBJDIR_DEPLOYTESTSUBMODULES)/icon.o $(OBJDIR_DEPLOYTESTSUBMODULES)/imgui_ui_components.o $(OBJDIR_DEPLOYTESTSUBMODULES)/imguix.o $(OBJDIR_DEPLOYTESTSUBMODULES)/local_commands.o $(OBJDIR_DEPLOYTESTSUBMODULES)/main.o $(OBJDIR_DEPLOYTESTSUBMODULES)/serialisables.o $(OBJDIR_DEPLOYTESTSUBMODULES)/stacktrace.o $(OBJDIR_DEPLOYTESTSUBMODULES)/string_helpers.o $(OBJDIR_DEPLOYTESTSUBMODULES)/tokeniser.o $(OBJDIR_DEPLOYTESTSUBMODULES)/window_context.o $(OBJDIR_DEPLOYTESTSUBMODULES)/auto_handlers.o $(OBJDIR_DEPLOYTESTSUBMODULES)/copy_handler.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_widgets.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking/networking.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking/serialisable.o $(OBJDIR_DEPLOYTESTSUBMODULES)/editable_string.o $(OBJDIR_DEPLOYTESTSUBMODULES)/font_cfg.o
 
-OBJ_RELEASESUBMODULES = $(OBJDIR_RELEASESUBMODULES)/format_cache.o $(OBJDIR_RELEASESUBMODULES)/imgui_ui_components.o $(OBJDIR_RELEASESUBMODULES)/local_commands.o $(OBJDIR_RELEASESUBMODULES)/main.o $(OBJDIR_RELEASESUBMODULES)/stacktrace.o $(OBJDIR_RELEASESUBMODULES)/string_helpers.o $(OBJDIR_RELEASESUBMODULES)/text_editor.o $(OBJDIR_RELEASESUBMODULES)/tokeniser.o $(OBJDIR_RELEASESUBMODULES)/window_context.o $(OBJDIR_RELEASESUBMODULES)/auto_handlers.o $(OBJDIR_RELEASESUBMODULES)/copy_handler.o $(OBJDIR_RELEASESUBMODULES)/deps/ImGuiColorTextEdit/TextEditor.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_demo.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_draw.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_RELEASESUBMODULES)/deps/serialise/serialise.o $(OBJDIR_RELEASESUBMODULES)/editable_string.o $(OBJDIR_RELEASESUBMODULES)/font_cfg.o
+OBJ_RELEASESUBMODULES = $(OBJDIR_RELEASESUBMODULES)/format_cache.o $(OBJDIR_RELEASESUBMODULES)/imgui_ui_components.o $(OBJDIR_RELEASESUBMODULES)/imguix.o $(OBJDIR_RELEASESUBMODULES)/local_commands.o $(OBJDIR_RELEASESUBMODULES)/main.o $(OBJDIR_RELEASESUBMODULES)/serialisables.o $(OBJDIR_RELEASESUBMODULES)/stacktrace.o $(OBJDIR_RELEASESUBMODULES)/string_helpers.o $(OBJDIR_RELEASESUBMODULES)/tokeniser.o $(OBJDIR_RELEASESUBMODULES)/window_context.o $(OBJDIR_RELEASESUBMODULES)/auto_handlers.o $(OBJDIR_RELEASESUBMODULES)/copy_handler.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui-sfml/imgui-SFML.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_demo.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_draw.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_widgets.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_RELEASESUBMODULES)/deps/networking/beast_compilation_unit.o $(OBJDIR_RELEASESUBMODULES)/deps/networking/networking.o $(OBJDIR_RELEASESUBMODULES)/deps/networking/serialisable.o $(OBJDIR_RELEASESUBMODULES)/editable_string.o $(OBJDIR_RELEASESUBMODULES)/font_cfg.o
 
 all: before_build build_debug build_release build_profile build_deploy build_deployprofile build_deploytosteam build_linux build_deploytestdebug build_deploytest build_deploytestsubmodules build_releasesubmodules build_deploytestzapcc after_build
 
@@ -173,11 +173,10 @@ after_build:
 before_debug: 
 	test -d bin/Debug || mkdir -p bin/Debug
 	test -d $(OBJDIR_DEBUG) || mkdir -p $(OBJDIR_DEBUG)
-	test -d $(OBJDIR_DEBUG)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_DEBUG)/deps/ImGuiColorTextEdit
 	test -d $(OBJDIR_DEBUG)/deps/imgui-sfml || mkdir -p $(OBJDIR_DEBUG)/deps/imgui-sfml
 	test -d $(OBJDIR_DEBUG)/deps/imgui || mkdir -p $(OBJDIR_DEBUG)/deps/imgui
 	test -d $(OBJDIR_DEBUG)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEBUG)/deps/imgui/misc/freetype
-	test -d $(OBJDIR_DEBUG)/deps/serialise || mkdir -p $(OBJDIR_DEBUG)/deps/serialise
+	test -d $(OBJDIR_DEBUG)/deps/networking || mkdir -p $(OBJDIR_DEBUG)/deps/networking
 
 after_debug: 
 
@@ -194,20 +193,23 @@ $(OBJDIR_DEBUG)/format_cache.o: format_cache.cpp
 $(OBJDIR_DEBUG)/imgui_ui_components.o: imgui_ui_components.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c imgui_ui_components.cpp -o $(OBJDIR_DEBUG)/imgui_ui_components.o
 
+$(OBJDIR_DEBUG)/imguix.o: imguix.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c imguix.cpp -o $(OBJDIR_DEBUG)/imguix.o
+
 $(OBJDIR_DEBUG)/local_commands.o: local_commands.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c local_commands.cpp -o $(OBJDIR_DEBUG)/local_commands.o
 
 $(OBJDIR_DEBUG)/main.o: main.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c main.cpp -o $(OBJDIR_DEBUG)/main.o
 
+$(OBJDIR_DEBUG)/serialisables.o: serialisables.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c serialisables.cpp -o $(OBJDIR_DEBUG)/serialisables.o
+
 $(OBJDIR_DEBUG)/stacktrace.o: stacktrace.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c stacktrace.cpp -o $(OBJDIR_DEBUG)/stacktrace.o
 
 $(OBJDIR_DEBUG)/string_helpers.o: string_helpers.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c string_helpers.cpp -o $(OBJDIR_DEBUG)/string_helpers.o
-
-$(OBJDIR_DEBUG)/text_editor.o: text_editor.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c text_editor.cpp -o $(OBJDIR_DEBUG)/text_editor.o
 
 $(OBJDIR_DEBUG)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c tokeniser.cpp -o $(OBJDIR_DEBUG)/tokeniser.o
@@ -221,9 +223,6 @@ $(OBJDIR_DEBUG)/auto_handlers.o: auto_handlers.cpp
 $(OBJDIR_DEBUG)/copy_handler.o: copy_handler.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c copy_handler.cpp -o $(OBJDIR_DEBUG)/copy_handler.o
 
-$(OBJDIR_DEBUG)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_DEBUG)/deps/ImGuiColorTextEdit/TextEditor.o
-
 $(OBJDIR_DEBUG)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_DEBUG)/deps/imgui-sfml/imgui-SFML.o
 
@@ -236,11 +235,20 @@ $(OBJDIR_DEBUG)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
 $(OBJDIR_DEBUG)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_DEBUG)/deps/imgui/imgui_draw.o
 
+$(OBJDIR_DEBUG)/deps/imgui/imgui_widgets.o: deps/imgui/imgui_widgets.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/imgui/imgui_widgets.cpp -o $(OBJDIR_DEBUG)/deps/imgui/imgui_widgets.o
+
 $(OBJDIR_DEBUG)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEBUG)/deps/imgui/misc/freetype/imgui_freetype.o
 
-$(OBJDIR_DEBUG)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/serialise/serialise.cpp -o $(OBJDIR_DEBUG)/deps/serialise/serialise.o
+$(OBJDIR_DEBUG)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_DEBUG)/deps/networking/beast_compilation_unit.o
+
+$(OBJDIR_DEBUG)/deps/networking/networking.o: deps/networking/networking.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/networking/networking.cpp -o $(OBJDIR_DEBUG)/deps/networking/networking.o
+
+$(OBJDIR_DEBUG)/deps/networking/serialisable.o: deps/networking/serialisable.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/networking/serialisable.cpp -o $(OBJDIR_DEBUG)/deps/networking/serialisable.o
 
 $(OBJDIR_DEBUG)/editable_string.o: editable_string.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c editable_string.cpp -o $(OBJDIR_DEBUG)/editable_string.o
@@ -252,20 +260,18 @@ clean_debug:
 	rm -f $(OBJ_DEBUG) $(OUT_DEBUG)
 	rm -rf bin/Debug
 	rm -rf $(OBJDIR_DEBUG)
-	rm -rf $(OBJDIR_DEBUG)/deps/ImGuiColorTextEdit
 	rm -rf $(OBJDIR_DEBUG)/deps/imgui-sfml
 	rm -rf $(OBJDIR_DEBUG)/deps/imgui
 	rm -rf $(OBJDIR_DEBUG)/deps/imgui/misc/freetype
-	rm -rf $(OBJDIR_DEBUG)/deps/serialise
+	rm -rf $(OBJDIR_DEBUG)/deps/networking
 
 before_release: 
 	test -d bin/Release || mkdir -p bin/Release
 	test -d $(OBJDIR_RELEASE) || mkdir -p $(OBJDIR_RELEASE)
-	test -d $(OBJDIR_RELEASE)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_RELEASE)/deps/ImGuiColorTextEdit
 	test -d $(OBJDIR_RELEASE)/deps/imgui-sfml || mkdir -p $(OBJDIR_RELEASE)/deps/imgui-sfml
 	test -d $(OBJDIR_RELEASE)/deps/imgui || mkdir -p $(OBJDIR_RELEASE)/deps/imgui
 	test -d $(OBJDIR_RELEASE)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_RELEASE)/deps/imgui/misc/freetype
-	test -d $(OBJDIR_RELEASE)/deps/serialise || mkdir -p $(OBJDIR_RELEASE)/deps/serialise
+	test -d $(OBJDIR_RELEASE)/deps/networking || mkdir -p $(OBJDIR_RELEASE)/deps/networking
 
 after_release: 
 	build_test.bat
@@ -283,20 +289,23 @@ $(OBJDIR_RELEASE)/format_cache.o: format_cache.cpp
 $(OBJDIR_RELEASE)/imgui_ui_components.o: imgui_ui_components.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c imgui_ui_components.cpp -o $(OBJDIR_RELEASE)/imgui_ui_components.o
 
+$(OBJDIR_RELEASE)/imguix.o: imguix.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c imguix.cpp -o $(OBJDIR_RELEASE)/imguix.o
+
 $(OBJDIR_RELEASE)/local_commands.o: local_commands.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c local_commands.cpp -o $(OBJDIR_RELEASE)/local_commands.o
 
 $(OBJDIR_RELEASE)/main.o: main.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c main.cpp -o $(OBJDIR_RELEASE)/main.o
 
+$(OBJDIR_RELEASE)/serialisables.o: serialisables.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c serialisables.cpp -o $(OBJDIR_RELEASE)/serialisables.o
+
 $(OBJDIR_RELEASE)/stacktrace.o: stacktrace.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c stacktrace.cpp -o $(OBJDIR_RELEASE)/stacktrace.o
 
 $(OBJDIR_RELEASE)/string_helpers.o: string_helpers.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c string_helpers.cpp -o $(OBJDIR_RELEASE)/string_helpers.o
-
-$(OBJDIR_RELEASE)/text_editor.o: text_editor.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c text_editor.cpp -o $(OBJDIR_RELEASE)/text_editor.o
 
 $(OBJDIR_RELEASE)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c tokeniser.cpp -o $(OBJDIR_RELEASE)/tokeniser.o
@@ -310,9 +319,6 @@ $(OBJDIR_RELEASE)/auto_handlers.o: auto_handlers.cpp
 $(OBJDIR_RELEASE)/copy_handler.o: copy_handler.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c copy_handler.cpp -o $(OBJDIR_RELEASE)/copy_handler.o
 
-$(OBJDIR_RELEASE)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_RELEASE)/deps/ImGuiColorTextEdit/TextEditor.o
-
 $(OBJDIR_RELEASE)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_RELEASE)/deps/imgui-sfml/imgui-SFML.o
 
@@ -325,11 +331,20 @@ $(OBJDIR_RELEASE)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
 $(OBJDIR_RELEASE)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_RELEASE)/deps/imgui/imgui_draw.o
 
+$(OBJDIR_RELEASE)/deps/imgui/imgui_widgets.o: deps/imgui/imgui_widgets.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/imgui/imgui_widgets.cpp -o $(OBJDIR_RELEASE)/deps/imgui/imgui_widgets.o
+
 $(OBJDIR_RELEASE)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_RELEASE)/deps/imgui/misc/freetype/imgui_freetype.o
 
-$(OBJDIR_RELEASE)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/serialise/serialise.cpp -o $(OBJDIR_RELEASE)/deps/serialise/serialise.o
+$(OBJDIR_RELEASE)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_RELEASE)/deps/networking/beast_compilation_unit.o
+
+$(OBJDIR_RELEASE)/deps/networking/networking.o: deps/networking/networking.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/networking/networking.cpp -o $(OBJDIR_RELEASE)/deps/networking/networking.o
+
+$(OBJDIR_RELEASE)/deps/networking/serialisable.o: deps/networking/serialisable.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/networking/serialisable.cpp -o $(OBJDIR_RELEASE)/deps/networking/serialisable.o
 
 $(OBJDIR_RELEASE)/editable_string.o: editable_string.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c editable_string.cpp -o $(OBJDIR_RELEASE)/editable_string.o
@@ -341,20 +356,18 @@ clean_release:
 	rm -f $(OBJ_RELEASE) $(OUT_RELEASE)
 	rm -rf bin/Release
 	rm -rf $(OBJDIR_RELEASE)
-	rm -rf $(OBJDIR_RELEASE)/deps/ImGuiColorTextEdit
 	rm -rf $(OBJDIR_RELEASE)/deps/imgui-sfml
 	rm -rf $(OBJDIR_RELEASE)/deps/imgui
 	rm -rf $(OBJDIR_RELEASE)/deps/imgui/misc/freetype
-	rm -rf $(OBJDIR_RELEASE)/deps/serialise
+	rm -rf $(OBJDIR_RELEASE)/deps/networking
 
 before_profile: 
 	test -d bin/Profile || mkdir -p bin/Profile
 	test -d $(OBJDIR_PROFILE) || mkdir -p $(OBJDIR_PROFILE)
-	test -d $(OBJDIR_PROFILE)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_PROFILE)/deps/ImGuiColorTextEdit
 	test -d $(OBJDIR_PROFILE)/deps/imgui-sfml || mkdir -p $(OBJDIR_PROFILE)/deps/imgui-sfml
 	test -d $(OBJDIR_PROFILE)/deps/imgui || mkdir -p $(OBJDIR_PROFILE)/deps/imgui
 	test -d $(OBJDIR_PROFILE)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_PROFILE)/deps/imgui/misc/freetype
-	test -d $(OBJDIR_PROFILE)/deps/serialise || mkdir -p $(OBJDIR_PROFILE)/deps/serialise
+	test -d $(OBJDIR_PROFILE)/deps/networking || mkdir -p $(OBJDIR_PROFILE)/deps/networking
 
 after_profile: 
 
@@ -371,20 +384,23 @@ $(OBJDIR_PROFILE)/format_cache.o: format_cache.cpp
 $(OBJDIR_PROFILE)/imgui_ui_components.o: imgui_ui_components.cpp
 	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c imgui_ui_components.cpp -o $(OBJDIR_PROFILE)/imgui_ui_components.o
 
+$(OBJDIR_PROFILE)/imguix.o: imguix.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c imguix.cpp -o $(OBJDIR_PROFILE)/imguix.o
+
 $(OBJDIR_PROFILE)/local_commands.o: local_commands.cpp
 	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c local_commands.cpp -o $(OBJDIR_PROFILE)/local_commands.o
 
 $(OBJDIR_PROFILE)/main.o: main.cpp
 	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c main.cpp -o $(OBJDIR_PROFILE)/main.o
 
+$(OBJDIR_PROFILE)/serialisables.o: serialisables.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c serialisables.cpp -o $(OBJDIR_PROFILE)/serialisables.o
+
 $(OBJDIR_PROFILE)/stacktrace.o: stacktrace.cpp
 	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c stacktrace.cpp -o $(OBJDIR_PROFILE)/stacktrace.o
 
 $(OBJDIR_PROFILE)/string_helpers.o: string_helpers.cpp
 	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c string_helpers.cpp -o $(OBJDIR_PROFILE)/string_helpers.o
-
-$(OBJDIR_PROFILE)/text_editor.o: text_editor.cpp
-	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c text_editor.cpp -o $(OBJDIR_PROFILE)/text_editor.o
 
 $(OBJDIR_PROFILE)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c tokeniser.cpp -o $(OBJDIR_PROFILE)/tokeniser.o
@@ -398,9 +414,6 @@ $(OBJDIR_PROFILE)/auto_handlers.o: auto_handlers.cpp
 $(OBJDIR_PROFILE)/copy_handler.o: copy_handler.cpp
 	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c copy_handler.cpp -o $(OBJDIR_PROFILE)/copy_handler.o
 
-$(OBJDIR_PROFILE)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
-	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_PROFILE)/deps/ImGuiColorTextEdit/TextEditor.o
-
 $(OBJDIR_PROFILE)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
 	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_PROFILE)/deps/imgui-sfml/imgui-SFML.o
 
@@ -413,11 +426,20 @@ $(OBJDIR_PROFILE)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
 $(OBJDIR_PROFILE)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
 	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_PROFILE)/deps/imgui/imgui_draw.o
 
+$(OBJDIR_PROFILE)/deps/imgui/imgui_widgets.o: deps/imgui/imgui_widgets.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/imgui/imgui_widgets.cpp -o $(OBJDIR_PROFILE)/deps/imgui/imgui_widgets.o
+
 $(OBJDIR_PROFILE)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_PROFILE)/deps/imgui/misc/freetype/imgui_freetype.o
 
-$(OBJDIR_PROFILE)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
-	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/serialise/serialise.cpp -o $(OBJDIR_PROFILE)/deps/serialise/serialise.o
+$(OBJDIR_PROFILE)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_PROFILE)/deps/networking/beast_compilation_unit.o
+
+$(OBJDIR_PROFILE)/deps/networking/networking.o: deps/networking/networking.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/networking/networking.cpp -o $(OBJDIR_PROFILE)/deps/networking/networking.o
+
+$(OBJDIR_PROFILE)/deps/networking/serialisable.o: deps/networking/serialisable.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/networking/serialisable.cpp -o $(OBJDIR_PROFILE)/deps/networking/serialisable.o
 
 $(OBJDIR_PROFILE)/editable_string.o: editable_string.cpp
 	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c editable_string.cpp -o $(OBJDIR_PROFILE)/editable_string.o
@@ -429,20 +451,18 @@ clean_profile:
 	rm -f $(OBJ_PROFILE) $(OUT_PROFILE)
 	rm -rf bin/Profile
 	rm -rf $(OBJDIR_PROFILE)
-	rm -rf $(OBJDIR_PROFILE)/deps/ImGuiColorTextEdit
 	rm -rf $(OBJDIR_PROFILE)/deps/imgui-sfml
 	rm -rf $(OBJDIR_PROFILE)/deps/imgui
 	rm -rf $(OBJDIR_PROFILE)/deps/imgui/misc/freetype
-	rm -rf $(OBJDIR_PROFILE)/deps/serialise
+	rm -rf $(OBJDIR_PROFILE)/deps/networking
 
 before_deploy: 
 	test -d bin/Deploy || mkdir -p bin/Deploy
 	test -d $(OBJDIR_DEPLOY) || mkdir -p $(OBJDIR_DEPLOY)
-	test -d $(OBJDIR_DEPLOY)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_DEPLOY)/deps/ImGuiColorTextEdit
 	test -d $(OBJDIR_DEPLOY)/deps/imgui-sfml || mkdir -p $(OBJDIR_DEPLOY)/deps/imgui-sfml
 	test -d $(OBJDIR_DEPLOY)/deps/imgui || mkdir -p $(OBJDIR_DEPLOY)/deps/imgui
 	test -d $(OBJDIR_DEPLOY)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEPLOY)/deps/imgui/misc/freetype
-	test -d $(OBJDIR_DEPLOY)/deps/serialise || mkdir -p $(OBJDIR_DEPLOY)/deps/serialise
+	test -d $(OBJDIR_DEPLOY)/deps/networking || mkdir -p $(OBJDIR_DEPLOY)/deps/networking
 
 after_deploy: 
 	build_release.bat
@@ -463,20 +483,23 @@ $(OBJDIR_DEPLOY)/icon.o: icon.res
 $(OBJDIR_DEPLOY)/imgui_ui_components.o: imgui_ui_components.cpp
 	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c imgui_ui_components.cpp -o $(OBJDIR_DEPLOY)/imgui_ui_components.o
 
+$(OBJDIR_DEPLOY)/imguix.o: imguix.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c imguix.cpp -o $(OBJDIR_DEPLOY)/imguix.o
+
 $(OBJDIR_DEPLOY)/local_commands.o: local_commands.cpp
 	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c local_commands.cpp -o $(OBJDIR_DEPLOY)/local_commands.o
 
 $(OBJDIR_DEPLOY)/main.o: main.cpp
 	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c main.cpp -o $(OBJDIR_DEPLOY)/main.o
 
+$(OBJDIR_DEPLOY)/serialisables.o: serialisables.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c serialisables.cpp -o $(OBJDIR_DEPLOY)/serialisables.o
+
 $(OBJDIR_DEPLOY)/stacktrace.o: stacktrace.cpp
 	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c stacktrace.cpp -o $(OBJDIR_DEPLOY)/stacktrace.o
 
 $(OBJDIR_DEPLOY)/string_helpers.o: string_helpers.cpp
 	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c string_helpers.cpp -o $(OBJDIR_DEPLOY)/string_helpers.o
-
-$(OBJDIR_DEPLOY)/text_editor.o: text_editor.cpp
-	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c text_editor.cpp -o $(OBJDIR_DEPLOY)/text_editor.o
 
 $(OBJDIR_DEPLOY)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c tokeniser.cpp -o $(OBJDIR_DEPLOY)/tokeniser.o
@@ -490,9 +513,6 @@ $(OBJDIR_DEPLOY)/auto_handlers.o: auto_handlers.cpp
 $(OBJDIR_DEPLOY)/copy_handler.o: copy_handler.cpp
 	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c copy_handler.cpp -o $(OBJDIR_DEPLOY)/copy_handler.o
 
-$(OBJDIR_DEPLOY)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
-	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_DEPLOY)/deps/ImGuiColorTextEdit/TextEditor.o
-
 $(OBJDIR_DEPLOY)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
 	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_DEPLOY)/deps/imgui-sfml/imgui-SFML.o
 
@@ -505,11 +525,20 @@ $(OBJDIR_DEPLOY)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
 $(OBJDIR_DEPLOY)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
 	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_DEPLOY)/deps/imgui/imgui_draw.o
 
+$(OBJDIR_DEPLOY)/deps/imgui/imgui_widgets.o: deps/imgui/imgui_widgets.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/imgui/imgui_widgets.cpp -o $(OBJDIR_DEPLOY)/deps/imgui/imgui_widgets.o
+
 $(OBJDIR_DEPLOY)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEPLOY)/deps/imgui/misc/freetype/imgui_freetype.o
 
-$(OBJDIR_DEPLOY)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
-	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/serialise/serialise.cpp -o $(OBJDIR_DEPLOY)/deps/serialise/serialise.o
+$(OBJDIR_DEPLOY)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_DEPLOY)/deps/networking/beast_compilation_unit.o
+
+$(OBJDIR_DEPLOY)/deps/networking/networking.o: deps/networking/networking.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/networking/networking.cpp -o $(OBJDIR_DEPLOY)/deps/networking/networking.o
+
+$(OBJDIR_DEPLOY)/deps/networking/serialisable.o: deps/networking/serialisable.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/networking/serialisable.cpp -o $(OBJDIR_DEPLOY)/deps/networking/serialisable.o
 
 $(OBJDIR_DEPLOY)/editable_string.o: editable_string.cpp
 	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c editable_string.cpp -o $(OBJDIR_DEPLOY)/editable_string.o
@@ -521,20 +550,18 @@ clean_deploy:
 	rm -f $(OBJ_DEPLOY) $(OUT_DEPLOY)
 	rm -rf bin/Deploy
 	rm -rf $(OBJDIR_DEPLOY)
-	rm -rf $(OBJDIR_DEPLOY)/deps/ImGuiColorTextEdit
 	rm -rf $(OBJDIR_DEPLOY)/deps/imgui-sfml
 	rm -rf $(OBJDIR_DEPLOY)/deps/imgui
 	rm -rf $(OBJDIR_DEPLOY)/deps/imgui/misc/freetype
-	rm -rf $(OBJDIR_DEPLOY)/deps/serialise
+	rm -rf $(OBJDIR_DEPLOY)/deps/networking
 
 before_deployprofile: 
 	test -d DebugDeploy || mkdir -p DebugDeploy
 	test -d $(OBJDIR_DEPLOYPROFILE) || mkdir -p $(OBJDIR_DEPLOYPROFILE)
-	test -d $(OBJDIR_DEPLOYPROFILE)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_DEPLOYPROFILE)/deps/ImGuiColorTextEdit
 	test -d $(OBJDIR_DEPLOYPROFILE)/deps/imgui-sfml || mkdir -p $(OBJDIR_DEPLOYPROFILE)/deps/imgui-sfml
 	test -d $(OBJDIR_DEPLOYPROFILE)/deps/imgui || mkdir -p $(OBJDIR_DEPLOYPROFILE)/deps/imgui
 	test -d $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype
-	test -d $(OBJDIR_DEPLOYPROFILE)/deps/serialise || mkdir -p $(OBJDIR_DEPLOYPROFILE)/deps/serialise
+	test -d $(OBJDIR_DEPLOYPROFILE)/deps/networking || mkdir -p $(OBJDIR_DEPLOYPROFILE)/deps/networking
 
 after_deployprofile: 
 
@@ -551,20 +578,23 @@ $(OBJDIR_DEPLOYPROFILE)/format_cache.o: format_cache.cpp
 $(OBJDIR_DEPLOYPROFILE)/imgui_ui_components.o: imgui_ui_components.cpp
 	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c imgui_ui_components.cpp -o $(OBJDIR_DEPLOYPROFILE)/imgui_ui_components.o
 
+$(OBJDIR_DEPLOYPROFILE)/imguix.o: imguix.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c imguix.cpp -o $(OBJDIR_DEPLOYPROFILE)/imguix.o
+
 $(OBJDIR_DEPLOYPROFILE)/local_commands.o: local_commands.cpp
 	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c local_commands.cpp -o $(OBJDIR_DEPLOYPROFILE)/local_commands.o
 
 $(OBJDIR_DEPLOYPROFILE)/main.o: main.cpp
 	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c main.cpp -o $(OBJDIR_DEPLOYPROFILE)/main.o
 
+$(OBJDIR_DEPLOYPROFILE)/serialisables.o: serialisables.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c serialisables.cpp -o $(OBJDIR_DEPLOYPROFILE)/serialisables.o
+
 $(OBJDIR_DEPLOYPROFILE)/stacktrace.o: stacktrace.cpp
 	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c stacktrace.cpp -o $(OBJDIR_DEPLOYPROFILE)/stacktrace.o
 
 $(OBJDIR_DEPLOYPROFILE)/string_helpers.o: string_helpers.cpp
 	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c string_helpers.cpp -o $(OBJDIR_DEPLOYPROFILE)/string_helpers.o
-
-$(OBJDIR_DEPLOYPROFILE)/text_editor.o: text_editor.cpp
-	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c text_editor.cpp -o $(OBJDIR_DEPLOYPROFILE)/text_editor.o
 
 $(OBJDIR_DEPLOYPROFILE)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c tokeniser.cpp -o $(OBJDIR_DEPLOYPROFILE)/tokeniser.o
@@ -578,9 +608,6 @@ $(OBJDIR_DEPLOYPROFILE)/auto_handlers.o: auto_handlers.cpp
 $(OBJDIR_DEPLOYPROFILE)/copy_handler.o: copy_handler.cpp
 	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c copy_handler.cpp -o $(OBJDIR_DEPLOYPROFILE)/copy_handler.o
 
-$(OBJDIR_DEPLOYPROFILE)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
-	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/ImGuiColorTextEdit/TextEditor.o
-
 $(OBJDIR_DEPLOYPROFILE)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
 	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/imgui-sfml/imgui-SFML.o
 
@@ -593,11 +620,20 @@ $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
 $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
 	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_draw.o
 
+$(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_widgets.o: deps/imgui/imgui_widgets.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/imgui/imgui_widgets.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_widgets.o
+
 $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype/imgui_freetype.o
 
-$(OBJDIR_DEPLOYPROFILE)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
-	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/serialise/serialise.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/serialise/serialise.o
+$(OBJDIR_DEPLOYPROFILE)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/networking/beast_compilation_unit.o
+
+$(OBJDIR_DEPLOYPROFILE)/deps/networking/networking.o: deps/networking/networking.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/networking/networking.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/networking/networking.o
+
+$(OBJDIR_DEPLOYPROFILE)/deps/networking/serialisable.o: deps/networking/serialisable.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/networking/serialisable.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/networking/serialisable.o
 
 $(OBJDIR_DEPLOYPROFILE)/editable_string.o: editable_string.cpp
 	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c editable_string.cpp -o $(OBJDIR_DEPLOYPROFILE)/editable_string.o
@@ -609,20 +645,18 @@ clean_deployprofile:
 	rm -f $(OBJ_DEPLOYPROFILE) $(OUT_DEPLOYPROFILE)
 	rm -rf DebugDeploy
 	rm -rf $(OBJDIR_DEPLOYPROFILE)
-	rm -rf $(OBJDIR_DEPLOYPROFILE)/deps/ImGuiColorTextEdit
 	rm -rf $(OBJDIR_DEPLOYPROFILE)/deps/imgui-sfml
 	rm -rf $(OBJDIR_DEPLOYPROFILE)/deps/imgui
 	rm -rf $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype
-	rm -rf $(OBJDIR_DEPLOYPROFILE)/deps/serialise
+	rm -rf $(OBJDIR_DEPLOYPROFILE)/deps/networking
 
 before_deploytosteam: 
 	test -d bin/Deploy || mkdir -p bin/Deploy
 	test -d $(OBJDIR_DEPLOYTOSTEAM) || mkdir -p $(OBJDIR_DEPLOYTOSTEAM)
-	test -d $(OBJDIR_DEPLOYTOSTEAM)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_DEPLOYTOSTEAM)/deps/ImGuiColorTextEdit
 	test -d $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui-sfml || mkdir -p $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui-sfml
 	test -d $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui || mkdir -p $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui
 	test -d $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype
-	test -d $(OBJDIR_DEPLOYTOSTEAM)/deps/serialise || mkdir -p $(OBJDIR_DEPLOYTOSTEAM)/deps/serialise
+	test -d $(OBJDIR_DEPLOYTOSTEAM)/deps/networking || mkdir -p $(OBJDIR_DEPLOYTOSTEAM)/deps/networking
 
 after_deploytosteam: 
 	build_release.bat
@@ -641,20 +675,23 @@ $(OBJDIR_DEPLOYTOSTEAM)/format_cache.o: format_cache.cpp
 $(OBJDIR_DEPLOYTOSTEAM)/imgui_ui_components.o: imgui_ui_components.cpp
 	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c imgui_ui_components.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/imgui_ui_components.o
 
+$(OBJDIR_DEPLOYTOSTEAM)/imguix.o: imguix.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c imguix.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/imguix.o
+
 $(OBJDIR_DEPLOYTOSTEAM)/local_commands.o: local_commands.cpp
 	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c local_commands.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/local_commands.o
 
 $(OBJDIR_DEPLOYTOSTEAM)/main.o: main.cpp
 	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c main.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/main.o
 
+$(OBJDIR_DEPLOYTOSTEAM)/serialisables.o: serialisables.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c serialisables.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/serialisables.o
+
 $(OBJDIR_DEPLOYTOSTEAM)/stacktrace.o: stacktrace.cpp
 	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c stacktrace.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/stacktrace.o
 
 $(OBJDIR_DEPLOYTOSTEAM)/string_helpers.o: string_helpers.cpp
 	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c string_helpers.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/string_helpers.o
-
-$(OBJDIR_DEPLOYTOSTEAM)/text_editor.o: text_editor.cpp
-	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c text_editor.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/text_editor.o
 
 $(OBJDIR_DEPLOYTOSTEAM)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c tokeniser.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/tokeniser.o
@@ -668,9 +705,6 @@ $(OBJDIR_DEPLOYTOSTEAM)/auto_handlers.o: auto_handlers.cpp
 $(OBJDIR_DEPLOYTOSTEAM)/copy_handler.o: copy_handler.cpp
 	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c copy_handler.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/copy_handler.o
 
-$(OBJDIR_DEPLOYTOSTEAM)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
-	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/ImGuiColorTextEdit/TextEditor.o
-
 $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
 	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui-sfml/imgui-SFML.o
 
@@ -683,11 +717,20 @@ $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
 $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
 	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_draw.o
 
+$(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_widgets.o: deps/imgui/imgui_widgets.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/imgui/imgui_widgets.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_widgets.o
+
 $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype/imgui_freetype.o
 
-$(OBJDIR_DEPLOYTOSTEAM)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
-	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/serialise/serialise.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/serialise/serialise.o
+$(OBJDIR_DEPLOYTOSTEAM)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/networking/beast_compilation_unit.o
+
+$(OBJDIR_DEPLOYTOSTEAM)/deps/networking/networking.o: deps/networking/networking.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/networking/networking.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/networking/networking.o
+
+$(OBJDIR_DEPLOYTOSTEAM)/deps/networking/serialisable.o: deps/networking/serialisable.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/networking/serialisable.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/networking/serialisable.o
 
 $(OBJDIR_DEPLOYTOSTEAM)/editable_string.o: editable_string.cpp
 	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c editable_string.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/editable_string.o
@@ -699,20 +742,18 @@ clean_deploytosteam:
 	rm -f $(OBJ_DEPLOYTOSTEAM) $(OUT_DEPLOYTOSTEAM)
 	rm -rf bin/Deploy
 	rm -rf $(OBJDIR_DEPLOYTOSTEAM)
-	rm -rf $(OBJDIR_DEPLOYTOSTEAM)/deps/ImGuiColorTextEdit
 	rm -rf $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui-sfml
 	rm -rf $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui
 	rm -rf $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype
-	rm -rf $(OBJDIR_DEPLOYTOSTEAM)/deps/serialise
+	rm -rf $(OBJDIR_DEPLOYTOSTEAM)/deps/networking
 
 before_linux: 
 	test -d bin/Deploy || mkdir -p bin/Deploy
 	test -d $(OBJDIR_LINUX) || mkdir -p $(OBJDIR_LINUX)
-	test -d $(OBJDIR_LINUX)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_LINUX)/deps/ImGuiColorTextEdit
 	test -d $(OBJDIR_LINUX)/deps/imgui-sfml || mkdir -p $(OBJDIR_LINUX)/deps/imgui-sfml
 	test -d $(OBJDIR_LINUX)/deps/imgui || mkdir -p $(OBJDIR_LINUX)/deps/imgui
 	test -d $(OBJDIR_LINUX)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_LINUX)/deps/imgui/misc/freetype
-	test -d $(OBJDIR_LINUX)/deps/serialise || mkdir -p $(OBJDIR_LINUX)/deps/serialise
+	test -d $(OBJDIR_LINUX)/deps/networking || mkdir -p $(OBJDIR_LINUX)/deps/networking
 
 after_linux: 
 
@@ -732,20 +773,23 @@ $(OBJDIR_LINUX)/icon.o: icon.res
 $(OBJDIR_LINUX)/imgui_ui_components.o: imgui_ui_components.cpp
 	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c imgui_ui_components.cpp -o $(OBJDIR_LINUX)/imgui_ui_components.o
 
+$(OBJDIR_LINUX)/imguix.o: imguix.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c imguix.cpp -o $(OBJDIR_LINUX)/imguix.o
+
 $(OBJDIR_LINUX)/local_commands.o: local_commands.cpp
 	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c local_commands.cpp -o $(OBJDIR_LINUX)/local_commands.o
 
 $(OBJDIR_LINUX)/main.o: main.cpp
 	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c main.cpp -o $(OBJDIR_LINUX)/main.o
 
+$(OBJDIR_LINUX)/serialisables.o: serialisables.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c serialisables.cpp -o $(OBJDIR_LINUX)/serialisables.o
+
 $(OBJDIR_LINUX)/stacktrace.o: stacktrace.cpp
 	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c stacktrace.cpp -o $(OBJDIR_LINUX)/stacktrace.o
 
 $(OBJDIR_LINUX)/string_helpers.o: string_helpers.cpp
 	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c string_helpers.cpp -o $(OBJDIR_LINUX)/string_helpers.o
-
-$(OBJDIR_LINUX)/text_editor.o: text_editor.cpp
-	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c text_editor.cpp -o $(OBJDIR_LINUX)/text_editor.o
 
 $(OBJDIR_LINUX)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c tokeniser.cpp -o $(OBJDIR_LINUX)/tokeniser.o
@@ -759,9 +803,6 @@ $(OBJDIR_LINUX)/auto_handlers.o: auto_handlers.cpp
 $(OBJDIR_LINUX)/copy_handler.o: copy_handler.cpp
 	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c copy_handler.cpp -o $(OBJDIR_LINUX)/copy_handler.o
 
-$(OBJDIR_LINUX)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
-	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_LINUX)/deps/ImGuiColorTextEdit/TextEditor.o
-
 $(OBJDIR_LINUX)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
 	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_LINUX)/deps/imgui-sfml/imgui-SFML.o
 
@@ -774,11 +815,20 @@ $(OBJDIR_LINUX)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
 $(OBJDIR_LINUX)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
 	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_LINUX)/deps/imgui/imgui_draw.o
 
+$(OBJDIR_LINUX)/deps/imgui/imgui_widgets.o: deps/imgui/imgui_widgets.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c deps/imgui/imgui_widgets.cpp -o $(OBJDIR_LINUX)/deps/imgui/imgui_widgets.o
+
 $(OBJDIR_LINUX)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_LINUX)/deps/imgui/misc/freetype/imgui_freetype.o
 
-$(OBJDIR_LINUX)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
-	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c deps/serialise/serialise.cpp -o $(OBJDIR_LINUX)/deps/serialise/serialise.o
+$(OBJDIR_LINUX)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_LINUX)/deps/networking/beast_compilation_unit.o
+
+$(OBJDIR_LINUX)/deps/networking/networking.o: deps/networking/networking.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c deps/networking/networking.cpp -o $(OBJDIR_LINUX)/deps/networking/networking.o
+
+$(OBJDIR_LINUX)/deps/networking/serialisable.o: deps/networking/serialisable.cpp
+	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c deps/networking/serialisable.cpp -o $(OBJDIR_LINUX)/deps/networking/serialisable.o
 
 $(OBJDIR_LINUX)/editable_string.o: editable_string.cpp
 	$(CXX) $(CFLAGS_LINUX) $(INC_LINUX) -c editable_string.cpp -o $(OBJDIR_LINUX)/editable_string.o
@@ -790,20 +840,18 @@ clean_linux:
 	rm -f $(OBJ_LINUX) $(OUT_LINUX)
 	rm -rf bin/Deploy
 	rm -rf $(OBJDIR_LINUX)
-	rm -rf $(OBJDIR_LINUX)/deps/ImGuiColorTextEdit
 	rm -rf $(OBJDIR_LINUX)/deps/imgui-sfml
 	rm -rf $(OBJDIR_LINUX)/deps/imgui
 	rm -rf $(OBJDIR_LINUX)/deps/imgui/misc/freetype
-	rm -rf $(OBJDIR_LINUX)/deps/serialise
+	rm -rf $(OBJDIR_LINUX)/deps/networking
 
 before_deploytestdebug: 
 	test -d bin/DeployTestDebug || mkdir -p bin/DeployTestDebug
 	test -d $(OBJDIR_DEPLOYTESTDEBUG) || mkdir -p $(OBJDIR_DEPLOYTESTDEBUG)
-	test -d $(OBJDIR_DEPLOYTESTDEBUG)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_DEPLOYTESTDEBUG)/deps/ImGuiColorTextEdit
 	test -d $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui-sfml || mkdir -p $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui-sfml
 	test -d $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui || mkdir -p $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui
 	test -d $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype
-	test -d $(OBJDIR_DEPLOYTESTDEBUG)/deps/serialise || mkdir -p $(OBJDIR_DEPLOYTESTDEBUG)/deps/serialise
+	test -d $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking || mkdir -p $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking
 
 after_deploytestdebug: 
 
@@ -820,20 +868,23 @@ $(OBJDIR_DEPLOYTESTDEBUG)/format_cache.o: format_cache.cpp
 $(OBJDIR_DEPLOYTESTDEBUG)/imgui_ui_components.o: imgui_ui_components.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c imgui_ui_components.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/imgui_ui_components.o
 
+$(OBJDIR_DEPLOYTESTDEBUG)/imguix.o: imguix.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c imguix.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/imguix.o
+
 $(OBJDIR_DEPLOYTESTDEBUG)/local_commands.o: local_commands.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c local_commands.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/local_commands.o
 
 $(OBJDIR_DEPLOYTESTDEBUG)/main.o: main.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c main.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/main.o
 
+$(OBJDIR_DEPLOYTESTDEBUG)/serialisables.o: serialisables.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c serialisables.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/serialisables.o
+
 $(OBJDIR_DEPLOYTESTDEBUG)/stacktrace.o: stacktrace.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c stacktrace.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/stacktrace.o
 
 $(OBJDIR_DEPLOYTESTDEBUG)/string_helpers.o: string_helpers.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c string_helpers.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/string_helpers.o
-
-$(OBJDIR_DEPLOYTESTDEBUG)/text_editor.o: text_editor.cpp
-	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c text_editor.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/text_editor.o
 
 $(OBJDIR_DEPLOYTESTDEBUG)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c tokeniser.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/tokeniser.o
@@ -847,9 +898,6 @@ $(OBJDIR_DEPLOYTESTDEBUG)/auto_handlers.o: auto_handlers.cpp
 $(OBJDIR_DEPLOYTESTDEBUG)/copy_handler.o: copy_handler.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c copy_handler.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/copy_handler.o
 
-$(OBJDIR_DEPLOYTESTDEBUG)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
-	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/ImGuiColorTextEdit/TextEditor.o
-
 $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui-sfml/imgui-SFML.o
 
@@ -862,11 +910,20 @@ $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
 $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_draw.o
 
+$(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_widgets.o: deps/imgui/imgui_widgets.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/imgui/imgui_widgets.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_widgets.o
+
 $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype/imgui_freetype.o
 
-$(OBJDIR_DEPLOYTESTDEBUG)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
-	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/serialise/serialise.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/serialise/serialise.o
+$(OBJDIR_DEPLOYTESTDEBUG)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking/beast_compilation_unit.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/deps/networking/networking.o: deps/networking/networking.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/networking/networking.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking/networking.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/deps/networking/serialisable.o: deps/networking/serialisable.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/networking/serialisable.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking/serialisable.o
 
 $(OBJDIR_DEPLOYTESTDEBUG)/editable_string.o: editable_string.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c editable_string.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/editable_string.o
@@ -878,20 +935,18 @@ clean_deploytestdebug:
 	rm -f $(OBJ_DEPLOYTESTDEBUG) $(OUT_DEPLOYTESTDEBUG)
 	rm -rf bin/DeployTestDebug
 	rm -rf $(OBJDIR_DEPLOYTESTDEBUG)
-	rm -rf $(OBJDIR_DEPLOYTESTDEBUG)/deps/ImGuiColorTextEdit
 	rm -rf $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui-sfml
 	rm -rf $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui
 	rm -rf $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype
-	rm -rf $(OBJDIR_DEPLOYTESTDEBUG)/deps/serialise
+	rm -rf $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking
 
 before_deploytest: 
 	test -d bin/Deploy || mkdir -p bin/Deploy
 	test -d $(OBJDIR_DEPLOYTEST) || mkdir -p $(OBJDIR_DEPLOYTEST)
-	test -d $(OBJDIR_DEPLOYTEST)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_DEPLOYTEST)/deps/ImGuiColorTextEdit
 	test -d $(OBJDIR_DEPLOYTEST)/deps/imgui-sfml || mkdir -p $(OBJDIR_DEPLOYTEST)/deps/imgui-sfml
 	test -d $(OBJDIR_DEPLOYTEST)/deps/imgui || mkdir -p $(OBJDIR_DEPLOYTEST)/deps/imgui
 	test -d $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype
-	test -d $(OBJDIR_DEPLOYTEST)/deps/serialise || mkdir -p $(OBJDIR_DEPLOYTEST)/deps/serialise
+	test -d $(OBJDIR_DEPLOYTEST)/deps/networking || mkdir -p $(OBJDIR_DEPLOYTEST)/deps/networking
 
 after_deploytest: 
 
@@ -911,20 +966,23 @@ $(OBJDIR_DEPLOYTEST)/icon.o: icon.res
 $(OBJDIR_DEPLOYTEST)/imgui_ui_components.o: imgui_ui_components.cpp
 	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c imgui_ui_components.cpp -o $(OBJDIR_DEPLOYTEST)/imgui_ui_components.o
 
+$(OBJDIR_DEPLOYTEST)/imguix.o: imguix.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c imguix.cpp -o $(OBJDIR_DEPLOYTEST)/imguix.o
+
 $(OBJDIR_DEPLOYTEST)/local_commands.o: local_commands.cpp
 	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c local_commands.cpp -o $(OBJDIR_DEPLOYTEST)/local_commands.o
 
 $(OBJDIR_DEPLOYTEST)/main.o: main.cpp
 	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c main.cpp -o $(OBJDIR_DEPLOYTEST)/main.o
 
+$(OBJDIR_DEPLOYTEST)/serialisables.o: serialisables.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c serialisables.cpp -o $(OBJDIR_DEPLOYTEST)/serialisables.o
+
 $(OBJDIR_DEPLOYTEST)/stacktrace.o: stacktrace.cpp
 	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c stacktrace.cpp -o $(OBJDIR_DEPLOYTEST)/stacktrace.o
 
 $(OBJDIR_DEPLOYTEST)/string_helpers.o: string_helpers.cpp
 	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c string_helpers.cpp -o $(OBJDIR_DEPLOYTEST)/string_helpers.o
-
-$(OBJDIR_DEPLOYTEST)/text_editor.o: text_editor.cpp
-	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c text_editor.cpp -o $(OBJDIR_DEPLOYTEST)/text_editor.o
 
 $(OBJDIR_DEPLOYTEST)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c tokeniser.cpp -o $(OBJDIR_DEPLOYTEST)/tokeniser.o
@@ -938,9 +996,6 @@ $(OBJDIR_DEPLOYTEST)/auto_handlers.o: auto_handlers.cpp
 $(OBJDIR_DEPLOYTEST)/copy_handler.o: copy_handler.cpp
 	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c copy_handler.cpp -o $(OBJDIR_DEPLOYTEST)/copy_handler.o
 
-$(OBJDIR_DEPLOYTEST)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
-	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_DEPLOYTEST)/deps/ImGuiColorTextEdit/TextEditor.o
-
 $(OBJDIR_DEPLOYTEST)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
 	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_DEPLOYTEST)/deps/imgui-sfml/imgui-SFML.o
 
@@ -953,11 +1008,20 @@ $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
 $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
 	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_draw.o
 
+$(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_widgets.o: deps/imgui/imgui_widgets.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/imgui/imgui_widgets.cpp -o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_widgets.o
+
 $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype/imgui_freetype.o
 
-$(OBJDIR_DEPLOYTEST)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
-	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/serialise/serialise.cpp -o $(OBJDIR_DEPLOYTEST)/deps/serialise/serialise.o
+$(OBJDIR_DEPLOYTEST)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_DEPLOYTEST)/deps/networking/beast_compilation_unit.o
+
+$(OBJDIR_DEPLOYTEST)/deps/networking/networking.o: deps/networking/networking.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/networking/networking.cpp -o $(OBJDIR_DEPLOYTEST)/deps/networking/networking.o
+
+$(OBJDIR_DEPLOYTEST)/deps/networking/serialisable.o: deps/networking/serialisable.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/networking/serialisable.cpp -o $(OBJDIR_DEPLOYTEST)/deps/networking/serialisable.o
 
 $(OBJDIR_DEPLOYTEST)/editable_string.o: editable_string.cpp
 	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c editable_string.cpp -o $(OBJDIR_DEPLOYTEST)/editable_string.o
@@ -969,21 +1033,19 @@ clean_deploytest:
 	rm -f $(OBJ_DEPLOYTEST) $(OUT_DEPLOYTEST)
 	rm -rf bin/Deploy
 	rm -rf $(OBJDIR_DEPLOYTEST)
-	rm -rf $(OBJDIR_DEPLOYTEST)/deps/ImGuiColorTextEdit
 	rm -rf $(OBJDIR_DEPLOYTEST)/deps/imgui-sfml
 	rm -rf $(OBJDIR_DEPLOYTEST)/deps/imgui
 	rm -rf $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype
-	rm -rf $(OBJDIR_DEPLOYTEST)/deps/serialise
+	rm -rf $(OBJDIR_DEPLOYTEST)/deps/networking
 
 before_deploytestsubmodules: 
 	git submodule foreach "(git checkout master; git pull)&"
 	test -d bin/Deploy || mkdir -p bin/Deploy
 	test -d $(OBJDIR_DEPLOYTESTSUBMODULES) || mkdir -p $(OBJDIR_DEPLOYTESTSUBMODULES)
-	test -d $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/ImGuiColorTextEdit
 	test -d $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui-sfml || mkdir -p $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui-sfml
 	test -d $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui || mkdir -p $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui
 	test -d $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype
-	test -d $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/serialise || mkdir -p $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/serialise
+	test -d $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking || mkdir -p $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking
 
 after_deploytestsubmodules: 
 
@@ -1003,20 +1065,23 @@ $(OBJDIR_DEPLOYTESTSUBMODULES)/icon.o: icon.res
 $(OBJDIR_DEPLOYTESTSUBMODULES)/imgui_ui_components.o: imgui_ui_components.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c imgui_ui_components.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/imgui_ui_components.o
 
+$(OBJDIR_DEPLOYTESTSUBMODULES)/imguix.o: imguix.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c imguix.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/imguix.o
+
 $(OBJDIR_DEPLOYTESTSUBMODULES)/local_commands.o: local_commands.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c local_commands.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/local_commands.o
 
 $(OBJDIR_DEPLOYTESTSUBMODULES)/main.o: main.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c main.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/main.o
 
+$(OBJDIR_DEPLOYTESTSUBMODULES)/serialisables.o: serialisables.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c serialisables.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/serialisables.o
+
 $(OBJDIR_DEPLOYTESTSUBMODULES)/stacktrace.o: stacktrace.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c stacktrace.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/stacktrace.o
 
 $(OBJDIR_DEPLOYTESTSUBMODULES)/string_helpers.o: string_helpers.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c string_helpers.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/string_helpers.o
-
-$(OBJDIR_DEPLOYTESTSUBMODULES)/text_editor.o: text_editor.cpp
-	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c text_editor.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/text_editor.o
 
 $(OBJDIR_DEPLOYTESTSUBMODULES)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c tokeniser.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/tokeniser.o
@@ -1030,9 +1095,6 @@ $(OBJDIR_DEPLOYTESTSUBMODULES)/auto_handlers.o: auto_handlers.cpp
 $(OBJDIR_DEPLOYTESTSUBMODULES)/copy_handler.o: copy_handler.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c copy_handler.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/copy_handler.o
 
-$(OBJDIR_DEPLOYTESTSUBMODULES)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
-	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/ImGuiColorTextEdit/TextEditor.o
-
 $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui-sfml/imgui-SFML.o
 
@@ -1045,11 +1107,20 @@ $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cp
 $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_draw.o
 
+$(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_widgets.o: deps/imgui/imgui_widgets.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/imgui/imgui_widgets.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_widgets.o
+
 $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o
 
-$(OBJDIR_DEPLOYTESTSUBMODULES)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
-	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/serialise/serialise.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/serialise/serialise.o
+$(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking/beast_compilation_unit.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking/networking.o: deps/networking/networking.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/networking/networking.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking/networking.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking/serialisable.o: deps/networking/serialisable.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/networking/serialisable.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking/serialisable.o
 
 $(OBJDIR_DEPLOYTESTSUBMODULES)/editable_string.o: editable_string.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c editable_string.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/editable_string.o
@@ -1061,21 +1132,19 @@ clean_deploytestsubmodules:
 	rm -f $(OBJ_DEPLOYTESTSUBMODULES) $(OUT_DEPLOYTESTSUBMODULES)
 	rm -rf bin/Deploy
 	rm -rf $(OBJDIR_DEPLOYTESTSUBMODULES)
-	rm -rf $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/ImGuiColorTextEdit
 	rm -rf $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui-sfml
 	rm -rf $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui
 	rm -rf $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype
-	rm -rf $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/serialise
+	rm -rf $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking
 
 before_releasesubmodules: 
 	git submodule foreach "(git checkout master; git pull)&"
 	test -d bin/Release || mkdir -p bin/Release
 	test -d $(OBJDIR_RELEASESUBMODULES) || mkdir -p $(OBJDIR_RELEASESUBMODULES)
-	test -d $(OBJDIR_RELEASESUBMODULES)/deps/ImGuiColorTextEdit || mkdir -p $(OBJDIR_RELEASESUBMODULES)/deps/ImGuiColorTextEdit
 	test -d $(OBJDIR_RELEASESUBMODULES)/deps/imgui-sfml || mkdir -p $(OBJDIR_RELEASESUBMODULES)/deps/imgui-sfml
 	test -d $(OBJDIR_RELEASESUBMODULES)/deps/imgui || mkdir -p $(OBJDIR_RELEASESUBMODULES)/deps/imgui
 	test -d $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype
-	test -d $(OBJDIR_RELEASESUBMODULES)/deps/serialise || mkdir -p $(OBJDIR_RELEASESUBMODULES)/deps/serialise
+	test -d $(OBJDIR_RELEASESUBMODULES)/deps/networking || mkdir -p $(OBJDIR_RELEASESUBMODULES)/deps/networking
 
 after_releasesubmodules: 
 	build_test.bat
@@ -1093,20 +1162,23 @@ $(OBJDIR_RELEASESUBMODULES)/format_cache.o: format_cache.cpp
 $(OBJDIR_RELEASESUBMODULES)/imgui_ui_components.o: imgui_ui_components.cpp
 	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c imgui_ui_components.cpp -o $(OBJDIR_RELEASESUBMODULES)/imgui_ui_components.o
 
+$(OBJDIR_RELEASESUBMODULES)/imguix.o: imguix.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c imguix.cpp -o $(OBJDIR_RELEASESUBMODULES)/imguix.o
+
 $(OBJDIR_RELEASESUBMODULES)/local_commands.o: local_commands.cpp
 	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c local_commands.cpp -o $(OBJDIR_RELEASESUBMODULES)/local_commands.o
 
 $(OBJDIR_RELEASESUBMODULES)/main.o: main.cpp
 	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c main.cpp -o $(OBJDIR_RELEASESUBMODULES)/main.o
 
+$(OBJDIR_RELEASESUBMODULES)/serialisables.o: serialisables.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c serialisables.cpp -o $(OBJDIR_RELEASESUBMODULES)/serialisables.o
+
 $(OBJDIR_RELEASESUBMODULES)/stacktrace.o: stacktrace.cpp
 	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c stacktrace.cpp -o $(OBJDIR_RELEASESUBMODULES)/stacktrace.o
 
 $(OBJDIR_RELEASESUBMODULES)/string_helpers.o: string_helpers.cpp
 	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c string_helpers.cpp -o $(OBJDIR_RELEASESUBMODULES)/string_helpers.o
-
-$(OBJDIR_RELEASESUBMODULES)/text_editor.o: text_editor.cpp
-	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c text_editor.cpp -o $(OBJDIR_RELEASESUBMODULES)/text_editor.o
 
 $(OBJDIR_RELEASESUBMODULES)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c tokeniser.cpp -o $(OBJDIR_RELEASESUBMODULES)/tokeniser.o
@@ -1120,9 +1192,6 @@ $(OBJDIR_RELEASESUBMODULES)/auto_handlers.o: auto_handlers.cpp
 $(OBJDIR_RELEASESUBMODULES)/copy_handler.o: copy_handler.cpp
 	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c copy_handler.cpp -o $(OBJDIR_RELEASESUBMODULES)/copy_handler.o
 
-$(OBJDIR_RELEASESUBMODULES)/deps/ImGuiColorTextEdit/TextEditor.o: deps/ImGuiColorTextEdit/TextEditor.cpp
-	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/ImGuiColorTextEdit/TextEditor.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/ImGuiColorTextEdit/TextEditor.o
-
 $(OBJDIR_RELEASESUBMODULES)/deps/imgui-sfml/imgui-SFML.o: deps/imgui-sfml/imgui-SFML.cpp
 	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/imgui-sfml/imgui-SFML.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/imgui-sfml/imgui-SFML.o
 
@@ -1135,11 +1204,20 @@ $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_demo.o: deps/imgui/imgui_demo.cpp
 $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_draw.o: deps/imgui/imgui_draw.cpp
 	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/imgui/imgui_draw.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_draw.o
 
+$(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_widgets.o: deps/imgui/imgui_widgets.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/imgui/imgui_widgets.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_widgets.o
+
 $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o
 
-$(OBJDIR_RELEASESUBMODULES)/deps/serialise/serialise.o: deps/serialise/serialise.cpp
-	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/serialise/serialise.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/serialise/serialise.o
+$(OBJDIR_RELEASESUBMODULES)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/networking/beast_compilation_unit.o
+
+$(OBJDIR_RELEASESUBMODULES)/deps/networking/networking.o: deps/networking/networking.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/networking/networking.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/networking/networking.o
+
+$(OBJDIR_RELEASESUBMODULES)/deps/networking/serialisable.o: deps/networking/serialisable.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/networking/serialisable.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/networking/serialisable.o
 
 $(OBJDIR_RELEASESUBMODULES)/editable_string.o: editable_string.cpp
 	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c editable_string.cpp -o $(OBJDIR_RELEASESUBMODULES)/editable_string.o
@@ -1151,11 +1229,10 @@ clean_releasesubmodules:
 	rm -f $(OBJ_RELEASESUBMODULES) $(OUT_RELEASESUBMODULES)
 	rm -rf bin/Release
 	rm -rf $(OBJDIR_RELEASESUBMODULES)
-	rm -rf $(OBJDIR_RELEASESUBMODULES)/deps/ImGuiColorTextEdit
 	rm -rf $(OBJDIR_RELEASESUBMODULES)/deps/imgui-sfml
 	rm -rf $(OBJDIR_RELEASESUBMODULES)/deps/imgui
 	rm -rf $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype
-	rm -rf $(OBJDIR_RELEASESUBMODULES)/deps/serialise
+	rm -rf $(OBJDIR_RELEASESUBMODULES)/deps/networking
 
 .PHONY: before_build after_build before_debug after_debug clean_debug before_release after_release clean_release before_profile after_profile clean_profile before_deploy after_deploy clean_deploy before_deployprofile after_deployprofile clean_deployprofile before_deploytosteam after_deploytosteam clean_deploytosteam before_linux after_linux clean_linux before_deploytestdebug after_deploytestdebug clean_deploytestdebug before_deploytest after_deploytest clean_deploytest before_deploytestsubmodules after_deploytestsubmodules clean_deploytestsubmodules before_releasesubmodules after_releasesubmodules clean_releasesubmodules
 
