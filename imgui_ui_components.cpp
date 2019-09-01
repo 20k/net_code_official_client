@@ -722,7 +722,7 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
 
             std::vector<std::string> in_channels = in["channels"];
 
-            std::vector<std::string> tell_msgs = in["tells"];
+            std::vector<nlohmann::json> tell_msgs = in["tells"];
 
             std::vector<std::string> notifs = in["notifs"];
 
@@ -772,12 +772,16 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
                 chat_threads[chnls[i]].dirty = true;
             }
 
-            for(auto& i : tell_msgs)
+            for(int kk=0; kk < (int)tell_msgs.size(); kk++)
             {
-                fix_tabs(i);
+                nlohmann::json js = tell_msgs[kk];
 
-                raw_history.push_back(i + "\n");
-                history.push_back(string_to_interop_no_autos(i + "\n", false));
+                std::string text = js["text"];
+
+                fix_tabs(text);
+
+                raw_history.push_back(text + "\n");
+                history.push_back(string_to_interop_no_autos(text + "\n", false));
             }
 
             limit_size(raw_history, MAX_TEXT_HISTORY);
