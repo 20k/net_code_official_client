@@ -140,7 +140,7 @@ void handle_auth(c_steam_api csapi, connection& conn)
             steam_api_request_encrypted_token(csapi, make_view_from_raw(""));
         }
 
-        while(steam_api_should_wait_for_encrypted_token(csapi)){}
+        while(steam_api_should_wait_for_encrypted_token(csapi)){steam_api_pump_events(csapi);}
 
         if(!steam_api_has_encrypted_token(csapi))
         {
@@ -158,6 +158,8 @@ void handle_auth(c_steam_api csapi, connection& conn)
         data["data"] = etoken;
 
         conn.write(data.dump());
+
+        printf("Postwrite\n");
     }
     ///use key based auth
     else if(file_exists("key.key"))
