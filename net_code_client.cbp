@@ -199,14 +199,14 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add option="-std=c++17" />
 			<Add option="-fexceptions" />
 			<Add option="-Wno-narrowing" />
-			<Add option="-std=gnu++1z" />
 			<Add option="-Werror=return-type" />
 			<Add option="-Wno-strict-aliasing" />
 			<Add option="-DNET_CLIENT" />
 			<Add option="-DNO_COMPRESSION" />
-			<Add option="-DBOOST_STACKTRACE_USE_WINDBG" />
+			<Add option="-DBOOST_STACKTRACE_USE_BACKTRACE" />
 			<Add option="-DSFML_STATIC" />
 			<Add directory="deps" />
 			<Add directory="deps/SFML/include" />
@@ -232,6 +232,8 @@
 			<Add option="-lws2_32" />
 			<Add option="-lcrypto" />
 			<Add option="-lssl" />
+			<Add option="-lboost_filesystem-mt" />
+			<Add option="-lbacktrace" />
 			<Add library="deps/libncclient/libncclient.a" />
 			<Add directory="deps/SFML/lib" />
 		</Linker>

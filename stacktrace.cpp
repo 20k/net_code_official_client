@@ -1,16 +1,37 @@
 #include "stacktrace.hpp"
 
 #include <signal.h>     // ::signal, ::raise
-//#include <boost/stacktrace.hpp>
-//#include <boost/filesystem.hpp>
+#include <boost/stacktrace.hpp>
+#include <boost/filesystem.hpp>
 #include <iostream>
+#include <sstream>
+
+void signal_handler(int signum)
+{
+    ::signal(signum, SIG_DFL);
+    //boost::stacktrace::safe_dump_to("./backtrace.dump");
+
+    std::string stacktrace = get_stacktrace();
+
+    printf("stacktrace %s\n", stacktrace.c_str());
+
+    FILE* pFile = fopen("crash.txt", "a+");
+
+    fwrite(stacktrace.c_str(), 1, stacktrace.size(), pFile);
+
+    fclose(pFile);
+
+    system("pause");
+
+    ::raise(SIGABRT);
+}
 
 void stack_on_start()
 {
-    #if 0
+    //CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+
     ::signal(SIGSEGV, &signal_handler);
     ::signal(SIGABRT, &signal_handler);
-
 
     if (boost::filesystem::exists("./backtrace.dump"))
     {
@@ -27,12 +48,18 @@ void stack_on_start()
 
         rename("./backtrace.dump", "./backtrace_1.dump");
     }
-    #endif // 0
 }
 
-void signal_handler(int signum)
+std::string get_stacktrace()
 {
-    ::signal(signum, SIG_DFL);
-    //boost::stacktrace::safe_dump_to("./backtrace.dump");
-    ::raise(SIGABRT);
+    std::stringstream stream;
+
+    stream << boost::stacktrace::stacktrace();
+
+    return stream.str();
+}
+
+std::string name_from_ptr(void* ptr)
+{
+    return boost::stacktrace::frame((boost::stacktrace::detail::native_frame_ptr_t)ptr).name();
 }
