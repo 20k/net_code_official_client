@@ -187,7 +187,7 @@ int main()
 
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
-    stack_on_start();
+    //stack_on_start();
 
     //token_tests();
 
