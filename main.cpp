@@ -122,7 +122,7 @@ std::string default_up_handling(const std::string& user, const std::string& serv
     return server_msg;
 }
 
-void handle_auth(c_steam_api csapi, connection& conn)
+void handle_auth(c_steam_api csapi, connection& conn, std::string current_user)
 {
     if(steam_api_enabled(csapi))
     {
@@ -178,6 +178,15 @@ void handle_auth(c_steam_api csapi, connection& conn)
         printf("No auth methods available, use steam or key.key file");
         throw std::runtime_error("No auth method available");
     }
+
+    if(current_user.size() > 0)
+    {
+        nlohmann::json data;
+        data["type"] = "generic_server_command";
+        data["data"] = "user " + current_user;
+
+        conn.write(data.dump());
+    }
 }
 
 ///test new repo
@@ -196,7 +205,7 @@ int main()
     connection conn;
     conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
 
-    handle_auth(csapi, conn);
+    handle_auth(csapi, conn, "");
 
     ///need to write auth data here!
 
@@ -413,7 +422,7 @@ int main()
             conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
             connection_clock.restart();
 
-            handle_auth(csapi, conn);
+            handle_auth(csapi, conn, current_user);
 
             term.add_text("Connecting...");
         }
