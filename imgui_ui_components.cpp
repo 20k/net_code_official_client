@@ -860,10 +860,19 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
         }
         else if(in["type"] == "auth")
         {
-            ///do nothing
-            std::string auth_hex = in["data"];
+            std::string key = hex_to_binary(data["data"]);
+            std::string key_file = "key.key";
 
-            write_all_bin("key.key", auth_hex);
+            if(!file_exists(key_file))
+            {
+                write_all_bin(key_file, key);
+
+                add_text(make_success_col("Success! Try user lowercase_name to get started, and then #scripts.core()"));
+            }
+            else
+            {
+                add_text(make_error_col("Did not overwrite existing key file, you are already registered"));
+            }
         }
         else
         {

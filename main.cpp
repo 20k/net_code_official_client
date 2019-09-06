@@ -1077,27 +1077,10 @@ int main()
             ///this is temporary before the other end of the api gets changed
             nlohmann::json data = nlohmann::json::parse(fdata);
 
-            if(data["type"] == "auth")
-            {
-                std::string key = data["data"];
-                std::string key_file = "key.key";
-
-                if(!file_exists(key_file))
-                {
-                    write_all_bin(key_file, key);
-
-                    term.add_text(make_success_col("Success! Try user lowercase_name to get started, and then #scripts.core()"));
-                }
-                else
-                {
-                    term.add_text(make_error_col("Did not overwrite existing key file, you are already registered"));
-                }
-            }
-
             term.add_text_from_server(current_user, data, chat_win);
         }
 
-        if(write_clock.getElapsedTime().asMilliseconds() > 2000)
+        if(write_clock.getElapsedTime().asMilliseconds() > 5000)
         {
             atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK).dump());
             atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK).dump());
