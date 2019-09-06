@@ -151,7 +151,7 @@ void handle_auth(c_steam_api csapi, connection& conn, std::string current_user)
         sized_string str = steam_api_get_encrypted_token(csapi);
 
         std::string etoken = c_str_consume(str);
-        etoken = binary_to_hex(etoken);
+        etoken = etoken;
 
         nlohmann::json data;
         data["type"] = "steam_auth";
@@ -168,7 +168,7 @@ void handle_auth(c_steam_api csapi, connection& conn, std::string current_user)
 
         nlohmann::json data;
         data["type"] = "key_auth";
-        data["data"] = binary_to_hex(read_file_bin("key.key"));
+        data["data"] = read_file_bin("key.key");
 
         conn.write(data.dump());
     }
