@@ -861,6 +861,9 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
         else if(in["type"] == "auth")
         {
             ///do nothing
+            std::string auth_hex = in["data"];
+
+            write_all_bin("key.key", auth_hex);
         }
         else
         {
