@@ -201,6 +201,34 @@ void handle_auth(c_steam_api csapi, connection& conn, std::string current_user)
     }
 }
 
+///no udata for glfw?
+std::vector<int> glfw_key_pressed_data;
+std::vector<int> glfw_key_released_data;
+std::vector<uint32_t> glfw_input_utf32;
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if(action == GLFW_PRESS || action == GLFW_REPEAT)
+    {
+        glfw_key_pressed_data.push_back(key);
+    }
+
+    if(action == GLFW_RELEASE)
+    {
+        glfw_key_released_data.push_back(key);
+    }
+}
+
+void key_input_callback(GLFWwindow* window, unsigned int c)
+{
+    glfw_input_utf32.push_back(c);
+}
+
+bool just_pressed(int key)
+{
+    return std::find(glfw_key_pressed_data.begin(), glfw_key_pressed_data.end(), key) != glfw_key_pressed_data.end();
+}
+
 ///test new repo
 int main()
 {
@@ -262,6 +290,9 @@ int main()
         style.WindowRounding = 0.0f;
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
     }
+
+    glfwSetKeyCallback(window_ctx.window, key_callback);
+    glfwSetCharCallback(window_ctx.window, key_input_callback);
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window_ctx.window, true);
@@ -545,7 +576,154 @@ int main()
             active_frames--;
         }*/
 
+        glfw_key_pressed_data.clear();
+        glfw_key_released_data.clear();
+        glfw_input_utf32.clear();
+
         glfwPollEvents();
+
+        for(uint32_t i : glfw_input_utf32)
+        {
+            if(i <= 126 && i >= 32)
+            {
+                to_edit->add_to_command(i);
+
+                term.last_line_invalidate();
+
+                std::string str = std::string(1, event.text.unicode);
+
+                if(str == " ")
+                    str = "space";
+
+                realtime_str.push_back(str);
+            }
+        }
+
+        for(int i : glfw_key_pressed_data)
+        {
+            //if(on_input_map.find(event.key.code) != on_input_map.end())
+            //    realtime_str.push_back(on_input_map[event.key.code]);
+
+            //if(key_map.find(event.key.code) != key_map.end())
+            //    on_pressed.push_back(key_map[event.key.code]);
+
+            term.last_line_invalidate();
+
+            if(i == GLFW_KEY_BACKSPACE)
+            {
+                to_edit->process_backspace();
+            }
+
+            if(i == GLFW_KEY_DELETE)
+            {
+                to_edit->process_delete();
+            }
+
+            if(i == GLFW_KEY_UP)
+            {
+                to_edit->move_command_history_idx(-1);
+            }
+
+            if(i == GLFW_KEY_DOWN)
+            {
+                to_edit->move_command_history_idx(1);
+            }
+
+            if(i == GLFW_KEY_LEFT)
+            {
+                if(glfwGetKey(window_ctx.window, GLFW_KEY_LEFT_CONTROL) != GLFW_PRESS)
+                    to_edit->move_cursor(-1);
+                else
+                    to_edit->move_cursor(-5);
+            }
+
+            if(i == GLFW_KEY_RIGHT)
+            {
+                if(glfwGetKey(window_ctx.window, GLFW_KEY_LEFT_CONTROL) != GLFW_PRESS)
+                    to_edit->move_cursor(1);
+                else
+                    to_edit->move_cursor(5);
+            }
+
+            if(i == GLFW_KEY_HOME)
+            {
+                to_edit->move_cursor(-(int)to_edit->command.size());
+            }
+
+            if(i == GLFW_KEY_END)
+            {
+                to_edit->move_cursor(to_edit->command.size());
+            }
+
+            if(i == GLFW_KEY_ESCAPE)
+            {
+                to_edit->clear_command();
+            }
+
+            if(i == GLFW_KEY_V)
+            {
+                if(glfwGetKey(window_ctx.window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && is_focused(focused))
+                {
+                    std::string add_text = get_clipboard_contents();
+
+                    for(auto& i : add_text)
+                    {
+                        to_edit->add_to_command(i);
+                    }
+                }
+            }
+
+            if(i == GLFW_KEY_F1)
+            {
+                font_select.is_open = !font_select.is_open;
+            }
+
+            if(i == GLFW_KEY_ENTER)
+            {
+                if(to_edit != &realtime_shim && to_edit != &no_string)
+                {
+                    if(glfwGetKey(window_ctx.window, GLFW_KEY_LEFT_CONTROL) != GLFW_PRESS && glfwGetKey(window_ctx.window, GLFW_KEY_LEFT_SHIFT) != GLFW_PRESS)
+                        enter = true;
+                    else
+                        to_edit->add_to_command('\n');
+                }
+                else
+                    to_edit->add_to_command('\n');
+            }
+
+            ///TODO: DONT FORGET ABOUT FIXING TERMINAL INVALIDATION FOR THESE
+            if(i == GLFW_KEY_PAGE_DOWN)
+            {
+                if(hovered_string == &term.command)
+                {
+                    mouse_delta -= term.render_height - 2;
+
+                    if(term.scroll_hack.scrolled + mouse_delta < 0)
+                        mouse_delta = -term.scroll_hack.scrolled;
+
+                }
+
+                if(hovered_string == &chat_win.command)
+                {
+                    mouse_delta -= chat_win.render_height - 2;
+
+                    if(chat_win.scroll_hack.scrolled + mouse_delta < 0)
+                        mouse_delta = -chat_win.scroll_hack.scrolled;
+                }
+
+                term.last_line_invalidate();
+            }
+
+            if(i == GLFW_KEY_PAGE_UP)
+            {
+                if(hovered_string == &term.command)
+                    mouse_delta += term.render_height - 2;
+                if(hovered_string == &chat_win.command)
+                    mouse_delta += chat_win.render_height - 2;
+
+                term.last_line_invalidate();
+            }
+        }
 
         #if 0
         while(skip_first_event || window.pollEvent(event))
@@ -1153,14 +1331,25 @@ int main()
             //term.auto_handle.found_unprocessed_autocompletes.clear();
         }
 
-        /*if((term.focused || term.get_id_of_focused_realtime_window() != 1) && is_focused(focused) && key.isKeyPressed(sf::Keyboard::LControl) && ONCE_MACRO(sf::Keyboard::C))
+        #ifdef SHOULD_UPDATE
+        if((term.focused || term.get_id_of_focused_realtime_window() != 1) && is_focused(focused) && key.isKeyPressed(sf::Keyboard::LControl) && ONCE_MACRO(sf::Keyboard::C))
         {
             nlohmann::json data;
             data["type"] = "client_terminate_scripts";
             data["id"] = -1;
 
             conn.write(data.dump());
-        }*/
+        }
+        #endif // SHOULD_UPDATE
+
+        if((term.focused || term.get_id_of_focused_realtime_window() != 1) && is_focused(focused) && glfwGetKey(window_ctx.window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && just_pressed(GLFW_KEY_C))
+        {
+            nlohmann::json data;
+            data["type"] = "client_terminate_scripts";
+            data["id"] = -1;
+
+            conn.write(data.dump());
+        }
 
         //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
 
@@ -1200,6 +1389,8 @@ int main()
         term.auto_handle.tab_pressed = ONCE_MACRO(sf::Keyboard::Tab) && is_focused(focused);
         #endif // SHOULD_UPDATE
 
+        term.auto_handle.tab_pressed = just_pressed(GLFW_KEY_TAB) && is_focused(focused);
+
         if(term.auto_handle.tab_pressed)
         {
             term.last_line_invalidate();
@@ -1207,11 +1398,13 @@ int main()
 
         ///this is a hack to fix the fact that sometimes
         ///click input doesn't make clean click/release pairs
-        /*if(!mouse.isButtonPressed(sf::Mouse::Left))
+        #ifdef SHOULD_UPDATE
+        if(!mouse.isButtonPressed(sf::Mouse::Left))
         {
             get_global_copy_handler()->finished = false;
             get_global_copy_handler()->held = false;
-        }*/
+        }
+        #endif // SHOULD_UPDATE
 
         ImGui::PopFont();
 
