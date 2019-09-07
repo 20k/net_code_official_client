@@ -396,12 +396,12 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
     return text_area_focused;
 }
 
-void terminal_imgui::render(sf::RenderWindow& win, bool refocus)
+void terminal_imgui::render(vec2f window_size, bool refocus)
 {
     copy_handler* handle = get_global_copy_handler();
 
     ImGui::SetNextWindowPos(ImVec2(0,0));
-    ImGui::SetNextWindowSize(ImVec2(win.getSize().x, win.getSize().y));
+    ImGui::SetNextWindowSize(ImVec2(window_size.x(), window_size.y()));
 
     if(refocus)
         ImGui::SetNextWindowFocus();
@@ -912,22 +912,12 @@ void terminal_imgui::add_text_to_current_chat_thread(chat_window& chat_win, cons
     thr.dirty = true;
 }
 
-sf::Color chat_window::get_frame_col()
-{
-    return sf::Color(frame_col.x()*255.f, frame_col.y()*255.f, frame_col.z()*255.f, 255);
-}
-
-sf::Color chat_window::get_highlight_col()
-{
-    return sf::Color(70, 70, 70, 255);
-}
-
 void chat_window::tick()
 {
 
 }
 
-void chat_window::render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads, bool refocus)
+void chat_window::render(std::map<std::string, chat_thread>& threads, bool refocus)
 {
     copy_handler* handle = get_global_copy_handler();
 

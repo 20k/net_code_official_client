@@ -159,8 +159,6 @@ void internally_format(std::vector<std::vector<formatted_char>>& chars, vec2f st
     }
 }
 
-void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& chars, float zero_bound);
-
 struct auto_handler;
 
 std::string get_clipboard_contents();

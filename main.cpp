@@ -35,6 +35,8 @@
 #include "window_context.hpp"
 #include "imguix.hpp"
 
+#include <imgui/examples/imgui_impl_glfw.h>
+
 bool is_focused(bool in_focus)
 {
     return in_focus;
@@ -1138,8 +1140,8 @@ int main()
 
         //test_imgui_term.render(window);
         term.render_realtime_windows(conn, was_closed_id);
-        chat_win.render(window, term.chat_threads, should_coordinate_focus);
-        term.render(window, should_coordinate_focus);
+        chat_win.render(term.chat_threads, should_coordinate_focus);
+        term.render({window.getSize().x, window.getSize().y}, should_coordinate_focus);
 
         should_coordinate_focus = false;
 

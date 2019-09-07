@@ -7,6 +7,7 @@
 #include "auto_handlers.hpp"
 #include <libncclient/c_shared_data.h>
 #include "format_cache.hpp"
+#include <SFML/System.hpp>
 
 struct chat_thread;
 struct chat_window;
@@ -93,9 +94,6 @@ struct chat_window : serialisable, frameable
         DO_SERIALISE(show_chat_in_main_window);
     }
 
-    sf::Color get_frame_col();
-    sf::Color get_highlight_col();
-
     bool focused = false;
     bool hovered = false;
     float border_size = 2.f;
@@ -103,7 +101,7 @@ struct chat_window : serialisable, frameable
 
     void tick();
 
-    void render(sf::RenderWindow& win, std::map<std::string, chat_thread>& threads, bool refocus);
+    void render(std::map<std::string, chat_thread>& threads, bool refocus);
 
     void set_side_channels(const std::vector<std::string>& sides);
 
@@ -140,7 +138,7 @@ struct terminal_imgui : serialisable, cacheable, frameable, free_function
     void clear_text();
 
     terminal_imgui();
-    void render(sf::RenderWindow& win, bool refocus);
+    void render(vec2f window_size, bool refocus);
     void render_realtime_windows(connection& conn, int& was_closed_id);
     void bump_command_to_history();
 
