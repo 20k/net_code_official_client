@@ -1,7 +1,6 @@
 #ifndef STRING_HELPERS_HPP_INCLUDED
 #define STRING_HELPERS_HPP_INCLUDED
 
-#include <SFML/Graphics.hpp>
 #include "colour_interop.hpp"
 
 namespace char_inf
@@ -163,14 +162,6 @@ void internally_format(std::vector<std::vector<formatted_char>>& chars, vec2f st
 void render_formatted_str(sf::RenderWindow& win, std::vector<formatted_char>& chars, float zero_bound);
 
 struct auto_handler;
-
-///this might look suspiciously like bad api design
-///and you'd be right
-///ok. Need to pass interop chars into here instead
-///and parse them only once, as its now expensive to parse them
-void render(sf::RenderWindow& win, std::string& command, const std::vector<interop_vec_t>& text_history,
-       int& cursor_pos_idx, vec2f start, vec2f wrap_dim, float zero_bound,
-       auto_handler& auto_handle, bool focused);
 
 std::string get_clipboard_contents();
 void set_clipboard_contents(const std::string& str);

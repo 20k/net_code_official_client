@@ -218,6 +218,7 @@ int main()
     ImGuiIO& io = ImGui::GetIO();
 
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
     ImGui::SetStyleLinearColor(window_ctx.is_srgb);
 
@@ -1175,6 +1176,16 @@ int main()
         ImGui::PopFont();
 
         ImGui::SFML::Render(window);
+
+        if(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            window.pushGLStates();
+
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+
+            window.popGLStates();
+        }
 
         window.display();
         //window.clear(sf::Color(bg_col.x(), bg_col.y(), bg_col.z()));

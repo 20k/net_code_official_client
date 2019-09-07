@@ -49,10 +49,6 @@ struct font_selector : serialisable
         DO_SERIALISE(current_base_font);
     }
 
-    std::vector<sf::Font> sfml_fonts;
-
-    sf::Font* get_base_sfml_font();
-
     sf::Texture font_atlas;
 };
 
