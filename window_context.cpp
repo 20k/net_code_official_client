@@ -1,4 +1,12 @@
 #include "window_context.hpp"
+
+#include <imgui/imgui.h>
+#include <imgui/imgui_internal.h>
+#include <imgui/examples/imgui_impl_glfw.h>
+#include <imgui/examples/imgui_impl_opengl3.h>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
 #include <libncclient/nc_util.hpp>
 #include <nlohmann/json.hpp>
 #include <libncclient/nc_util.hpp>
@@ -7,12 +15,42 @@ window_context::window_context()
 {
     load();
 
-    sf::ContextSettings sett;
+    if(!glfwInit())
+        throw std::runtime_error("Could not init glfw");
+
+    /*sf::ContextSettings sett;
     sett.antialiasingLevel = 1;
     sett.sRgbCapable = is_srgb;
 
     win.create(sf::VideoMode(width, height), "net_code", sf::Style::Default, sett);
-    win.resetGLStates();
+    win.resetGLStates();*/
+
+            // Decide GL+GLSL versions
+#if __APPLE__
+    // GL 3.2 + GLSL 150
+    glsl_version = "#version 150";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+#else
+    // GL 3.0 + GLSL 130
+    glsl_version = "#version 130";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+#endif
+
+    // Create window with graphics context
+    window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
+    if (window == NULL)
+        throw std::runtime_error("Nullptr window in glfw");
+
+    glfwMakeContextCurrent(window);
+
+    if(glewInit() != GLEW_OK)
+        throw std::runtime_error("Bad Glew");
 }
 
 void window_context::load()
@@ -68,10 +106,10 @@ void window_context::set_is_srgb(bool pis_srgb)
 {
     is_srgb = pis_srgb;
 
-    sf::ContextSettings sett;
+    /*sf::ContextSettings sett;
     sett.antialiasingLevel = 1;
     sett.sRgbCapable = is_srgb;
 
     win.create(sf::VideoMode(width, height), "net_code", sf::Style::Default, sett);
-    win.resetGLStates();
+    win.resetGLStates();*/
 }

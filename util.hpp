@@ -1,7 +1,7 @@
 #ifndef UTIL_HPP_INCLUDED
 #define UTIL_HPP_INCLUDED
 
-template<sf::Keyboard::Key k, int n, int c>
+/*template<sf::Keyboard::Key k, int n, int c>
 inline
 bool once()
 {
@@ -47,7 +47,7 @@ bool once()
     return false;
 }
 
-#define ONCE_MACRO(x) once<x, __LINE__, __COUNTER__>()
+#define ONCE_MACRO(x) once<x, __LINE__, __COUNTER__>()*/
 
 inline
 std::string binary_to_hex(const std::string& in, bool swap_endianness = false)

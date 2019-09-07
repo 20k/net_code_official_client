@@ -1,5 +1,13 @@
 #include <iostream>
-#include <SFML/Graphics.hpp>
+
+#include <imgui/imgui.h>
+#include <imgui/imgui_internal.h>
+#include <imgui/examples/imgui_impl_glfw.h>
+#include <imgui/examples/imgui_impl_opengl3.h>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include "window_context.hpp"
+
 #include <vec/vec.hpp>
 
 #include "util.hpp"
@@ -32,10 +40,7 @@
 #include <stdio.h>
 #include "font_cfg.hpp"
 #include <iomanip>
-#include "window_context.hpp"
 #include "imguix.hpp"
-
-#include <imgui/examples/imgui_impl_glfw.h>
 
 bool is_focused(bool in_focus)
 {
@@ -79,6 +84,11 @@ std::string make_lower(std::string in)
 #define HOST_PORT 6761
 #define HOST_PORT_SSL 6781
 #endif // LOCAL_IP
+
+void glfw_error_callback(int error, const char* description)
+{
+    fprintf(stderr, "Glfw Error %d: %s\n", error, description);
+}
 
 std::string default_up_handling(const std::string& user, const std::string& server_msg, const std::string& scripts_dir)
 {
@@ -211,18 +221,20 @@ int main()
 
     ///need to write auth data here!
 
+    glfwSetErrorCallback(glfw_error_callback);
+
     window_context window_ctx;
 
-    sf::RenderWindow& window = window_ctx.win;
+    ImFontAtlas atlas = {};
 
-    ImGui::SFML::Init(window, false);
+    ImGui::CreateContext(&atlas);
 
     ImGuiIO& io = ImGui::GetIO();
 
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
-    ImGui::SetStyleLinearColor(window_ctx.is_srgb);
+    //ImGui::SetStyleLinearColor(window_ctx.is_srgb);
 
     ImGui::PushSrgbStyleColor(ImGuiCol_WindowBg, ImGuiX::GetBgCol());
 
@@ -244,6 +256,16 @@ int main()
     /*ImGuiIO& io = ImGui::GetIO();
     io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 13.f);
     io.Fonts->AddFontDefault();*/
+
+    if(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+        style.WindowRounding = 0.0f;
+        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+    }
+
+    // Setup Platform/Renderer bindings
+    ImGui_ImplGlfw_InitForOpenGL(window_ctx.window, true);
+    ImGui_ImplOpenGL3_Init(window_ctx.glsl_version);
 
     font_selector font_select;
     font_select.reset_default_fonts();
@@ -417,12 +439,15 @@ int main()
 
     while(running)
     {
-        if(font_select.update_rebuild(window, font_select.current_base_font_size))
+        if(glfwWindowShouldClose(window_ctx.window))
+            running = false;
+
+        /*if(font_select.update_rebuild(window, font_select.current_base_font_size))
         {
             term.invalidate();
 
             active_frames = active_frames_restart;
-        }
+        }*/
 
         if(connection_clock.getElapsedTime().asSeconds() > 5 && !conn.client_connected_to_server)
         {
@@ -483,7 +508,7 @@ int main()
 
         steam_api_pump_events(csapi);
 
-        if(active_frames <= 0)
+        /*if(active_frames <= 0)
         {
             int loops = 5;
 
@@ -518,8 +543,11 @@ int main()
         else
         {
             active_frames--;
-        }
+        }*/
 
+        glfwPollEvents();
+
+        #if 0
         while(skip_first_event || window.pollEvent(event))
         {
             skip_first_event = false;
@@ -762,6 +790,11 @@ int main()
                 script_mousewheel_delta += event.mouseWheelScroll.delta;
             }
         }
+        #endif // 0
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
 
         if(term.get_id_of_focused_realtime_window() != -1 && (realtime_str.size() > 0 || on_pressed.size() > 0 || on_released.size() > 0))
         {
@@ -775,7 +808,7 @@ int main()
             conn.write(data.dump());
         }
 
-        if(term.get_id_of_focused_realtime_window() != -1 && mouse_clock.getElapsedTime().asMicroseconds() / 1000. >= mouse_send_time_ms && is_focused(focused))
+        /*if(term.get_id_of_focused_realtime_window() != -1 && mouse_clock.getElapsedTime().asMicroseconds() / 1000. >= mouse_send_time_ms && is_focused(focused))
         {
             mouse_clock.restart();
 
@@ -812,7 +845,7 @@ int main()
             }
 
             script_mousewheel_delta = 0;
-        }
+        }*/
 
         if(!is_focused(focused) || term.get_id_of_focused_realtime_window() == -1)
             script_mousewheel_delta = 0;
@@ -825,7 +858,7 @@ int main()
             i.second.scroll_hack.scrolled_this_frame = mouse_delta;
         }
 
-        ImGui::SFML::Update(window,  imgui_delta.restart());
+        //ImGui::SFML::Update(window,  imgui_delta.restart());
 
         ImGui::PushFont(font_select.get_base_font());
 
@@ -1057,7 +1090,7 @@ int main()
 
         chat_win.tick();
 
-        auto sf_mpos = mouse.getPosition(window);
+        /*auto sf_mpos = mouse.getPosition(window);
         vec2f vpos = {sf_mpos.x, sf_mpos.y};
 
         if(mouse.isButtonPressed(sf::Mouse::Left) && is_focused(focused))
@@ -1065,7 +1098,7 @@ int main()
             active_frames = active_frames_restart;
 
             get_global_copy_handler()->on_hold_lclick(window,  vpos);
-        }
+        }*/
 
         while(conn.has_read())
         {
@@ -1120,14 +1153,14 @@ int main()
             //term.auto_handle.found_unprocessed_autocompletes.clear();
         }
 
-        if((term.focused || term.get_id_of_focused_realtime_window() != 1) && is_focused(focused) && key.isKeyPressed(sf::Keyboard::LControl) && ONCE_MACRO(sf::Keyboard::C))
+        /*if((term.focused || term.get_id_of_focused_realtime_window() != 1) && is_focused(focused) && key.isKeyPressed(sf::Keyboard::LControl) && ONCE_MACRO(sf::Keyboard::C))
         {
             nlohmann::json data;
             data["type"] = "client_terminate_scripts";
             data["id"] = -1;
 
             conn.write(data.dump());
-        }
+        }*/
 
         //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
 
@@ -1138,10 +1171,13 @@ int main()
 
         int was_closed_id = -1;
 
+        int display_w, display_h;
+        glfwGetFramebufferSize(window_ctx.window, &display_w, &display_h);
+
         //test_imgui_term.render(window);
         term.render_realtime_windows(conn, was_closed_id);
         chat_win.render(term.chat_threads, should_coordinate_focus);
-        term.render({window.getSize().x, window.getSize().y}, should_coordinate_focus);
+        term.render({display_w, display_h}, should_coordinate_focus);
 
         should_coordinate_focus = false;
 
@@ -1160,7 +1196,9 @@ int main()
             term.last_line_invalidate();
         }
 
+        #ifdef SHOULD_UPDATE
         term.auto_handle.tab_pressed = ONCE_MACRO(sf::Keyboard::Tab) && is_focused(focused);
+        #endif // SHOULD_UPDATE
 
         if(term.auto_handle.tab_pressed)
         {
@@ -1169,29 +1207,39 @@ int main()
 
         ///this is a hack to fix the fact that sometimes
         ///click input doesn't make clean click/release pairs
-        if(!mouse.isButtonPressed(sf::Mouse::Left))
+        /*if(!mouse.isButtonPressed(sf::Mouse::Left))
         {
             get_global_copy_handler()->finished = false;
             get_global_copy_handler()->held = false;
-        }
+        }*/
 
         ImGui::PopFont();
 
-        ImGui::SFML::Render(window);
+        //ImGui::SFML::Render(window);
 
+        ImGui::Render();
+
+        glViewport(0, 0, display_w, display_h);
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        // Update and Render additional Platform Windows
+        // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
+        //  For this specific demo app we could also call glfwMakeContextCurrent(window) directly)
         if(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {
-            window.pushGLStates();
-
+            GLFWwindow* backup_current_context = glfwGetCurrentContext();
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();
-
-            window.popGLStates();
+            glfwMakeContextCurrent(backup_current_context);
         }
 
-        window.display();
+        glfwSwapBuffers(window_ctx.window);
+
+        //window.display();
         //window.clear(sf::Color(bg_col.x(), bg_col.y(), bg_col.z()));
-        window.clear();
+        //window.clear();
 
         sf::sleep(sf::milliseconds(4));
 
@@ -1212,6 +1260,13 @@ int main()
     atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK).dump());
 
     CoUninitialize();
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    glfwDestroyWindow(window_ctx.window);
+    glfwTerminate();
 
     return 0;
 }

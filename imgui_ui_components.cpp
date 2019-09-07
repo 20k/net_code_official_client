@@ -400,7 +400,7 @@ void terminal_imgui::render(vec2f window_size, bool refocus)
 {
     copy_handler* handle = get_global_copy_handler();
 
-    ImGui::SetNextWindowPos(ImVec2(0,0));
+    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->Pos);
     ImGui::SetNextWindowSize(ImVec2(window_size.x(), window_size.y()));
 
     if(refocus)
@@ -928,7 +928,6 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
         ImGui::SetNextWindowFocus();
 
     ImGui::SetNextWindowSize(ImVec2(dim.x(), dim.y()), ImGuiCond_FirstUseEver);
-    //ImGui::SetNextWindowPos(ImVec2(win.getSize().x - dim.x() * 1.08f, ImGuiCond_FirstUseEver));
 
     std::string chat_str = selected;
 

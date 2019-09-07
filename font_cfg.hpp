@@ -49,7 +49,7 @@ struct font_selector : serialisable
         DO_SERIALISE(current_base_font);
     }
 
-    sf::Texture font_atlas;
+    //sf::Texture font_atlas;
 };
 
 struct window_context;

@@ -1,7 +1,7 @@
 #ifndef WINDOW_CONTEXT_HPP_INCLUDED
 #define WINDOW_CONTEXT_HPP_INCLUDED
 
-#include <SFML/Graphics.hpp>
+struct GLFWwindow;
 
 struct window_context
 {
@@ -18,7 +18,8 @@ struct window_context
     void set_width_height(int w, int h);
     void set_is_srgb(bool is_srgb);
 
-    sf::RenderWindow win;
+    GLFWwindow* window = nullptr;
+    const char* glsl_version = nullptr;
 
     bool srgb_dirty = false;
 };

@@ -80,19 +80,19 @@ void font_selector::reset_default_fonts(float editor_font_size)
     //io.Fonts->ClearFonts();
 
     ///BASE
-    io.Fonts->AddFontFromFileTTF("VeraMono.ttf", current_base_font_size, &font_cfg);
+    //io.Fonts->AddFontFromFileTTF("VeraMono.ttf", current_base_font_size, &font_cfg);
     ///TEXT_EDITOR
-    io.Fonts->AddFontFromFileTTF("VeraMono.ttf", editor_font_size, &font_cfg);
+    //io.Fonts->AddFontFromFileTTF("VeraMono.ttf", editor_font_size, &font_cfg);
     ///DEFAULT
     io.Fonts->AddFontDefault();
 
-    for_each_file("./", [&](const std::string& name, const std::string& ext)
+    /*for_each_file("./", [&](const std::string& name, const std::string& ext)
     {
         if(ext != "ttf")
             return;
 
         io.Fonts->AddFontFromFileTTF(name.c_str(), current_base_font_size, &font_cfg);
-    });
+    });*/
 
     //ImGui::PushFont(font);
 
@@ -102,6 +102,7 @@ void font_selector::reset_default_fonts(float editor_font_size)
 // Call _BEFORE_ NewFrame()
 bool font_selector::update_rebuild(sf::RenderWindow& win, float editor_font_size)
 {
+    #if 0
     if (!wants_rebuild)
         return false;
 
@@ -143,6 +144,9 @@ bool font_selector::update_rebuild(sf::RenderWindow& win, float editor_font_size
     win.popGLStates();
 
     return true;
+    #endif // 0
+
+    return false;
 }
 
 bool handle_checkbox(const std::vector<std::string>& in, unsigned int& storage, const std::vector<int>& to_set)
@@ -226,11 +230,11 @@ void font_selector::render(window_context& window_ctx)
 
     ImGui::NewLine();
 
-    bool text_shader_enabled = ImGui::TextShaderEnabled();
+    /*bool text_shader_enabled = ImGui::TextShaderEnabled();
 
     ImGui::Checkbox("UseTextShader", &text_shader_enabled);
 
-    ImGui::SetTextShaderEnabled(text_shader_enabled);
+    ImGui::SetTextShaderEnabled(text_shader_enabled);*/
 
     ImGui::NewLine();
 
