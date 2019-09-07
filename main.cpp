@@ -215,6 +215,10 @@ int main()
 
     ImGui::SFML::Init(window, false);
 
+    ImGuiIO& io = ImGui::GetIO();
+
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
     ImGui::SetStyleLinearColor(window_ctx.is_srgb);
 
     ImGui::PushSrgbStyleColor(ImGuiCol_WindowBg, ImGuiX::GetBgCol());
