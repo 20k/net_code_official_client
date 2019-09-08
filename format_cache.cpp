@@ -7,8 +7,6 @@ void format_cache::ensure_last_line(vec2f current, vec2f start, vec2f wrap_dim, 
 {
     if(!last_line_valid && valid_cache)
     {
-        int empty_last = 0;
-
         if(interop_cache.size() == 0)
             return;
 
@@ -19,7 +17,7 @@ void format_cache::ensure_last_line(vec2f current, vec2f start, vec2f wrap_dim, 
 
         int found_line = 0;
 
-        get_height(all_interop.back(), cached_start, cached_start, cached_dim, found_line, empty_last);
+        get_height(all_interop.back(), cached_start, cached_start, cached_dim, found_line);
 
         int old_height = height_map_cache[(int)interop_cache.size()-1];
 
@@ -63,20 +61,17 @@ void format_cache::ensure_built(vec2f current, vec2f start, vec2f wrap_dim, cons
 
     height_map_cache.clear();
 
-    int empty_last = 0;
-
     interop_cache = all_interop;
 
     for(int i=0; i < (int)all_interop.size(); i++)
     {
         int found_line = 0;
 
-        get_height(all_interop[i], current, start, wrap_dim, found_line, empty_last);
+        get_height(all_interop[i], current, start, wrap_dim, found_line);
 
         height_map_cache[i] = found_line;
 
         total_lines += found_line;
-        empty_last = found_line;
     }
 
     float inverse_scroll_start = total_lines + 0 - scroll_hack.scrolled;

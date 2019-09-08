@@ -31,7 +31,7 @@ interop_vec_t string_to_interop_no_autos(const std::string& str, bool render_spe
 void de_newline(std::vector<interop_vec_t>& vec);
 
 inline
-void get_height(const std::vector<interop_char>& interop, vec2f cpos, vec2f start, vec2f wrap_dim, int& lines, int last_lines)
+void get_height(const std::vector<interop_char>& interop, vec2f cpos, vec2f start, vec2f wrap_dim, int& lines)
 {
     lines = 1;
 
@@ -54,8 +54,6 @@ void get_height(const std::vector<interop_char>& interop, vec2f cpos, vec2f star
         if(!i.is_cursor)
             pos.x() += char_inf::cwidth;
     }
-
-    //pos.y() -= (last_lines) * char_inf::cheight + lines * char_inf::cheight;
 }
 
 ///so new plan
