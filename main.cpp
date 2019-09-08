@@ -204,27 +204,10 @@ void handle_auth(c_steam_api csapi, connection& conn, std::string current_user)
     }
 }
 
-///no udata for glfw?
-//std::vector<int> glfw_key_pressed_data;
-//std::vector<int> glfw_key_released_data;
-
 std::vector<int> glfw_mouse_pressed_data;
 std::vector<int> glfw_mouse_released_data;
 
 bool lastKeysDown[512] = {};
-
-/*void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    if(action == GLFW_PRESS || action == GLFW_REPEAT)
-    {
-        glfw_key_pressed_data.push_back(key);
-    }
-
-    if(action == GLFW_RELEASE)
-    {
-        glfw_key_released_data.push_back(key);
-    }
-}*/
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
