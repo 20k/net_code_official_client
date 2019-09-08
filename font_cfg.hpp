@@ -2,11 +2,11 @@
 #define FONT_CFG_HPP_INCLUDED
 
 #include <networking/serialisable.hpp>
-#include <SFML/Graphics.hpp>
 
 struct ImFont;
 
 struct window_context;
+struct ImFontAtlas;
 
 struct font_selector : serialisable
 {
@@ -37,9 +37,9 @@ struct font_selector : serialisable
 
     float current_base_font_size = 14;
 
-    void reset_default_fonts(float editor_font_size = 14.f);
+    void reset_default_fonts(ImFontAtlas* atlas, float editor_font_size = 14.f);
     // Call _BEFORE_ NewFrame()
-    bool update_rebuild(sf::RenderWindow& win, float editor_font_size = 14.f);
+    bool update_rebuild(float editor_font_size = 14.f);
     // Call to draw interface
     void render(window_context& window_ctx);
 
@@ -48,8 +48,6 @@ struct font_selector : serialisable
         DO_SERIALISE(current_base_font_size);
         DO_SERIALISE(current_base_font);
     }
-
-    //sf::Texture font_atlas;
 };
 
 struct window_context;

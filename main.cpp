@@ -260,12 +260,12 @@ int main()
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
     }
 
+    font_selector font_select;
+    font_select.reset_default_fonts(&atlas);
+
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window_ctx.window, true);
     ImGui_ImplOpenGL3_Init(window_ctx.glsl_version);
-
-    font_selector font_select;
-    font_select.reset_default_fonts();
 
     terminal_imgui term;
     chat_window chat_win;

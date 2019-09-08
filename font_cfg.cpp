@@ -69,7 +69,7 @@ void for_each_file(const std::string& directory, const T& t)
 }
 
 
-void font_selector::reset_default_fonts(float editor_font_size)
+void font_selector::reset_default_fonts(ImFontAtlas* atlas, float editor_font_size)
 {
     ImFontConfig font_cfg;
     font_cfg.GlyphExtraSpacing = ImVec2(char_inf::extra_glyph_spacing, 0);
@@ -80,7 +80,7 @@ void font_selector::reset_default_fonts(float editor_font_size)
     //io.Fonts->ClearFonts();
 
     ///BASE
-    //io.Fonts->AddFontFromFileTTF("VeraMono.ttf", current_base_font_size, &font_cfg);
+    io.Fonts->AddFontFromFileTTF("VeraMono.ttf", current_base_font_size, &font_cfg);
     ///TEXT_EDITOR
     //io.Fonts->AddFontFromFileTTF("VeraMono.ttf", editor_font_size, &font_cfg);
     ///DEFAULT
@@ -97,10 +97,12 @@ void font_selector::reset_default_fonts(float editor_font_size)
     //ImGui::PushFont(font);
 
     wants_rebuild = true;
+
+    ImGuiFreeType::BuildFontAtlas(atlas, fonts_flags, subpixel_flags);
 }
 
 // Call _BEFORE_ NewFrame()
-bool font_selector::update_rebuild(sf::RenderWindow& win, float editor_font_size)
+bool font_selector::update_rebuild(float editor_font_size)
 {
     #if 0
     if (!wants_rebuild)
