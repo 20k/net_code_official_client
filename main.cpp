@@ -253,7 +253,9 @@ vec2f cursor_pos;
 
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
-    cursor_pos = {xpos, ypos};
+    auto vpos = ImGui::GetMainViewport()->Pos;
+
+    cursor_pos = (vec2f){xpos + vpos.x, ypos + vpos.y};
 }
 
 double scroll_x = 0;
@@ -1364,16 +1366,12 @@ int main()
 
         chat_win.tick();
 
-        ///update
-        /*auto sf_mpos = mouse.getPosition(window);
-        vec2f vpos = {sf_mpos.x, sf_mpos.y};
-
-        if(mouse.isButtonPressed(sf::Mouse::Left) && is_focused(focused))
+        if(glfwGetMouseButton(window_ctx.window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS && is_focused(focused))
         {
             active_frames = active_frames_restart;
 
-            get_global_copy_handler()->on_hold_lclick(window,  vpos);
-        }*/
+            get_global_copy_handler()->on_hold_lclick(cursor_pos);
+        }
 
         while(conn.has_read())
         {
@@ -1476,13 +1474,11 @@ int main()
 
         ///this is a hack to fix the fact that sometimes
         ///click input doesn't make clean click/release pairs
-        #ifdef SHOULD_UPDATE
-        if(!mouse.isButtonPressed(sf::Mouse::Left))
+        if(glfwGetMouseButton(window_ctx.window, GLFW_MOUSE_BUTTON_1) != GLFW_PRESS)
         {
             get_global_copy_handler()->finished = false;
             get_global_copy_handler()->held = false;
         }
-        #endif // SHOULD_UPDATE
 
         ImGui::PopFont();
 

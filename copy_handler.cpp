@@ -114,7 +114,7 @@ void copy_handler::on_lclick_release(vec2f pos)
     //copied = check_formatted_text(formatted, copy_start, pos);
 }
 
-void copy_handler::on_hold_lclick(sf::RenderWindow& win, vec2f pos)
+void copy_handler::on_hold_lclick(vec2f pos)
 {
     held = true;
     copy_end = pos;

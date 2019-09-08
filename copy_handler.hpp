@@ -5,11 +5,6 @@
 
 struct formatted_char;
 
-namespace sf
-{
-    struct RenderWindow;
-}
-
 #define MIN_SELECT_DISTANCE 2.f
 
 struct copy_handler
@@ -24,7 +19,7 @@ struct copy_handler
     void on_lclick(vec2f pos);
     void on_lclick_release(vec2f pos);
 
-    void on_hold_lclick(sf::RenderWindow& win, vec2f pos);
+    void on_hold_lclick(vec2f pos);
 
     void process_formatted(std::vector<std::vector<formatted_char>>& chars);
 
