@@ -247,8 +247,6 @@ int main()
 
     handle_auth(csapi, conn, "");
 
-    ///need to write auth data here!
-
     glfwSetErrorCallback(glfw_error_callback);
 
     window_context window_ctx;
@@ -261,6 +259,7 @@ int main()
 
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
     //ImGui::SetStyleLinearColor(window_ctx.is_srgb);
 

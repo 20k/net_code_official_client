@@ -447,6 +447,10 @@ void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_i
         {
             title_str += " (Active)";
         }
+        else
+        {
+            title_str += "         "; ///for imgui docking grabbability
+        }
 
         title_str += ext;
 
