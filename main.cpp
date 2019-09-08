@@ -45,11 +45,6 @@
 #include <iomanip>
 #include "imguix.hpp"
 
-bool is_focused(bool in_focus)
-{
-    return in_focus;
-}
-
 std::string make_lower(std::string in)
 {
     for(auto& i : in)
@@ -430,7 +425,6 @@ int main()
     std::vector<std::string> on_released;
 
     bool running = true;
-    bool focused = true;
 
     double script_mousewheel_delta = 0.;
 
@@ -672,7 +666,7 @@ int main()
 
             if(i == GLFW_KEY_LEFT)
             {
-                if(glfwGetKey(window_ctx.window, GLFW_KEY_LEFT_CONTROL) != GLFW_PRESS)
+                if(!ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
                     to_edit->move_cursor(-1);
                 else
                     to_edit->move_cursor(-5);
@@ -680,7 +674,7 @@ int main()
 
             if(i == GLFW_KEY_RIGHT)
             {
-                if(glfwGetKey(window_ctx.window, GLFW_KEY_LEFT_CONTROL) != GLFW_PRESS)
+                if(!ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
                     to_edit->move_cursor(1);
                 else
                     to_edit->move_cursor(5);
@@ -703,7 +697,7 @@ int main()
 
             if(i == GLFW_KEY_V)
             {
-                if(glfwGetKey(window_ctx.window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && is_focused(focused))
+                if(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
                 {
                     std::string add_text = get_clipboard_contents();
 
@@ -723,7 +717,7 @@ int main()
             {
                 if(to_edit != &realtime_shim && to_edit != &no_string)
                 {
-                    if(glfwGetKey(window_ctx.window, GLFW_KEY_LEFT_CONTROL) != GLFW_PRESS && glfwGetKey(window_ctx.window, GLFW_KEY_LEFT_SHIFT) != GLFW_PRESS)
+                    if(!ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) && !ImGui::IsKeyDown(GLFW_KEY_LEFT_SHIFT))
                         enter = true;
                     else
                         to_edit->add_to_command('\n');
@@ -1073,7 +1067,7 @@ int main()
             conn.write(data.dump());
         }
 
-        if(term.get_id_of_focused_realtime_window() != -1 && mouse_clock.getElapsedTime().asMicroseconds() / 1000. >= mouse_send_time_ms && is_focused(focused))
+        if(term.get_id_of_focused_realtime_window() != -1 && mouse_clock.getElapsedTime().asMicroseconds() / 1000. >= mouse_send_time_ms)
         {
             mouse_clock.restart();
 
@@ -1108,7 +1102,7 @@ int main()
             script_mousewheel_delta = 0;
         }
 
-        if(!is_focused(focused) || term.get_id_of_focused_realtime_window() == -1)
+        if(term.get_id_of_focused_realtime_window() == -1)
             script_mousewheel_delta = 0;
 
         term.scroll_hack.scrolled_this_frame = mouse_delta;
@@ -1344,7 +1338,7 @@ int main()
 
         chat_win.tick();
 
-        if(io.MouseDown[0] && is_focused(focused))
+        if(ImGui::IsMouseDown(0))
         {
             active_frames = active_frames_restart;
 
@@ -1402,7 +1396,7 @@ int main()
                 term.auto_handle.found_unprocessed_autocompletes.erase(term.auto_handle.found_unprocessed_autocompletes.begin());
         }
 
-        if((term.focused || term.get_id_of_focused_realtime_window() != 1) && is_focused(focused) && io.KeysDown[GLFW_KEY_LEFT_CONTROL] && just_pressed(GLFW_KEY_C))
+        if((term.focused || term.get_id_of_focused_realtime_window() != 1) && ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) && just_pressed(GLFW_KEY_C))
         {
             nlohmann::json data;
             data["type"] = "client_terminate_scripts";
@@ -1413,8 +1407,8 @@ int main()
 
         //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
 
-        term.auto_handle.window_in_focus = is_focused(focused);
-        chat_win.auto_handle.window_in_focus = is_focused(focused);
+        term.auto_handle.window_in_focus = true;
+        chat_win.auto_handle.window_in_focus = true;
 
         int was_closed_id = -1;
 
@@ -1443,7 +1437,7 @@ int main()
             term.last_line_invalidate();
         }
 
-        term.auto_handle.tab_pressed = ImGui::IsKeyPressed(GLFW_KEY_TAB) && is_focused(focused);
+        term.auto_handle.tab_pressed = ImGui::IsKeyPressed(GLFW_KEY_TAB);
 
         if(term.auto_handle.tab_pressed)
         {
@@ -1452,7 +1446,7 @@ int main()
 
         ///this is a hack to fix the fact that sometimes
         ///click input doesn't make clean click/release pairs
-        if(!io.MouseDown[0])
+        if(!ImGui::IsMouseDown(0))
         {
             get_global_copy_handler()->finished = false;
             get_global_copy_handler()->held = false;
