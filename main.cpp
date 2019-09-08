@@ -230,6 +230,7 @@ int main()
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    //io.ConfigViewportsNoTaskBarIcon = true;
 
     ImGui::SetStyleLinearColor(window_ctx.is_srgb);
 
