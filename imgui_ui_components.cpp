@@ -28,6 +28,9 @@ void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar)
 {
     ImGui::BeginChild("right_child", ImVec2(0,0), false, ImGuiWindowFlags_NoScrollWithMouse);
 
+    if(approx_num < 0)
+        approx_num = 1;
+
     for(int i=0; i < approx_num; i++)
     {
         ImGui::Text("\n");
