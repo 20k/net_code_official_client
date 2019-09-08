@@ -211,6 +211,8 @@ std::vector<int> glfw_key_released_data;
 std::vector<int> glfw_mouse_pressed_data;
 std::vector<int> glfw_mouse_released_data;
 
+bool lastKeysDown[512] = {};
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if(action == GLFW_PRESS || action == GLFW_REPEAT)
@@ -239,7 +241,9 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 bool just_pressed(int key)
 {
-    return std::find(glfw_key_pressed_data.begin(), glfw_key_pressed_data.end(), key) != glfw_key_pressed_data.end();
+    ImGuiIO& io = ImGui::GetIO();
+
+    return io.KeysDown[key] && !lastKeysDown[key];
 }
 
 ///relative to top left content area
@@ -608,6 +612,8 @@ int main()
 
         glfw_mouse_pressed_data.clear();
         glfw_mouse_released_data.clear();
+
+        memcpy(lastKeysDown, io.KeysDown, sizeof(lastKeysDown));
 
         glfwPollEvents();
 
