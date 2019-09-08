@@ -1266,8 +1266,6 @@ int main()
 
         glfwSwapBuffers(window_ctx.window);
 
-        sf::sleep(sf::milliseconds(4));
-
         int lcwidth = char_inf::cwidth;
         int lcheight = char_inf::cheight;
 

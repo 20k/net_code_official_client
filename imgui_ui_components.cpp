@@ -386,12 +386,15 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     ImGui::SameLine(0.f, 0.f);
 
+    //float flines = cache.get_lines() - (current_window_size.y / char_inf::cheight);
+    float flines = cache.get_lines();
+
     ///rough
-    scroll_hack.do_hack(cache.get_lines(), true);
+    scroll_hack.do_hack(flines, true);
 
     if(scroll_hack.scrolling)
     {
-        scroll_hack.scrolled = (1.f - scroll_hack.output_scroll_frac) * cache.get_lines();
+        scroll_hack.scrolled = (1.f - scroll_hack.output_scroll_frac) * flines;
 
         cache.invalidate();
     }
