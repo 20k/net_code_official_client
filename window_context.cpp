@@ -43,7 +43,7 @@ window_context::window_context()
 #endif
 
     // Create window with graphics context
-    window = glfwCreateWindow(1280, 720, "net_code_", NULL, NULL);
+    window = glfwCreateWindow(width, height, "net_code_", NULL, NULL);
     if (window == NULL)
         throw std::runtime_error("Nullptr window in glfw");
 

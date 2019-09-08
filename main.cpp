@@ -1160,6 +1160,8 @@ int main()
             atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK).dump());
             atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK).dump());
 
+            window_ctx.save();
+
             write_clock.restart();
         }
 
@@ -1246,6 +1248,9 @@ int main()
 
         ImGui::Render();
 
+        window_ctx.width = display_w;
+        window_ctx.height = display_h;
+
         glViewport(0, 0, display_w, display_h);
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -1278,6 +1283,7 @@ int main()
 
     atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK).dump());
     atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK).dump());
+    window_ctx.save();
 
     CoUninitialize();
 
