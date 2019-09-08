@@ -8,6 +8,9 @@
 #include <GLFW/glfw3.h>
 #include "window_context.hpp"
 
+#include <codecvt>
+#include <locale>
+
 #include <vec/vec.hpp>
 
 #include "util.hpp"
@@ -58,11 +61,11 @@ std::string make_lower(std::string in)
     return in;
 }
 
-#define DMAP(A) key_map[sf::Keyboard::A] = make_lower((#A));
-#define SMAP(A, S) key_map[sf::Keyboard::A] = ((#S));
+#define DMAP(A) key_map[GLFW_KEY_##A] = make_lower((#A));
+#define SMAP(A, S) key_map[GLFW_KEY_##A] = ((#S));
 #define MMAP(A, S) mouse_map[sf::Mouse::A] = ((#S));
 
-#define SPECIAL_MAP(A, S) on_input_map[sf::Keyboard::A] = ((#S));
+#define SPECIAL_MAP(A, S) on_input_map[GLFW_KEY_##A] = ((#S));
 
 //#define HOST_IP "192.168.0.55"
 #ifdef EXTERN_IP
@@ -305,10 +308,8 @@ int main()
 
     bool should_coordinate_focus = true;
 
-    sf::Event event;
-
-    std::map<sf::Keyboard::Key, std::string> key_map;
-    std::map<sf::Keyboard::Key, std::string> on_input_map;
+    std::map<int, std::string> key_map;
+    std::map<int, std::string> on_input_map;
     std::map<sf::Mouse::Button, std::string> mouse_map;
 
     DMAP(A);DMAP(B);DMAP(C);
@@ -321,83 +322,83 @@ int main()
     DMAP(V);DMAP(W);DMAP(X);
     DMAP(Y);DMAP(Z);
 
-    SMAP(Return, return);
-    SMAP(BackSpace, backspace);
-    SMAP(Delete, delete);
+    SMAP(ENTER, return);
+    SMAP(BACKSPACE, backspace);
+    SMAP(DELETE, delete);
 
-    SMAP(Insert,insert);
-    SMAP(Tab, tab);
-    SMAP(Delete, delete);
+    SMAP(INSERT,insert);
+    SMAP(TAB, tab);
+    SMAP(DELETE, delete);
 
-    SPECIAL_MAP(Return, return);
-    SPECIAL_MAP(BackSpace, backspace);
-    SPECIAL_MAP(Delete, delete);
+    SPECIAL_MAP(ENTER, return);
+    SPECIAL_MAP(BACKSPACE, backspace);
+    SPECIAL_MAP(DELETE, delete);
 
-    SPECIAL_MAP(Insert,insert);
-    SPECIAL_MAP(Tab, tab);
-    SPECIAL_MAP(Delete, delete);
+    SPECIAL_MAP(INSERT,insert);
+    SPECIAL_MAP(TAB, tab);
+    SPECIAL_MAP(DELETE, delete);
 
-    SMAP(Up, up);
-    SMAP(Down, down);
-    SMAP(Right, right);
-    SMAP(Left, left);
-    SMAP(Home, home);
-    SMAP(End, end);
-    SMAP(PageUp, pageup);
-    SMAP(PageDown, pagedown);
+    SMAP(UP, up);
+    SMAP(DOWN, down);
+    SMAP(RIGHT, right);
+    SMAP(LEFT, left);
+    SMAP(HOME, home);
+    SMAP(END, end);
+    SMAP(PAGE_UP, pageup);
+    SMAP(PAGE_DOWN, pagedown);
 
-    SPECIAL_MAP(Up, up);
-    SPECIAL_MAP(Down, down);
-    SPECIAL_MAP(Right, right);
-    SPECIAL_MAP(Left, left);
-    SPECIAL_MAP(Home, home);
-    SPECIAL_MAP(End, end);
-    SPECIAL_MAP(PageUp, pageup);
-    SPECIAL_MAP(PageDown, pagedown);
+    SPECIAL_MAP(UP, up);
+    SPECIAL_MAP(DOWN, down);
+    SPECIAL_MAP(RIGHT, right);
+    SPECIAL_MAP(LEFT, left);
+    SPECIAL_MAP(HOME, home);
+    SPECIAL_MAP(END, end);
+    SPECIAL_MAP(PAGE_UP, pageup);
+    SPECIAL_MAP(PAGE_DOWN, pagedown);
 
-    SMAP(Num1, 1);
-    SMAP(Num2, 2);
-    SMAP(Num3, 3);
-    SMAP(Num4, 4);
-    SMAP(Num5, 5);
-    SMAP(Num6, 6);
-    SMAP(Num7, 7);
-    SMAP(Num8, 8);
-    SMAP(Num9, 9);
-    SMAP(Num0, 0);
+    SMAP(KP_1, 1);
+    SMAP(KP_2, 2);
+    SMAP(KP_3, 3);
+    SMAP(KP_4, 4);
+    SMAP(KP_5, 5);
+    SMAP(KP_6, 6);
+    SMAP(KP_7, 7);
+    SMAP(KP_8, 8);
+    SMAP(KP_9, 9);
+    SMAP(KP_0, 0);
 
-    SMAP(LShift, lshift);
-    SMAP(RShift, rshift);
-    SMAP(LControl, lctrl);
-    SMAP(RControl, rctrl);
-    SMAP(LAlt, lalt);
-    SMAP(RAlt, ralt);
+    SMAP(LEFT_SHIFT, lshift);
+    SMAP(RIGHT_SHIFT, rshift);
+    SMAP(LEFT_CONTROL, lctrl);
+    SMAP(RIGHT_CONTROL, rctrl);
+    SMAP(LEFT_ALT, lalt);
+    SMAP(RIGHT_ALT, ralt);
 
-    SPECIAL_MAP(LShift, lshift);
-    SPECIAL_MAP(RShift, rshift);
-    SPECIAL_MAP(LControl, lctrl);
-    SPECIAL_MAP(RControl, rctrl);
-    SPECIAL_MAP(LAlt, lalt);
-    SPECIAL_MAP(RAlt, ralt);
+    SPECIAL_MAP(LEFT_SHIFT, lshift);
+    SPECIAL_MAP(RIGHT_SHIFT, rshift);
+    SPECIAL_MAP(LEFT_CONTROL, lctrl);
+    SPECIAL_MAP(RIGHT_CONTROL, rctrl);
+    SPECIAL_MAP(LEFT_ALT, lalt);
+    SPECIAL_MAP(RIGHT_ALT, ralt);
 
-    SMAP(LBracket, [);
-    SMAP(RBracket, ]);
+    SMAP(LEFT_BRACKET, [);
+    SMAP(RIGHT_BRACKET, ]);
 
-    key_map[sf::Keyboard::SemiColon] = ";";
-    key_map[sf::Keyboard::Comma] = ",";
-    SMAP(Period, .);
-    SMAP(Tilde, ~);
-    SMAP(Equal, =);
-    SMAP(Hyphen, -);
+    key_map[GLFW_KEY_SEMICOLON] = ";";
+    key_map[GLFW_KEY_COMMA] = ",";
+    SMAP(PERIOD, .);
+    SMAP(GRAVE_ACCENT, ~);
+    SMAP(EQUAL, =);
+    SMAP(MINUS, -);
 
-    SMAP(Space, space);
+    SMAP(SPACE, space);
 
-    SMAP(Escape, escape);
-    SPECIAL_MAP(Escape, escape);
+    SMAP(ESCAPE, escape);
+    SPECIAL_MAP(ESCAPE, escape);
 
-    key_map[sf::Keyboard::Quote] = "\'";
-    SMAP(Slash, /);
-    SMAP(Backslash, \\);
+    key_map[GLFW_KEY_APOSTROPHE] = "\'";
+    SMAP(SLASH, /);
+    SMAP(BACKSLASH, \\);
 
     MMAP(Left, lmouse);
     MMAP(Right, rmouse);
@@ -538,6 +539,7 @@ int main()
 
         steam_api_pump_events(csapi);
 
+        ///needs reimpl
         /*if(active_frames <= 0)
         {
             int loops = 5;
@@ -585,11 +587,20 @@ int main()
         {
             if(i <= 126 && i >= 32)
             {
+                std::u32string utf32;
+                utf32.push_back(i);
+
+                std::string utf8;
+
+                std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> cvt;
+
+                utf8 = cvt.to_bytes(utf32);
+
                 to_edit->add_to_command(i);
 
                 term.last_line_invalidate();
 
-                std::string str = std::string(1, event.text.unicode);
+                std::string str = utf8;
 
                 if(str == " ")
                     str = "space";
@@ -600,11 +611,11 @@ int main()
 
         for(int i : glfw_key_pressed_data)
         {
-            //if(on_input_map.find(event.key.code) != on_input_map.end())
-            //    realtime_str.push_back(on_input_map[event.key.code]);
+            if(on_input_map.find(i) != on_input_map.end())
+                realtime_str.push_back(on_input_map[i]);
 
-            //if(key_map.find(event.key.code) != key_map.end())
-            //    on_pressed.push_back(key_map[event.key.code]);
+            if(key_map.find(i) != key_map.end())
+                on_pressed.push_back(key_map[i]);
 
             term.last_line_invalidate();
 
@@ -722,6 +733,12 @@ int main()
 
                 term.last_line_invalidate();
             }
+        }
+
+        for(int i : glfw_key_released_data)
+        {
+            if(key_map.find(i) != key_map.end())
+                on_released.push_back(key_map[i]);
         }
 
         #if 0
@@ -1330,17 +1347,6 @@ int main()
             //term.auto_handle.found_unprocessed_autocompletes.clear();
         }
 
-        #ifdef SHOULD_UPDATE
-        if((term.focused || term.get_id_of_focused_realtime_window() != 1) && is_focused(focused) && key.isKeyPressed(sf::Keyboard::LControl) && ONCE_MACRO(sf::Keyboard::C))
-        {
-            nlohmann::json data;
-            data["type"] = "client_terminate_scripts";
-            data["id"] = -1;
-
-            conn.write(data.dump());
-        }
-        #endif // SHOULD_UPDATE
-
         if((term.focused || term.get_id_of_focused_realtime_window() != 1) && is_focused(focused) && glfwGetKey(window_ctx.window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && just_pressed(GLFW_KEY_C))
         {
             nlohmann::json data;
@@ -1384,10 +1390,6 @@ int main()
             term.last_line_invalidate();
         }
 
-        #ifdef SHOULD_UPDATE
-        term.auto_handle.tab_pressed = ONCE_MACRO(sf::Keyboard::Tab) && is_focused(focused);
-        #endif // SHOULD_UPDATE
-
         term.auto_handle.tab_pressed = just_pressed(GLFW_KEY_TAB) && is_focused(focused);
 
         if(term.auto_handle.tab_pressed)
@@ -1428,10 +1430,6 @@ int main()
         }
 
         glfwSwapBuffers(window_ctx.window);
-
-        //window.display();
-        //window.clear(sf::Color(bg_col.x(), bg_col.y(), bg_col.z()));
-        //window.clear();
 
         sf::sleep(sf::milliseconds(4));
 
