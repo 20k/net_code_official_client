@@ -63,7 +63,7 @@ std::string make_lower(std::string in)
 
 #define DMAP(A) key_map[GLFW_KEY_##A] = make_lower((#A));
 #define SMAP(A, S) key_map[GLFW_KEY_##A] = ((#S));
-#define MMAP(A, S) mouse_map[sf::Mouse::A] = ((#S));
+#define MMAP(A, S) mouse_map[GLFW_MOUSE_BUTTON_##A] = ((#S));
 
 #define SPECIAL_MAP(A, S) on_input_map[GLFW_KEY_##A] = ((#S));
 
@@ -209,6 +209,9 @@ std::vector<int> glfw_key_pressed_data;
 std::vector<int> glfw_key_released_data;
 std::vector<uint32_t> glfw_input_utf32;
 
+std::vector<int> glfw_mouse_pressed_data;
+std::vector<int> glfw_mouse_released_data;
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if(action == GLFW_PRESS || action == GLFW_REPEAT)
@@ -227,9 +230,39 @@ void key_input_callback(GLFWwindow* window, unsigned int c)
     glfw_input_utf32.push_back(c);
 }
 
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    if(action == GLFW_PRESS)
+    {
+        glfw_mouse_pressed_data.push_back(button);
+    }
+
+    if(action == GLFW_RELEASE)
+    {
+        glfw_mouse_released_data.push_back(button);
+    }
+}
+
 bool just_pressed(int key)
 {
     return std::find(glfw_key_pressed_data.begin(), glfw_key_pressed_data.end(), key) != glfw_key_pressed_data.end();
+}
+
+///relative to top left content area
+vec2f cursor_pos;
+
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    cursor_pos = {xpos, ypos};
+}
+
+double scroll_x = 0;
+double scroll_y = 0;
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    scroll_x += xoffset;
+    scroll_y += yoffset;
 }
 
 ///test new repo
@@ -295,6 +328,9 @@ int main()
 
     glfwSetKeyCallback(window_ctx.window, key_callback);
     glfwSetCharCallback(window_ctx.window, key_input_callback);
+    glfwSetCursorPosCallback(window_ctx.window, cursor_position_callback);
+    glfwSetMouseButtonCallback(window_ctx.window, mouse_button_callback);
+    glfwSetScrollCallback(window_ctx.window, scroll_callback);
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window_ctx.window, true);
@@ -310,7 +346,7 @@ int main()
 
     std::map<int, std::string> key_map;
     std::map<int, std::string> on_input_map;
-    std::map<sf::Mouse::Button, std::string> mouse_map;
+    std::map<int, std::string> mouse_map;
 
     DMAP(A);DMAP(B);DMAP(C);
     DMAP(D);DMAP(E);DMAP(F);
@@ -321,6 +357,11 @@ int main()
     DMAP(S);DMAP(T);DMAP(U);
     DMAP(V);DMAP(W);DMAP(X);
     DMAP(Y);DMAP(Z);
+
+    DMAP(0);DMAP(1);DMAP(2);
+    DMAP(3);DMAP(4);DMAP(5);
+    DMAP(6);DMAP(7);DMAP(8);
+    DMAP(9);DMAP(0);
 
     SMAP(ENTER, return);
     SMAP(BACKSPACE, backspace);
@@ -400,9 +441,9 @@ int main()
     SMAP(SLASH, /);
     SMAP(BACKSLASH, \\);
 
-    MMAP(Left, lmouse);
-    MMAP(Right, rmouse);
-    MMAP(Middle, mmouse);
+    MMAP(1, lmouse);
+    MMAP(2, rmouse);
+    MMAP(3, mmouse);
 
     std::string terminal_file = "./terminal_v5.txt";
     std::string chat_file = "./chat_v5.txt";
@@ -581,6 +622,12 @@ int main()
         glfw_key_released_data.clear();
         glfw_input_utf32.clear();
 
+        glfw_mouse_pressed_data.clear();
+        glfw_mouse_released_data.clear();
+
+        scroll_x = 0;
+        scroll_y = 0;
+
         glfwPollEvents();
 
         for(uint32_t i : glfw_input_utf32)
@@ -740,6 +787,50 @@ int main()
             if(key_map.find(i) != key_map.end())
                 on_released.push_back(key_map[i]);
         }
+
+        for(int i : glfw_mouse_pressed_data)
+        {
+            if(mouse_map.find(i) != mouse_map.end())
+                on_pressed.push_back(mouse_map[i]);
+
+            if(mouse_map.find(i) != mouse_map.end())
+                realtime_str.push_back(mouse_map[i]);
+
+            if(i == GLFW_MOUSE_BUTTON_2)
+            {
+                std::string add_text = get_clipboard_contents();
+
+                for(auto& i : add_text)
+                {
+                    to_edit->add_to_command(i);
+                }
+
+                term.last_line_invalidate();
+            }
+
+            if(i == GLFW_MOUSE_BUTTON_1)
+            {
+                term.last_line_invalidate();
+
+                get_global_copy_handler()->on_lclick(cursor_pos);
+            }
+        }
+
+        for(int i : glfw_mouse_released_data)
+        {
+            if(mouse_map.find(i) != mouse_map.end())
+                on_released.push_back(mouse_map[i]);
+
+            if(i == GLFW_MOUSE_BUTTON_1)
+            {
+                term.last_line_invalidate();
+
+                get_global_copy_handler()->on_lclick_release(cursor_pos);
+            }
+        }
+
+        mouse_delta += scroll_y;
+        script_mousewheel_delta += scroll_y;
 
         #if 0
         while(skip_first_event || window.pollEvent(event))
@@ -1002,16 +1093,11 @@ int main()
             conn.write(data.dump());
         }
 
-        ///update
-        /*if(term.get_id_of_focused_realtime_window() != -1 && mouse_clock.getElapsedTime().asMicroseconds() / 1000. >= mouse_send_time_ms && is_focused(focused))
+        if(term.get_id_of_focused_realtime_window() != -1 && mouse_clock.getElapsedTime().asMicroseconds() / 1000. >= mouse_send_time_ms && is_focused(focused))
         {
             mouse_clock.restart();
 
-            sf::Mouse mouse;
-
-            auto vmouse = mouse.getPosition(window);
-
-            vec2f mpos = {vmouse.x, vmouse.y};
+            vec2f mpos = cursor_pos;
 
             realtime_script_run& run = term.realtime_script_windows[term.get_id_of_focused_realtime_window()];
 
@@ -1040,7 +1126,7 @@ int main()
             }
 
             script_mousewheel_delta = 0;
-        }*/
+        }
 
         if(!is_focused(focused) || term.get_id_of_focused_realtime_window() == -1)
             script_mousewheel_delta = 0;
