@@ -207,7 +207,6 @@ void handle_auth(c_steam_api csapi, connection& conn, std::string current_user)
 ///no udata for glfw?
 std::vector<int> glfw_key_pressed_data;
 std::vector<int> glfw_key_released_data;
-std::vector<uint32_t> glfw_input_utf32;
 
 std::vector<int> glfw_mouse_pressed_data;
 std::vector<int> glfw_mouse_released_data;
@@ -224,11 +223,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         glfw_key_released_data.push_back(key);
     }
 }
-
-/*void key_input_callback(GLFWwindow* window, unsigned int c)
-{
-    glfw_input_utf32.push_back(c);
-}*/
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
@@ -620,9 +614,10 @@ int main()
             active_frames--;
         }*/
 
+        std::vector<uint32_t> input_utf32;
+
         glfw_key_pressed_data.clear();
         glfw_key_released_data.clear();
-        glfw_input_utf32.clear();
 
         glfw_mouse_pressed_data.clear();
         glfw_mouse_released_data.clear();
@@ -634,10 +629,10 @@ int main()
 
         for(auto& i : io.InputQueueCharacters)
         {
-            glfw_input_utf32.push_back(i);
+            input_utf32.push_back(i);
         }
 
-        for(uint32_t i : glfw_input_utf32)
+        for(uint32_t i : input_utf32)
         {
             if(i <= 126 && i >= 32)
             {
