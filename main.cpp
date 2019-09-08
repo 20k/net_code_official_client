@@ -564,7 +564,9 @@ int main()
         memcpy(lastKeysDown, io.KeysDown, sizeof(lastKeysDown));
         memcpy(lastMouseDown, io.MouseDown, sizeof(io.MouseDown));
 
-        glfwPollEvents();
+        //glfwPollEvents();
+
+        glfwWaitEventsTimeout(1/33.);
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
