@@ -94,8 +94,6 @@ void font_selector::reset_default_fonts(ImFontAtlas* atlas, float editor_font_si
         io.Fonts->AddFontFromFileTTF(name.c_str(), current_base_font_size, &font_cfg);
     });*/
 
-    //ImGui::PushFont(font);
-
     wants_rebuild = true;
 
     ImGuiFreeType::BuildFontAtlas(atlas, fonts_flags, subpixel_flags);
