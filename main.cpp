@@ -252,15 +252,6 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
     cursor_pos = (vec2f){xpos + vpos.x, ypos + vpos.y};
 }
 
-double scroll_x = 0;
-double scroll_y = 0;
-
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    scroll_x += xoffset;
-    scroll_y += yoffset;
-}
-
 ///test new repo
 int main()
 {
@@ -323,10 +314,8 @@ int main()
     }
 
     glfwSetKeyCallback(window_ctx.window, key_callback);
-    //glfwSetCharCallback(window_ctx.window, key_input_callback);
     glfwSetCursorPosCallback(window_ctx.window, cursor_position_callback);
     glfwSetMouseButtonCallback(window_ctx.window, mouse_button_callback);
-    glfwSetScrollCallback(window_ctx.window, scroll_callback);
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window_ctx.window, true);
@@ -614,18 +603,18 @@ int main()
             active_frames--;
         }*/
 
-        std::vector<uint32_t> input_utf32;
-
         glfw_key_pressed_data.clear();
         glfw_key_released_data.clear();
 
         glfw_mouse_pressed_data.clear();
         glfw_mouse_released_data.clear();
 
-        scroll_x = 0;
-        scroll_y = 0;
-
         glfwPollEvents();
+
+        float scroll_y = io.MouseWheel;
+        float scroll_x = io.MouseWheelH;
+
+        std::vector<uint32_t> input_utf32;
 
         for(auto& i : io.InputQueueCharacters)
         {
