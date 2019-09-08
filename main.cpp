@@ -225,10 +225,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
 }
 
-void key_input_callback(GLFWwindow* window, unsigned int c)
+/*void key_input_callback(GLFWwindow* window, unsigned int c)
 {
     glfw_input_utf32.push_back(c);
-}
+}*/
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
@@ -329,7 +329,7 @@ int main()
     }
 
     glfwSetKeyCallback(window_ctx.window, key_callback);
-    glfwSetCharCallback(window_ctx.window, key_input_callback);
+    //glfwSetCharCallback(window_ctx.window, key_input_callback);
     glfwSetCursorPosCallback(window_ctx.window, cursor_position_callback);
     glfwSetMouseButtonCallback(window_ctx.window, mouse_button_callback);
     glfwSetScrollCallback(window_ctx.window, scroll_callback);
@@ -631,6 +631,11 @@ int main()
         scroll_y = 0;
 
         glfwPollEvents();
+
+        for(auto& i : io.InputQueueCharacters)
+        {
+            glfw_input_utf32.push_back(i);
+        }
 
         for(uint32_t i : glfw_input_utf32)
         {
