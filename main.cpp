@@ -1002,6 +1002,7 @@ int main()
             conn.write(data.dump());
         }
 
+        ///update
         /*if(term.get_id_of_focused_realtime_window() != -1 && mouse_clock.getElapsedTime().asMicroseconds() / 1000. >= mouse_send_time_ms && is_focused(focused))
         {
             mouse_clock.restart();
@@ -1052,12 +1053,7 @@ int main()
             i.second.scroll_hack.scrolled_this_frame = mouse_delta;
         }
 
-        //ImGui::SFML::Update(window,  imgui_delta.restart());
-
         ImGui::PushFont(font_select.get_base_font());
-
-        //ImGui::ShowDemoWindow(nullptr);
-        //ImGui::ShowStyleEditor(nullptr);
 
         font_select.render(window_ctx);
 
@@ -1087,8 +1083,6 @@ int main()
         if(enter && to_edit->command.size() > 0)
         {
             term.invalidate();
-
-            //term.add_to_command('\n');
 
             if(term.focused)
             {
@@ -1284,6 +1278,7 @@ int main()
 
         chat_win.tick();
 
+        ///update
         /*auto sf_mpos = mouse.getPosition(window);
         vec2f vpos = {sf_mpos.x, sf_mpos.y};
 
@@ -1343,8 +1338,6 @@ int main()
 
             if(term.auto_handle.found_unprocessed_autocompletes.size() > 0)
                 term.auto_handle.found_unprocessed_autocompletes.erase(term.auto_handle.found_unprocessed_autocompletes.begin());
-
-            //term.auto_handle.found_unprocessed_autocompletes.clear();
         }
 
         if((term.focused || term.get_id_of_focused_realtime_window() != 1) && is_focused(focused) && glfwGetKey(window_ctx.window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && just_pressed(GLFW_KEY_C))
@@ -1360,8 +1353,6 @@ int main()
 
         term.auto_handle.window_in_focus = is_focused(focused);
         chat_win.auto_handle.window_in_focus = is_focused(focused);
-
-        //test_imgui_term.text_history = term.text_history;
 
         int was_closed_id = -1;
 
@@ -1409,8 +1400,6 @@ int main()
 
         ImGui::PopFont();
 
-        //ImGui::SFML::Render(window);
-
         ImGui::Render();
 
         glViewport(0, 0, display_w, display_h);
@@ -1418,9 +1407,6 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        // Update and Render additional Platform Windows
-        // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
-        //  For this specific demo app we could also call glfwMakeContextCurrent(window) directly)
         if(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {
             GLFWwindow* backup_current_context = glfwGetCurrentContext();
