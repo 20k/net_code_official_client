@@ -205,15 +205,15 @@ void handle_auth(c_steam_api csapi, connection& conn, std::string current_user)
 }
 
 ///no udata for glfw?
-std::vector<int> glfw_key_pressed_data;
-std::vector<int> glfw_key_released_data;
+//std::vector<int> glfw_key_pressed_data;
+//std::vector<int> glfw_key_released_data;
 
 std::vector<int> glfw_mouse_pressed_data;
 std::vector<int> glfw_mouse_released_data;
 
 bool lastKeysDown[512] = {};
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+/*void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if(action == GLFW_PRESS || action == GLFW_REPEAT)
     {
@@ -224,7 +224,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     {
         glfw_key_released_data.push_back(key);
     }
-}
+}*/
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
@@ -317,7 +317,6 @@ int main()
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
     }
 
-    glfwSetKeyCallback(window_ctx.window, key_callback);
     glfwSetCursorPosCallback(window_ctx.window, cursor_position_callback);
     glfwSetMouseButtonCallback(window_ctx.window, mouse_button_callback);
 
@@ -607,8 +606,8 @@ int main()
             active_frames--;
         }*/
 
-        glfw_key_pressed_data.clear();
-        glfw_key_released_data.clear();
+        std::vector<int> glfw_key_pressed_data;
+        std::vector<int> glfw_key_released_data;
 
         glfw_mouse_pressed_data.clear();
         glfw_mouse_released_data.clear();
@@ -616,6 +615,19 @@ int main()
         memcpy(lastKeysDown, io.KeysDown, sizeof(lastKeysDown));
 
         glfwPollEvents();
+
+        for(int i=0; i < sizeof(io.KeysDown) / sizeof(io.KeysDown[0]); i++)
+        {
+            if(io.KeysDown[i] && !lastKeysDown[i])
+            {
+                glfw_key_pressed_data.push_back(i);
+            }
+
+            if(!io.KeysDown[i] && lastKeysDown[i])
+            {
+                glfw_key_released_data.push_back(i);
+            }
+        }
 
         float scroll_y = io.MouseWheel;
         float scroll_x = io.MouseWheelH;
