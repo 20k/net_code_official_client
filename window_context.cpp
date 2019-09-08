@@ -42,6 +42,11 @@ window_context::window_context()
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
+    if(is_srgb)
+    {
+        glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
+    }
+
     // Create window with graphics context
     window = glfwCreateWindow(width, height, "net_code_", NULL, NULL);
     if (window == NULL)

@@ -231,7 +231,7 @@ int main()
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-    //ImGui::SetStyleLinearColor(window_ctx.is_srgb);
+    ImGui::SetStyleLinearColor(window_ctx.is_srgb);
 
     ImGui::PushSrgbStyleColor(ImGuiCol_WindowBg, ImGuiX::GetBgCol());
 
