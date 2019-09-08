@@ -63,7 +63,7 @@ std::string make_lower(std::string in)
 
 #define DMAP(A) key_map[GLFW_KEY_##A] = make_lower((#A));
 #define SMAP(A, S) key_map[GLFW_KEY_##A] = ((#S));
-#define MMAP(A, S) mouse_map[GLFW_MOUSE_BUTTON_##A] = ((#S));
+#define MMAP(A, S) mouse_map[A] = ((#S));
 
 #define SPECIAL_MAP(A, S) on_input_map[GLFW_KEY_##A] = ((#S));
 
@@ -204,41 +204,6 @@ void handle_auth(c_steam_api csapi, connection& conn, std::string current_user)
     }
 }
 
-std::vector<int> glfw_mouse_pressed_data;
-std::vector<int> glfw_mouse_released_data;
-
-bool lastKeysDown[512] = {};
-
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
-{
-    if(action == GLFW_PRESS)
-    {
-        glfw_mouse_pressed_data.push_back(button);
-    }
-
-    if(action == GLFW_RELEASE)
-    {
-        glfw_mouse_released_data.push_back(button);
-    }
-}
-
-bool just_pressed(int key)
-{
-    ImGuiIO& io = ImGui::GetIO();
-
-    return io.KeysDown[key] && !lastKeysDown[key];
-}
-
-///relative to top left content area
-vec2f cursor_pos;
-
-void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
-{
-    auto vpos = ImGui::GetMainViewport()->Pos;
-
-    cursor_pos = (vec2f){xpos + vpos.x, ypos + vpos.y};
-}
-
 ///test new repo
 int main()
 {
@@ -299,9 +264,6 @@ int main()
         style.WindowRounding = 0.0f;
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
     }
-
-    glfwSetCursorPosCallback(window_ctx.window, cursor_position_callback);
-    glfwSetMouseButtonCallback(window_ctx.window, mouse_button_callback);
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window_ctx.window, true);
@@ -412,9 +374,9 @@ int main()
     SMAP(SLASH, /);
     SMAP(BACKSLASH, \\);
 
-    MMAP(1, lmouse);
-    MMAP(2, rmouse);
-    MMAP(3, mmouse);
+    MMAP(0, lmouse);
+    MMAP(1, rmouse);
+    MMAP(2, mmouse);
 
     std::string terminal_file = "./terminal_v5.txt";
     std::string chat_file = "./chat_v5.txt";
@@ -479,6 +441,16 @@ int main()
     std::string current_user = "";
 
     sf::Clock connection_clock;
+
+    bool lastKeysDown[512] = {};
+    bool lastMouseDown[5] = {};
+
+    auto just_pressed = [&](int key)
+    {
+        ImGuiIO& io = ImGui::GetIO();
+
+        return io.KeysDown[key] && !lastKeysDown[key];
+    };
 
     while(running)
     {
@@ -592,16 +564,23 @@ int main()
         std::vector<int> glfw_key_pressed_data;
         std::vector<int> glfw_key_released_data;
 
-        glfw_mouse_pressed_data.clear();
-        glfw_mouse_released_data.clear();
+        std::vector<int> mouse_pressed_data;
+        std::vector<int> mouse_released_data;
 
         memcpy(lastKeysDown, io.KeysDown, sizeof(lastKeysDown));
+        memcpy(lastMouseDown, io.MouseDown, sizeof(io.MouseDown));
 
         glfwPollEvents();
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        vec2f cursor_pos = {io.MousePos.x, io.MousePos.y};
+
         for(int i=0; i < sizeof(io.KeysDown) / sizeof(io.KeysDown[0]); i++)
         {
-            if(io.KeysDown[i] && !lastKeysDown[i])
+            if((io.KeysDown[i] && !lastKeysDown[i]) || ImGui::IsKeyPressed(i))
             {
                 glfw_key_pressed_data.push_back(i);
             }
@@ -609,6 +588,19 @@ int main()
             if(!io.KeysDown[i] && lastKeysDown[i])
             {
                 glfw_key_released_data.push_back(i);
+            }
+        }
+
+        for(int i=0; i < sizeof(io.MouseDown) / sizeof(io.MouseDown[0]); i++)
+        {
+            if(io.MouseDown[i] && !lastMouseDown[i])
+            {
+                mouse_pressed_data.push_back(i);
+            }
+
+            if(!io.MouseDown[i] && lastMouseDown[i])
+            {
+                mouse_released_data.push_back(i);
             }
         }
 
@@ -780,7 +772,7 @@ int main()
                 on_released.push_back(key_map[i]);
         }
 
-        for(int i : glfw_mouse_pressed_data)
+        for(int i : mouse_pressed_data)
         {
             if(mouse_map.find(i) != mouse_map.end())
                 on_pressed.push_back(mouse_map[i]);
@@ -788,7 +780,7 @@ int main()
             if(mouse_map.find(i) != mouse_map.end())
                 realtime_str.push_back(mouse_map[i]);
 
-            if(i == GLFW_MOUSE_BUTTON_2)
+            if(i == 1)
             {
                 std::string add_text = get_clipboard_contents();
 
@@ -800,7 +792,7 @@ int main()
                 term.last_line_invalidate();
             }
 
-            if(i == GLFW_MOUSE_BUTTON_1)
+            if(i == 0)
             {
                 term.last_line_invalidate();
 
@@ -808,12 +800,12 @@ int main()
             }
         }
 
-        for(int i : glfw_mouse_released_data)
+        for(int i : mouse_released_data)
         {
             if(mouse_map.find(i) != mouse_map.end())
                 on_released.push_back(mouse_map[i]);
 
-            if(i == GLFW_MOUSE_BUTTON_1)
+            if(i == 1)
             {
                 term.last_line_invalidate();
 
@@ -1068,10 +1060,6 @@ int main()
             }
         }
         #endif // 0
-
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
 
         if(term.get_id_of_focused_realtime_window() != -1 && (realtime_str.size() > 0 || on_pressed.size() > 0 || on_released.size() > 0))
         {
@@ -1356,7 +1344,7 @@ int main()
 
         chat_win.tick();
 
-        if(glfwGetMouseButton(window_ctx.window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS && is_focused(focused))
+        if(io.MouseDown[0] && is_focused(focused))
         {
             active_frames = active_frames_restart;
 
@@ -1414,7 +1402,7 @@ int main()
                 term.auto_handle.found_unprocessed_autocompletes.erase(term.auto_handle.found_unprocessed_autocompletes.begin());
         }
 
-        if((term.focused || term.get_id_of_focused_realtime_window() != 1) && is_focused(focused) && glfwGetKey(window_ctx.window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && just_pressed(GLFW_KEY_C))
+        if((term.focused || term.get_id_of_focused_realtime_window() != 1) && is_focused(focused) && io.KeysDown[GLFW_KEY_LEFT_CONTROL] && just_pressed(GLFW_KEY_C))
         {
             nlohmann::json data;
             data["type"] = "client_terminate_scripts";
@@ -1455,7 +1443,7 @@ int main()
             term.last_line_invalidate();
         }
 
-        term.auto_handle.tab_pressed = just_pressed(GLFW_KEY_TAB) && is_focused(focused);
+        term.auto_handle.tab_pressed = ImGui::IsKeyPressed(GLFW_KEY_TAB) && is_focused(focused);
 
         if(term.auto_handle.tab_pressed)
         {
@@ -1464,7 +1452,7 @@ int main()
 
         ///this is a hack to fix the fact that sometimes
         ///click input doesn't make clean click/release pairs
-        if(glfwGetMouseButton(window_ctx.window, GLFW_MOUSE_BUTTON_1) != GLFW_PRESS)
+        if(!io.MouseDown[0])
         {
             get_global_copy_handler()->finished = false;
             get_global_copy_handler()->held = false;
