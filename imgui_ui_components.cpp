@@ -1007,11 +1007,14 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
         handle->process_formatted(thread.cache.out);
 
     #endif // 0
-    if(refocus)
+    if(refocus && side_buttons.size() > 0)
         ImGui::SetNextWindowFocus();
 
     static bool once = false;
+    static bool clean_up_focus = false;
     static ImGuiID dock_id = -1;
+
+    static int clean_up_focus_frames = 0;
 
     if(!once || ImGui::IsKeyPressed(GLFW_KEY_F2))
     {
@@ -1020,6 +1023,7 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
         ImVec2 viewport_size = ImGui::GetMainViewport()->Size;
         ImGui::DockBuilderSetNodePos(dock_id, ImVec2(viewport_pos.x + viewport_size.x - 600, viewport_pos.y + 100));
         ImGui::DockBuilderSetNodeSize(dock_id, ImVec2(500, 300));
+        clean_up_focus_frames = 2;
 
         for(int i=0; i < (int)side_buttons.size(); i++)
         {
@@ -1031,6 +1035,11 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
 
     bool any_focused = false;
     bool any_hovered = false;
+
+    if(clean_up_focus_frames > 0 && side_buttons.size() > 0)
+        ImGui::SetNextWindowFocus();
+
+    clean_up_focus_frames--;
 
     for(int i=0; i < (int)side_buttons.size(); i++)
     {
@@ -1044,7 +1053,7 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
 
         ImGui::Begin(full_str.c_str());
 
-        if(ImGui::IsWindowAppearing())
+        if(ImGui::IsWindowAppearing() && once)
         {
             ImGui::DockBuilderDockWindow(side_buttons[i].c_str(), dock_id);
 
