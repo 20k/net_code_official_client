@@ -314,7 +314,7 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
         cache.invalidate();
 
     if(cache.was_focused != is_focused)
-        cache.invalidate();
+        cache.last_line_invalidate();
 
     cache.was_focused = is_focused;
 
