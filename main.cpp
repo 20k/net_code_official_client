@@ -93,11 +93,14 @@ std::string default_up_handling(const std::string& user, const std::string& serv
     std::string up = "#up ";
     std::string up_es6 = "#up_es6 ";
     std::string dry = "#dry ";
+    std::string up_es5 = "#up_es5 ";
 
     std::vector<std::string> strings = no_ss_split(server_msg, " ");
 
-    if((starts_with(server_msg, up) || starts_with(server_msg, dry)) && strings.size() == 2)
+    if((starts_with(server_msg, up) || starts_with(server_msg, dry) || starts_with(server_msg, up_es5)) && strings.size() == 2)
     {
+        printf("hi\n");
+
         std::string name = strings[1];
 
         std::string diskname = scripts_dir + user + "." + name + ".es5.js";
@@ -124,6 +127,11 @@ std::string default_up_handling(const std::string& user, const std::string& serv
         {
             data = read_file(diskname_ts);
             comm = up_es6;
+        }
+
+        if(starts_with(server_msg, up_es5))
+        {
+            comm = up;
         }
 
         return comm + name + " " + data;
