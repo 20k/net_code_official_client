@@ -1011,7 +1011,6 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
         ImGui::SetNextWindowFocus();
 
     static bool once = false;
-    static bool clean_up_focus = false;
     static ImGuiID dock_id = -1;
 
     static int clean_up_focus_frames = 0;
@@ -1046,8 +1045,10 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
         std::string full_str = side_buttons[i];
         chat_thread& thread = threads[side_buttons[i]];
 
-        if(thread.dirty)
+        if(thread.dirty && side_buttons[i] != selected)
             full_str += "*";
+        else
+            full_str += " ";
 
         full_str += "###" + side_buttons[i];
 
