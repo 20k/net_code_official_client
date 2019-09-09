@@ -1009,73 +1009,6 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
     if(refocus)
         ImGui::SetNextWindowFocus();
 
-    ///docking test
-    {
-        static bool first = true;
-
-        #if SUBBY
-        ImGui::Begin("Test_1");
-
-        auto main_dock = ImGui::GetID("Main_id");
-
-        ImGui::DockSpace(main_dock, ImVec2(0.f, 0.f), ImGuiDockNodeFlags_PassthruCentralNode);
-
-        if(first)
-        {
-            ImGui::DockBuilderRemoveNode(main_dock);
-            ImGui::DockBuilderAddNode(main_dock, ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_DockSpace);
-            //ImGui::DockBuilderSetNodeSize(main_dock, viewport->Size);
-
-            //auto dockIdProp = ImGui::DockBuilderSplitNode(main_dock, ImGuiDir_Right, 0.20f, nullptr, &mainDockspaceId);
-            //auto dockIdBottom = ImGui::DockBuilderSplitNode(main_dock, ImGuiDir_Down, 0.20f, nullptr, &mainDockspaceId);
-
-            ImGui::DockBuilderDockWindow("browse", main_dock);
-            ImGui::DockBuilderFinish(main_dock);
-        }
-
-        ImGui::End();
-
-        ImGui::Begin("browse");
-
-        ImGui::Text("Hello");
-
-        ImGui::End();
-        #endif // SUBBY
-
-        static bool display = false;
-        ImGui::Checkbox("Display", &display);
-        if (ImGui::Button("Redock"))
-        {
-            ImGuiID dock_id = ImGui::DockBuilderAddNode(0, ImGuiDockNodeFlags_None);
-            ImVec2 viewport_pos = ImGui::GetMainViewport()->Pos;
-            ImGui::DockBuilderSetNodePos(dock_id, ImVec2(viewport_pos.x + 100, viewport_pos.y + 100));
-            ImGui::DockBuilderSetNodeSize(dock_id, ImVec2(200, 200));
-            ImGui::DockBuilderDockWindow("AAAA", dock_id);
-            ImGui::DockBuilderDockWindow("BBBB", dock_id);
-            ImGui::DockBuilderDockWindow("CCCC", dock_id);
-            ImGui::DockBuilderFinish(dock_id);
-        }
-        if (display)
-        {
-            ImGui::Begin("AAAA");
-            ImGui::Text("This is AAAA");
-            ImGui::End();
-            ImGui::Begin("BBBB");
-            ImGui::Text("This is BBBB");
-            ImGui::End();
-            ImGui::Begin("CCCC");
-            ImGui::Text("This is CCCC");
-            ImGui::End();
-        }
-
-        first = false;
-    }
-
-
-    //ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_Always);
-
-    //ImGui::Begin("Chat");
-
     int max_len = 0;
 
     for(auto& i : side_buttons)
@@ -1083,96 +1016,45 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
         max_len = std::max(i.size(), (size_t)max_len);
     }
 
-    //bool focused = ImGui::IsWindowFocused();
-    bool focused = true;
-
-    /*static bool once = false;
-    ImGuiID dockspace_id = ImGui::GetID("TestDockSpace");
+    static bool once = false;
 
     if(!once)
     {
-        //ImGuiID dockspace_id = ImGui::GetID("TestDockSpace");
-        //ImGui::DockSpace(dockspace_id, ImVec2(0,0), 0);
-
-        ImGui::DockBuilderRemoveNode(dockspace_id);
-        ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
+        ImGuiID dock_id = ImGui::DockBuilderAddNode(0, ImGuiDockNodeFlags_None);
+        ImVec2 viewport_pos = ImGui::GetMainViewport()->Pos;
+        ImVec2 viewport_size = ImGui::GetMainViewport()->Size;
+        ImGui::DockBuilderSetNodePos(dock_id, ImVec2(viewport_pos.x + viewport_size.x - 600, viewport_pos.y + 100));
+        ImGui::DockBuilderSetNodeSize(dock_id, ImVec2(500, 300));
 
         for(int i=0; i < (int)side_buttons.size(); i++)
         {
-            ImGui::DockBuilderDockWindow(side_buttons[i].c_str(), dockspace_id);
+            ImGui::DockBuilderDockWindow(side_buttons[i].c_str(), dock_id);
         }
 
-        ImGui::DockBuilderFinish(dockspace_id);
+        ImGui::DockBuilderFinish(dock_id);
     }
-
-    once = true;
-
-    ImGui::DockSpace(dockspace_id, ImVec2(0,0), 0);*/
-
-    static ImGuiID dockspace_id = -1;
-    ImGuiWindow* window = nullptr;
-
-    static bool once = false;
 
     for(int i=0; i < (int)side_buttons.size(); i++)
     {
         ImGui::Begin(side_buttons[i].c_str());
 
-        #if 0
-        if(!once && i == 0)
-        //if(i == 0)
-        {
-            //dockspace_id = ImGui::GetID("TestDockSpace");
-            dockspace_id = ImGui::GetWindowDockID();
-            window = ImGui::GetCurrentWindow();
-
-            //ImGuiDockNode* central = ImGui::DockBuilderGetCentralNode(dockspace_id);
-
-            /*ImGui::DockBuilderRemoveNode(dockspace_id);
-            ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_None);
-
-            for(int kk=1; kk < (int)side_buttons.size(); kk++)
-            {
-                ImGui::DockBuilderDockWindow(side_buttons[kk].c_str(), dockspace_id);
-            }
-
-            ImGui::DockBuilderFinish(dockspace_id);
-
-            ImGui::DockSpace(dockspace_id, ImVec2(0,0),ImGuiDockNodeFlags_None);*/
-        }
-
-        if(i != 0)
-        {
-            ImGui::SetWindowDock(ImGui::GetCurrentWindow(), dockspace_id, ImGuiCond_Always);
-        }
-        #endif // 0
-
-        //if(!once && i == 0)
-        //    ImGui::DockSpace(dockspace_id, ImVec2(0,0), ImGuiDockNodeFlags_NoSplit);
-
-        /*if(!once && i != 0)
-        {
-            ImGui::DockBuilderDockWindow(side_buttons[i].c_str()), dockspace_id);
-        }*/
+        bool focused = ImGui::IsWindowFocused();
 
         chat_thread& thread = threads[side_buttons[i]];
 
-        {
-            if(&thread == &threads[selected])
-                thread.dirty = false;
+        if(&thread == &threads[selected])
+            thread.dirty = false;
 
-            bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this, 80);
+        bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this, 80);
 
-            if(focused && child_focused)
-                handle->process_formatted(thread.cache.out);
-        }
+        if(focused && child_focused)
+            handle->process_formatted(thread.cache.out);
 
         ImGui::End();
     }
 
     once = true;
 
-    //ImGui::End();
 }
 
 void chat_window::set_side_channels(const std::vector<std::string>& sides)
