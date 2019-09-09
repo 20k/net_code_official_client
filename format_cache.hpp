@@ -30,6 +30,8 @@ struct format_cache
     float cached_line_offset = 0;
     float cached_y_end = 0;
 
+    bool was_focused = false;
+
     void last_line_invalidate()
     {
         last_line_valid = false;

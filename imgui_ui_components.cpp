@@ -287,6 +287,8 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 {
     float overall_width = ImGui::GetWindowWidth();
 
+    bool is_focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+
     ImGui::BeginChild("left_sub", ImVec2(overall_width - 40 - extra_shrink, 0.f), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove);
 
     auto cpos = ImGui::GetWindowPos();
@@ -310,6 +312,11 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     if(current_window_size.x != cache.cached_window_size.x() || current_window_size.y != cache.cached_window_size.y())
         cache.invalidate();
+
+    if(cache.was_focused != is_focused)
+        cache.invalidate();
+
+    cache.was_focused = is_focused;
 
     if(!cache.valid())
     {
@@ -354,7 +361,7 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
         int curs_cur = cursor_pos_idx + cursor_offset;
 
-        if(ImGui::IsWindowFocused())
+        if(is_focused)
         {
             if(curs_cur >= (int)icommand.size())
                 icommand.push_back(curs);
