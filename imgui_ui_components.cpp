@@ -1029,6 +1029,9 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
         ImGui::DockBuilderFinish(dock_id);
     }
 
+    bool any_focused = false;
+    bool any_hovered = false;
+
     for(int i=0; i < (int)side_buttons.size(); i++)
     {
         std::string full_str = side_buttons[i];
@@ -1048,27 +1051,35 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
             ImGui::DockBuilderFinish(dock_id);
         }
 
-        bool focused = ImGui::IsWindowFocused();
+        bool me_focused = ImGui::IsWindowFocused(ImGuiHoveredFlags_RootAndChildWindows);
 
         //if(&thread == &threads[selected])
         //    thread.dirty = false;
 
-        if(focused)
+        if(me_focused)
         {
             selected = side_buttons[i];
             thread.dirty = false;
+            any_focused = true;
+        }
+
+        if(ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
+        {
+            any_hovered = true;
         }
 
         bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this, 80);
 
-        if(focused && child_focused)
+        if(me_focused && child_focused)
             handle->process_formatted(thread.cache.out);
 
         ImGui::End();
     }
 
-    once = true;
+    focused = any_focused;
+    hovered = any_hovered;
 
+    once = true;
 }
 
 void chat_window::set_side_channels(const std::vector<std::string>& sides)
