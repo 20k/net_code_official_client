@@ -14,6 +14,7 @@
 #include "imguix.hpp"
 #include <networking/networking.hpp>
 #include <imgui/imgui_internal.h>
+#include <GLFW/glfw3.h>
 
 namespace ImGuiX
 {
@@ -1009,18 +1010,12 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
     if(refocus)
         ImGui::SetNextWindowFocus();
 
-    int max_len = 0;
-
-    for(auto& i : side_buttons)
-    {
-        max_len = std::max(i.size(), (size_t)max_len);
-    }
-
     static bool once = false;
+    static ImGuiID dock_id = -1;
 
-    if(!once)
+    if(!once || ImGui::IsKeyPressed(GLFW_KEY_F2))
     {
-        ImGuiID dock_id = ImGui::DockBuilderAddNode(0, ImGuiDockNodeFlags_None);
+        dock_id = ImGui::DockBuilderAddNode(0, ImGuiDockNodeFlags_None);
         ImVec2 viewport_pos = ImGui::GetMainViewport()->Pos;
         ImVec2 viewport_size = ImGui::GetMainViewport()->Size;
         ImGui::DockBuilderSetNodePos(dock_id, ImVec2(viewport_pos.x + viewport_size.x - 600, viewport_pos.y + 100));
@@ -1028,7 +1023,7 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
 
         for(int i=0; i < (int)side_buttons.size(); i++)
         {
-            ImGui::DockBuilderDockWindow(side_buttons[i].c_str(), dock_id);
+            ImGui::DockBuilderDockWindow(("###" + side_buttons[i]).c_str(), dock_id);
         }
 
         ImGui::DockBuilderFinish(dock_id);
@@ -1036,14 +1031,33 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
 
     for(int i=0; i < (int)side_buttons.size(); i++)
     {
-        ImGui::Begin(side_buttons[i].c_str());
+        std::string full_str = side_buttons[i];
+        chat_thread& thread = threads[side_buttons[i]];
+
+        if(thread.dirty)
+            full_str += "*";
+
+        full_str += "###" + side_buttons[i];
+
+        ImGui::Begin(full_str.c_str());
+
+        if(ImGui::IsWindowAppearing())
+        {
+            ImGui::DockBuilderDockWindow(side_buttons[i].c_str(), dock_id);
+
+            ImGui::DockBuilderFinish(dock_id);
+        }
 
         bool focused = ImGui::IsWindowFocused();
 
-        chat_thread& thread = threads[side_buttons[i]];
+        //if(&thread == &threads[selected])
+        //    thread.dirty = false;
 
-        if(&thread == &threads[selected])
+        if(focused)
+        {
+            selected = side_buttons[i];
             thread.dirty = false;
+        }
 
         bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this, 80);
 
