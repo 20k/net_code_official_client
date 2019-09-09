@@ -1063,9 +1063,6 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
 
         bool me_focused = ImGui::IsWindowFocused(ImGuiHoveredFlags_RootAndChildWindows);
 
-        //if(&thread == &threads[selected])
-        //    thread.dirty = false;
-
         if(me_focused)
         {
             selected = side_buttons[i];
