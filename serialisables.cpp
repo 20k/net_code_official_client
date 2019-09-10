@@ -8,6 +8,7 @@ DEFINE_SERIALISE_FUNCTION(chat_thread)
     SERIALISE_SETUP();
 
     DO_FSERIALISE(raw_history);
+    DO_FSERIALISE(command);
 
     if(ctx.serialisation && !ctx.encode)
     {

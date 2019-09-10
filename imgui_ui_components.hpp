@@ -61,6 +61,7 @@ struct realtime_script_run : frameable
 struct chat_thread : serialisable, cacheable, free_function
 {
     bool dirty = false;
+    editable_string command;
 };
 
 struct chat_window : serialisable, frameable
@@ -81,7 +82,6 @@ struct chat_window : serialisable, frameable
     };
 
     std::string selected = "0000";
-    editable_string command;
 
     auto_handler auto_handle;
 
@@ -90,7 +90,6 @@ struct chat_window : serialisable, frameable
         DO_SERIALISE(render_start);
         DO_SERIALISE(side_buttons);
         DO_SERIALISE(selected);
-        DO_SERIALISE(command);
         DO_SERIALISE(show_chat_in_main_window);
     }
 

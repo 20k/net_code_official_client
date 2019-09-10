@@ -1077,7 +1077,7 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
             any_hovered = true;
         }
 
-        bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this, 0);
+        bool child_focused = render_handle_imgui(scroll_hack, thread.command.command, thread.command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this, 0);
 
         if(me_focused && child_focused)
             handle->process_formatted(thread.cache.out);

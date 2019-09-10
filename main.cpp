@@ -490,8 +490,10 @@ int main()
         if(term.focused)
             to_edit = &term.command;
 
-        if(chat_win.focused)
-            to_edit = &chat_win.command;
+        bool has_chat_window = term.chat_threads.find(chat_win.selected) != term.chat_threads.end();
+
+        if(chat_win.focused && has_chat_window)
+            to_edit = &term.chat_threads[chat_win.selected].command;
 
         if(term.get_id_of_focused_realtime_window() != -1)
             to_edit = &realtime_shim;
@@ -499,8 +501,8 @@ int main()
         if(term.hovered)
             hovered_string = &term.command;
 
-        if(chat_win.hovered)
-            hovered_string = &chat_win.command;
+        if(chat_win.hovered && has_chat_window)
+            hovered_string = &term.chat_threads[chat_win.selected].command;
 
         if(term.get_id_of_focused_realtime_window() != -1 && term.realtime_script_windows[term.get_id_of_focused_realtime_window()].hovered)
             hovered_string = &realtime_shim;
@@ -749,7 +751,7 @@ int main()
 
                 }
 
-                if(hovered_string == &chat_win.command)
+                if(has_chat_window && hovered_string == &term.chat_threads[chat_win.selected].command)
                 {
                     mouse_delta -= chat_win.render_height - 2;
 
@@ -764,7 +766,7 @@ int main()
             {
                 if(hovered_string == &term.command)
                     mouse_delta += term.render_height - 2;
-                if(hovered_string == &chat_win.command)
+                if(has_chat_window && hovered_string == &term.chat_threads[chat_win.selected].command)
                     mouse_delta += chat_win.render_height - 2;
 
                 term.last_line_invalidate();
@@ -985,7 +987,18 @@ int main()
                 //if(chat_win.command.command.size() > 0 && chat_win.command.command.back() == '\n')
                 //    chat_win.command.command.pop_back();
 
-                std::string command = chat_win.command.command;
+                //std::string command = chat_win.command.command;
+
+                std::string command;
+
+                if(has_chat_window)
+                {
+                    command = term.chat_threads[chat_win.selected].command.command;
+                }
+                else
+                {
+                    command = "";
+                }
 
                 bool bump = false;
 
@@ -1081,9 +1094,9 @@ int main()
                         }
                     }
                 }
-                else
+                else if(has_chat_window)
                 {
-                    std::string escaped_string = escape_str(chat_win.command.command);
+                    std::string escaped_string = escape_str(term.chat_threads[chat_win.selected].command.command);
 
                     nlohmann::json data;
                     data["type"] = "client_chat";
@@ -1105,9 +1118,9 @@ int main()
             {
                 term.bump_command_to_history();
             }
-            else
+            else if(has_chat_window)
             {
-                chat_win.command.clear_command();
+                term.chat_threads[chat_win.selected].command.clear_command();
             }
 
             if(term.focused && sa_is_local_command(make_view(cmd)))
