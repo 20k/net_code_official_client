@@ -53,22 +53,17 @@
 			</Target>
 			<Target title="Deploy">
 				<Option output="bin/Deploy/crapmud_client" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="DebugDeploy" />
 				<Option object_output="obj/Deploy/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-g" />
 					<Add option="-O2" />
+					<Add option="-g" />
 					<Add option="-DEXTERN_IP" />
 				</Compiler>
 				<Linker>
 					<Add option="-O2" />
 				</Linker>
-				<ExtraCommands>
-					<Add after="build_release.bat" />
-					<Mode after="always" />
-				</ExtraCommands>
 			</Target>
 			<Target title="DeployProfile">
 				<Option output="DebugDeploy/DeployProfile" prefix_auto="1" extension_auto="1" />
@@ -235,10 +230,6 @@
 			<Add option="-lglew32" />
 			<Add library="deps/libncclient/libncclient.a" />
 		</Linker>
-		<ExtraCommands>
-			<Add after="copy_dll.bat" />
-			<Mode after="always" />
-		</ExtraCommands>
 		<Unit filename="auto_handlers.cpp" />
 		<Unit filename="auto_handlers.hpp" />
 		<Unit filename="colour_interop.hpp" />

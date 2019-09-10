@@ -144,12 +144,12 @@ void handle_auth(c_steam_api csapi, connection& conn, std::string current_user)
 {
     if(steam_api_enabled(csapi))
     {
-        ///embed key.key
-        if(file_exists("key.key"))
+        ///embed hex_key.key
+        if(file_exists("hey_key.key"))
         {
             printf("Embedding key auth in steam auth\n");
 
-            steam_api_request_encrypted_token(csapi, make_view(read_file_bin("key.key")));
+            steam_api_request_encrypted_token(csapi, make_view(read_file_bin("hex_key.key")));
         }
         else
         {
@@ -180,20 +180,20 @@ void handle_auth(c_steam_api csapi, connection& conn, std::string current_user)
         printf("Postwrite\n");
     }
     ///use key based auth
-    else if(file_exists("key.key"))
+    else if(file_exists("hex_key.key"))
     {
         printf("Pure key auth\n");
 
         nlohmann::json data;
         data["type"] = "key_auth";
-        data["data"] = read_file_bin("key.key");
+        data["data"] = read_file_bin("hex_key.key");
 
         conn.write(data.dump());
     }
     else
     {
         ///no auth available
-        printf("No auth methods available, use steam or key.key file");
+        printf("No auth methods available, use steam or hex_key.key file");
         throw std::runtime_error("No auth method available");
     }
 

@@ -2,12 +2,12 @@
 
 # harvest dlls sdkencryptedappticket64.dll ncclient.dll steam_api64.dll
 
-rm ./build_root/*.dll
-rm ./build_root/*.exe
+rm -f ./build_root/*.dll
+rm -f ./build_root/*.exe
 
 mkdir ./Release
 mkdir ./Release/bin
-rm -r ./Release/bin/*
+rm -rf ./Release/bin/*
 
 cp ./deps/steamworks_sdk_142/sdk/redistributable_bin/win64/steam_api64.dll ./build_root
 cp ./deps/libncclient/ncclient.dll ./build_root
@@ -19,3 +19,6 @@ sh ../deploy_gather_dlls.sh ./crapmud_client.exe .
 
 cp * ../Release/bin
 
+cd ..
+cd ./deps/steamworks_sdk_142/sdk/tools/ContentBuilder
+./run_build.bat

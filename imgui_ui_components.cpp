@@ -880,7 +880,7 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
         else if(in["type"] == "auth")
         {
             std::string key = in["data"];
-            std::string key_file = "key.key";
+            std::string key_file = "hex_key.key";
 
             if(!file_exists(key_file))
             {
