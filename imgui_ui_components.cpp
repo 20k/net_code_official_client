@@ -1059,16 +1059,11 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
 
         full_str += "###" + side_buttons[i];
 
+        ImGui::SetNextWindowDockID(dock_id, ImGuiCond_Appearing);
+
         ImGui::Begin(full_str.c_str());
 
-        if(ImGui::IsWindowAppearing() && once)
-        {
-            ImGui::DockBuilderDockWindow(side_buttons[i].c_str(), dock_id);
-
-            ImGui::DockBuilderFinish(dock_id);
-        }
-
-        bool me_focused = ImGui::IsWindowFocused(ImGuiHoveredFlags_RootAndChildWindows);
+        bool me_focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
         if(me_focused)
         {
