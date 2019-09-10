@@ -382,28 +382,40 @@ int main()
     MMAP(1, rmouse);
     MMAP(2, mmouse);
 
-    std::string terminal_file = "./terminal_v5.txt";
-    std::string chat_file = "./chat_v5.txt";
-    std::string settings_file = "./text_sett.txt";
-    std::string font_file = "./font_sett.txt";
+    std::string terminal_file = "./terminal_v6.txt";
+    std::string chat_file = "./chat_v6.txt";
+    //std::string settings_file = "./text_sett_v1.txt";
+    std::string font_file = "./font_sett_v1.txt";
 
-    if(file_exists(terminal_file))
+    try
     {
-        nlohmann::json dat = load_from_file_json(terminal_file);
-        deserialise(dat, term, serialise_mode::DISK);
+        if(file_exists(terminal_file))
+        {
+            nlohmann::json dat = load_from_file_json(terminal_file);
+            deserialise(dat, term, serialise_mode::DISK);
+        }
     }
+    catch(...){}
 
-    if(file_exists(chat_file))
+    try
     {
-        nlohmann::json dat = load_from_file_json(chat_file);
-        deserialise(dat, chat_win, serialise_mode::DISK);
+        if(file_exists(chat_file))
+        {
+            nlohmann::json dat = load_from_file_json(chat_file);
+            deserialise(dat, chat_win, serialise_mode::DISK);
+        }
     }
+    catch(...){}
 
-    if(file_exists(font_file))
+    try
     {
-        nlohmann::json dat = load_from_file_json(font_file);
-        deserialise(dat, font_select, serialise_mode::DISK);
+        if(file_exists(font_file))
+        {
+            nlohmann::json dat = load_from_file_json(font_file);
+            deserialise(dat, font_select, serialise_mode::DISK);
+        }
     }
+    catch(...){}
 
     sf::Clock render_clock;
 
@@ -812,7 +824,7 @@ int main()
             if(mouse_map.find(i) != mouse_map.end())
                 on_released.push_back(mouse_map[i]);
 
-            if(i == 1)
+            if(i == 0)
             {
                 term.last_line_invalidate();
 
