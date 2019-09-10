@@ -738,7 +738,7 @@ int main()
                 font_select.is_open = !font_select.is_open;
             }
 
-            if(i == GLFW_KEY_ENTER)
+            if(i == GLFW_KEY_ENTER || i == GLFW_KEY_KP_ENTER)
             {
                 if(to_edit != &realtime_shim && to_edit != &no_string)
                 {
