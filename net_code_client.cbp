@@ -122,7 +122,6 @@
 			</Target>
 			<Target title="DeployTestDebug">
 				<Option output="bin/DeployTestDebug/crapmud_client" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="DebugDeploy" />
 				<Option object_output="obj/DeployTestDebug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
