@@ -8,6 +8,7 @@ rm -f ./build_root/*.exe
 mkdir ./Release
 mkdir ./Release/bin
 rm -rf ./Release/bin/*
+mkdir ./Release/bin/scripts
 
 cp ./deps/steamworks_sdk_142/sdk/redistributable_bin/win64/steam_api64.dll ./build_root
 cp ./deps/libncclient/ncclient.dll ./build_root
