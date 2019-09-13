@@ -235,10 +235,6 @@
 		<Unit filename="colour_interop.hpp" />
 		<Unit filename="copy_handler.cpp" />
 		<Unit filename="copy_handler.hpp" />
-		<Unit filename="deps/imgui-sfml/imgui-SFML.cpp">
-			<Option compile="0" />
-			<Option link="0" />
-		</Unit>
 		<Unit filename="deps/imgui-sfml/imgui-SFML.h" />
 		<Unit filename="deps/imgui/examples/imgui_impl_glfw.cpp" />
 		<Unit filename="deps/imgui/examples/imgui_impl_glfw.h" />
