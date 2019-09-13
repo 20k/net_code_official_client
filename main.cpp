@@ -449,7 +449,7 @@ int main()
 
     double script_mousewheel_delta = 0.;
 
-    term.invalidate();
+    term.invalidate_everything();
 
     font_render_context font_context(font_select, window_ctx);
 
@@ -955,8 +955,6 @@ int main()
 
         if(enter && to_edit->command.size() > 0)
         {
-            term.invalidate();
-
             if(term.focused)
             {
                 term.consider_resetting_scrollbar = true;
@@ -983,6 +981,8 @@ int main()
 
             if(term.focused)
             {
+                term.cache.invalidate();
+
                 if(!sa_is_local_command(make_view(term.command.command)))
                 {
                     std::string up_data = default_up_handling(current_user, term.command.command, "./scripts/");
@@ -1006,6 +1006,7 @@ int main()
                 if(has_chat_window)
                 {
                     command = term.chat_threads[chat_win.selected].command.command;
+                    term.chat_threads[chat_win.selected].cache.invalidate();
                 }
                 else
                 {
@@ -1120,7 +1121,11 @@ int main()
                 if(bump)
                 {
                     term.add_text_to_current_chat_thread(chat_win, command);
-                    term.invalidate();
+
+                    if(has_chat_window)
+                    {
+                        term.chat_threads[chat_win.selected].cache.invalidate();
+                    }
                 }
             }
 
@@ -1311,7 +1316,7 @@ int main()
         if(char_inf::cwidth != lcwidth || char_inf::cheight != lcheight)
         {
             active_frames = active_frames_restart;
-            term.invalidate();
+            term.invalidate_everything();
         }
     }
 
