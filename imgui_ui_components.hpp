@@ -9,6 +9,8 @@
 #include "format_cache.hpp"
 #include <SFML/System.hpp>
 
+#define MAX_TEXT_HISTORY 200
+
 struct chat_thread;
 struct chat_window;
 struct font_render_context;

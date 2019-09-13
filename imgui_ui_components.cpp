@@ -569,8 +569,6 @@ void terminal_imgui::last_line_invalidate()
     }
 }
 
-#define MAX_TEXT_HISTORY 200
-
 void terminal_imgui::bump_command_to_history()
 {
     std::string ccommand = command.command;
@@ -789,6 +787,10 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
                 chat_threads[chnls[i]].raw_history.push_back(msgs[i]);
                 chat_threads[chnls[i]].history.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
                 chat_threads[chnls[i]].dirty = true;
+
+                limit_size(chat_threads[chnls[i]].raw_history, MAX_TEXT_HISTORY);
+                limit_size(chat_threads[chnls[i]].history, MAX_TEXT_HISTORY);
+                de_newline(chat_threads[chnls[i]].history);
             }
 
             for(int kk=0; kk < (int)tell_msgs.size(); kk++)

@@ -18,6 +18,9 @@ DEFINE_SERIALISE_FUNCTION(chat_thread)
         {
             me->history.push_back(string_to_interop_no_autos(i, false));
         }
+
+        limit_size(me->raw_history, MAX_TEXT_HISTORY);
+        limit_size(me->history, MAX_TEXT_HISTORY);
     }
 }
 
@@ -55,5 +58,8 @@ DEFINE_SERIALISE_FUNCTION(terminal_imgui)
         {
             me->history.push_back(string_to_interop_no_autos(i, false));
         }
+
+        limit_size(me->raw_history, MAX_TEXT_HISTORY);
+        limit_size(me->history, MAX_TEXT_HISTORY);
     }
 }
