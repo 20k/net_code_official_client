@@ -929,6 +929,11 @@ void terminal_imgui::add_text_to_current_chat_thread(chat_window& chat_win, cons
     thr.raw_history.push_back(text);
     thr.history.push_back(string_to_interop(text, false, auto_handle, false));
     thr.dirty = true;
+
+    limit_size(raw_history, MAX_TEXT_HISTORY);
+    limit_size(history, MAX_TEXT_HISTORY);
+
+    de_newline(history);
 }
 
 void chat_window::tick()
