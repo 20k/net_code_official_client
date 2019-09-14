@@ -15,6 +15,7 @@
 #include <networking/networking.hpp>
 #include <imgui/imgui_internal.h>
 #include <GLFW/glfw3.h>
+#include <iostream>
 
 namespace ImGuiX
 {

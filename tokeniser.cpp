@@ -2,6 +2,7 @@
 #include "tokeniser.hpp"
 #include <optional>
 #include <libncclient/nc_util.hpp>
+#include <iostream>
 
 using data_t = const std::vector<interop_char>&;
 using token_seq = std::vector<token_info>&;

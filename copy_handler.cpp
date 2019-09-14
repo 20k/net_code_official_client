@@ -1,6 +1,7 @@
 #include "copy_handler.hpp"
 #include "string_helpers.hpp"
 #include <vec/vec.hpp>
+#include <iostream>
 
 copy_handler global_copy_handler;
 
