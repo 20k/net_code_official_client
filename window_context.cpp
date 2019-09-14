@@ -47,8 +47,6 @@ window_context::window_context()
         glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
     }
 
-    glfwWindowHint(GLFW_DECORATED, false);
-
     // Create window with graphics context
     window = glfwCreateWindow(width, height, "net_code_", NULL, NULL);
     if (window == NULL)
