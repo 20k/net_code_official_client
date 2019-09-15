@@ -46,10 +46,7 @@ struct format_cache
     void ensure_last_line(vec2f current, vec2f start, vec2f wrap_dim, const std::vector<interop_vec_t>& all_interop, scrollbar_hack& scroll_hack, int vertical_columns);
     void ensure_built(vec2f current, vec2f start, vec2f wrap_dim, const std::vector<interop_vec_t>& all_interop, scrollbar_hack& scroll_hack, int vertical_columns);
 
-    std::vector<formatted_char> request(int render_y_start, int render_y_end);
-
     std::vector<std::vector<formatted_char>> get_render_cache();
-
 
     int get_lines()
     {
