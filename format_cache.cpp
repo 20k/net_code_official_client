@@ -208,6 +208,51 @@ std::vector<std::vector<formatted_char>> format_cache::get_render_cache()
     return ret;
 }
 
+void format_cache_2::ensure_built(vec2f window_dimensions, const std::vector<interop_vec_t>& all_chars)
+{
+    if(valid_cache)
+        return;
+
+    line_cache.clear();
+    height_cache.clear();
+    int last_line = 0;
+
+    vec2f current = {0,0};
+    vec2f start = {0,0};
+
+    for(int i=0; i < all_chars.size(); i++)
+    {
+        int found_line = 0;
+
+        get_height(all_chars[i], current, start, window_dimensions, found_line);
+
+        height_cache.push_back(found_line);
+
+        auto cur_formatted = format_characters(all_chars[i], current, start, window_dimensions, found_line, last_line);
+        last_line = found_line;
+        current.y() += found_line * char_inf::cheight;
+
+        line_cache.push_back(cur_formatted);
+    }
+
+    valid_cache = true;
+}
+
+void format_cache_2::render_imgui(vec2f position, float scroll_lines)
+{
+    /*int total_lines = 0;
+
+    for(auto& i : height_cache)
+        total_lines += i;
+
+    int line_start = total_lines - scroll_lines;
+
+    float height = ImGui::GetWindowHeight();
+    int vertical_rows = ceil((float)height / char_inf::cheight);*/
+
+    float vertical_offset = -scroll_lines * char_inf::cheight;
+}
+
 #if 0
 std::vector<std::vector<formatted_char>> format_cache::get_render_cache()
 {

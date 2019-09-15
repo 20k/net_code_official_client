@@ -59,6 +59,24 @@ struct format_cache
     }
 };
 
+struct format_cache_2
+{
+    bool valid_cache = false;
+
+    ///runs from top to bottom
+    std::vector<std::vector<formatted_char>> line_cache;
+    std::vector<int> height_cache;
+
+    void ensure_built(vec2f window_dimensions, const std::vector<interop_vec_t>& all_chars);
+
+    void invalidate()
+    {
+        valid_cache = false;
+    }
+
+    void render_imgui(vec2f position, float scroll_lines);
+};
+
 struct cacheable
 {
     format_cache cache;
