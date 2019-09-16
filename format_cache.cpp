@@ -244,7 +244,7 @@ void format_cache_2::ensure_built(vec2f window_dimensions, const std::vector<int
     valid_cache = true;
 }
 
-void render_no_copy(const std::string& str, vec3f col, vec2f render_pos)
+void render_raw(const std::string& str, vec3f col, vec2f render_pos)
 {
     if(ImGui::IsStyleLinearColor())
         col = srgb_to_lin(col/255.f) * 255.f;
@@ -281,7 +281,7 @@ void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<f
         }
     }
 
-    render_no_copy(str, col, screen_pos + text[idx_1].internal_pos);
+    render_raw(str, col, screen_pos + text[idx_1].internal_pos);
 
     idx_1 = idx_2;
 }
