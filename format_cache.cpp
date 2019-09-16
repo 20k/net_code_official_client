@@ -2,6 +2,7 @@
 #include "imgui_ui_components.hpp"
 #include <imgui/imgui.h>
 #include <iostream>
+#include "copy_handler.hpp"
 
 void format_cache::ensure_last_line(vec2f current, vec2f start, vec2f wrap_dim, const std::vector<interop_vec_t>& all_interop, scrollbar_hack& scroll_hack, int vertical_columns)
 {
@@ -267,6 +268,19 @@ void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<f
 
     col = text[idx_1].ioc.col;
 
+    copy_handler* handle = get_global_copy_handler();
+
+    if(handle->char_is_within_select_box(screen_pos + text[idx_1].internal_pos))
+    {
+        col = {80, 80, 255};
+
+        for(auto& i : str)
+        {
+            if(i == ' ')
+                i = '-';
+        }
+    }
+
     render_no_copy(str, col, screen_pos + text[idx_1].internal_pos);
 
     idx_1 = idx_2;
@@ -274,6 +288,8 @@ void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<f
 
 void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text)
 {
+    copy_handler* handle = get_global_copy_handler();
+
     int idx = 0;
     int lidx = 0;
 
@@ -291,7 +307,12 @@ void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text)
             continue;
         }
 
-        if(cur.ioc.col != next.ioc.col || cur.internal_pos.y() != next.internal_pos.y())
+        vec2f p1 = cur.internal_pos + screen_pos;
+        vec2f p2 = next.internal_pos + screen_pos;
+
+        if(cur.ioc.col != next.ioc.col ||
+           cur.internal_pos.y() != next.internal_pos.y() ||
+           handle->char_is_within_select_box(p1) != handle->char_is_within_select_box(p2))
         {
             render_indices(screen_pos, lidx, idx+1, text);
             continue;
