@@ -113,6 +113,22 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
         scroll_hack.scrolled_this_frame = 0.f;
     }
 
+    if(ImGui::IsWindowFocused())
+    {
+        if(ImGui::IsKeyPressed(GLFW_KEY_PAGE_DOWN))
+        {
+            scroll_hack.scrolled -= ImGui::GetWindowHeight() / char_inf::cheight;
+
+            if(scroll_hack.scrolled < 0)
+                scroll_hack.scrolled = 0;
+        }
+
+        if(ImGui::IsKeyPressed(GLFW_KEY_PAGE_UP))
+        {
+            scroll_hack.scrolled += ImGui::GetWindowHeight() / char_inf::cheight;
+        }
+    }
+
     if(cache.was_focused != is_focused)
         cache.invalidate_last_line();
 

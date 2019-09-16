@@ -237,7 +237,7 @@ int main()
 
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     //io.ConfigViewportsNoTaskBarIcon = true;
 
     ImGui::SetStyleLinearColor(window_ctx.is_srgb);
@@ -749,39 +749,6 @@ int main()
                 }
                 else
                     to_edit->add_to_command('\n');
-            }
-
-            ///TODO: DONT FORGET ABOUT FIXING TERMINAL INVALIDATION FOR THESE
-            if(i == GLFW_KEY_PAGE_DOWN)
-            {
-                if(hovered_string == &term.command)
-                {
-                    mouse_delta -= term.render_height - 2;
-
-                    if(term.scroll_hack.scrolled + mouse_delta < 0)
-                        mouse_delta = -term.scroll_hack.scrolled;
-
-                }
-
-                if(has_chat_window && hovered_string == &term.chat_threads[chat_win.selected].command)
-                {
-                    mouse_delta -= chat_win.render_height - 2;
-
-                    if(chat_win.scroll_hack.scrolled + mouse_delta < 0)
-                        mouse_delta = -chat_win.scroll_hack.scrolled;
-                }
-
-                term.last_line_invalidate();
-            }
-
-            if(i == GLFW_KEY_PAGE_UP)
-            {
-                if(hovered_string == &term.command)
-                    mouse_delta += term.render_height - 2;
-                if(has_chat_window && hovered_string == &term.chat_threads[chat_win.selected].command)
-                    mouse_delta += chat_win.render_height - 2;
-
-                term.last_line_invalidate();
             }
         }
 
