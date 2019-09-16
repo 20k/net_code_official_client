@@ -68,6 +68,7 @@ struct format_cache_2
     std::vector<int> height_cache;
 
     void ensure_built(vec2f window_dimensions, const std::vector<interop_vec_t>& all_chars);
+    int get_lines() {int val = 0; for(auto& i : height_cache) val += i; return val;}
 
     void invalidate()
     {
@@ -79,7 +80,7 @@ struct format_cache_2
 
 struct cacheable
 {
-    format_cache cache;
+    format_cache_2 cache;
 
     std::vector<std::string> raw_history;
     std::vector<interop_vec_t> history;

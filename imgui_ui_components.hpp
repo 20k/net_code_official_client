@@ -57,7 +57,7 @@ struct realtime_script_run : frameable
     bool should_send_new_size = false;
     sf::Clock last_resize;
 
-    format_cache cache;
+    format_cache_2 cache;
 };
 
 struct chat_thread : serialisable, cacheable, free_function

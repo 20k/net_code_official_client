@@ -1,6 +1,7 @@
 #include "format_cache.hpp"
 #include "imgui_ui_components.hpp"
 #include <imgui/imgui.h>
+#include <iostream>
 
 void format_cache::ensure_last_line(vec2f current, vec2f start, vec2f wrap_dim, const std::vector<interop_vec_t>& all_interop, scrollbar_hack& scroll_hack, int vertical_columns)
 {
@@ -248,7 +249,20 @@ void render_no_copy(const std::string& str, vec3f col, vec2f render_pos)
 
 void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<formatted_char>& text)
 {
+    std::string str;
+    vec3f col;
 
+    if(idx_1 == idx_2)
+        return;
+
+    for(int i=idx_1; i < idx_2; i++)
+    {
+        str += text[i].ioc.c;
+    }
+
+    col = text[idx_1].ioc.col;
+
+    render_no_copy(str, col, screen_pos + text[idx_1].internal_pos);
 
     idx_1 = idx_2;
 }
@@ -294,7 +308,11 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
     float height = ImGui::GetWindowHeight();
     int vertical_rows = ceil((float)height / char_inf::cheight);*/
 
+    //std::cout << "cache size " << line_cache.size() << std::endl;
+
     float vertical_offset = -scroll_lines * char_inf::cheight;
+
+    //std::cout << "Scroll " << -scroll_lines << std::endl;
 
     for(int i=0; i < (int)line_cache.size(); i++)
     {
@@ -304,17 +322,19 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
         vec2f display_first = line_cache[i].front().internal_pos + position;
         vec2f display_last = line_cache[i].back().internal_pos + position;
 
+        //std::cout << "FIRST " << display_first << std::endl;
+
         display_first.y() += vertical_offset;
         display_last.y() += vertical_offset;
 
-        if(display_first.y() < position.y())
+        if(display_first.y() < position.y() - char_inf::cheight)
             continue;
 
-        if(display_last.y() > position.y())
+        if(display_last.y() > position.y() + dim.y() + char_inf::cheight)
             continue;
 
         ///render!
-        render_formatted(position, line_cache[i]);
+        render_formatted(position + (vec2f){0, vertical_offset}, line_cache[i]);
     }
 }
 

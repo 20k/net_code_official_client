@@ -284,7 +284,7 @@ void imgui_render_str(const std::vector<formatted_char>& text, float window_widt
     }
 }
 
-bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, format_cache& cache, frameable& frame, float extra_shrink = 0, std::string command_padding = "")
+bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, format_cache_2& cache, frameable& frame, float extra_shrink = 0, std::string command_padding = "")
 {
     float overall_width = ImGui::GetWindowWidth();
 
@@ -292,16 +292,18 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     ImGui::BeginChild("left_sub", ImVec2(overall_width - 40 - extra_shrink, 0.f), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove);
 
+    #if 0
     auto cpos = ImGui::GetWindowPos();
 
     if(cpos.x != cache.last_pos.x() || cpos.y != cache.last_pos.y())
         cache.invalidate();
 
     cache.last_pos = {cpos.x, cpos.y};
+    #endif // 0
 
     if(ImGui::IsWindowHovered() && scroll_hack.scrolled_this_frame != 0)
     {
-        cache.cached_line_offset += scroll_hack.scrolled_this_frame;
+        //cache.cached_line_offset += scroll_hack.scrolled_this_frame;
 
         scroll_hack.scrolled += scroll_hack.scrolled_this_frame;
         scroll_hack.scrolled_this_frame = 0.f;
@@ -309,6 +311,7 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
         //cache.invalidate();
     }
 
+    #if 0
     auto current_window_size = ImGui::GetWindowSize();
 
     if(current_window_size.x != cache.cached_window_size.x() || current_window_size.y != cache.cached_window_size.y())
@@ -389,6 +392,13 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     cache.out.clear();
     cache.out = ccache;
+    #endif // 0
+
+    vec2f dim = {ImGui::GetWindowSize().x, ImGui::GetWindowSize().y};
+    vec2f pos = {ImGui::GetWindowPos().x, ImGui::GetWindowPos().y};
+
+    cache.ensure_built(dim, text_history);
+    cache.render_imgui(pos, dim, scroll_hack.scrolled);
 
     bool text_area_focused = ImGui::IsWindowFocused();
 
@@ -406,7 +416,7 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
     {
         scroll_hack.scrolled = (1.f - scroll_hack.output_scroll_frac) * flines;
 
-        cache.invalidate();
+        //cache.invalidate();
     }
 
     return text_area_focused;
@@ -434,8 +444,8 @@ void terminal_imgui::render(vec2f window_size, bool refocus)
 
     ImGui::End();
 
-    if(focused && child_focused)
-        handle->process_formatted(cache.out);
+    //if(focused && child_focused)
+    //    handle->process_formatted(cache.out);
 }
 
 void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_id)
@@ -499,8 +509,8 @@ void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_i
 
         bool child_focused = render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, run.cache, *this);
 
-        if(run.focused && child_focused)
-            handle->process_formatted(run.cache.out);
+        //if(run.focused && child_focused)
+        //    handle->process_formatted(run.cache.out);
 
         ImVec2 window_size = ImGui::GetWindowSize();
 
@@ -562,12 +572,12 @@ void terminal_imgui::invalidate_everything()
 
 void terminal_imgui::last_line_invalidate()
 {
-    cache.last_line_invalidate();
+    /*cache.last_line_invalidate();
 
     for(auto& i : chat_threads)
     {
         i.second.cache.last_line_invalidate();
-    }
+    }*/
 }
 
 void terminal_imgui::bump_command_to_history()
@@ -1085,8 +1095,8 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
 
         bool child_focused = render_handle_imgui(scroll_hack, thread.command.command, thread.command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this, 0);
 
-        if(me_focused && child_focused)
-            handle->process_formatted(thread.cache.out);
+        //if(me_focused && child_focused)
+        //    handle->process_formatted(thread.cache.out);
 
         ImGui::End();
     }
