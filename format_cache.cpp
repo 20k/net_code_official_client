@@ -376,6 +376,10 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
         }
     }
 
+    bool has_last_content_size = false;
+    vec2f content_start = {0,0};
+    vec2f content_end = {0,0};
+
     float vertical_offset = scroll_lines * char_inf::cheight - total_lines * char_inf::cheight + dim.y() - char_inf::cheight*1.5;
 
     for(int i=0; i < (int)line_cache.size(); i++)
@@ -388,6 +392,15 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
 
         display_first.y() += vertical_offset;
         display_last.y() += vertical_offset;
+
+        if(!has_last_content_size)
+        {
+            content_start = display_first;
+        }
+
+        has_last_content_size = true;
+
+        content_end = display_last;
 
         if(display_last.y() < position.y() - char_inf::cheight)
             continue;
@@ -405,6 +418,8 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
 
         handle->set_clipboard(handle->copied);
     }
+
+    last_content_size = {content_end - content_start};
 }
 
 #if 0

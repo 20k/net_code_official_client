@@ -66,6 +66,8 @@ struct format_cache_2
     bool was_focused = false;
     vec2f last_window_size = {0,0};
 
+    vec2f last_content_size = {0,0};
+
     ///runs from top to bottom
     std::vector<std::vector<formatted_char>> line_cache;
     std::vector<int> height_cache;
