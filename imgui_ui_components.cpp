@@ -99,191 +99,6 @@ terminal_imgui::terminal_imgui()
     auto_handle.use_autocolour = true;
 }
 
-struct render_command
-{
-    std::string str;
-    vec3f col;
-    vec2f absolute_pos;
-    bool copyable = true;
-};
-
-void render_copy_aware(vec3f col, const std::string& str, vec2f start_pos, vec2f end_pos, vec2f render_pos)
-{
-    std::vector<std::pair<std::string, vec3f>> cols;
-
-    std::pair<std::string, vec3f> cur_str;
-
-    if(str.size() == 0)
-        return;
-
-    copy_handler* handle = get_global_copy_handler();
-    bool is_inside = handle->char_is_within_select_box(start_pos);
-
-    for(int i=0; i < (int)str.size(); i++)
-    {
-        float ffrac = (float)i / (float)str.size();
-
-        vec2f pos = mix(start_pos, end_pos, ffrac);
-
-        bool currently_inside = handle->char_is_within_select_box(pos);
-
-        if(currently_inside != is_inside)
-        {
-            cols.push_back(cur_str);
-            cur_str = decltype(cur_str)();
-            is_inside = currently_inside;
-        }
-
-        cur_str.first.push_back(str[i]);
-
-        if(currently_inside)
-        {
-            cur_str.second = {80, 80, 255};
-
-            if(cur_str.first.back() == ' ')
-                cur_str.first.back() = '-';
-        }
-        else
-            cur_str.second = col;
-    }
-
-    if(cur_str.first.size() > 0)
-    {
-        cols.push_back(cur_str);
-    }
-
-    vec2f c_pos = render_pos;
-
-    for(int i=0; i < (int)cols.size(); i++)
-    {
-        vec3f ccol = cols[i].second;
-        const std::string& cstr = cols[i].first;
-
-        ImGui::SetCursorScreenPos(ImVec2(c_pos.x(), c_pos.y()));
-
-        //ImGuiX::TextColoredUnformatted(ImVec4(ccol.x()/255.f, ccol.y()/255.f, ccol.z()/255.f, 1.f), cstr.c_str());
-
-        if(ImGui::IsStyleLinearColor())
-            ccol = srgb_to_lin(ccol/255.f) * 255.f;
-
-        ImDrawList* imlist = ImGui::GetWindowDrawList();
-        imlist->AddText(ImVec2(c_pos.x(), c_pos.y()), IM_COL32((int)ccol.x(), (int)ccol.y(), (int)ccol.z(), 255), cstr.c_str());
-
-        //c_pos.x() += cstr.size() * char_inf::cwidth;
-
-        c_pos.x() += ImGui::CalcTextSize(cstr.c_str(), nullptr).x;
-
-        if(i != (int)cols.size() - 1)
-            ImGui::SameLine(0, char_inf::extra_glyph_spacing);
-    }
-}
-
-void render_copy_blind(vec3f col, const std::string& str, vec2f render_pos)
-{
-    ImGui::SetCursorScreenPos(ImVec2(render_pos.x(), render_pos.y()));
-
-    //ImGuiX::TextColoredUnformatted(ImVec4(col.x()/255.f, col.y()/255.f, col.z()/255.f, 1.f), str.c_str());
-
-    if(ImGui::IsStyleLinearColor())
-        col = srgb_to_lin(col/255.f) * 255.f;
-
-    ImDrawList* imlist = ImGui::GetWindowDrawList();
-    imlist->AddText(ImVec2(render_pos.x(), render_pos.y()), IM_COL32((int)col.x(), (int)col.y(), (int)col.z(), 255), str.c_str());
-}
-
-void imgui_render_str(const std::vector<formatted_char>& text, float window_width)
-{
-    copy_handler* handle = get_global_copy_handler();
-
-    std::vector<render_command> commands;
-
-    render_command current;
-
-    bool restart = true;
-
-    for(const formatted_char& fchar : text)
-    {
-        if(fchar.ioc.is_cursor)
-        {
-            render_command next;
-            next.col = {255, 255, 255};
-            next.str = "|";
-            next.absolute_pos = fchar.render_pos;
-            next.copyable = fchar.copyable;
-
-            commands.push_back(next);
-            continue;
-        }
-
-        if(restart)
-        {
-            current.absolute_pos = fchar.render_pos;
-            restart = false;
-        }
-
-        if(fchar.ioc.col != current.col || fchar.ioc.c == '\n' || fchar.render_pos.y() != current.absolute_pos.y())
-        {
-            restart = true;
-
-            if(current.str.size() > 0 && fchar.ioc.c != '\n')
-            {
-                commands.push_back(current);
-                current = render_command();
-            }
-
-            if(fchar.ioc.c == '\n' || fchar.render_pos.y() != current.absolute_pos.y())
-            {
-                if(current.str.size() > 0)
-                {
-                    commands.push_back(current);
-                    current = render_command();
-                }
-            }
-        }
-
-        if(restart)
-        {
-            current.absolute_pos = fchar.render_pos;
-            restart = false;
-        }
-
-        current.col = fchar.ioc.col;
-        current.str += fchar.ioc.c;
-    }
-
-    if(current.str.size() > 0)
-    {
-        commands.push_back(current);
-    }
-
-    if(commands.size() == 0)
-    {
-        return;
-    }
-
-    for(int kk=0; kk < (int)commands.size(); kk++)
-    {
-        render_command& next = commands[kk];
-
-        vec2f pos = next.absolute_pos;
-        std::string str = next.str;
-        vec3f col = next.col;
-
-        ///need to predict here if the text is hilighted or not
-        ///then if it is, replace spaces with "-" and colour blue
-        float width = ImGui::CalcTextSize(str.c_str(), nullptr, false, window_width).x;
-        //float width = str.size() * char_inf::cwidth;
-
-        if(handle->held && ImGui::IsWindowFocused() && next.copyable)
-            render_copy_aware(col, str, pos, (vec2f){pos.x(), pos.y()} + (vec2f){width, 0.f}, pos);
-        else
-            render_copy_blind(col, str, pos);
-
-        if(kk != (int)commands.size()-1)
-            ImGui::SameLine(0, char_inf::extra_glyph_spacing);
-    }
-}
-
 bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, format_cache_2& cache, frameable& frame, float extra_shrink = 0, std::string command_padding = "")
 {
     float overall_width = ImGui::GetWindowWidth();
@@ -292,23 +107,10 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     ImGui::BeginChild("left_sub", ImVec2(overall_width - 40 - extra_shrink, 0.f), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove);
 
-    #if 0
-    auto cpos = ImGui::GetWindowPos();
-
-    if(cpos.x != cache.last_pos.x() || cpos.y != cache.last_pos.y())
-        cache.invalidate();
-
-    cache.last_pos = {cpos.x, cpos.y};
-    #endif // 0
-
     if(ImGui::IsWindowHovered() && scroll_hack.scrolled_this_frame != 0)
     {
-        //cache.cached_line_offset += scroll_hack.scrolled_this_frame;
-
         scroll_hack.scrolled += scroll_hack.scrolled_this_frame;
         scroll_hack.scrolled_this_frame = 0.f;
-
-        //cache.invalidate();
     }
 
     if(cache.was_focused != is_focused)
@@ -324,169 +126,52 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     cache.last_window_size = dim;
 
-    /*if(!cache.valid())
-    {
-        std::string render_command = command;
-        bool specials = true;
-
-        if(render_command == "")
-        {
-            render_command = "`bType something here...`";
-            specials = false;
-        }
-
-        auto icommand = string_to_interop(render_command, specials, auto_handle, false);
-        auto icommand_pad = string_to_interop(command_padding, false, auto_handle, false);
-
-        int cursor_offset = 0;
-
-        auto_handle.handle_autocompletes(icommand, cursor_pos_idx, cursor_offset, command);
-
-        interop_char curs;
-        curs.col = {255, 255, 255};
-        curs.c = '|';
-        curs.is_cursor = true;
-
-        int curs_cur = cursor_pos_idx + cursor_offset;
-
-        if(is_focused)
-        {
-            if(curs_cur >= (int)icommand.size())
-                icommand.push_back(curs);
-            else if(curs_cur >= 0 && curs_cur < (int)icommand.size())
-                icommand.insert(icommand.begin() + curs_cur, curs);
-        }
-
-        for(int i=0; i < (int)icommand_pad.size(); i++)
-        {
-            icommand.insert(icommand.begin() + i, icommand_pad[i]);
-        }
-
-        //cache.ensure_built(dim, history);
-    }*/
-
-    #if 0
-    auto current_window_size = ImGui::GetWindowSize();
-
-    if(current_window_size.x != cache.cached_window_size.x() || current_window_size.y != cache.cached_window_size.y())
-        cache.invalidate();
-
-
     if(!cache.valid())
     {
-        auto wrap_dim = ImGui::GetWindowSize();
-        auto start = ImGui::GetWindowPos();
+        auto next_history = text_history;
 
-        wrap_dim.x += start.x;
-        wrap_dim.y += start.y;
-
-        vec2f current = {start.x, start.y};
-
-        int vertical_rows = ceil((float)wrap_dim.y / char_inf::cheight);
-
-        frame.render_height = vertical_rows;
-
-        std::vector<interop_vec_t> all_interop;
-
-        if(!cache.valid_cache)
-            all_interop = text_history;
-
-        std::string render_command = command;
-        bool specials = true;
-
-        if(render_command == "")
         {
-            render_command = "`bType something here...`";
-            specials = false;
+            std::string render_command = command;
+            bool specials = true;
+
+            if(render_command == "")
+            {
+                render_command = "`bType something here...`";
+                specials = false;
+            }
+
+            auto icommand = string_to_interop(render_command, specials, auto_handle, false);
+            auto icommand_pad = string_to_interop(command_padding, false, auto_handle, false);
+
+            int cursor_offset = 0;
+
+            auto_handle.handle_autocompletes(icommand, cursor_pos_idx, cursor_offset, command);
+
+            interop_char curs;
+            curs.col = {255, 255, 255};
+            curs.c = '|';
+            curs.is_cursor = true;
+
+            int curs_cur = cursor_pos_idx + cursor_offset;
+
+            if(is_focused)
+            {
+                if(curs_cur >= (int)icommand.size())
+                    icommand.push_back(curs);
+                else if(curs_cur >= 0 && curs_cur < (int)icommand.size())
+                    icommand.insert(icommand.begin() + curs_cur, curs);
+            }
+
+            for(int i=0; i < (int)icommand_pad.size(); i++)
+            {
+                icommand.insert(icommand.begin() + i, icommand_pad[i]);
+            }
+
+            next_history.push_back(icommand);
         }
 
-        auto icommand = string_to_interop(render_command, specials, auto_handle, false);
-
-        auto icommand_pad = string_to_interop(command_padding, false, auto_handle, false);
-
-        int cursor_offset = 0;
-
-        auto_handle.handle_autocompletes(icommand, cursor_pos_idx, cursor_offset, command);
-
-        interop_char curs;
-        curs.col = {255, 255, 255};
-        curs.c = '|';
-        curs.is_cursor = true;
-
-        int curs_cur = cursor_pos_idx + cursor_offset;
-
-        if(is_focused)
-        {
-            if(curs_cur >= (int)icommand.size())
-                icommand.push_back(curs);
-            else if(curs_cur >= 0 && curs_cur < (int)icommand.size())
-                icommand.insert(icommand.begin() + curs_cur, curs);
-        }
-
-        for(int i=0; i < (int)icommand_pad.size(); i++)
-        {
-            icommand.insert(icommand.begin() + i, icommand_pad[i]);
-        }
-
-        all_interop.push_back(icommand);
-
-        cache.ensure_built(current, {start.x, start.y}, {wrap_dim.x, wrap_dim.y}, all_interop, scroll_hack, vertical_rows);
+        cache.ensure_built(dim, next_history);
     }
-
-    auto ccache = cache.get_render_cache();
-
-    for(auto& i : ccache)
-    {
-        imgui_render_str(i, ImGui::GetWindowWidth());
-    }
-
-    cache.out.clear();
-    cache.out = ccache;
-    #endif // 0
-
-    auto next_history = text_history;
-
-    {
-        std::string render_command = command;
-        bool specials = true;
-
-        if(render_command == "")
-        {
-            render_command = "`bType something here...`";
-            specials = false;
-        }
-
-        auto icommand = string_to_interop(render_command, specials, auto_handle, false);
-        auto icommand_pad = string_to_interop(command_padding, false, auto_handle, false);
-
-        int cursor_offset = 0;
-
-        auto_handle.handle_autocompletes(icommand, cursor_pos_idx, cursor_offset, command);
-
-        interop_char curs;
-        curs.col = {255, 255, 255};
-        curs.c = '|';
-        curs.is_cursor = true;
-
-        int curs_cur = cursor_pos_idx + cursor_offset;
-
-        if(is_focused)
-        {
-            if(curs_cur >= (int)icommand.size())
-                icommand.push_back(curs);
-            else if(curs_cur >= 0 && curs_cur < (int)icommand.size())
-                icommand.insert(icommand.begin() + curs_cur, curs);
-        }
-
-        for(int i=0; i < (int)icommand_pad.size(); i++)
-        {
-            icommand.insert(icommand.begin() + i, icommand_pad[i]);
-        }
-
-        next_history.push_back(icommand);
-    }
-
-    cache.ensure_built(dim, next_history);
 
     cache.render_imgui(pos, dim, scroll_hack.scrolled);
 
