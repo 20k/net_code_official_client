@@ -2,7 +2,6 @@
 #include "imgui_ui_components.hpp"
 #include <imgui/imgui.h>
 
-
 void format_cache::ensure_last_line(vec2f current, vec2f start, vec2f wrap_dim, const std::vector<interop_vec_t>& all_interop, scrollbar_hack& scroll_hack, int vertical_columns)
 {
     if(!last_line_valid && valid_cache)
@@ -238,7 +237,52 @@ void format_cache_2::ensure_built(vec2f window_dimensions, const std::vector<int
     valid_cache = true;
 }
 
-void format_cache_2::render_imgui(vec2f position, float scroll_lines)
+void render_no_copy(const std::string& str, vec3f col, vec2f render_pos)
+{
+    if(ImGui::IsStyleLinearColor())
+        col = srgb_to_lin(col/255.f) * 255.f;
+
+    ImDrawList* imlist = ImGui::GetWindowDrawList();
+    imlist->AddText(ImVec2(render_pos.x(), render_pos.y()), IM_COL32((int)col.x(), (int)col.y(), (int)col.z(), 255), str.c_str());
+}
+
+void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<formatted_char>& text)
+{
+
+
+    idx_1 = idx_2;
+}
+
+void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text)
+{
+    int idx = 0;
+    int lidx = 0;
+
+    for(; idx < (int)text.size() - 1; idx++)
+    {
+        const formatted_char& cur = text[idx];
+        const formatted_char& next = text[idx + 1];
+
+        if(cur.ioc.is_cursor)
+        {
+            ///render previous string
+            render_indices(screen_pos, lidx, idx, text);
+            ///render cursor
+            render_indices(screen_pos, lidx, idx + 1, text);
+            continue;
+        }
+
+        if(cur.ioc.col != next.ioc.col)
+        {
+            render_indices(screen_pos, lidx, idx, text);
+            continue;
+        }
+    }
+
+    render_indices(screen_pos, lidx, (int)text.size(), text);
+}
+
+void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
 {
     /*int total_lines = 0;
 
@@ -251,6 +295,27 @@ void format_cache_2::render_imgui(vec2f position, float scroll_lines)
     int vertical_rows = ceil((float)height / char_inf::cheight);*/
 
     float vertical_offset = -scroll_lines * char_inf::cheight;
+
+    for(int i=0; i < (int)line_cache.size(); i++)
+    {
+        if(line_cache[i].size() == 0)
+            continue;
+
+        vec2f display_first = line_cache[i].front().internal_pos + position;
+        vec2f display_last = line_cache[i].back().internal_pos + position;
+
+        display_first.y() += vertical_offset;
+        display_last.y() += vertical_offset;
+
+        if(display_first.y() < position.y())
+            continue;
+
+        if(display_last.y() > position.y())
+            continue;
+
+        ///render!
+        render_formatted(position, line_cache[i]);
+    }
 }
 
 #if 0

@@ -74,7 +74,7 @@ struct format_cache_2
         valid_cache = false;
     }
 
-    void render_imgui(vec2f position, float scroll_lines);
+    void render_imgui(vec2f position, vec2f dim, float scroll_lines);
 };
 
 struct cacheable
