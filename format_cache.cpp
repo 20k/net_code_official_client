@@ -210,6 +210,11 @@ std::vector<std::vector<formatted_char>> format_cache::get_render_cache()
 
 void format_cache_2::ensure_built(vec2f window_dimensions, const std::vector<interop_vec_t>& all_chars)
 {
+    if(window_dimensions != last_window_size)
+        invalidate();
+
+    last_window_size = window_dimensions;
+
     if(valid_cache)
         return;
 
@@ -286,9 +291,9 @@ void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text)
             continue;
         }
 
-        if(cur.ioc.col != next.ioc.col)
+        if(cur.ioc.col != next.ioc.col || cur.internal_pos.y() != next.internal_pos.y())
         {
-            render_indices(screen_pos, lidx, idx, text);
+            render_indices(screen_pos, lidx, idx+1, text);
             continue;
         }
     }
@@ -298,21 +303,12 @@ void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text)
 
 void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
 {
-    /*int total_lines = 0;
+    int total_lines = 0;
 
     for(auto& i : height_cache)
         total_lines += i;
 
-    int line_start = total_lines - scroll_lines;
-
-    float height = ImGui::GetWindowHeight();
-    int vertical_rows = ceil((float)height / char_inf::cheight);*/
-
-    //std::cout << "cache size " << line_cache.size() << std::endl;
-
-    float vertical_offset = -scroll_lines * char_inf::cheight;
-
-    //std::cout << "Scroll " << -scroll_lines << std::endl;
+    float vertical_offset = scroll_lines * char_inf::cheight - total_lines * char_inf::cheight + dim.y() - char_inf::cheight*1.5;
 
     for(int i=0; i < (int)line_cache.size(); i++)
     {
@@ -322,15 +318,13 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
         vec2f display_first = line_cache[i].front().internal_pos + position;
         vec2f display_last = line_cache[i].back().internal_pos + position;
 
-        //std::cout << "FIRST " << display_first << std::endl;
-
         display_first.y() += vertical_offset;
         display_last.y() += vertical_offset;
 
-        if(display_first.y() < position.y() - char_inf::cheight)
+        if(display_last.y() < position.y() - char_inf::cheight)
             continue;
 
-        if(display_last.y() > position.y() + dim.y() + char_inf::cheight)
+        if(display_first.y() > position.y() + dim.y() + char_inf::cheight)
             continue;
 
         ///render!

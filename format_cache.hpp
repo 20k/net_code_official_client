@@ -76,6 +76,9 @@ struct format_cache_2
     }
 
     void render_imgui(vec2f position, vec2f dim, float scroll_lines);
+
+private:
+    vec2f last_window_size = {0,0};
 };
 
 struct cacheable
