@@ -83,6 +83,11 @@ std::string make_lower(std::string in)
 #define HOST_PORT_SSL 6781
 #endif // LOCAL_IP
 
+void pretty_atomic_write_all(const std::string& file, const nlohmann::json& js)
+{
+    atomic_write_all(file, js.dump(1));
+}
+
 void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
@@ -1163,8 +1168,8 @@ int main()
 
         if(write_clock.getElapsedTime().asMilliseconds() > 5000)
         {
-            atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK).dump());
-            atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK).dump());
+            pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
+            pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
 
             window_ctx.save();
 
@@ -1287,8 +1292,8 @@ int main()
         }
     }
 
-    atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK).dump());
-    atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK).dump());
+    pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
+    pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
     window_ctx.save();
 
     CoUninitialize();
