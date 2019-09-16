@@ -311,16 +311,66 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
         //cache.invalidate();
     }
 
+    if(cache.was_focused != is_focused)
+        cache.invalidate_last_line();
+
+    cache.was_focused = is_focused;
+
+    vec2f dim = {ImGui::GetWindowSize().x, ImGui::GetWindowSize().y};
+    vec2f pos = {ImGui::GetWindowPos().x, ImGui::GetWindowPos().y};
+
+    if(dim != cache.last_window_size)
+        cache.invalidate();
+
+    cache.last_window_size = dim;
+
+    /*if(!cache.valid())
+    {
+        std::string render_command = command;
+        bool specials = true;
+
+        if(render_command == "")
+        {
+            render_command = "`bType something here...`";
+            specials = false;
+        }
+
+        auto icommand = string_to_interop(render_command, specials, auto_handle, false);
+        auto icommand_pad = string_to_interop(command_padding, false, auto_handle, false);
+
+        int cursor_offset = 0;
+
+        auto_handle.handle_autocompletes(icommand, cursor_pos_idx, cursor_offset, command);
+
+        interop_char curs;
+        curs.col = {255, 255, 255};
+        curs.c = '|';
+        curs.is_cursor = true;
+
+        int curs_cur = cursor_pos_idx + cursor_offset;
+
+        if(is_focused)
+        {
+            if(curs_cur >= (int)icommand.size())
+                icommand.push_back(curs);
+            else if(curs_cur >= 0 && curs_cur < (int)icommand.size())
+                icommand.insert(icommand.begin() + curs_cur, curs);
+        }
+
+        for(int i=0; i < (int)icommand_pad.size(); i++)
+        {
+            icommand.insert(icommand.begin() + i, icommand_pad[i]);
+        }
+
+        //cache.ensure_built(dim, history);
+    }*/
+
     #if 0
     auto current_window_size = ImGui::GetWindowSize();
 
     if(current_window_size.x != cache.cached_window_size.x() || current_window_size.y != cache.cached_window_size.y())
         cache.invalidate();
 
-    if(cache.was_focused != is_focused)
-        cache.last_line_invalidate();
-
-    cache.was_focused = is_focused;
 
     if(!cache.valid())
     {
@@ -394,10 +444,50 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
     cache.out = ccache;
     #endif // 0
 
-    vec2f dim = {ImGui::GetWindowSize().x, ImGui::GetWindowSize().y};
-    vec2f pos = {ImGui::GetWindowPos().x, ImGui::GetWindowPos().y};
+    auto next_history = text_history;
 
-    cache.ensure_built(dim, text_history);
+    {
+        std::string render_command = command;
+        bool specials = true;
+
+        if(render_command == "")
+        {
+            render_command = "`bType something here...`";
+            specials = false;
+        }
+
+        auto icommand = string_to_interop(render_command, specials, auto_handle, false);
+        auto icommand_pad = string_to_interop(command_padding, false, auto_handle, false);
+
+        int cursor_offset = 0;
+
+        auto_handle.handle_autocompletes(icommand, cursor_pos_idx, cursor_offset, command);
+
+        interop_char curs;
+        curs.col = {255, 255, 255};
+        curs.c = '|';
+        curs.is_cursor = true;
+
+        int curs_cur = cursor_pos_idx + cursor_offset;
+
+        if(is_focused)
+        {
+            if(curs_cur >= (int)icommand.size())
+                icommand.push_back(curs);
+            else if(curs_cur >= 0 && curs_cur < (int)icommand.size())
+                icommand.insert(icommand.begin() + curs_cur, curs);
+        }
+
+        for(int i=0; i < (int)icommand_pad.size(); i++)
+        {
+            icommand.insert(icommand.begin() + i, icommand_pad[i]);
+        }
+
+        next_history.push_back(icommand);
+    }
+
+    cache.ensure_built(dim, next_history);
+
     cache.render_imgui(pos, dim, scroll_hack.scrolled);
 
     bool text_area_focused = ImGui::IsWindowFocused();
@@ -572,12 +662,12 @@ void terminal_imgui::invalidate_everything()
 
 void terminal_imgui::last_line_invalidate()
 {
-    /*cache.last_line_invalidate();
+    cache.invalidate_last_line();
 
     for(auto& i : chat_threads)
     {
-        i.second.cache.last_line_invalidate();
-    }*/
+        i.second.cache.invalidate_last_line();
+    }
 }
 
 void terminal_imgui::bump_command_to_history()

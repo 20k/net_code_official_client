@@ -13,24 +13,21 @@ copy_handler global_copy_handler;
 ///if (RectA.X1 < RectB.X2 && RectA.X2 > RectB.X1 &&
 //     RectA.Y1 > RectB.Y2 && RectA.Y2 < RectB.Y1)
 
-std::string check_formatted_text(std::vector<std::vector<formatted_char>>& formatted, vec2f start, vec2f fin)
+std::string check_formatted_text_with_offset(const std::vector<formatted_char>& formatted, vec2f start, vec2f fin, vec2f chars_offset)
 {
     vec2f tl = {std::min(start.x(), fin.x()), std::min(start.y(), fin.y())};
     vec2f br = {std::max(start.x(), fin.x()), std::max(start.y(), fin.y())};
 
-    //std::cout << "st " << tl << std::endl;
-    //std::cout << "fn " << br << std::endl;
-
     std::vector<formatted_char> found;
 
-    for(auto& i : formatted)
+    for(const auto& chr : formatted)
     {
-        for(formatted_char& chr : i)
+        //for(const formatted_char& chr : i)
         {
             if(!chr.copyable)
                 continue;
 
-            vec2f pos = chr.render_pos;
+            vec2f pos = chr.internal_pos + chars_offset;
 
             vec2f p1 = pos;
             vec2f p4 = pos + (vec2f){char_inf::cwidth, char_inf::cheight};
@@ -41,7 +38,7 @@ std::string check_formatted_text(std::vector<std::vector<formatted_char>>& forma
             {
                 found.push_back(chr);
 
-                chr.background_col = {128, 128, 128, 128};
+                //chr.background_col = {128, 128, 128, 128};
             }
         }
     }
@@ -49,22 +46,22 @@ std::string check_formatted_text(std::vector<std::vector<formatted_char>>& forma
     std::sort(found.begin(), found.end(),
               [](auto& i1, auto& i2)
               {
-                  if(i1.render_pos.y() != i2.render_pos.y())
-                    return i1.render_pos.y() < i2.render_pos.y();
+                  if(i1.internal_pos.y() != i2.internal_pos.y())
+                    return i1.internal_pos.y() < i2.internal_pos.y();
 
-                  return i1.render_pos.x() < i2.render_pos.x();
+                  return i1.internal_pos.x() < i2.internal_pos.x();
               });
 
     vec2f lpos;
 
     if(found.size() > 0)
-        lpos = found.front().render_pos;
+        lpos = found.front().internal_pos;
 
     std::string ret;
 
     for(int i=0; i < (int)found.size(); i++)
     {
-        vec2f fpos = found[i].render_pos;
+        vec2f fpos = found[i].internal_pos;
 
         if(round(fpos.y()) != round(lpos.y()))
         {
@@ -81,7 +78,7 @@ std::string check_formatted_text(std::vector<std::vector<formatted_char>>& forma
 
 bool copy_handler::char_is_within_select_box(vec2f pos)
 {
-    if(!held)
+    if(!held && !trigger_copy())
         return false;
 
     if((copy_end - copy_start).length() < MIN_SELECT_DISTANCE)
@@ -111,8 +108,6 @@ void copy_handler::on_lclick_release(vec2f pos)
         return;
 
     finished = true;
-
-    //copied = check_formatted_text(formatted, copy_start, pos);
 }
 
 void copy_handler::on_hold_lclick(vec2f pos)
@@ -121,6 +116,7 @@ void copy_handler::on_hold_lclick(vec2f pos)
     copy_end = pos;
 }
 
+#if 0
 void copy_handler::process_formatted(std::vector<std::vector<formatted_char>>& formatted)
 {
     if(!finished)
@@ -132,6 +128,49 @@ void copy_handler::process_formatted(std::vector<std::vector<formatted_char>>& f
         std::cout << copied << std::endl;
         set_clipboard_contents(copied);
     }
+
+    finished = false;
+    held = false;
+}
+#endif // 0
+
+void copy_handler::process_formatted(const std::vector<formatted_char>& formatted, vec2f chars_offset)
+{
+    if(!finished)
+        return;
+
+    if((copy_end - copy_start).length() >= MIN_SELECT_DISTANCE)
+    {
+        copied = check_formatted_text_with_offset(formatted, copy_start, copy_end, chars_offset);
+        std::cout << copied << std::endl;
+        set_clipboard_contents(copied);
+    }
+
+    finished = false;
+    held = false;
+}
+
+bool copy_handler::trigger_copy()
+{
+    if(!finished)
+        return false;
+
+    bool trigger = false;
+
+    if((copy_end - copy_start).length() >= MIN_SELECT_DISTANCE)
+    {
+        trigger = true;
+    }
+
+    //finished = false;
+    //held = false;
+
+    return trigger;
+}
+
+void copy_handler::set_clipboard(const std::string& str)
+{
+    set_clipboard_contents(str);
 
     finished = false;
     held = false;

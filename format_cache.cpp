@@ -211,10 +211,36 @@ std::vector<std::vector<formatted_char>> format_cache::get_render_cache()
 
 void format_cache_2::ensure_built(vec2f window_dimensions, const std::vector<interop_vec_t>& all_chars)
 {
-    if(window_dimensions != last_window_size)
-        invalidate();
+    vec2f start = {char_inf::cwbuf, 0};
 
-    last_window_size = window_dimensions;
+    if(valid_cache && !valid_last_line)
+    {
+        valid_last_line = true;
+
+        if(all_chars.size() == 0 || line_cache.size() == 0 || height_cache.size() == 0)
+        {
+            invalidate();
+            return ensure_built(window_dimensions, all_chars);
+        }
+
+        line_cache.pop_back();
+        height_cache.pop_back();
+
+        int last_line = 0;
+
+        for(auto& i : height_cache)
+            last_line += i;
+
+        int found_line = 0;
+
+        vec2f current = start + (vec2f){0, char_inf::cheight * last_line};
+
+        get_height(all_chars.back(), current, start, window_dimensions, found_line);
+
+        height_cache.push_back(found_line);
+        line_cache.push_back(format_characters(all_chars.back(), current, start, window_dimensions, found_line, last_line));
+        return;
+    }
 
     if(valid_cache)
         return;
@@ -223,8 +249,7 @@ void format_cache_2::ensure_built(vec2f window_dimensions, const std::vector<int
     height_cache.clear();
     int last_line = 0;
 
-    vec2f current = {0,0};
-    vec2f start = {0,0};
+    vec2f current = {char_inf::cwbuf,0};
 
     for(int i=0; i < all_chars.size(); i++)
     {
@@ -242,6 +267,7 @@ void format_cache_2::ensure_built(vec2f window_dimensions, const std::vector<int
     }
 
     valid_cache = true;
+    valid_last_line = true;
 }
 
 void render_raw(const std::string& str, vec3f col, vec2f render_pos)
@@ -253,7 +279,7 @@ void render_raw(const std::string& str, vec3f col, vec2f render_pos)
     imlist->AddText(ImVec2(render_pos.x(), render_pos.y()), IM_COL32((int)col.x(), (int)col.y(), (int)col.z(), 255), str.c_str());
 }
 
-void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<formatted_char>& text)
+void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<formatted_char>& text, bool check_copy)
 {
     std::string str;
     vec3f col;
@@ -270,7 +296,7 @@ void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<f
 
     copy_handler* handle = get_global_copy_handler();
 
-    if(handle->char_is_within_select_box(screen_pos + text[idx_1].internal_pos))
+    if(ImGui::IsWindowFocused() && handle->char_is_within_select_box(screen_pos + text[idx_1].internal_pos) && text[idx_1].copyable)
     {
         col = {80, 80, 255};
 
@@ -279,6 +305,14 @@ void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<f
             if(i == ' ')
                 i = '-';
         }
+
+        if(check_copy)
+        {
+            if(get_global_copy_handler()->copied.size() != 0)
+                get_global_copy_handler()->copied += "\n" + str;
+            else
+                get_global_copy_handler()->copied = str;
+        }
     }
 
     render_raw(str, col, screen_pos + text[idx_1].internal_pos);
@@ -286,7 +320,7 @@ void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<f
     idx_1 = idx_2;
 }
 
-void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text)
+void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text, bool check_copy)
 {
     copy_handler* handle = get_global_copy_handler();
 
@@ -301,9 +335,9 @@ void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text)
         if(cur.ioc.is_cursor)
         {
             ///render previous string
-            render_indices(screen_pos, lidx, idx, text);
+            render_indices(screen_pos, lidx, idx, text, check_copy);
             ///render cursor
-            render_indices(screen_pos, lidx, idx + 1, text);
+            render_indices(screen_pos, lidx, idx + 1, text, check_copy);
             continue;
         }
 
@@ -314,20 +348,33 @@ void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text)
            cur.internal_pos.y() != next.internal_pos.y() ||
            handle->char_is_within_select_box(p1) != handle->char_is_within_select_box(p2))
         {
-            render_indices(screen_pos, lidx, idx+1, text);
+            render_indices(screen_pos, lidx, idx+1, text, check_copy);
             continue;
         }
     }
 
-    render_indices(screen_pos, lidx, (int)text.size(), text);
+    render_indices(screen_pos, lidx, (int)text.size(), text, check_copy);
 }
 
 void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
 {
+    copy_handler* handle = get_global_copy_handler();
+
     int total_lines = 0;
 
     for(auto& i : height_cache)
         total_lines += i;
+
+    bool do_copy = false;
+
+    if(ImGui::IsWindowFocused())
+    {
+        if(handle->trigger_copy())
+        {
+            do_copy = true;
+            handle->copied = "";
+        }
+    }
 
     float vertical_offset = scroll_lines * char_inf::cheight - total_lines * char_inf::cheight + dim.y() - char_inf::cheight*1.5;
 
@@ -349,7 +396,14 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
             continue;
 
         ///render!
-        render_formatted(position + (vec2f){0, vertical_offset}, line_cache[i]);
+        render_formatted(position + (vec2f){0, vertical_offset}, line_cache[i], do_copy);
+    }
+
+    if(do_copy)
+    {
+        std::cout << "Copied " << handle->copied << std::endl;
+
+        handle->set_clipboard(handle->copied);
     }
 }
 

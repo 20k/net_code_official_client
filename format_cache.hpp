@@ -62,6 +62,9 @@ struct format_cache
 struct format_cache_2
 {
     bool valid_cache = false;
+    bool valid_last_line = false;
+    bool was_focused = false;
+    vec2f last_window_size = {0,0};
 
     ///runs from top to bottom
     std::vector<std::vector<formatted_char>> line_cache;
@@ -75,10 +78,17 @@ struct format_cache_2
         valid_cache = false;
     }
 
-    void render_imgui(vec2f position, vec2f dim, float scroll_lines);
+    void invalidate_last_line()
+    {
+        valid_last_line = false;
+    }
 
-private:
-    vec2f last_window_size = {0,0};
+    bool valid()
+    {
+        return valid_cache && valid_last_line;
+    }
+
+    void render_imgui(vec2f position, vec2f dim, float scroll_lines);
 };
 
 struct cacheable

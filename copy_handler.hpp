@@ -22,6 +22,10 @@ struct copy_handler
     void on_hold_lclick(vec2f pos);
 
     void process_formatted(std::vector<std::vector<formatted_char>>& chars);
+    void process_formatted(const std::vector<formatted_char>& chars, vec2f chars_offset);
+
+    bool trigger_copy();
+    void set_clipboard(const std::string& str);
 
     void tick(vec2f pos);
 
