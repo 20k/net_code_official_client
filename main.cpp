@@ -472,6 +472,8 @@ int main()
         return io.KeysDown[key] && !lastKeysDown[key];
     };
 
+    bool has_settings_window = false;
+
     while(running)
     {
         if(glfwWindowShouldClose(window_ctx.window))
@@ -1223,6 +1225,18 @@ int main()
 
             conn.write(data.dump());
         }
+
+        if(has_settings_window)
+        {
+            ImGui::Begin("Settings", &has_settings_window);
+
+            ImGui::Checkbox("Show chat in terminal", &chat_win.show_chat_in_main_window);
+
+            ImGui::End();
+        }
+
+        if(ImGui::IsKeyPressed(GLFW_KEY_ESCAPE))
+            has_settings_window = !has_settings_window;
 
         //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
 
