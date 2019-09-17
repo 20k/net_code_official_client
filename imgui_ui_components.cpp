@@ -137,7 +137,7 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
     vec2f dim = {ImGui::GetWindowSize().x, ImGui::GetWindowSize().y};
     vec2f pos = {ImGui::GetWindowPos().x, ImGui::GetWindowPos().y};
 
-    if(dim != cache.last_window_size)
+    if(dim.x() != cache.last_window_size.x())
         cache.invalidate();
 
     cache.last_window_size = dim;
@@ -296,7 +296,7 @@ void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_i
         int cpos = -1;
         std::string cmd = " ";
 
-        run.cache.invalidate();
+        //run.cache.invalidate();
 
         bool child_focused = render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, run.cache, *this);
 
@@ -490,7 +490,10 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
             realtime_script_windows[id].last_message.restart();
 
             if(!should_close && in.count("msg") > 0)
+            {
                 realtime_script_windows[id].parsed_data = string_to_interop_no_autos(in["msg"], false);
+                realtime_script_windows[id].cache.invalidate();
+            }
 
             if(should_close)
             {
@@ -522,6 +525,9 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
 
                 int rwidth = width * char_inf::cwidth;
                 int rheight = height * char_inf::cheight;
+
+                if(rwidth != realtime_script_windows[id].dim.x())
+                    realtime_script_windows[id].cache.invalidate();
 
                 realtime_script_windows[id].dim.x() = rwidth;
                 realtime_script_windows[id].dim.y() = rheight;
