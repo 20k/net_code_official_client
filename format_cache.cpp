@@ -93,20 +93,22 @@ void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<f
 
     if(ImGui::IsWindowFocused() && handle->char_is_within_select_box(screen_pos + text[idx_1].internal_pos) && text[idx_1].copyable)
     {
+        if(check_copy)
+        {
+            if(handle->copied.size() != 0 && handle->last_copy_y != (screen_pos.y() + text[idx_1].internal_pos.y()))
+                handle->copied += "\n" + str;
+            else
+                handle->copied += str;
+
+            handle->last_copy_y = (screen_pos.y() + text[idx_1].internal_pos.y());
+        }
+
         col = {80, 80, 255};
 
         for(auto& i : str)
         {
             if(i == ' ')
                 i = '-';
-        }
-
-        if(check_copy)
-        {
-            if(get_global_copy_handler()->copied.size() != 0)
-                get_global_copy_handler()->copied += "\n" + str;
-            else
-                get_global_copy_handler()->copied = str;
         }
     }
 

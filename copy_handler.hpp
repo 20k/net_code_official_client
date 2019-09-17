@@ -10,6 +10,7 @@ struct formatted_char;
 struct copy_handler
 {
     std::string copied;
+    float last_copy_y = 0;
 
     vec2f copy_start;
     vec2f copy_end;

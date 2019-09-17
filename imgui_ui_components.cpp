@@ -585,6 +585,8 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
                 {
                     raw_history.push_back(msgs[i]);
                     history.push_back(string_to_interop(msgs[i] + "\n", false, chat_win.auto_handle));
+
+                    cache.invalidate();
                 }
 
                 chat_threads[chnls[i]].raw_history.push_back(msgs[i]);
@@ -732,10 +734,10 @@ void terminal_imgui::add_text_to_current_chat_thread(chat_window& chat_win, cons
     thr.history.push_back(string_to_interop(text, false, auto_handle, false));
     thr.dirty = true;
 
-    limit_size(raw_history, MAX_TEXT_HISTORY);
-    limit_size(history, MAX_TEXT_HISTORY);
+    limit_size(thr.raw_history, MAX_TEXT_HISTORY);
+    limit_size(thr.history, MAX_TEXT_HISTORY);
 
-    de_newline(history);
+    de_newline(thr.history);
 }
 
 void chat_window::tick()
