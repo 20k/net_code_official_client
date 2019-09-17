@@ -676,12 +676,28 @@ int main()
 
             if(i == GLFW_KEY_BACKSPACE)
             {
-                to_edit->process_backspace();
+                if(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
+                {
+                    for(int i=0; i < 5; i++)
+                        to_edit->process_backspace();
+                }
+                else
+                {
+                    to_edit->process_backspace();
+                }
             }
 
             if(i == GLFW_KEY_DELETE)
             {
-                to_edit->process_delete();
+                if(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
+                {
+                    for(int i=0; i < 5; i++)
+                        to_edit->process_delete();
+                }
+                else
+                {
+                    to_edit->process_delete();
+                }
             }
 
             if(i == GLFW_KEY_UP)
