@@ -113,7 +113,7 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
         scroll_hack.scrolled_this_frame = 0.f;
     }
 
-    if(ImGui::IsWindowFocused())
+    if(ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
     {
         if(ImGui::IsKeyPressed(GLFW_KEY_PAGE_DOWN))
         {

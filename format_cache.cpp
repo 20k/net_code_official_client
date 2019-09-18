@@ -239,7 +239,7 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
             vec2f display_pos = position + (vec2f){0, dim.y()} - (vec2f){0, char_inf::cheight * 0.5};
 
             display_pos.y() -= height_cache.back() * char_inf::cheight;
-            display_pos.y() += 2;
+            display_pos.y() += 4;
 
             vec2f relative_pos = (vec2f){display_pos.x(), display_pos.y() - cformat.front().internal_pos.y()};
 
