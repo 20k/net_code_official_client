@@ -454,7 +454,7 @@ int main()
 
     double script_mousewheel_delta = 0.;
 
-    term.invalidate_everything();
+    invalidate_everything(term, chat_win);
 
     font_render_context font_context(font_select, window_ctx);
 
@@ -509,10 +509,10 @@ int main()
         if(term.focused)
             to_edit = &term.command;
 
-        bool has_chat_window = term.chat_threads.find(chat_win.selected) != term.chat_threads.end();
+        bool has_chat_window = chat_win.focused;
 
         if(chat_win.focused && has_chat_window)
-            to_edit = &term.chat_threads[chat_win.selected].command;
+            to_edit = chat_win.get_focused_editable().value_or(&no_string);
 
         if(term.get_id_of_focused_realtime_window() != -1)
             to_edit = &realtime_shim;
@@ -521,7 +521,7 @@ int main()
             hovered_string = &term.command;
 
         if(chat_win.hovered && has_chat_window)
-            hovered_string = &term.chat_threads[chat_win.selected].command;
+            hovered_string = chat_win.get_hovered_editable().value_or(&no_string);
 
         if(term.get_id_of_focused_realtime_window() != -1 && term.realtime_script_windows[term.get_id_of_focused_realtime_window()].hovered)
             hovered_string = &realtime_shim;
@@ -655,7 +655,7 @@ int main()
 
                 to_edit->add_to_command(i);
 
-                term.last_line_invalidate();
+                last_line_invalidate_everything(term, chat_win);
 
                 std::string str = utf8;
 
@@ -674,7 +674,7 @@ int main()
             if(key_map.find(i) != key_map.end())
                 on_pressed.push_back(key_map[i]);
 
-            term.last_line_invalidate();
+            last_line_invalidate_everything(term, chat_win);
 
             if(i == GLFW_KEY_BACKSPACE)
             {
@@ -798,12 +798,12 @@ int main()
                     to_edit->add_to_command(i);
                 }
 
-                term.last_line_invalidate();
+                last_line_invalidate_everything(term, chat_win);
             }
 
             if(i == 0)
             {
-                term.last_line_invalidate();
+                last_line_invalidate_everything(term, chat_win);
 
                 get_global_copy_handler()->on_lclick(cursor_pos);
             }
@@ -816,7 +816,7 @@ int main()
 
             if(i == 0)
             {
-                term.last_line_invalidate();
+                last_line_invalidate_everything(term, chat_win);
 
                 get_global_copy_handler()->on_lclick_release(cursor_pos);
             }
@@ -986,21 +986,14 @@ int main()
             }
             else
             {
-                //if(chat_win.command.command.size() > 0 && chat_win.command.command.back() == '\n')
-                //    chat_win.command.command.pop_back();
+                std::string command = "";
 
-                //std::string command = chat_win.command.command;
+                std::optional<chat_thread*> thrd = chat_win.get_focused_chat_thread();
 
-                std::string command;
-
-                if(has_chat_window)
+                if(thrd.has_value())
                 {
-                    command = term.chat_threads[chat_win.selected].command.command;
-                    term.chat_threads[chat_win.selected].cache.invalidate();
-                }
-                else
-                {
-                    command = "";
+                    command = thrd.value()->command.command;
+                    thrd.value()->cache.invalidate();
                 }
 
                 bool bump = false;
@@ -1099,22 +1092,29 @@ int main()
                 }
                 else if(has_chat_window)
                 {
-                    std::string escaped_string = escape_str(term.chat_threads[chat_win.selected].command.command);
+                    std::optional<chat_thread*> thrd = chat_win.get_focused_chat_thread();
 
-                    nlohmann::json data;
-                    data["type"] = "client_chat";
-                    data["data"] = "#hs.msg.send({channel:\"" + chat_win.selected + "\", msg:\"" + escaped_string + "\"})";
+                    if(thrd.has_value())
+                    {
+                        std::string escaped_string = escape_str(thrd.value()->command.command);
 
-                    conn.write(data.dump());
+                        nlohmann::json data;
+                        data["type"] = "client_chat";
+                        data["data"] = "#hs.msg.send({channel:\"" + thrd.value()->name + "\", msg:\"" + escaped_string + "\"})";
+
+                        conn.write(data.dump());
+                    }
                 }
 
                 if(bump)
                 {
-                    term.add_text_to_current_chat_thread(chat_win, command);
+                    chat_win.add_text_to_focused(command);
 
-                    if(has_chat_window)
+                    std::optional<chat_thread*> thrd = chat_win.get_focused_chat_thread();
+
+                    if(thrd)
                     {
-                        term.chat_threads[chat_win.selected].cache.invalidate();
+                        thrd.value()->cache.invalidate();
                     }
                 }
             }
@@ -1125,16 +1125,16 @@ int main()
             {
                 term.bump_command_to_history();
             }
-            else if(has_chat_window)
+            else if(auto opt = chat_win.get_focused_chat_thread(); opt.has_value())
             {
-                term.chat_threads[chat_win.selected].command.clear_command();
+                opt.value()->command.clear_command();
             }
 
             if(term.focused && sa_is_local_command(make_view(cmd)))
             {
                 bool should_shutdown = false;
 
-                std::string data = handle_local_command(current_user, cmd, term.auto_handle, should_shutdown, term);
+                std::string data = handle_local_command(current_user, cmd, term.auto_handle, should_shutdown, term, chat_win);
 
                 term.add_text(data);
 
@@ -1144,11 +1144,8 @@ int main()
                 }
             }
 
-            nlohmann::json d1 = serialise(term, serialise_mode::DISK);
-            nlohmann::json d2 = serialise(chat_win, serialise_mode::DISK);
-
-            save_to_file_json(terminal_file, d1);
-            save_to_file_json(chat_file, d2);
+            pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
+            pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
         }
         else if(enter && to_edit->command.size() == 0)
         {
@@ -1250,7 +1247,7 @@ int main()
 
         //test_imgui_term.render(window);
         term.render_realtime_windows(conn, was_closed_id);
-        chat_win.render(term.chat_threads, should_coordinate_focus);
+        chat_win.render(should_coordinate_focus);
         term.render({display_w, display_h}, should_coordinate_focus);
 
         should_coordinate_focus = false;
@@ -1267,14 +1264,14 @@ int main()
         if(term.auto_handle.tab_pressed)
         {
             active_frames = active_frames_restart;
-            term.last_line_invalidate();
+            last_line_invalidate_everything(term, chat_win);
         }
 
         term.auto_handle.tab_pressed = ImGui::IsKeyPressed(GLFW_KEY_TAB);
 
         if(term.auto_handle.tab_pressed)
         {
-            term.last_line_invalidate();
+            last_line_invalidate_everything(term, chat_win);
         }
 
         ///this is a hack to fix the fact that sometimes
@@ -1318,7 +1315,7 @@ int main()
         if(char_inf::cwidth != lcwidth || char_inf::cheight != lcheight)
         {
             active_frames = active_frames_restart;
-            term.invalidate_everything();
+            invalidate_everything(term, chat_win);
         }
     }
 

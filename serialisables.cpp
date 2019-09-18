@@ -46,7 +46,6 @@ DEFINE_SERIALISE_FUNCTION(terminal_imgui)
     }
 
     DO_FSERIALISE(raw_history);
-    DO_FSERIALISE(chat_threads);
     DO_FSERIALISE(command);
     DO_FSERIALISE(auto_handle);
 
@@ -62,4 +61,14 @@ DEFINE_SERIALISE_FUNCTION(terminal_imgui)
         limit_size(me->raw_history, MAX_TEXT_HISTORY);
         limit_size(me->history, MAX_TEXT_HISTORY);
     }
+}
+
+DEFINE_SERIALISE_FUNCTION(chat_window)
+{
+    SERIALISE_SETUP();
+
+    DO_FSERIALISE(chat_threads);
+    DO_FSERIALISE(render_start);
+    DO_FSERIALISE(side_buttons);
+    DO_FSERIALISE(show_chat_in_main_window);
 }

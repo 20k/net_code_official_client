@@ -82,15 +82,15 @@ void terminal_imgui::clear_terminal()
     raw_history.clear();
 }
 
-void terminal_imgui::clear_chat()
+void chat_window::clear_chat()
 {
     chat_threads.clear();
 }
 
-void terminal_imgui::clear_text()
+void clear_everything(terminal_imgui& term, chat_window& chat)
 {
-    clear_terminal();
-    clear_chat();
+    term.clear_terminal();
+    chat.clear_chat();
 }
 
 terminal_imgui::terminal_imgui()
@@ -351,21 +351,21 @@ int terminal_imgui::get_id_of_focused_realtime_window()
     return -1;
 }
 
-void terminal_imgui::invalidate_everything()
+void invalidate_everything(terminal_imgui& term, chat_window& chat)
 {
-    cache.invalidate();
+    term.cache.invalidate();
 
-    for(auto& i : chat_threads)
+    for(auto& i : chat.chat_threads)
     {
         i.second.cache.invalidate();
     }
 }
 
-void terminal_imgui::last_line_invalidate()
+void last_line_invalidate_everything(terminal_imgui& term, chat_window& chat)
 {
-    cache.invalidate_last_line();
+    term.cache.invalidate_last_line();
 
-    for(auto& i : chat_threads)
+    for(auto& i : chat.chat_threads)
     {
         i.second.cache.invalidate_last_line();
     }
@@ -595,14 +595,14 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
                     cache.invalidate();
                 }
 
-                chat_threads[chnls[i]].raw_history.push_back(msgs[i]);
-                chat_threads[chnls[i]].history.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
-                chat_threads[chnls[i]].dirty = true;
-                chat_threads[chnls[i]].cache.invalidate();
+                chat_win.chat_threads[chnls[i]].raw_history.push_back(msgs[i]);
+                chat_win.chat_threads[chnls[i]].history.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
+                chat_win.chat_threads[chnls[i]].dirty = true;
+                chat_win.chat_threads[chnls[i]].cache.invalidate();
 
-                limit_size(chat_threads[chnls[i]].raw_history, MAX_TEXT_HISTORY);
-                limit_size(chat_threads[chnls[i]].history, MAX_TEXT_HISTORY);
-                de_newline(chat_threads[chnls[i]].history);
+                limit_size(chat_win.chat_threads[chnls[i]].raw_history, MAX_TEXT_HISTORY);
+                limit_size(chat_win.chat_threads[chnls[i]].history, MAX_TEXT_HISTORY);
+                de_newline(chat_win.chat_threads[chnls[i]].history);
             }
 
             for(int kk=0; kk < (int)tell_msgs.size(); kk++)
@@ -734,7 +734,7 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
 
 void terminal_imgui::add_text_to_current_chat_thread(chat_window& chat_win, const std::string& text)
 {
-    chat_thread& thr = chat_threads[chat_win.selected];
+    /*chat_thread& thr = chat_threads[chat_win.selected];
 
     thr.raw_history.push_back(text);
     thr.history.push_back(string_to_interop(text, false, auto_handle, false));
@@ -743,7 +743,9 @@ void terminal_imgui::add_text_to_current_chat_thread(chat_window& chat_win, cons
     limit_size(thr.raw_history, MAX_TEXT_HISTORY);
     limit_size(thr.history, MAX_TEXT_HISTORY);
 
-    de_newline(thr.history);
+    de_newline(thr.history);*/
+
+    chat_win.unprocessed_input.push_back(text);
 }
 
 void chat_window::tick()
@@ -751,84 +753,10 @@ void chat_window::tick()
 
 }
 
-void chat_window::render(std::map<std::string, chat_thread>& threads, bool refocus)
+void chat_window::render(bool refocus)
 {
     copy_handler* handle = get_global_copy_handler();
 
-    #if 0
-    chat_thread& thread = threads[selected];
-    thread.dirty = false;
-
-    if(refocus)
-        ImGui::SetNextWindowFocus();
-
-    ImGui::SetNextWindowSize(ImVec2(dim.x(), dim.y()), ImGuiCond_FirstUseEver);
-
-    std::string chat_str = selected;
-
-    ImGui::Begin((chat_str + "###chat_window").c_str());
-
-    if(ImGui::BeginMenuBar())
-    {
-        ImGuiX::Text(chat_str);
-
-        if(ImGui::BeginMenu("Settings"))
-        {
-            ImGui::Checkbox("Show in main window", &show_chat_in_main_window);
-
-            ImGui::EndMenu();
-        }
-
-        ImGui::EndMenuBar();
-    }
-
-    ImGui::BeginChild("chat_child", ImVec2(80, 0));
-
-    focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
-    hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
-
-    int max_len = 0;
-
-    for(int i=0; i < (int)side_buttons.size(); i++)
-    {
-        max_len = std::max(side_buttons[i].size(), (size_t)max_len);
-    }
-
-    for(int i=0; i < (int)side_buttons.size(); i++)
-    {
-        std::string text = side_buttons[i];
-
-        if(threads[side_buttons[i]].dirty && !show_chat_in_main_window)
-        {
-            text += "*";
-        }
-
-        for(int kk=(int)text.size(); kk < max_len; kk++)
-        {
-            text += " ";
-        }
-
-        if(ImGui::Button(text.c_str()))
-        {
-            selected = side_buttons[i];
-        }
-    }
-
-    ImGui::EndChild();
-
-    ImGui::SameLine(0, 0);
-
-    if(refocus)
-        ImGui::SetNextWindowFocus();
-
-    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this, 80);
-
-    ImGui::End();
-
-    if(focused && child_focused)
-        handle->process_formatted(thread.cache.out);
-
-    #endif // 0
     if(refocus && side_buttons.size() > 0)
         ImGui::SetNextWindowFocus();
 
@@ -865,9 +793,9 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
     for(int i=0; i < (int)side_buttons.size(); i++)
     {
         std::string full_str = side_buttons[i];
-        chat_thread& thread = threads[side_buttons[i]];
+        chat_thread& thread = chat_threads[side_buttons[i]];
 
-        if(thread.dirty && side_buttons[i] != selected)
+        if(thread.dirty && !thread.was_focused)
             full_str += "*";
         else
             full_str += " ";
@@ -880,22 +808,33 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
 
         bool me_focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
+        thread.was_focused = me_focused;
+        thread.name = side_buttons[i];
+
         if(me_focused)
         {
-            selected = side_buttons[i];
             thread.dirty = false;
             any_focused = true;
+
+            for(auto& text : unprocessed_input)
+            {
+                thread.raw_history.push_back(text);
+                thread.history.push_back(string_to_interop(text, false, auto_handle, false));
+            }
+
+            limit_size(thread.raw_history, MAX_TEXT_HISTORY);
+            limit_size(thread.history, MAX_TEXT_HISTORY);
+
+            unprocessed_input.clear();
         }
 
         if(ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
         {
             any_hovered = true;
+            thread.was_hovered = true;
         }
 
-        bool child_focused = render_handle_imgui(scroll_hack, thread.command.command, thread.command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this, 0);
-
-        //if(me_focused && child_focused)
-        //    handle->process_formatted(thread.cache.out);
+        render_handle_imgui(scroll_hack, thread.command.command, thread.command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this, 0);
 
         ImGui::End();
     }
@@ -904,31 +843,49 @@ void chat_window::render(std::map<std::string, chat_thread>& threads, bool refoc
     hovered = any_hovered;
 
     once = true;
+
+    unprocessed_input.clear();
 }
 
 void chat_window::set_side_channels(const std::vector<std::string>& sides)
 {
-    side_buttons.clear();
+    side_buttons = sides;
+}
 
-    bool any = false;
-
-    for(auto& i : sides)
+std::optional<editable_string*> chat_window::get_focused_editable()
+{
+    for(auto& i : chat_threads)
     {
-        side_buttons.push_back(i);
-
-        if(i == selected)
-        {
-            any = true;
-        }
+        if(i.second.was_focused)
+            return &i.second.command;
     }
 
-    if(!any && side_buttons.size() > 0)
+    return std::nullopt;
+}
+
+std::optional<editable_string*> chat_window::get_hovered_editable()
+{
+    for(auto& i : chat_threads)
     {
-        selected = side_buttons.front();
+        if(i.second.was_hovered)
+            return &i.second.command;
     }
 
-    if(!any && side_buttons.size() == 0)
+    return std::nullopt;
+}
+
+std::optional<chat_thread*> chat_window::get_focused_chat_thread()
+{
+    for(auto& i : chat_threads)
     {
-        selected = "No channels";
+        if(i.second.was_focused)
+            return &i.second;
     }
+
+    return std::nullopt;
+}
+
+void chat_window::add_text_to_focused(const std::string& str)
+{
+    unprocessed_input.push_back(str);
 }

@@ -100,7 +100,7 @@ std::string format_raw_script_name(const std::string& file_name)
     return file_name;
 }
 
-std::string handle_local_command(const std::string& username, const std::string& command, auto_handler& auto_handle, bool& should_shutdown, terminal_imgui& term)
+std::string handle_local_command(const std::string& username, const std::string& command, auto_handler& auto_handle, bool& should_shutdown, terminal_imgui& term, chat_window& chat)
 {
     if(starts_with(command, "#clear_autos") || starts_with(command, "#autos_clear"))
     {
@@ -114,15 +114,13 @@ std::string handle_local_command(const std::string& username, const std::string&
     }
 
     if(starts_with(command, "#cls"))
-    {
-        term.clear_text();
-    }
+        clear_everything(term, chat);
 
     if(starts_with(command, "#clear_term"))
         term.clear_terminal();
 
     if(starts_with(command, "#clear_chat"))
-        term.clear_chat();
+        chat.clear_chat();
 
     if(username == "")
         return "Please log in with user <username>";

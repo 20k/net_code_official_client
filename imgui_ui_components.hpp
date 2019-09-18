@@ -63,11 +63,16 @@ struct realtime_script_run : frameable
 struct chat_thread : serialisable, cacheable, free_function
 {
     bool dirty = false;
+    bool was_focused = false;
+    bool was_hovered = false;
     editable_string command;
+    std::string name;
 };
 
-struct chat_window : serialisable, frameable
+struct chat_window : serialisable, frameable, free_function
 {
+    std::map<std::string, chat_thread> chat_threads;
+
     scrollbar_hack scroll_hack;
 
     vec2f render_start = {0,0};
@@ -76,6 +81,8 @@ struct chat_window : serialisable, frameable
 
     vec2f side_dim = {100, dim.y()};
 
+    std::vector<std::string> unprocessed_input;
+
     std::vector<std::string> side_buttons
     {
         "0000",
@@ -83,17 +90,7 @@ struct chat_window : serialisable, frameable
         "memes"
     };
 
-    std::string selected = "0000";
-
     auto_handler auto_handle;
-
-    SERIALISE_SIGNATURE(chat_window)
-    {
-        DO_SERIALISE(render_start);
-        DO_SERIALISE(side_buttons);
-        DO_SERIALISE(selected);
-        DO_SERIALISE(show_chat_in_main_window);
-    }
 
     bool focused = false;
     bool hovered = false;
@@ -102,11 +99,18 @@ struct chat_window : serialisable, frameable
 
     void tick();
 
-    void render(std::map<std::string, chat_thread>& threads, bool refocus);
+    void render(bool refocus);
 
     void set_side_channels(const std::vector<std::string>& sides);
 
     void invalidate();
+    void clear_chat();
+
+    std::optional<editable_string*> get_focused_editable();
+    std::optional<editable_string*> get_hovered_editable();
+    std::optional<chat_thread*> get_focused_chat_thread();
+
+    void add_text_to_focused(const std::string& str);
 };
 
 struct connection;
@@ -114,8 +118,6 @@ struct connection;
 struct terminal_imgui : serialisable, cacheable, frameable, free_function
 {
     scrollbar_hack scroll_hack;
-
-    std::map<std::string, chat_thread> chat_threads;
 
     std::map<int, realtime_script_run> realtime_script_windows;
 
@@ -135,8 +137,6 @@ struct terminal_imgui : serialisable, cacheable, frameable, free_function
     void check_insert_user_command();
 
     void clear_terminal();
-    void clear_chat();
-    void clear_text();
 
     terminal_imgui();
     void render(vec2f window_size, bool refocus);
@@ -150,11 +150,10 @@ struct terminal_imgui : serialisable, cacheable, frameable, free_function
 
     ///returns -1 on none
     int get_id_of_focused_realtime_window();
-
-    ///literally never what we want
-    void invalidate_everything();
-    void last_line_invalidate();
 };
 
+void clear_everything(terminal_imgui& term, chat_window& chat);
+void invalidate_everything(terminal_imgui& term, chat_window& chat);
+void last_line_invalidate_everything(terminal_imgui& term, chat_window& chat); ///cheap
 
 #endif // IMGUI_UI_COMPONENTS_HPP_INCLUDED
