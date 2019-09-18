@@ -83,12 +83,7 @@ struct chat_window : serialisable, frameable, free_function
 
     std::vector<std::string> unprocessed_input;
 
-    std::vector<std::string> side_buttons
-    {
-        "0000",
-        "7001",
-        "memes"
-    };
+    std::vector<std::string> side_buttons;
 
     auto_handler auto_handle;
 
