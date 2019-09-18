@@ -82,7 +82,6 @@ struct chat_window : serialisable, frameable, free_function
     vec2f side_dim = {100, dim.y()};
 
     std::vector<std::string> unprocessed_input;
-
     std::vector<std::string> side_buttons;
 
     auto_handler auto_handle;
