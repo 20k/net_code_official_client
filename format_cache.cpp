@@ -236,12 +236,14 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
 
         if(cformat.size() > 0)
         {
-            vec2f display_pos = position + (vec2f){char_inf::cwbuf*2, dim.y()} - (vec2f){0, char_inf::cheight * 0.5};
+            vec2f display_pos = position + (vec2f){0, dim.y()} - (vec2f){0, char_inf::cheight * 0.5};
 
             display_pos.y() -= height_cache.back() * char_inf::cheight;
             display_pos.y() += 2;
 
-            render_formatted(display_pos - cformat.front().internal_pos, line_cache.back(), do_copy, position.y() + dim.y());
+            vec2f relative_pos = (vec2f){display_pos.x(), display_pos.y() - cformat.front().internal_pos.y()};
+
+            render_formatted(relative_pos, line_cache.back(), do_copy, position.y() + dim.y());
         }
     }
 
