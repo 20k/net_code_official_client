@@ -863,17 +863,6 @@ std::optional<editable_string*> chat_window::get_focused_editable()
     return std::nullopt;
 }
 
-std::optional<editable_string*> chat_window::get_hovered_editable()
-{
-    for(auto& i : chat_threads)
-    {
-        if(i.second.was_hovered)
-            return &i.second.command;
-    }
-
-    return std::nullopt;
-}
-
 std::optional<chat_thread*> chat_window::get_focused_chat_thread()
 {
     for(auto& i : chat_threads)

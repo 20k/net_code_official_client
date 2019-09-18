@@ -101,7 +101,6 @@ struct chat_window : serialisable, frameable, free_function
     void clear_chat();
 
     std::optional<editable_string*> get_focused_editable();
-    std::optional<editable_string*> get_hovered_editable();
     std::optional<chat_thread*> get_focused_chat_thread();
 
     void add_text_to_focused(const std::string& str);

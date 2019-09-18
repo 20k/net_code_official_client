@@ -504,8 +504,6 @@ int main()
         editable_string no_string;
         editable_string* to_edit = &no_string;
 
-        editable_string* hovered_string = &no_string;
-
         if(term.focused)
             to_edit = &term.command;
 
@@ -516,15 +514,6 @@ int main()
 
         if(term.get_id_of_focused_realtime_window() != -1)
             to_edit = &realtime_shim;
-
-        if(term.hovered)
-            hovered_string = &term.command;
-
-        if(chat_win.hovered && has_chat_window)
-            hovered_string = chat_win.get_hovered_editable().value_or(&no_string);
-
-        if(term.get_id_of_focused_realtime_window() != -1 && term.realtime_script_windows[term.get_id_of_focused_realtime_window()].hovered)
-            hovered_string = &realtime_shim;
 
         bool enter = false;
 
