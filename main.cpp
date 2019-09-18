@@ -1235,7 +1235,7 @@ int main()
             ImGui::End();
         }
 
-        if(ImGui::IsKeyPressed(GLFW_KEY_ESCAPE))
+        if(ImGui::IsKeyPressed(GLFW_KEY_F3))
             has_settings_window = !has_settings_window;
 
         //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;

@@ -74,7 +74,7 @@ void render_raw(const std::string& str, vec3f col, vec2f render_pos)
     imlist->AddText(ImVec2(render_pos.x(), render_pos.y()), IM_COL32((int)col.x(), (int)col.y(), (int)col.z(), 255), str.c_str());
 }
 
-void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<formatted_char>& text, bool check_copy)
+void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<formatted_char>& text, bool check_copy, float screen_cull_y_bottom)
 {
     std::string str;
     vec3f col;
@@ -90,6 +90,11 @@ void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<f
     col = text[idx_1].ioc.col;
 
     copy_handler* handle = get_global_copy_handler();
+
+    vec2f final_pos = screen_pos + text[idx_1].internal_pos;
+
+    if(final_pos.y() - char_inf::cheight >= screen_cull_y_bottom)
+        return;
 
     if(ImGui::IsWindowFocused() && handle->char_is_within_select_box(screen_pos + text[idx_1].internal_pos) && text[idx_1].copyable)
     {
@@ -112,12 +117,12 @@ void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<f
         }
     }
 
-    render_raw(str, col, screen_pos + text[idx_1].internal_pos);
+    render_raw(str, col, final_pos);
 
     idx_1 = idx_2;
 }
 
-void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text, bool check_copy)
+void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text, bool check_copy, float screen_cull_y_bottom)
 {
     copy_handler* handle = get_global_copy_handler();
 
@@ -132,9 +137,9 @@ void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text,
         if(cur.ioc.is_cursor)
         {
             ///render previous string
-            render_indices(screen_pos, lidx, idx, text, check_copy);
+            render_indices(screen_pos, lidx, idx, text, check_copy, screen_cull_y_bottom);
             ///render cursor
-            render_indices(screen_pos, lidx, idx + 1, text, check_copy);
+            render_indices(screen_pos, lidx, idx + 1, text, check_copy, screen_cull_y_bottom);
             continue;
         }
 
@@ -145,12 +150,12 @@ void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text,
            cur.internal_pos.y() != next.internal_pos.y() ||
            handle->char_is_within_select_box(p1) != handle->char_is_within_select_box(p2))
         {
-            render_indices(screen_pos, lidx, idx+1, text, check_copy);
+            render_indices(screen_pos, lidx, idx+1, text, check_copy, screen_cull_y_bottom);
             continue;
         }
     }
 
-    render_indices(screen_pos, lidx, (int)text.size(), text, check_copy);
+    render_indices(screen_pos, lidx, (int)text.size(), text, check_copy, screen_cull_y_bottom);
 }
 
 void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
@@ -173,13 +178,29 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
         }
     }
 
+    float vertical_fudge_for_floating_terminal = char_inf::cheight * 2;
+
+    if(line_cache.size() > 0)
+    {
+        vertical_fudge_for_floating_terminal += height_cache.back() * char_inf::cheight;
+    }
+
+    vec2f mdim = {dim.x(), dim.y() - vertical_fudge_for_floating_terminal};
+
     bool has_last_content_size = false;
     vec2f content_start = {0,0};
     vec2f content_end = {0,0};
 
     float vertical_offset = scroll_lines * char_inf::cheight - total_lines * char_inf::cheight + dim.y() - char_inf::cheight*1.5;
 
-    for(int i=0; i < (int)line_cache.size(); i++)
+    if(line_cache.size() > 0)
+    {
+        //vertical_offset -= height_cache.back() * char_inf::cheight;
+    }
+
+    float screen_cull_y_bottom = position.y() + mdim.y();
+
+    for(int i=0; i < (int)line_cache.size() - 1; i++)
     {
         if(line_cache[i].size() == 0)
             continue;
@@ -202,11 +223,26 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
         if(display_last.y() < position.y() - char_inf::cheight)
             continue;
 
-        if(display_first.y() > position.y() + dim.y() + char_inf::cheight)
+        if(display_first.y() > position.y() + mdim.y() + char_inf::cheight)
             continue;
 
         ///render!
-        render_formatted(position + (vec2f){0, vertical_offset}, line_cache[i], do_copy);
+        render_formatted(position + (vec2f){0, vertical_offset}, line_cache[i], do_copy, screen_cull_y_bottom);
+    }
+
+    if(line_cache.size() > 0)
+    {
+        std::vector<formatted_char>& cformat = line_cache.back();
+
+        if(cformat.size() > 0)
+        {
+            vec2f display_pos = position + (vec2f){char_inf::cwbuf*2, dim.y()} - (vec2f){0, char_inf::cheight * 0.5};
+
+            display_pos.y() -= height_cache.back() * char_inf::cheight;
+            display_pos.y() += 2;
+
+            render_formatted(display_pos - cformat.front().internal_pos, line_cache.back(), do_copy, position.y() + dim.y());
+        }
     }
 
     if(do_copy)
