@@ -687,7 +687,7 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
 
             fix_tabs(data);
 
-            add_text_to_current_chat_thread(chat_win, data);
+            chat_win.add_text_to_focused(data);
         }
         else if(in["type"] == "auth")
         {
@@ -730,27 +730,6 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
 
         cache.invalidate();
     }
-}
-
-void terminal_imgui::add_text_to_current_chat_thread(chat_window& chat_win, const std::string& text)
-{
-    /*chat_thread& thr = chat_threads[chat_win.selected];
-
-    thr.raw_history.push_back(text);
-    thr.history.push_back(string_to_interop(text, false, auto_handle, false));
-    thr.dirty = true;
-
-    limit_size(thr.raw_history, MAX_TEXT_HISTORY);
-    limit_size(thr.history, MAX_TEXT_HISTORY);
-
-    de_newline(thr.history);*/
-
-    chat_win.unprocessed_input.push_back(text);
-}
-
-void chat_window::tick()
-{
-
 }
 
 void chat_window::render(bool refocus)

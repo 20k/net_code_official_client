@@ -1141,8 +1141,6 @@ int main()
             term.add_text(" ");
         }
 
-        chat_win.tick();
-
         if(ImGui::IsMouseDown(0))
         {
             active_frames = active_frames_restart;

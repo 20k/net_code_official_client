@@ -91,8 +91,6 @@ struct chat_window : serialisable, frameable, free_function
     float border_size = 2.f;
     bool show_chat_in_main_window = true;
 
-    void tick();
-
     void render(bool refocus);
 
     void set_side_channels(const std::vector<std::string>& sides);
@@ -138,8 +136,6 @@ struct terminal_imgui : serialisable, cacheable, frameable, free_function
 
     void add_text(const std::string& str);
     void add_text_from_server(std::string& current_user, const nlohmann::json& in, chat_window& chat_win, bool server_command = true);
-
-    void add_text_to_current_chat_thread(chat_window& chat_win, const std::string& text);
 
     ///returns -1 on none
     int get_id_of_focused_realtime_window();
