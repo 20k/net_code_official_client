@@ -46,7 +46,7 @@ void format_cache_2::ensure_built(vec2f window_dimensions, const std::vector<int
 
     vec2f current = {char_inf::cwbuf,0};
 
-    for(int i=0; i < all_chars.size(); i++)
+    for(int i=0; i < (int)all_chars.size(); i++)
     {
         int found_line = 0;
 
@@ -133,8 +133,6 @@ void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text,
 
     int idx = 0;
     int lidx = 0;
-
-    int calls = 0;
 
     for(; idx < (int)text.size() - 1; idx++)
     {
