@@ -74,13 +74,23 @@ void render_raw(const std::string& str, vec3f col, vec2f render_pos)
     imlist->AddText(ImVec2(render_pos.x(), render_pos.y()), IM_COL32((int)col.x(), (int)col.y(), (int)col.z(), 255), str.c_str());
 }
 
-void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<formatted_char>& text, bool check_copy, float screen_cull_y_bottom)
+void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<formatted_char>& text, bool check_copy, float screen_cull_y_bottom, float screen_cull_y_top)
 {
-    std::string str;
-    vec3f col;
-
     if(idx_1 == idx_2)
         return;
+
+    vec2f final_pos = screen_pos + text[idx_1].internal_pos;
+    vec2f start_pos = screen_pos + text[idx_2 - 1].internal_pos;
+
+    if(final_pos.y() - char_inf::cheight >= screen_cull_y_bottom)
+        return;
+
+    if(start_pos.y() + char_inf::cheight <= screen_cull_y_top)
+        return;
+
+    std::string str;
+    str.reserve(idx_2 - idx_1);
+    vec3f col;
 
     for(int i=idx_1; i < idx_2; i++)
     {
@@ -90,11 +100,6 @@ void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<f
     col = text[idx_1].ioc.col;
 
     copy_handler* handle = get_global_copy_handler();
-
-    vec2f final_pos = screen_pos + text[idx_1].internal_pos;
-
-    if(final_pos.y() - char_inf::cheight >= screen_cull_y_bottom)
-        return;
 
     if(ImGui::IsWindowFocused() && handle->char_is_within_select_box(screen_pos + text[idx_1].internal_pos) && text[idx_1].copyable)
     {
@@ -122,12 +127,14 @@ void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<f
     idx_1 = idx_2;
 }
 
-void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text, bool check_copy, float screen_cull_y_bottom)
+void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text, bool check_copy, float screen_cull_y_bottom, float screen_cull_y_top)
 {
     copy_handler* handle = get_global_copy_handler();
 
     int idx = 0;
     int lidx = 0;
+
+    int calls = 0;
 
     for(; idx < (int)text.size() - 1; idx++)
     {
@@ -137,9 +144,9 @@ void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text,
         if(cur.ioc.is_cursor)
         {
             ///render previous string
-            render_indices(screen_pos, lidx, idx, text, check_copy, screen_cull_y_bottom);
+            render_indices(screen_pos, lidx, idx, text, check_copy, screen_cull_y_bottom, screen_cull_y_top);
             ///render cursor
-            render_indices(screen_pos, lidx, idx + 1, text, check_copy, screen_cull_y_bottom);
+            render_indices(screen_pos, lidx, idx + 1, text, check_copy, screen_cull_y_bottom, screen_cull_y_top);
             continue;
         }
 
@@ -150,12 +157,12 @@ void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text,
            cur.internal_pos.y() != next.internal_pos.y() ||
            handle->char_is_within_select_box(p1) != handle->char_is_within_select_box(p2))
         {
-            render_indices(screen_pos, lidx, idx+1, text, check_copy, screen_cull_y_bottom);
+            render_indices(screen_pos, lidx, idx+1, text, check_copy, screen_cull_y_bottom, screen_cull_y_top);
             continue;
         }
     }
 
-    render_indices(screen_pos, lidx, (int)text.size(), text, check_copy, screen_cull_y_bottom);
+    render_indices(screen_pos, lidx, (int)text.size(), text, check_copy, screen_cull_y_bottom, screen_cull_y_top);
 }
 
 void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
@@ -199,6 +206,7 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
     }
 
     float screen_cull_y_bottom = position.y() + mdim.y();
+    float screen_cull_y_top = position.y();
 
     for(int i=0; i < (int)line_cache.size() - 1; i++)
     {
@@ -227,7 +235,7 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
             continue;
 
         ///render!
-        render_formatted(position + (vec2f){0, vertical_offset}, line_cache[i], do_copy, screen_cull_y_bottom);
+        render_formatted(position + (vec2f){0, vertical_offset}, line_cache[i], do_copy, screen_cull_y_bottom, screen_cull_y_top);
     }
 
     if(line_cache.size() > 0)
@@ -243,7 +251,7 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
 
             vec2f relative_pos = (vec2f){display_pos.x(), display_pos.y() - cformat.front().internal_pos.y()};
 
-            render_formatted(relative_pos, line_cache.back(), do_copy, position.y() + dim.y());
+            render_formatted(relative_pos, line_cache.back(), do_copy, position.y() + dim.y(), screen_cull_y_top);
         }
     }
 
