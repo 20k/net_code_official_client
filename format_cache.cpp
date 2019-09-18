@@ -80,12 +80,12 @@ void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<f
         return;
 
     vec2f final_pos = screen_pos + text[idx_1].internal_pos;
-    vec2f start_pos = screen_pos + text[idx_2 - 1].internal_pos;
+    vec2f start_check_pos = screen_pos + text[idx_2 - 1].internal_pos;
 
     if(final_pos.y() - char_inf::cheight >= screen_cull_y_bottom)
         return;
 
-    if(start_pos.y() + char_inf::cheight <= screen_cull_y_top)
+    if(start_check_pos.y() + char_inf::cheight <= screen_cull_y_top)
         return;
 
     std::string str;
