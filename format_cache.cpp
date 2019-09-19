@@ -243,6 +243,7 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
 
         if(cformat.size() > 0)
         {
+            ///not correct
             content_end = cformat.back().internal_pos + position;
 
             vec2f display_pos = position + (vec2f){0, dim.y()} - (vec2f){0, cdim.y() * 0.5};
