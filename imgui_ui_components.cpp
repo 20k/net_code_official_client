@@ -27,9 +27,14 @@ void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar, format_cache_2&
     if(approx_num < 0)
         approx_num = 1;
 
-    for(int i=0; i < approx_num; i++)
+    vec2f start_pos = xy_to_vec(ImGui::GetCursorPos());
+
+    for(int i=0; i < approx_num + 1; i++)
     {
-        ImGui::Text("\n");
+        ImGui::Text("P\n");
+
+        start_pos += (vec2f){0, cdim.y()};
+        ImGui::SetCursorPos({start_pos.x(), start_pos.y()});
     }
 
     if(set_scrollbar)
@@ -192,8 +197,8 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     vec2f cdim = xy_to_vec(ImGui::CalcTextSize("A"));
 
-    float flines = cache.get_lines() - (dim.y() / cdim.y());
-    //float flines = cache.get_lines();
+    //float flines = cache.get_lines() - (dim.y() / cdim.y());
+    float flines = cache.get_lines();
 
     ///rough
     //ImGui::SetNextWindowContentSize({cache.last_content_size.x(), cache.last_content_size.y()});
