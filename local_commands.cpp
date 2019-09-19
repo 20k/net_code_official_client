@@ -103,9 +103,17 @@ std::string format_raw_script_name(const std::string& file_name)
 
 void ipc_open(const std::string& fname)
 {
+    sf::Clock clk;
+
     while(file_exists("lock"))
     {
         sf::sleep(sf::milliseconds(100));
+
+        if(clk.getElapsedTime().asSeconds() > 5)
+        {
+            printf("Warning, IPC thread seems to have died\n");
+            return;
+        }
     }
 
     write_all_bin("ipc", fname);
