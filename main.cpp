@@ -521,58 +521,7 @@ int main()
 
         bool skip_first_event = false;
 
-        if(steam_api_overlay_is_open(csapi))
-        {
-            active_frames = active_frames_restart;
-        }
-
-        ///doesn't work properly for some reason
-        /*if(steam_api_overlay_needs_present(csapi))
-        {
-            active_frames = active_frames_restart;
-
-            printf("Reset present\n");
-        }*/
-
         steam_api_pump_events(csapi);
-
-        ///needs reimpl
-        /*if(active_frames <= 0)
-        {
-            int loops = 5;
-
-            if(!steam_api_enabled(csapi))
-            {
-                loops = 40;
-            }
-
-            for(int i=0; i < loops; i++)
-            {
-                if(window.pollEvent(event))
-                {
-                    skip_first_event = true;
-                    break;
-                }
-
-                if(conn.has_read())
-                    break;
-
-                steam_api_pump_events(csapi);
-
-                if(steam_api_overlay_is_open(csapi))
-                {
-                    active_frames = active_frames_restart;
-
-                    break;
-                }
-
-                sf::sleep(sf::milliseconds(4));
-            }
-        }
-        else
-        {
-            active_frames--;
-        }*/
 
         std::vector<int> glfw_key_pressed_data;
         std::vector<int> glfw_key_released_data;
