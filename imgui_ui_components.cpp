@@ -17,19 +17,12 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
-namespace ImGuiX
-{
-    void TextColoredUnformatted(const ImVec4& col, const char* text)
-    {
-        ImGui::PushStyleColor(ImGuiCol_Text, col);
-        ImGui::TextUnformatted(text);
-        ImGui::PopStyleColor();
-    }
-}
 
-void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar)
+void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar, format_cache_2& cache, vec2f dim)
 {
     ImGui::BeginChild("right_child", ImVec2(0,0), false, ImGuiWindowFlags_NoScrollWithMouse);
+
+    vec2f cdim = xy_to_vec(ImGui::CalcTextSize("A"));
 
     if(approx_num < 0)
         approx_num = 1;
@@ -197,12 +190,14 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     ImGui::SameLine(0.f, 0.f);
 
-    //float flines = cache.get_lines() - (current_window_size.y / char_inf::cheight);
-    float flines = cache.get_lines();
+    vec2f cdim = xy_to_vec(ImGui::CalcTextSize("A"));
+
+    float flines = cache.get_lines() - (dim.y() / cdim.y());
+    //float flines = cache.get_lines();
 
     ///rough
     //ImGui::SetNextWindowContentSize({cache.last_content_size.x(), cache.last_content_size.y()});
-    scroll_hack.do_hack(flines, true);
+    scroll_hack.do_hack(flines, true, cache, dim);
 
     if(scroll_hack.scrolling)
     {

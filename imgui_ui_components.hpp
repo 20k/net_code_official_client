@@ -26,7 +26,7 @@ struct scrollbar_hack
     bool scrolling = false;
     bool should_update_scroll = false;
 
-    void do_hack(int approx_num, bool set_scrollbar);
+    void do_hack(int approx_num, bool set_scrollbar, format_cache_2& cache, vec2f dim);
 };
 
 ///has a frame, aka is a window
