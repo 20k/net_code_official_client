@@ -204,11 +204,6 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
 
     float vertical_offset = scroll_lines * cdim.y() - total_lines * cdim.y() + dim.y() - cdim.y()*1.5;
 
-    if(line_cache.size() > 0)
-    {
-        //vertical_offset -= height_cache.back() * char_inf::cheight;
-    }
-
     float screen_cull_y_bottom = position.y() + mdim.y();
     float screen_cull_y_top = position.y();
 
@@ -248,6 +243,8 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
 
         if(cformat.size() > 0)
         {
+            content_end = cformat.back().internal_pos + position;
+
             vec2f display_pos = position + (vec2f){0, dim.y()} - (vec2f){0, cdim.y() * 0.5};
 
             display_pos.y() -= height_cache.back() * cdim.y();
@@ -266,5 +263,5 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
         handle->set_clipboard(handle->copied);
     }
 
-    last_content_size = {content_end - content_start};
+    last_content_size = (vec2f){dim.x(), (content_end - content_start).y()};
 }
