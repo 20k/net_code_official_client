@@ -31,19 +31,19 @@ interop_vec_t string_to_interop_no_autos(const std::string& str, bool render_spe
 void de_newline(std::vector<interop_vec_t>& vec);
 
 inline
-void get_height(const std::vector<interop_char>& interop, vec2f cpos, vec2f start, vec2f wrap_dim, int& lines)
+void get_height(const std::vector<interop_char>& interop, vec2f cpos, vec2f start, vec2f wrap_dim, int& lines, vec2f cdim)
 {
     lines = 1;
 
     vec2f pos = cpos;
     pos.x() = start.x() + char_inf::cwbuf;
-    pos.y() += char_inf::cheight;
+    pos.y() += cdim.y();
 
     for(const auto& i : interop)
     {
         if((pos.x() >= wrap_dim.x() - char_inf::cwbuf || i.c == '\n') && !i.is_cursor)
         {
-            pos.y() += char_inf::cheight;
+            pos.y() += cdim.y();
             pos.x() = start.x() + char_inf::cwbuf;
             lines++;
         }
@@ -52,7 +52,7 @@ void get_height(const std::vector<interop_char>& interop, vec2f cpos, vec2f star
             continue;
 
         if(!i.is_cursor)
-            pos.x() += char_inf::cwidth;
+            pos.x() += cdim.x();
     }
 }
 
@@ -60,13 +60,13 @@ void get_height(const std::vector<interop_char>& interop, vec2f cpos, vec2f star
 ///we want to format forward, but then afterwards
 ///move all the characters up by the height of the entire block
 inline
-std::vector<formatted_char> format_characters(const std::vector<interop_char>& interop, vec2f cpos, vec2f start, vec2f wrap_dim, int lines, int last_lines)
+std::vector<formatted_char> format_characters(const std::vector<interop_char>& interop, vec2f cpos, vec2f start, vec2f wrap_dim, int lines, int last_lines, vec2f cdim)
 {
     std::vector<formatted_char> ret;
 
     vec2f pos = cpos;
     pos.x() = start.x() + char_inf::cwbuf;
-    pos.y() += char_inf::cheight;
+    pos.y() += cdim.y();
 
     for(int i=0; i < (int)interop.size(); i++)
     {
@@ -74,7 +74,7 @@ std::vector<formatted_char> format_characters(const std::vector<interop_char>& i
 
         if((pos.x() >= wrap_dim.x() - char_inf::cwbuf || ioc.c == '\n') && !ioc.is_cursor)
         {
-            pos.y() += char_inf::cheight;
+            pos.y() += cdim.y();
             pos.x() = start.x() + char_inf::cwbuf;
         }
 
@@ -91,7 +91,7 @@ std::vector<formatted_char> format_characters(const std::vector<interop_char>& i
 
         if(ioc.is_cursor)
         {
-            formatted.internal_pos = pos - (vec2f){char_inf::cwidth/2.f, 0.f};
+            formatted.internal_pos = pos - (vec2f){cdim.x()/2.f, 0.f};
         }
         else
         {
@@ -99,7 +99,7 @@ std::vector<formatted_char> format_characters(const std::vector<interop_char>& i
         }
 
         if(!ioc.is_cursor)
-            pos.x() += char_inf::cwidth;
+            pos.x() += cdim.x();
 
         ret.push_back(formatted);
     }
@@ -124,37 +124,6 @@ std::vector<formatted_char> format_characters(const std::vector<interop_char>& i
     //pos.y() -= (last_lines) * char_inf::cheight + lines * char_inf::cheight;
 
     return ret;
-}
-
-///on the y axis
-inline
-float get_greatest_y(std::vector<formatted_char>& chars)
-{
-    float greatest_y = 0;
-
-    for(formatted_char& i : chars)
-    {
-        if(i.internal_pos.y() > greatest_y)
-        {
-            greatest_y = i.internal_pos.y();
-        }
-    }
-
-    return greatest_y;
-}
-
-inline
-void internally_format(std::vector<std::vector<formatted_char>>& chars, vec2f start, float scroll_offset, float y_end)
-{
-    for(auto& k : chars)
-    {
-        for(formatted_char& i : k)
-        {
-            i.render_pos = i.internal_pos + (vec2f){0, -y_end + start.y() - char_inf::cheight * 1.5f + scroll_offset};
-
-            i.render_pos = round(i.render_pos);
-        }
-    }
 }
 
 struct auto_handler;

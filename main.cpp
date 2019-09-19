@@ -1165,7 +1165,7 @@ int main()
             ///this is temporary before the other end of the api gets changed
             nlohmann::json data = nlohmann::json::parse(fdata);
 
-            term.add_text_from_server(current_user, data, chat_win);
+            term.add_text_from_server(current_user, data, chat_win, font_select);
         }
 
         if(write_clock.getElapsedTime().asMilliseconds() > 5000)

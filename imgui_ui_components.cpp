@@ -284,9 +284,6 @@ void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_i
         if(run.set_size)
             ImGui::SetNextWindowSize(ImVec2(run.dim.x(), run.dim.y()), ImGuiCond_Always);
 
-        if(run.is_square_font)
-            ImGui::PushFont(fonts.get_square_font());
-
         run.set_size = false;
 
         ImGui::Begin((title_str + "###" + str).c_str(), &run.open);
@@ -301,10 +298,10 @@ void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_i
 
         //run.cache.invalidate();
 
-        bool child_focused = render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, run.cache, *this);
+        if(run.is_square_font)
+            ImGui::PushFont(fonts.get_square_font());
 
-        //if(run.focused && child_focused)
-        //    handle->process_formatted(run.cache.out);
+        render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, run.cache, *this);
 
         ImVec2 window_size = ImGui::GetWindowSize();
 
@@ -312,9 +309,12 @@ void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_i
         run.current_dim = {window_size.x, window_size.y};
 
         if(run.current_dim.x() != last_dim.x() || run.current_dim.y() != last_dim.y())
-        {
             run.should_send_new_size = true;
-        }
+
+        if(run.is_square_font != run.was_square_font)
+            run.should_send_new_size = true;
+
+        run.was_square_font = run.is_square_font;
 
         if(run.should_send_new_size && run.last_resize.getElapsedTime().asSeconds() >= 1)
         {
@@ -323,11 +323,13 @@ void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_i
 
             vec2f dim = relative_dim;
 
+            vec2f cdim = xy_to_vec(ImGui::CalcTextSize("A"));
+
             nlohmann::json data;
             data["type"] = "send_script_info";
             data["id"] = i.first;
-            data["width"] = (dim.x() / char_inf::cwidth) - 5;
-            data["height"] = dim.y() / char_inf::cheight;
+            data["width"] = (dim.x() / cdim.x()) - 5;
+            data["height"] = dim.y() / cdim.y();
 
             conn.write(data.dump());
 
@@ -335,14 +337,14 @@ void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_i
             run.should_send_new_size = false;
         }
 
+        if(run.is_square_font)
+            ImGui::PopFont();
+
         auto my_pos = ImGui::GetWindowPos();
 
         run.current_pos = {my_pos.x, my_pos.y};
 
         ImGui::End();
-
-        if(run.is_square_font)
-            ImGui::PopFont();
     }
 }
 
@@ -438,7 +440,7 @@ void terminal_imgui::add_text(const std::string& str)
     cache.invalidate();
 }
 
-void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::json& in, chat_window& chat_win, bool server_command)
+void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts)
 {
     if(in == "")
         return;
@@ -453,269 +455,280 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
 
     bool push = false;
 
-    if(server_command)
+    if(type == "server_msg")
     {
-        if(type == "server_msg")
+        str = in["data"];
+
+        fix_tabs(str);
+
+        if(in.count("tag") > 0)
         {
-            str = in["data"];
+            std::string tag = in["tag"];
 
-            fix_tabs(str);
+            tag_manager& tag_manage = get_global_tag_manager();
 
-            if(in.count("tag") > 0)
-            {
-                std::string tag = in["tag"];
-
-                tag_manager& tag_manage = get_global_tag_manager();
-
-                tag_manage.add_tagged(tag, str);
-            }
-
-            if(in.count("pad") == 0 || in["pad"] == 0)
-            {
-                str += "\n";
-            }
-
-            push = true;
+            tag_manage.add_tagged(tag, str);
         }
-        else if(type == "command_realtime")
+
+        if(in.count("pad") == 0 || in["pad"] == 0)
         {
-            int id = in["id"];
+            str += "\n";
+        }
 
-            int width = 0;
-            int height = 0;
+        push = true;
+    }
+    else if(type == "command_realtime")
+    {
+        int id = in["id"];
 
-            bool should_close = false;
+        realtime_script_run& run = realtime_script_windows[id];
 
-            if(in.count("width") > 0)
-                width = in["width"];
-            if(in.count("height") > 0)
-                height = in["height"];
-            if(in.count("close") > 0)
-                should_close = in["close"];
-            if(in.count("square_font") > 0)
-                realtime_script_windows[id].is_square_font = (int)in["square_font"];
+        int width = 0;
+        int height = 0;
 
-            realtime_script_windows[id].last_message.restart();
+        bool should_close = false;
 
-            if(!should_close && in.count("msg") > 0)
+        if(in.count("width") > 0)
+            width = in["width"];
+        if(in.count("height") > 0)
+            height = in["height"];
+        if(in.count("close") > 0)
+            should_close = in["close"];
+        if(in.count("square_font") > 0)
+        {
+            if(run.is_square_font != (int)in["square_font"])
+                run.cache.invalidate();
+
+            run.is_square_font = (int)in["square_font"];
+        }
+
+        run.last_message.restart();
+
+        if(!should_close && in.count("msg") > 0)
+        {
+            run.parsed_data = string_to_interop_no_autos(in["msg"], false);
+            run.cache.invalidate();
+        }
+
+        if(should_close)
+        {
+            for(auto& i : realtime_script_windows)
             {
-                realtime_script_windows[id].parsed_data = string_to_interop_no_autos(in["msg"], false);
-                realtime_script_windows[id].cache.invalidate();
-            }
+                int fid = i.first;
+                realtime_script_run& run = i.second;
 
-            if(should_close)
-            {
-                for(auto& i : realtime_script_windows)
+                if(id == fid)
                 {
-                    int fid = i.first;
-                    realtime_script_run& run = i.second;
-
-                    if(id == fid)
-                    {
-                        run.open = false;
-                    }
+                    run.open = false;
                 }
             }
-
-            if(width != 0 && height != 0)
-            {
-                if(width < 5)
-                    width = 5;
-                if(height < 5)
-                    height = 5;
-
-                if(width > 300)
-                    width = 300;
-                if(height > 300)
-                    height = 300;
-
-                realtime_script_windows[id].set_size = true;
-
-                int rwidth = width * char_inf::cwidth;
-                int rheight = height * char_inf::cheight;
-
-                if(rwidth != realtime_script_windows[id].dim.x())
-                    realtime_script_windows[id].cache.invalidate();
-
-                realtime_script_windows[id].dim.x() = rwidth;
-                realtime_script_windows[id].dim.y() = rheight;
-            }
-
-            if(in.count("name") > 0)
-            {
-                realtime_script_windows[id].script_name = in["name"];
-            }
         }
-        else if(in["type"] == "chat_api")
+
+        if(width != 0 && height != 0)
         {
-            std::vector<std::string> chnls;
-            std::vector<std::string> msgs;
+            if(width < 5)
+                width = 5;
+            if(height < 5)
+                height = 5;
 
-            std::vector<std::string> in_channels = in["channels"];
+            if(width > 300)
+                width = 300;
+            if(height > 300)
+                height = 300;
 
-            std::vector<nlohmann::json> tell_msgs = in["tells"];
+            run.set_size = true;
 
-            std::vector<std::string> notifs = in["notifs"];
+            vec2f cdim = xy_to_vec(ImGui::CalcTextSize("A"));
 
-            for(int i=0; i < (int)in["data"].size(); i++)
+            if(run.is_square_font)
             {
-                chnls.push_back(in["data"][i]["channel"]);
-                msgs.push_back(in["data"][i]["text"]);
+                ImGui::PushFont(fonts.get_square_font());
+
+                cdim = xy_to_vec(ImGui::CalcTextSize("A"));
+
+                ImGui::PopFont();
             }
 
-            for(auto& i : notifs)
+            int rwidth = width * cdim.x();
+            int rheight = height * cdim.y();
+
+            if(rwidth != run.dim.x())
+                run.cache.invalidate();
+
+            run.dim.x() = rwidth;
+            run.dim.y() = rheight;
+        }
+
+        if(in.count("name") > 0)
+        {
+            run.script_name = in["name"];
+        }
+    }
+    else if(in["type"] == "chat_api")
+    {
+        std::vector<std::string> chnls;
+        std::vector<std::string> msgs;
+
+        std::vector<std::string> in_channels = in["channels"];
+
+        std::vector<nlohmann::json> tell_msgs = in["tells"];
+
+        std::vector<std::string> notifs = in["notifs"];
+
+        for(int i=0; i < (int)in["data"].size(); i++)
+        {
+            chnls.push_back(in["data"][i]["channel"]);
+            msgs.push_back(in["data"][i]["text"]);
+        }
+
+        for(auto& i : notifs)
+        {
+            fix_tabs(i);
+
+            raw_history.push_back(i + "\n");
+            history.push_back(string_to_interop_no_autos(i + "\n", false));
+        }
+
+        if(notifs.size() > 0)
+            cache.invalidate();
+
+        if(tell_msgs.size() > 0)
+            cache.invalidate();
+
+        std::string next_user = in["user"];
+
+        if(next_user != current_user)
+        {
+            cache.invalidate();
+            current_user = next_user;
+        }
+
+        std::string root_user = in["root_user"];
+
+        in_user = root_user;
+
+        chat_win.set_side_channels(in_channels);
+
+        for(int i=0; i < (int)chnls.size(); i++)
+        {
+            fix_tabs(msgs[i]);
+
+            if(chat_win.show_chat_in_main_window)
             {
-                fix_tabs(i);
+                raw_history.push_back(msgs[i]);
+                history.push_back(string_to_interop(msgs[i] + "\n", false, chat_win.auto_handle));
 
-                raw_history.push_back(i + "\n");
-                history.push_back(string_to_interop_no_autos(i + "\n", false));
-            }
-
-            if(notifs.size() > 0)
                 cache.invalidate();
-
-            if(tell_msgs.size() > 0)
-                cache.invalidate();
-
-            std::string next_user = in["user"];
-
-            if(next_user != current_user)
-            {
-                cache.invalidate();
-                current_user = next_user;
             }
 
-            std::string root_user = in["root_user"];
+            chat_win.chat_threads[chnls[i]].raw_history.push_back(msgs[i]);
+            chat_win.chat_threads[chnls[i]].history.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
+            chat_win.chat_threads[chnls[i]].dirty = true;
+            chat_win.chat_threads[chnls[i]].cache.invalidate();
 
-            in_user = root_user;
-
-            chat_win.set_side_channels(in_channels);
-
-            for(int i=0; i < (int)chnls.size(); i++)
-            {
-                fix_tabs(msgs[i]);
-
-                if(chat_win.show_chat_in_main_window)
-                {
-                    raw_history.push_back(msgs[i]);
-                    history.push_back(string_to_interop(msgs[i] + "\n", false, chat_win.auto_handle));
-
-                    cache.invalidate();
-                }
-
-                chat_win.chat_threads[chnls[i]].raw_history.push_back(msgs[i]);
-                chat_win.chat_threads[chnls[i]].history.push_back(string_to_interop(msgs[i], false, chat_win.auto_handle));
-                chat_win.chat_threads[chnls[i]].dirty = true;
-                chat_win.chat_threads[chnls[i]].cache.invalidate();
-
-                limit_size(chat_win.chat_threads[chnls[i]].raw_history, MAX_TEXT_HISTORY);
-                limit_size(chat_win.chat_threads[chnls[i]].history, MAX_TEXT_HISTORY);
-                de_newline(chat_win.chat_threads[chnls[i]].history);
-            }
-
-            for(int kk=0; kk < (int)tell_msgs.size(); kk++)
-            {
-                nlohmann::json js = tell_msgs[kk];
-
-                std::string text = js["text"];
-
-                fix_tabs(text);
-
-                raw_history.push_back(text + "\n");
-                history.push_back(string_to_interop_no_autos(text + "\n", false));
-            }
-
-            limit_size(raw_history, MAX_TEXT_HISTORY);
-            limit_size(history, MAX_TEXT_HISTORY);
-            de_newline(history);
+            limit_size(chat_win.chat_threads[chnls[i]].raw_history, MAX_TEXT_HISTORY);
+            limit_size(chat_win.chat_threads[chnls[i]].history, MAX_TEXT_HISTORY);
+            de_newline(chat_win.chat_threads[chnls[i]].history);
         }
-        else if(in["type"] == "script_args")
+
+        for(int kk=0; kk < (int)tell_msgs.size(); kk++)
         {
-            std::string scriptname = in["script"];
+            nlohmann::json js = tell_msgs[kk];
 
-            std::cout << scriptname << std::endl;
+            std::string text = js["text"];
 
-            if(scriptname.size() > 0)
+            fix_tabs(text);
+
+            raw_history.push_back(text + "\n");
+            history.push_back(string_to_interop_no_autos(text + "\n", false));
+        }
+
+        limit_size(raw_history, MAX_TEXT_HISTORY);
+        limit_size(history, MAX_TEXT_HISTORY);
+        de_newline(history);
+    }
+    else if(in["type"] == "script_args")
+    {
+        std::string scriptname = in["script"];
+
+        std::cout << scriptname << std::endl;
+
+        if(scriptname.size() > 0)
+        {
+            std::vector<autocomplete_args> auto_args;
+
+            for(int i=0; i < (int)in["keys"].size(); i++)
             {
-                std::vector<autocomplete_args> auto_args;
+                std::string key = in["keys"][i];
+                std::string val = in["vals"][i];
 
-                for(int i=0; i < (int)in["keys"].size(); i++)
-                {
-                    std::string key = in["keys"][i];
-                    std::string val = in["vals"][i];
-
-                    auto_args.push_back({key, val});
-                }
-
-                auto_handle.found_args[scriptname] = auto_args;
-                auto_handle.is_valid[scriptname] = true;
+                auto_args.push_back({key, val});
             }
+
+            auto_handle.found_args[scriptname] = auto_args;
+            auto_handle.is_valid[scriptname] = true;
         }
-        else if(in["type"] == "script_args_invalid")
+    }
+    else if(in["type"] == "script_args_invalid")
+    {
+        std::string scriptname = in["script"];
+
+        std::cout << "inv " << scriptname << std::endl;
+
+        if(scriptname.size() > 0)
         {
-            std::string scriptname = in["script"];
-
-            std::cout << "inv " << scriptname << std::endl;
-
-            if(scriptname.size() > 0)
-            {
-                auto_handle.is_valid[scriptname] = false;
-            }
+            auto_handle.is_valid[scriptname] = false;
         }
-        else if(in["type"] == "script_args_ratelimit")
+    }
+    else if(in["type"] == "script_args_ratelimit")
+    {
+        std::string name = in["script"];
+
+        std::cout << "rl name " << name << std::endl;
+
+        if(name.size() > 0)
         {
-            std::string name = in["script"];
-
-            std::cout << "rl name " << name << std::endl;
-
-            if(name.size() > 0)
-            {
-                auto_handle.found_unprocessed_autocompletes.push_back(name);
-            }
+            auto_handle.found_unprocessed_autocompletes.push_back(name);
         }
-        else if(in["type"] == "server_ping")
+    }
+    else if(in["type"] == "server_ping")
+    {
+        ///do nothing
+    }
+    else if(in["type"] == "script_down")
+    {
+        std::string name = in["name"];
+        std::string data = in["data"];
+
+        std::string save_name = get_scripts_directory() + "/" + name + ".down.js";
+
+        write_all_bin(save_name, data);
+
+        str = make_success_col("Downloaded and saved script to " + name + ".down.js") + "\n";
+        push = true;
+    }
+    else if(in["type"] == "chat_api_response")
+    {
+        std::string data = in["data"];
+
+        fix_tabs(data);
+
+        chat_win.add_text_to_focused(data);
+    }
+    else if(in["type"] == "auth")
+    {
+        std::string key = in["data"];
+        std::string key_file = "hex_key.key";
+
+        if(!file_exists(key_file))
         {
-            ///do nothing
-        }
-        else if(in["type"] == "script_down")
-        {
-            std::string name = in["name"];
-            std::string data = in["data"];
+            write_all_bin(key_file, key);
 
-            std::string save_name = get_scripts_directory() + "/" + name + ".down.js";
-
-            write_all_bin(save_name, data);
-
-            str = make_success_col("Downloaded and saved script to " + name + ".down.js") + "\n";
-            push = true;
-        }
-        else if(in["type"] == "chat_api_response")
-        {
-            std::string data = in["data"];
-
-            fix_tabs(data);
-
-            chat_win.add_text_to_focused(data);
-        }
-        else if(in["type"] == "auth")
-        {
-            std::string key = in["data"];
-            std::string key_file = "hex_key.key";
-
-            if(!file_exists(key_file))
-            {
-                write_all_bin(key_file, key);
-
-                add_text(make_success_col("Success! Try user lowercase_name to get started, and then #scripts.core()"));
-            }
-            else
-            {
-                add_text(make_error_col("Did not overwrite existing key file, you are already registered"));
-            }
+            add_text(make_success_col("Success! Try user lowercase_name to get started, and then #scripts.core()"));
         }
         else
         {
-            push = true;
+            add_text(make_error_col("Did not overwrite existing key file, you are already registered"));
         }
     }
     else

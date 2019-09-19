@@ -6,6 +6,8 @@
 
 void format_cache_2::ensure_built(vec2f window_dimensions, const std::vector<interop_vec_t>& all_chars)
 {
+    vec2f cdim = xy_to_vec(ImGui::CalcTextSize("A"));
+
     vec2f start = {char_inf::cwbuf, 0};
 
     if(valid_cache && !valid_last_line)
@@ -28,12 +30,12 @@ void format_cache_2::ensure_built(vec2f window_dimensions, const std::vector<int
 
         int found_line = 0;
 
-        vec2f current = start + (vec2f){0, char_inf::cheight * last_line};
+        vec2f current = start + (vec2f){0, cdim.y() * last_line};
 
-        get_height(all_chars.back(), current, start, window_dimensions, found_line);
+        get_height(all_chars.back(), current, start, window_dimensions, found_line, cdim);
 
         height_cache.push_back(found_line);
-        line_cache.push_back(format_characters(all_chars.back(), current, start, window_dimensions, found_line, last_line));
+        line_cache.push_back(format_characters(all_chars.back(), current, start, window_dimensions, found_line, last_line, cdim));
         return;
     }
 
@@ -44,19 +46,19 @@ void format_cache_2::ensure_built(vec2f window_dimensions, const std::vector<int
     height_cache.clear();
     int last_line = 0;
 
-    vec2f current = {char_inf::cwbuf,0};
+    vec2f current = {char_inf::cwbuf, 0};
 
     for(int i=0; i < (int)all_chars.size(); i++)
     {
         int found_line = 0;
 
-        get_height(all_chars[i], current, start, window_dimensions, found_line);
+        get_height(all_chars[i], current, start, window_dimensions, found_line, cdim);
 
         height_cache.push_back(found_line);
 
-        auto cur_formatted = format_characters(all_chars[i], current, start, window_dimensions, found_line, last_line);
+        auto cur_formatted = format_characters(all_chars[i], current, start, window_dimensions, found_line, last_line, cdim);
         last_line = found_line;
-        current.y() += found_line * char_inf::cheight;
+        current.y() += found_line * cdim.y();
 
         line_cache.push_back(cur_formatted);
     }
@@ -82,10 +84,12 @@ void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<f
     vec2f final_pos = screen_pos + text[idx_1].internal_pos;
     vec2f start_check_pos = screen_pos + text[idx_2 - 1].internal_pos;
 
-    if(final_pos.y() - char_inf::cheight >= screen_cull_y_bottom)
+    vec2f cdim = xy_to_vec(ImGui::CalcTextSize("A"));
+
+    if(final_pos.y() - cdim.y() >= screen_cull_y_bottom)
         return;
 
-    if(start_check_pos.y() + char_inf::cheight <= screen_cull_y_top)
+    if(start_check_pos.y() + cdim.y() <= screen_cull_y_top)
         return;
 
     std::string str;
@@ -101,7 +105,7 @@ void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<f
 
     copy_handler* handle = get_global_copy_handler();
 
-    if(ImGui::IsWindowFocused() && handle->char_is_within_select_box(screen_pos + text[idx_1].internal_pos) && text[idx_1].copyable)
+    if(ImGui::IsWindowFocused() && handle->char_is_within_select_box(screen_pos + text[idx_1].internal_pos, cdim) && text[idx_1].copyable)
     {
         if(check_copy)
         {
@@ -127,7 +131,7 @@ void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<f
     idx_1 = idx_2;
 }
 
-void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text, bool check_copy, float screen_cull_y_bottom, float screen_cull_y_top)
+void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text, bool check_copy, float screen_cull_y_bottom, float screen_cull_y_top, vec2f cdim)
 {
     copy_handler* handle = get_global_copy_handler();
 
@@ -153,7 +157,7 @@ void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text,
 
         if(cur.ioc.col != next.ioc.col ||
            cur.internal_pos.y() != next.internal_pos.y() ||
-           handle->char_is_within_select_box(p1) != handle->char_is_within_select_box(p2))
+           handle->char_is_within_select_box(p1, cdim) != handle->char_is_within_select_box(p2, cdim))
         {
             render_indices(screen_pos, lidx, idx+1, text, check_copy, screen_cull_y_bottom, screen_cull_y_top);
             continue;
@@ -183,11 +187,13 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
         }
     }
 
-    float vertical_fudge_for_floating_terminal = char_inf::cheight * 2;
+    vec2f cdim = xy_to_vec(ImGui::CalcTextSize("A"));
+
+    float vertical_fudge_for_floating_terminal = cdim.y() * 2;
 
     if(line_cache.size() > 0)
     {
-        vertical_fudge_for_floating_terminal += height_cache.back() * char_inf::cheight;
+        vertical_fudge_for_floating_terminal += height_cache.back() * cdim.y();
     }
 
     vec2f mdim = {dim.x(), dim.y() - vertical_fudge_for_floating_terminal};
@@ -196,7 +202,7 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
     vec2f content_start = {0,0};
     vec2f content_end = {0,0};
 
-    float vertical_offset = scroll_lines * char_inf::cheight - total_lines * char_inf::cheight + dim.y() - char_inf::cheight*1.5;
+    float vertical_offset = scroll_lines * cdim.y() - total_lines * cdim.y() + dim.y() - cdim.y()*1.5;
 
     if(line_cache.size() > 0)
     {
@@ -226,14 +232,14 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
 
         content_end = display_last;
 
-        if(display_last.y() < position.y() - char_inf::cheight)
+        if(display_last.y() < position.y() - cdim.y())
             continue;
 
-        if(display_first.y() > position.y() + mdim.y() + char_inf::cheight)
+        if(display_first.y() > position.y() + mdim.y() + cdim.y())
             continue;
 
         ///render!
-        render_formatted(position + (vec2f){0, vertical_offset}, line_cache[i], do_copy, screen_cull_y_bottom, screen_cull_y_top);
+        render_formatted(position + (vec2f){0, vertical_offset}, line_cache[i], do_copy, screen_cull_y_bottom, screen_cull_y_top, cdim);
     }
 
     if(line_cache.size() > 0)
@@ -242,14 +248,14 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
 
         if(cformat.size() > 0)
         {
-            vec2f display_pos = position + (vec2f){0, dim.y()} - (vec2f){0, char_inf::cheight * 0.5};
+            vec2f display_pos = position + (vec2f){0, dim.y()} - (vec2f){0, cdim.y() * 0.5};
 
-            display_pos.y() -= height_cache.back() * char_inf::cheight;
+            display_pos.y() -= height_cache.back() * cdim.y();
             display_pos.y() += 4;
 
             vec2f relative_pos = (vec2f){display_pos.x(), display_pos.y() - cformat.front().internal_pos.y()};
 
-            render_formatted(relative_pos, line_cache.back(), do_copy, position.y() + dim.y(), screen_cull_y_top);
+            render_formatted(relative_pos, line_cache.back(), do_copy, position.y() + dim.y(), screen_cull_y_top, cdim);
         }
     }
 

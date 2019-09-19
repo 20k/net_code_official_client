@@ -89,7 +89,7 @@ void font_selector::reset_default_fonts(ImFontAtlas* atlas, float editor_font_si
 
     ///BASE
     io.Fonts->AddFontFromFileTTF("VeraMono.ttf", current_base_font_size, &font_cfg);
-    io.Fonts->AddFontFromFileTTF("square.ttf", round(current_base_font_size*0.6), &font_cfg);
+    io.Fonts->AddFontFromFileTTF("square.ttf", round(current_base_font_size*0.7), &font_cfg);
     ///TEXT_EDITOR
     //io.Fonts->AddFontFromFileTTF("VeraMono.ttf", editor_font_size, &font_cfg);
     ///DEFAULT

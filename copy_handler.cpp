@@ -76,7 +76,7 @@ std::string check_formatted_text_with_offset(const std::vector<formatted_char>& 
     return ret;
 }
 
-bool copy_handler::char_is_within_select_box(vec2f pos)
+bool copy_handler::char_is_within_select_box(vec2f pos, vec2f cdim)
 {
     if(!held && !trigger_copy())
         return false;
@@ -85,7 +85,7 @@ bool copy_handler::char_is_within_select_box(vec2f pos)
         return false;
 
     vec2f p1 = pos;
-    vec2f p2 = pos + (vec2f){char_inf::cwidth, char_inf::cheight};
+    vec2f p2 = pos + cdim;
 
     auto [tl, br] = points_to_rect(copy_start, copy_end);
 
