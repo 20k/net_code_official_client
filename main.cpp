@@ -25,6 +25,7 @@
 #include "tokeniser.hpp"
 #include "serialisables.hpp"
 #include <networking/networking.hpp>
+#include <cstdlib>
 
 ///ruh roh
 ///need to structure this project properly
@@ -212,10 +213,97 @@ void handle_auth(c_steam_api csapi, connection& conn, std::string current_user)
     }
 }
 
-///test new repo
-int main()
+void test_watcher()
 {
-    //test();
+    sf::Clock heartbeat_clock;
+
+    while(1)
+    {
+        if(file_exists("ipc") && file_exists("lock"))
+        {
+            std::string contents = read_file_bin("ipc");
+
+            auto post_split = no_ss_split(contents, ".");
+
+            if((post_split.size() == 3 || post_split.size() == 4) && post_split.back() == "js")
+                system(("start ./scripts/" + contents).c_str());
+
+            remove("ipc");
+            remove("lock");
+        }
+
+        if(file_exists("quit"))
+            exit(0);
+
+        if(file_exists("heartbeat"))
+        {
+            heartbeat_clock.restart();
+            remove("heartbeat");
+        }
+
+        if(heartbeat_clock.getElapsedTime().asSeconds() > 20)
+            exit(0);
+
+        sf::sleep(sf::milliseconds(100));
+    }
+}
+
+void at_exit()
+{
+    write_all_bin("quit", "1");
+}
+
+///test new repo
+int main(int argc, char* argv[])
+{
+    if(argc == 1)
+    {
+        remove("quit");
+        remove("ipc");
+        remove("lock");
+        remove("heartbeat");
+
+        //system(("start " + std::string(argv[0]) + " hi").c_str());
+        STARTUPINFO m_si = { sizeof(STARTUPINFO)};
+        PROCESS_INFORMATION m_pi;
+
+        std::string cmdline = std::string(argv[0]) + " hi";
+
+        bool status = ::CreateProcessA(
+		// lpApplicationName
+		argv[0]
+		// lpCommandLine
+		,cmdline.data()
+		// lpProcessAttributes
+		,nullptr
+		// lpThreadAttributes
+		,nullptr
+		// bInheritHandles
+		,false
+		// dwCreationFlags
+		,CREATE_NO_WINDOW
+		// lpEnvironment - Pointer to environment variables
+		,nullptr
+		// lpCurrentDirectory - Pointer to current directory
+		,nullptr
+		// lpStartupInfo
+		,&m_si
+		// lpProcessInformation
+		,&m_pi
+		);
+
+		printf("STATUS %i\n", status);
+		std::cout << "LERROR " << GetLastError() << std::endl;
+
+        printf("Launched remote\n");
+
+        atexit(at_exit);
+    }
+    else
+    {
+        test_watcher();
+        return 0;
+    }
 
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
@@ -474,6 +562,8 @@ int main()
 
     bool has_settings_window = false;
 
+    sf::Clock heartbeat;
+
     while(running)
     {
         if(glfwWindowShouldClose(window_ctx.window))
@@ -494,6 +584,11 @@ int main()
             handle_auth(csapi, conn, current_user);
 
             term.add_text("Connecting...");
+        }
+
+        if(heartbeat.getElapsedTime().asSeconds() > 1)
+        {
+            write_all_bin("heartbeat", "1");
         }
 
         realtime_shim.clear_command();

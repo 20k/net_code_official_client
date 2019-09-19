@@ -11,6 +11,7 @@
 
 #include <windows.h>
 #include <shellapi.h>
+#include <iostream>
 
 std::string get_scripts_directory()
 {
@@ -100,6 +101,17 @@ std::string format_raw_script_name(const std::string& file_name)
     return file_name;
 }
 
+void ipc_open(const std::string& fname)
+{
+    while(file_exists("lock"))
+    {
+        sf::sleep(sf::milliseconds(100));
+    }
+
+    write_all_bin("ipc", fname);
+    write_all_bin("lock", "1");
+}
+
 std::string handle_local_command(const std::string& username, const std::string& command, auto_handler& auto_handle, bool& should_shutdown, terminal_imgui& term, chat_window& chat)
 {
     if(starts_with(command, "#clear_autos") || starts_with(command, "#autos_clear"))
@@ -183,8 +195,8 @@ std::string handle_local_command(const std::string& username, const std::string&
 
         std::string name = fname[1];
 
-        std::string es5_file_name = "scripts/" + username + "." + name + ".es5.js";
-        std::string es6_file_name = "scripts/" + username + "." + name + ".js";
+        std::string es5_file_name = username + "." + name + ".es5.js";
+        std::string es6_file_name = username + "." + name + ".js";
 
         std::string file_name = es6_file_name;
 
@@ -221,8 +233,7 @@ std::string handle_local_command(const std::string& username, const std::string&
             write_all_bin(file_name, "function(context, args)\n{\n\n}");
         }
 
-        ///need to use shellexecute to prevent hangs on no js
-        system(("start " + file_name).c_str());
+        ipc_open(file_name);
     }
 
     if(starts_with(command, "#open "))
@@ -234,8 +245,8 @@ std::string handle_local_command(const std::string& username, const std::string&
 
         std::string name = fname[1];
 
-        std::string es5_file_name = "scripts/" + username + "." + name + ".es5.js";
-        std::string es6_file_name = "scripts/" + username + "." + name + ".js";
+        std::string es5_file_name = username + "." + name + ".es5.js";
+        std::string es6_file_name = username + "." + name + ".js";
 
         std::string file_name = es5_file_name;
 
@@ -245,7 +256,7 @@ std::string handle_local_command(const std::string& username, const std::string&
         if(!file_exists(file_name))
             return "No such file";
 
-        system(("start " + file_name).c_str());
+        ipc_open(file_name);
     }
 
     if(starts_with(command, "#dir"))

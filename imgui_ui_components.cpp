@@ -31,7 +31,7 @@ void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar, format_cache_2&
 
     for(int i=0; i < approx_num + 1; i++)
     {
-        ImGui::Text("P\n");
+        ImGui::Text("\n");
 
         start_pos += (vec2f){0, cdim.y()};
         ImGui::SetCursorPos({start_pos.x(), start_pos.y()});
