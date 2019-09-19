@@ -239,7 +239,7 @@ void terminal_imgui::render(vec2f window_size, bool refocus)
     //    handle->process_formatted(cache.out);
 }
 
-void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_id)
+void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_id, font_selector& fonts)
 {
     was_closed_id = -1;
 
@@ -283,6 +283,9 @@ void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_i
 
         if(run.set_size)
             ImGui::SetNextWindowSize(ImVec2(run.dim.x(), run.dim.y()), ImGuiCond_Always);
+
+        if(run.is_square_font)
+            ImGui::PushFont(fonts.get_square_font());
 
         run.set_size = false;
 
@@ -337,6 +340,9 @@ void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_i
         run.current_pos = {my_pos.x, my_pos.y};
 
         ImGui::End();
+
+        if(run.is_square_font)
+            ImGui::PopFont();
     }
 }
 
@@ -486,6 +492,8 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
                 height = in["height"];
             if(in.count("close") > 0)
                 should_close = in["close"];
+            if(in.count("square_font") > 0)
+                realtime_script_windows[id].is_square_font = (int)in["square_font"];
 
             realtime_script_windows[id].last_message.restart();
 

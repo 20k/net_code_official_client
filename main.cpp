@@ -1233,7 +1233,7 @@ int main()
         glfwGetFramebufferSize(window_ctx.window, &display_w, &display_h);
 
         //test_imgui_term.render(window);
-        term.render_realtime_windows(conn, was_closed_id);
+        term.render_realtime_windows(conn, was_closed_id, font_select);
         chat_win.render(should_coordinate_focus);
         term.render({display_w, display_h}, should_coordinate_focus);
 

@@ -46,6 +46,7 @@ struct realtime_script_run : frameable
     scrollbar_hack scroll_hack;
     bool open = true;
     bool was_open = true;
+    bool is_square_font = false;
 
     std::string script_name;
     vec2f dim = {300, 300};
@@ -105,6 +106,7 @@ struct chat_window : serialisable, frameable, free_function
 };
 
 struct connection;
+struct font_selector;
 
 struct terminal_imgui : serialisable, cacheable, frameable, free_function
 {
@@ -131,7 +133,7 @@ struct terminal_imgui : serialisable, cacheable, frameable, free_function
 
     terminal_imgui();
     void render(vec2f window_size, bool refocus);
-    void render_realtime_windows(connection& conn, int& was_closed_id);
+    void render_realtime_windows(connection& conn, int& was_closed_id, font_selector& fonts);
     void bump_command_to_history();
 
     void add_text(const std::string& str);
