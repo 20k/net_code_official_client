@@ -25,6 +25,13 @@ ImFont* font_selector::get_base_font()
     return io.Fonts->Fonts[current_base_font];
 }
 
+ImFont* font_selector::get_square_font()
+{
+    ImGuiIO& io = ImGui::GetIO();
+
+    return io.Fonts->Fonts[1];
+}
+
 ImFont* font_selector::get_editor_font()
 {
     ImGuiIO& io = ImGui::GetIO();
@@ -231,12 +238,6 @@ void font_selector::render(window_context& window_ctx)
     }
 
     ImGui::NewLine();
-
-    /*bool text_shader_enabled = ImGui::TextShaderEnabled();
-
-    ImGui::Checkbox("UseTextShader", &text_shader_enabled);
-
-    ImGui::SetTextShaderEnabled(text_shader_enabled);*/
 
     ImGui::NewLine();
 

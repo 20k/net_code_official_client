@@ -33,6 +33,7 @@ struct font_selector : serialisable
     int current_base_font = (int)font_cfg::BASE;
 
     ImFont* get_base_font();
+    ImFont* get_square_font();
     ImFont* get_editor_font();
 
     float current_base_font_size = 14;

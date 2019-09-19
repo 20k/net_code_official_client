@@ -132,13 +132,9 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-O3" />
-					<Add option="-g" />
+					<Add option="-O2" />
 					<Add option="-DEXTERN_IP" />
 				</Compiler>
-				<Linker>
-					<Add option="-O3" />
-				</Linker>
 			</Target>
 			<Target title="DeployTestSubmodules">
 				<Option output="bin/Deploy/crapmud_client" prefix_auto="1" extension_auto="1" />
@@ -235,7 +231,6 @@
 		<Unit filename="colour_interop.hpp" />
 		<Unit filename="copy_handler.cpp" />
 		<Unit filename="copy_handler.hpp" />
-		<Unit filename="deps/imgui-sfml/imgui-SFML.h" />
 		<Unit filename="deps/imgui/examples/imgui_impl_glfw.cpp" />
 		<Unit filename="deps/imgui/examples/imgui_impl_glfw.h" />
 		<Unit filename="deps/imgui/examples/imgui_impl_opengl3.cpp" />
