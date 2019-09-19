@@ -31,13 +31,13 @@ void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar)
 {
     ImGui::BeginChild("right_child", ImVec2(0,0), false, ImGuiWindowFlags_NoScrollWithMouse);
 
-    /*if(approx_num < 0)
+    if(approx_num < 0)
         approx_num = 1;
 
     for(int i=0; i < approx_num; i++)
     {
         ImGui::Text("\n");
-    }*/
+    }
 
     if(set_scrollbar)
     {
@@ -201,7 +201,7 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
     float flines = cache.get_lines();
 
     ///rough
-    ImGui::SetNextWindowContentSize({cache.last_content_size.x(), cache.last_content_size.y()});
+    //ImGui::SetNextWindowContentSize({cache.last_content_size.x(), cache.last_content_size.y()});
     scroll_hack.do_hack(flines, true);
 
     if(scroll_hack.scrolling)
