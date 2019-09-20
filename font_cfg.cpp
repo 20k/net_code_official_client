@@ -95,13 +95,16 @@ void font_selector::reset_default_fonts(ImFontAtlas* atlas, float editor_font_si
     ///DEFAULT
     io.Fonts->AddFontDefault();
 
-    /*for_each_file("./", [&](const std::string& name, const std::string& ext)
+    for_each_file("./", [&](const std::string& name, const std::string& ext)
     {
         if(ext != "ttf")
             return;
 
+        if(name == "square.ttf" || name == "VeraMono.ttf")
+            return;
+
         io.Fonts->AddFontFromFileTTF(name.c_str(), current_base_font_size, &font_cfg);
-    });*/
+    });
 
     wants_rebuild = true;
 
