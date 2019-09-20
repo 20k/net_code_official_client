@@ -225,7 +225,7 @@ void test_watcher()
 
             auto post_split = no_ss_split(contents, ".");
 
-            if((post_split.size() == 3 || post_split.size() == 4) && post_split.back() == "js")
+            if((post_split.size() == 3 || post_split.size() == 4) && post_split.back() == "js" && is_valid_full_name_string(post_split[0] + "." + post_split[1]))
                 system(("start ./scripts/" + contents).c_str());
 
             remove("ipc");
