@@ -219,7 +219,7 @@ void test_watcher()
 
     while(1)
     {
-        if(file_exists("ipc") && file_exists("lock"))
+        if(file_exists("ipc"))
         {
             std::string contents = read_file_bin("ipc");
 
@@ -229,7 +229,6 @@ void test_watcher()
                 system(("start ./scripts/" + contents).c_str());
 
             remove("ipc");
-            remove("lock");
         }
 
         if(file_exists("quit"))
@@ -260,10 +259,8 @@ int main(int argc, char* argv[])
     {
         remove("quit");
         remove("ipc");
-        remove("lock");
         remove("heartbeat");
 
-        //system(("start " + std::string(argv[0]) + " hi").c_str());
         STARTUPINFO m_si = { sizeof(STARTUPINFO)};
         PROCESS_INFORMATION m_pi;
 
@@ -293,7 +290,7 @@ int main(int argc, char* argv[])
 		);
 
 		printf("STATUS %i\n", status);
-		std::cout << "LERROR " << GetLastError() << std::endl;
+		std::cout << "GLE Status? " << GetLastError() << std::endl;
 
         printf("Launched remote\n");
 
@@ -1313,6 +1310,19 @@ int main(int argc, char* argv[])
             get_global_copy_handler()->held = false;
         }
 
+
+        int lcwidth = char_inf::cwidth;
+        int lcheight = char_inf::cheight;
+
+        char_inf::cwidth = ImGui::CalcTextSize("A").x + char_inf::extra_glyph_spacing;
+        char_inf::cheight = ImGui::CalcTextSize("A").y;
+
+        if(char_inf::cwidth != lcwidth || char_inf::cheight != lcheight)
+        {
+            active_frames = active_frames_restart;
+            invalidate_everything(term, chat_win);
+        }
+
         ImGui::PopFont();
 
         ImGui::Render();
@@ -1336,18 +1346,6 @@ int main(int argc, char* argv[])
         glfwSwapBuffers(window_ctx.window);
 
         sf::sleep(sf::milliseconds(4));
-
-        int lcwidth = char_inf::cwidth;
-        int lcheight = char_inf::cheight;
-
-        char_inf::cwidth = ImGui::CalcTextSize("A").x + char_inf::extra_glyph_spacing;
-        char_inf::cheight = ImGui::CalcTextSize("A").y;
-
-        if(char_inf::cwidth != lcwidth || char_inf::cheight != lcheight)
-        {
-            active_frames = active_frames_restart;
-            invalidate_everything(term, chat_win);
-        }
     }
 
     pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));

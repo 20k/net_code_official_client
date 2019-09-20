@@ -105,19 +105,8 @@ void ipc_open(const std::string& fname)
 {
     sf::Clock clk;
 
-    while(file_exists("lock"))
-    {
-        sf::sleep(sf::milliseconds(100));
-
-        if(clk.getElapsedTime().asSeconds() > 5)
-        {
-            printf("Warning, IPC thread seems to have died\n");
-            return;
-        }
-    }
-
-    write_all_bin("ipc", fname);
-    write_all_bin("lock", "1");
+    write_all_bin("ipc.bak", fname);
+    rename("ipc.bak", "ipc");
 }
 
 std::string handle_local_command(const std::string& username, const std::string& command, auto_handler& auto_handle, bool& should_shutdown, terminal_imgui& term, chat_window& chat)
