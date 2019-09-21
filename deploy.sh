@@ -9,6 +9,7 @@ mkdir ./Release
 mkdir ./Release/bin
 rm -rf ./Release/bin/*
 mkdir ./Release/bin/scripts
+mkdir ./Release/bin/example_scripts
 
 cp ./deps/steamworks_sdk_142/sdk/redistributable_bin/win64/steam_api64.dll ./build_root
 cp ./deps/libncclient/ncclient.dll ./build_root
@@ -18,7 +19,7 @@ cd build_root
 
 sh ../deploy_gather_dlls.sh ./crapmud_client.exe .
 
-cp * ../Release/bin
+cp -r * ../Release/bin
 
 cd ..
 cd ./deps/steamworks_sdk_142/sdk/tools/ContentBuilder
