@@ -189,8 +189,8 @@ std::string handle_local_command(const std::string& username, const std::string&
 
         std::string name = fname[1];
 
-        std::string es5_file_name = "scripts/" + username + "." + name + ".es5.js";
-        std::string es6_file_name = "scripts/" + username + "." + name + ".js";
+        std::string es5_file_name = "./scripts/" + username + "." + name + ".es5.js";
+        std::string es6_file_name = "./scripts/" + username + "." + name + ".js";
 
         std::string file_name = es6_file_name;
 
@@ -224,6 +224,8 @@ std::string handle_local_command(const std::string& username, const std::string&
 
         if(!file_exists(file_name))
         {
+            std::cout << "Trying to create " << file_name << std::endl;
+
             write_all_bin(file_name, "function(context, args)\n{\n\n}");
         }
 
@@ -239,8 +241,8 @@ std::string handle_local_command(const std::string& username, const std::string&
 
         std::string name = fname[1];
 
-        std::string es5_file_name = "scripts/" + username + "." + name + ".es5.js";
-        std::string es6_file_name = "scripts/" + username + "." + name + ".js";
+        std::string es5_file_name = "./scripts/" + username + "." + name + ".es5.js";
+        std::string es6_file_name = "./scripts/" + username + "." + name + ".js";
 
         std::string file_name = es5_file_name;
 
