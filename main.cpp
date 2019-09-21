@@ -213,95 +213,9 @@ void handle_auth(c_steam_api csapi, connection& conn, std::string current_user)
     }
 }
 
-void test_watcher()
-{
-    sf::Clock heartbeat_clock;
-
-    while(1)
-    {
-        if(file_exists("ipc"))
-        {
-            std::string contents = read_file_bin("ipc");
-
-            auto post_split = no_ss_split(contents, ".");
-
-            if((post_split.size() == 3 || post_split.size() == 4) && post_split.back() == "js" && is_valid_full_name_string(post_split[0] + "." + post_split[1]))
-                system(("start ./scripts/" + contents).c_str());
-
-            remove("ipc");
-        }
-
-        if(file_exists("quit"))
-            exit(0);
-
-        if(file_exists("heartbeat"))
-        {
-            heartbeat_clock.restart();
-            remove("heartbeat");
-        }
-
-        if(heartbeat_clock.getElapsedTime().asSeconds() > 20)
-            exit(0);
-
-        sf::sleep(sf::milliseconds(100));
-    }
-}
-
-void at_exit()
-{
-    write_all_bin("quit", "1");
-}
-
 ///test new repo
 int main(int argc, char* argv[])
 {
-    if(argc == 1)
-    {
-        remove("quit");
-        remove("ipc");
-        remove("heartbeat");
-
-        STARTUPINFO m_si = { sizeof(STARTUPINFO)};
-        PROCESS_INFORMATION m_pi;
-
-        std::string cmdline = std::string(argv[0]) + " hi";
-
-        bool status = ::CreateProcessA(
-		// lpApplicationName
-		argv[0]
-		// lpCommandLine
-		,cmdline.data()
-		// lpProcessAttributes
-		,nullptr
-		// lpThreadAttributes
-		,nullptr
-		// bInheritHandles
-		,false
-		// dwCreationFlags
-		,CREATE_NO_WINDOW
-		// lpEnvironment - Pointer to environment variables
-		,nullptr
-		// lpCurrentDirectory - Pointer to current directory
-		,nullptr
-		// lpStartupInfo
-		,&m_si
-		// lpProcessInformation
-		,&m_pi
-		);
-
-		printf("STATUS %i\n", status);
-		std::cout << "GLE Status? " << GetLastError() << std::endl;
-
-        printf("Launched remote\n");
-
-        atexit(at_exit);
-    }
-    else
-    {
-        test_watcher();
-        return 0;
-    }
-
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
     //stack_on_start();

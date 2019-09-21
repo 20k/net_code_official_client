@@ -103,10 +103,7 @@ std::string format_raw_script_name(const std::string& file_name)
 
 void ipc_open(const std::string& fname)
 {
-    sf::Clock clk;
-
-    write_all_bin("ipc.bak", fname);
-    rename("ipc.bak", "ipc");
+    system(("start ./scripts/" + fname).c_str());
 }
 
 std::string handle_local_command(const std::string& username, const std::string& command, auto_handler& auto_handle, bool& should_shutdown, terminal_imgui& term, chat_window& chat)
