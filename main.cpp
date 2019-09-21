@@ -222,6 +222,23 @@ int main(int argc, char* argv[])
 
     //token_tests();
 
+    bool no_viewports = false;
+
+    if(argc > 1)
+    {
+        for(int i=1; i < argc; i++)
+        {
+            std::string sarg = argv[i];
+
+            if(sarg == "-noviewports" || sarg == "-noviewport")
+            {
+                no_viewports = true;
+
+                printf("Viewports are disabled\n");
+            }
+        }
+    }
+
     c_steam_api csapi = steam_api_alloc();
 
     connection conn;
@@ -233,14 +250,21 @@ int main(int argc, char* argv[])
 
     window_context window_ctx;
 
+    printf("Set up window context\n");
+
     ImFontAtlas atlas = {};
 
     ImGui::CreateContext(&atlas);
 
+    printf("ImGui create context\n");
+
     ImGuiIO& io = ImGui::GetIO();
 
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+    if(!no_viewports)
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     //io.ConfigViewportsNoTaskBarIcon = true;
 
@@ -257,6 +281,8 @@ int main(int argc, char* argv[])
     style.FrameBorderSize = 0;
     //style.PopupBorderSize = 0;
     style.WindowBorderSize = 1;
+
+    printf("Done linear colours and styles\n");
 
     /*style.FramePadding = ImVec2(0,0);
     style.DisplaySafeAreaPadding = ImVec2(0,0);
@@ -276,12 +302,21 @@ int main(int argc, char* argv[])
     font_selector font_select;
     font_select.reset_default_fonts(&atlas);
 
+    printf("Fonts\n");
+
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window_ctx.window, true);
+
+    printf("ImGui init for opengl\n");
+
     ImGui_ImplOpenGL3_Init(window_ctx.glsl_version);
+
+    printf("ImGui init OpenGL\n");
 
     terminal_imgui term;
     chat_window chat_win;
+
+    printf("Terminal + Chat window\n");
 
     bool should_coordinate_focus = true;
 
@@ -386,6 +421,8 @@ int main(int argc, char* argv[])
     MMAP(1, rmouse);
     MMAP(2, mmouse);
 
+    printf("Specials\n");
+
     std::string terminal_file = "./terminal_v6.txt";
     std::string chat_file = "./chat_v6.txt";
     //std::string settings_file = "./text_sett_v1.txt";
@@ -420,6 +457,8 @@ int main(int argc, char* argv[])
         }
     }
     catch(...){}
+
+    printf("Loaded files\n");
 
     sf::Clock render_clock;
 
@@ -474,6 +513,8 @@ int main(int argc, char* argv[])
     bool has_settings_window = false;
 
     sf::Clock heartbeat;
+
+    printf("Pre main loop\n");
 
     while(running)
     {

@@ -13,7 +13,11 @@
 
 window_context::window_context()
 {
+    printf("Preload\n");
+
     load();
+
+    printf("PostLoad\n");
 
     if(!glfwInit())
         throw std::runtime_error("Could not init glfw");
@@ -47,12 +51,19 @@ window_context::window_context()
         glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
     }
 
+    printf("Is srgb? %i\n", is_srgb);
+
     // Create window with graphics context
     window = glfwCreateWindow(width, height, "net_code_", NULL, NULL);
+
+    printf("glfwCreate %i %i\n", width, height);
+
     if (window == NULL)
         throw std::runtime_error("Nullptr window in glfw");
 
     glfwMakeContextCurrent(window);
+
+    printf("glfwMakeContextCurrent\n");
 
     if(glewInit() != GLEW_OK)
         throw std::runtime_error("Bad Glew");
