@@ -103,7 +103,7 @@ std::string format_raw_script_name(const std::string& file_name)
 
 void ipc_open(const std::string& fname)
 {
-    system(("start ./scripts/" + fname).c_str());
+    system(("start " + fname).c_str());
 }
 
 std::string handle_local_command(const std::string& username, const std::string& command, auto_handler& auto_handle, bool& should_shutdown, terminal_imgui& term, chat_window& chat)
@@ -189,8 +189,8 @@ std::string handle_local_command(const std::string& username, const std::string&
 
         std::string name = fname[1];
 
-        std::string es5_file_name = username + "." + name + ".es5.js";
-        std::string es6_file_name = username + "." + name + ".js";
+        std::string es5_file_name = "scripts/" + username + "." + name + ".es5.js";
+        std::string es6_file_name = "scripts/" + username + "." + name + ".js";
 
         std::string file_name = es6_file_name;
 
@@ -239,8 +239,8 @@ std::string handle_local_command(const std::string& username, const std::string&
 
         std::string name = fname[1];
 
-        std::string es5_file_name = username + "." + name + ".es5.js";
-        std::string es6_file_name = username + "." + name + ".js";
+        std::string es5_file_name = "scripts/" + username + "." + name + ".es5.js";
+        std::string es6_file_name = "scripts/" + username + "." + name + ".js";
 
         std::string file_name = es5_file_name;
 
