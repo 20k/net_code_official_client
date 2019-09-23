@@ -105,8 +105,6 @@ std::string default_up_handling(const std::string& user, const std::string& serv
 
     if((starts_with(server_msg, up) || starts_with(server_msg, dry) || starts_with(server_msg, up_es5)) && strings.size() == 2)
     {
-        printf("hi\n");
-
         std::string name = strings[1];
 
         std::string diskname = scripts_dir + user + "." + name + ".es5.js";
