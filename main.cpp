@@ -1222,16 +1222,18 @@ int main(int argc, char* argv[])
             ImGui::End();
         }
 
-        ImGui::Begin("notepad");
-
-        bool changed = ImGui::InputTextMultiline("Doot", &notepad, ImGui::GetContentRegionAvail(), ImGuiInputTextFlags_None);
-
-        if(changed)
         {
-            atomic_write_all(notepad_file, notepad);
-        }
+            ImGui::Begin("notepad");
 
-        ImGui::End();
+            bool changed = ImGui::InputTextMultiline("Doot", &notepad, ImGui::GetContentRegionAvail(), ImGuiInputTextFlags_None);
+
+            if(changed)
+            {
+                atomic_write_all(notepad_file, notepad);
+            }
+
+            ImGui::End();
+        }
 
         if(ImGui::IsKeyPressed(GLFW_KEY_F3))
             has_settings_window = !has_settings_window;
