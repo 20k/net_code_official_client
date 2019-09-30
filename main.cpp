@@ -45,6 +45,7 @@
 #include "font_cfg.hpp"
 #include <iomanip>
 #include "imguix.hpp"
+#include <misc/cpp/imgui_stdlib.h>
 
 std::string make_lower(std::string in)
 {
@@ -425,6 +426,7 @@ int main(int argc, char* argv[])
     std::string chat_file = "./chat_v6.txt";
     //std::string settings_file = "./text_sett_v1.txt";
     std::string font_file = "./font_sett_v1.txt";
+    std::string notepad_file = "./notepad.txt";
 
     try
     {
@@ -455,6 +457,13 @@ int main(int argc, char* argv[])
         }
     }
     catch(...){}
+
+    std::string notepad;
+
+    if(file_exists(notepad_file))
+    {
+        notepad = read_file(notepad_file);
+    }
 
     printf("Loaded files\n");
 
@@ -1213,6 +1222,17 @@ int main(int argc, char* argv[])
             ImGui::End();
         }
 
+        ImGui::Begin("notepad");
+
+        bool changed = ImGui::InputTextMultiline("Doot", &notepad, ImGui::GetContentRegionAvail(), ImGuiInputTextFlags_None);
+
+        if(changed)
+        {
+            atomic_write_all(notepad_file, notepad);
+        }
+
+        ImGui::End();
+
         if(ImGui::IsKeyPressed(GLFW_KEY_F3))
             has_settings_window = !has_settings_window;
 
@@ -1301,6 +1321,7 @@ int main(int argc, char* argv[])
         sf::sleep(sf::milliseconds(4));
     }
 
+    atomic_write_all(notepad_file, notepad);
     pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
     pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
     window_ctx.save();
