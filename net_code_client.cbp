@@ -208,6 +208,9 @@
 			<Add directory="C:/Users/James/Desktop/projects/crapmud_client/deps/freetype/include" />
 		</Compiler>
 		<Linker>
+			<Add option="-static-libstdc++" />
+			<Add option="-static-libgcc" />
+			<Add option="-static" />
 			<Add option="-lmingw32" />
 			<Add option="-l:libssl.a" />
 			<Add option="-l:libglfw3.a" />
@@ -225,16 +228,16 @@
 			<Add option="-l:libz.a" />
 			<Add option="-l:libbz2.a" />
 			<Add option="-l:librpcrt4.a" />
-			<Add option="-lopenal32" />
+			<Add option="-l:libopenal.a" />
 			<Add option="-logg" />
 			<Add option="-lole32" />
 			<Add option="-ldbgeng" />
 			<Add option="-lwinmm" />
-			<Add option="-lws2_32" />
-			<Add option="-lcrypto" />
+			<Add option="-l:libcrypto.a" />
 			<Add option="-lbacktrace" />
 			<Add option="-lgdi32" />
-			<Add library="deps/libncclient/libncclient.a" />
+			<Add option="-lws2_32" />
+			<Add library="deps/steamworks_sdk_142/sdk/redistributable_bin/win64/libsteam_api64.a" />
 		</Linker>
 		<Unit filename="auto_handlers.cpp" />
 		<Unit filename="auto_handlers.hpp" />
@@ -285,6 +288,8 @@
 		<Unit filename="serialisables.hpp" />
 		<Unit filename="stacktrace.cpp" />
 		<Unit filename="stacktrace.hpp" />
+		<Unit filename="steam_api.cpp" />
+		<Unit filename="steam_api.hpp" />
 		<Unit filename="string_helpers.cpp" />
 		<Unit filename="string_helpers.hpp" />
 		<Unit filename="text.fglsl" />

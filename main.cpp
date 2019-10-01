@@ -30,10 +30,8 @@
 ///ruh roh
 ///need to structure this project properly
 #include "local_commands.hpp"
-#include <libncclient/c_all.h>
 #include <libncclient/nc_util.hpp>
-#include <libncclient/nc_string_interop.hpp>
-#include <libncclient/c_steam_api.h>
+#include "steam_api.hpp"
 
 #include <imgui/imgui.h>
 #include <imgui-sfml/imgui-SFML.h>
@@ -145,36 +143,39 @@ std::string default_up_handling(const std::string& user, const std::string& serv
     return server_msg;
 }
 
-void handle_auth(c_steam_api csapi, connection& conn, std::string current_user)
+void handle_auth(steamapi& s_api, connection& conn, std::string current_user)
 {
-    if(steam_api_enabled(csapi))
+    if(s_api.enabled)
     {
         ///embed hex_key.key
         if(file_exists("hey_key.key"))
         {
             printf("Embedding key auth in steam auth\n");
 
-            steam_api_request_encrypted_token(csapi, make_view(read_file_bin("hex_key.key")));
+            s_api.request_auth_token(read_file_bin("hex_key.key"));
         }
         else
         {
             printf("Steam auth, no key auth");
 
-            steam_api_request_encrypted_token(csapi, make_view_from_raw(""));
+            s_api.request_auth_token("");
         }
 
-        while(steam_api_should_wait_for_encrypted_token(csapi)){steam_api_pump_events(csapi);}
+        while(s_api.should_wait_for_encrypted_token())
+        {
+            s_api.pump_callbacks();
+            sf::sleep(sf::milliseconds(1));
+        }
 
-        if(!steam_api_has_encrypted_token(csapi))
+        if(!s_api.auth_success())
         {
             printf("Failed to get encrypted token");
             throw std::runtime_error("Could not fetch steam token");
         }
 
-        sized_string str = steam_api_get_encrypted_token(csapi);
+        auto res = s_api.get_encrypted_token();
 
-        std::string etoken = c_str_consume(str);
-        etoken = etoken;
+        std::string etoken = std::string(res.begin(), res.end());
 
         nlohmann::json data;
         data["type"] = "steam_auth";
@@ -238,12 +239,12 @@ int main(int argc, char* argv[])
         }
     }
 
-    c_steam_api csapi = steam_api_alloc();
+    steamapi s_api;
 
     connection conn;
     conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
 
-    handle_auth(csapi, conn, "");
+    handle_auth(s_api, conn, "");
 
     glfwSetErrorCallback(glfw_error_callback);
 
@@ -540,7 +541,7 @@ int main(int argc, char* argv[])
             conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
             connection_clock.restart();
 
-            handle_auth(csapi, conn, current_user);
+            handle_auth(s_api, conn, current_user);
 
             term.add_text("Connecting...");
         }
@@ -575,7 +576,7 @@ int main(int argc, char* argv[])
 
         bool skip_first_event = false;
 
-        steam_api_pump_events(csapi);
+        s_api.pump_callbacks();
 
         std::vector<int> glfw_key_pressed_data;
         std::vector<int> glfw_key_released_data;
@@ -965,7 +966,7 @@ int main(int argc, char* argv[])
             {
                 term.cache.invalidate();
 
-                if(!sa_is_local_command(make_view(term.command.command)))
+                if(!is_local_command(term.command.command))
                 {
                     std::string up_data = default_up_handling(current_user, term.command.command, "./scripts/");
 
@@ -1122,7 +1123,7 @@ int main(int argc, char* argv[])
                 opt.value()->command.clear_command();
             }
 
-            if(term.focused && sa_is_local_command(make_view(cmd)))
+            if(term.focused && is_local_command(cmd))
             {
                 bool should_shutdown = false;
 

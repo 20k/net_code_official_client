@@ -1,6 +1,6 @@
 #! /usr/bin/env sh
 
-# harvest dlls sdkencryptedappticket64.dll ncclient.dll steam_api64.dll
+# harvest dlls sdkencryptedappticket64.dll steam_api64.dll
 
 rm -f ./build_root/*.dll
 rm -f ./build_root/*.exe
@@ -12,7 +12,6 @@ mkdir ./Release/bin/scripts
 mkdir ./Release/bin/example_scripts
 
 cp ./deps/steamworks_sdk_142/sdk/redistributable_bin/win64/steam_api64.dll ./build_root
-cp ./deps/libncclient/ncclient.dll ./build_root
 cp ./bin/Deploy/crapmud_client.exe ./build_root
 
 cd build_root
