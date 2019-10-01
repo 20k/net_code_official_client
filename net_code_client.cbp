@@ -199,6 +199,8 @@
 			<Add option="-DIMGUI_IMPL_OPENGL_LOADER_GLEW" />
 			<Add option="-DSUBPIXEL_FONT_RENDERING" />
 			<Add option="-DSFML_STATIC" />
+			<Add option="-DGLEW_STATIC" />
+			<Add option="-DGRAPHITE2_STATIC" />
 			<Add directory="deps" />
 			<Add directory="deps/SFML/include" />
 			<Add directory="deps/freetype/include/freetype" />
@@ -207,24 +209,31 @@
 		</Compiler>
 		<Linker>
 			<Add option="-lmingw32" />
+			<Add option="-l:libssl.a" />
+			<Add option="-l:libglfw3.a" />
+			<Add option="-l:libglew32.a" />
 			<Add option="-lsfml-audio-s" />
 			<Add option="-lsfml-system-s" />
-			<Add option="-lfreetype" />
+			<Add option="-l:libharfbuzz.a" />
+			<Add option="-l:libfreetype.a" />
+			<Add option="-l:libharfbuzz.a" />
+			<Add option="-l:libfreetype.a" />
+			<Add option="-l:libgraphite2.a" />
 			<Add option="-lopengl32" />
-			<Add option="-lflac" />
+			<Add option="-l:libflac.a" />
+			<Add option="-l:libpng.a" />
+			<Add option="-l:libz.a" />
+			<Add option="-l:libbz2.a" />
+			<Add option="-l:librpcrt4.a" />
 			<Add option="-lopenal32" />
 			<Add option="-logg" />
 			<Add option="-lole32" />
 			<Add option="-ldbgeng" />
 			<Add option="-lwinmm" />
-			<Add option="-lgdi32" />
 			<Add option="-lws2_32" />
 			<Add option="-lcrypto" />
-			<Add option="-lssl" />
-			<Add option="-lboost_filesystem-mt" />
 			<Add option="-lbacktrace" />
-			<Add option="-lglfw3" />
-			<Add option="-lglew32" />
+			<Add option="-lgdi32" />
 			<Add library="deps/libncclient/libncclient.a" />
 		</Linker>
 		<Unit filename="auto_handlers.cpp" />
