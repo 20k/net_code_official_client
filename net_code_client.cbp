@@ -198,6 +198,7 @@
 			<Add option="-DBOOST_STACKTRACE_USE_BACKTRACE" />
 			<Add option="-DIMGUI_IMPL_OPENGL_LOADER_GLEW" />
 			<Add option="-DSUBPIXEL_FONT_RENDERING" />
+			<Add option="-DSFML_STATIC" />
 			<Add directory="deps" />
 			<Add directory="deps/SFML/include" />
 			<Add directory="deps/freetype/include/freetype" />
@@ -206,8 +207,8 @@
 		</Compiler>
 		<Linker>
 			<Add option="-lmingw32" />
-			<Add option="-lsfml-audio" />
-			<Add option="-lsfml-system" />
+			<Add option="-lsfml-audio-s" />
+			<Add option="-lsfml-system-s" />
 			<Add option="-lfreetype" />
 			<Add option="-lopengl32" />
 			<Add option="-lflac" />
