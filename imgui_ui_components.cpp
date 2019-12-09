@@ -761,10 +761,8 @@ void chat_window::render(bool refocus)
     if(refocus && side_buttons.size() > 0)
         ImGui::SetNextWindowFocus();
 
-    static bool once = false;
+    static bool once = file_exists("./ui_setup_once");
     static ImGuiID dock_id = -1;
-
-    static int clean_up_focus_frames = 0;
 
     if(!once || ImGui::IsKeyPressed(GLFW_KEY_F2))
     {
@@ -773,7 +771,6 @@ void chat_window::render(bool refocus)
         ImVec2 viewport_size = ImGui::GetMainViewport()->Size;
         ImGui::DockBuilderSetNodePos(dock_id, ImVec2(viewport_pos.x + viewport_size.x - 600, viewport_pos.y + 100));
         ImGui::DockBuilderSetNodeSize(dock_id, ImVec2(500, 300));
-        clean_up_focus_frames = 2;
 
         for(int i=0; i < (int)side_buttons.size(); i++)
         {
@@ -781,15 +778,14 @@ void chat_window::render(bool refocus)
         }
 
         ImGui::DockBuilderFinish(dock_id);
+
+        write_all_bin("./ui_setup_once", "1");
     }
+
+    std::map<int, int> dock_ids;
 
     bool any_focused = false;
     bool any_hovered = false;
-
-    if(clean_up_focus_frames > 0 && side_buttons.size() > 0)
-        ImGui::SetNextWindowFocus();
-
-    clean_up_focus_frames--;
 
     for(int i=0; i < (int)side_buttons.size(); i++)
     {
@@ -803,9 +799,14 @@ void chat_window::render(bool refocus)
 
         full_str += "###" + side_buttons[i];
 
-        ImGui::SetNextWindowDockID(dock_id, ImGuiCond_Appearing);
+        ImGui::SetNextWindowDockID(dock_id, ImGuiCond_FirstUseEver);
 
-        ImGui::Begin(full_str.c_str());
+        ImGui::Begin(full_str.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing);
+
+        if(dock_id == (ImGuiID)-1)
+        {
+            dock_ids[ImGui::GetWindowDockID()]++;
+        }
 
         bool me_focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
@@ -838,6 +839,30 @@ void chat_window::render(bool refocus)
         render_handle_imgui(scroll_hack, thread.command.command, thread.command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this, 0);
 
         ImGui::End();
+    }
+
+    if(dock_id == (ImGuiID)-1)
+    {
+        int greatest_id = -1;
+        int greatest_count = 0;
+
+        for(auto& i : dock_ids)
+        {
+            if(i.second > greatest_count)
+            {
+                greatest_count = i.second;
+                greatest_id = i.first;
+            }
+        }
+
+        if(greatest_id != -1)
+        {
+            dock_id = greatest_id;
+        }
+        else
+        {
+            once = false;
+        }
     }
 
     focused = any_focused;
