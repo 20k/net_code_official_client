@@ -51,17 +51,4 @@ struct font_selector : serialisable
     }
 };
 
-struct window_context;
-
-struct font_render_context
-{
-    font_selector& font_select;
-    window_context& window_ctx;
-
-    font_render_context(font_selector& pfont_select, window_context& pwindow_ctx) : font_select(pfont_select), window_ctx(pwindow_ctx)
-    {
-
-    }
-};
-
 #endif // FONT_CFG_HPP_INCLUDED

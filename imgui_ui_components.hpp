@@ -13,7 +13,6 @@
 
 struct chat_thread;
 struct chat_window;
-struct font_render_context;
 
 struct scrollbar_hack
 {

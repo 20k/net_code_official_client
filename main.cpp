@@ -499,8 +499,6 @@ int main(int argc, char* argv[])
 
     invalidate_everything(term, chat_win);
 
-    font_render_context font_context(font_select, window_ctx);
-
     std::string current_user = "";
 
     sf::Clock connection_clock;
