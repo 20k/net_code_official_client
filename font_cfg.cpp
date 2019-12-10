@@ -2,6 +2,7 @@
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
+#include <imgui-sfml/imgui-SFML.h>
 #include <imgui/misc/freetype/imgui_freetype.h>
 
 #include "string_helpers.hpp"
@@ -106,6 +107,56 @@ void font_selector::reset_default_fonts(ImFontAtlas* atlas, float editor_font_si
     wants_rebuild = true;
 
     ImGuiFreeType::BuildFontAtlas(atlas, fonts_flags, subpixel_flags);
+}
+
+// Call _BEFORE_ NewFrame()
+bool font_selector::update_rebuild(float editor_font_size)
+{
+    #if 0
+    if (!wants_rebuild)
+        return false;
+
+    win.pushGLStates();
+
+    reset_default_fonts(editor_font_size);
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    io.FontDefault = io.Fonts->Fonts[current_base_font];
+
+    for (int n = 0; n < io.Fonts->Fonts.Size; n++)
+    {
+        //io.Fonts->Fonts[n]->ConfigData->RasterizerMultiply = FontsMultiply;
+        //io.Fonts->Fonts[n]->ConfigData->RasterizerFlags = (BuildMode == FontBuildMode_FreeType) ? fonts_flags : 0x00;
+    }
+
+    ImFontAtlas* atlas = ImGui::SFML::GetFontAtlas();
+
+    ImGuiFreeType::BuildFontAtlas(atlas, fonts_flags, subpixel_flags);
+
+    wants_rebuild = false;
+
+    auto write_data =  [](unsigned char* data, void* tex_id, int width, int height)
+    {
+        sf::Texture* tex = (sf::Texture*)tex_id;
+
+        tex->create(width, height);
+        tex->update((const unsigned char*)data);
+    };
+
+
+    ImGuiFreeType::BuildFontAtlas(atlas, ImGuiFreeType::ForceAutoHint, ImGuiFreeType::LEGACY);
+
+    write_data((unsigned char*)atlas->TexPixelsNewRGBA32, (void*)&font_atlas, atlas->TexWidth, atlas->TexHeight);
+
+    atlas->TexID = (void*)font_atlas.getNativeHandle();
+
+    win.popGLStates();
+
+    return true;
+    #endif // 0
+
+    return false;
 }
 
 bool handle_checkbox(const std::vector<std::string>& in, unsigned int& storage, const std::vector<int>& to_set)
