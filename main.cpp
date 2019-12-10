@@ -520,8 +520,6 @@ int main(int argc, char* argv[])
 
     bool has_settings_window = false;
 
-    sf::Clock heartbeat;
-
     printf("Pre main loop\n");
 
     while(running)
@@ -544,11 +542,6 @@ int main(int argc, char* argv[])
             handle_auth(s_api, conn, current_user);
 
             term.add_text("Connecting...");
-        }
-
-        if(heartbeat.getElapsedTime().asSeconds() > 1)
-        {
-            write_all_bin("heartbeat", "1");
         }
 
         realtime_shim.clear_command();

@@ -5,8 +5,6 @@
 #include <imgui-sfml/imgui-SFML.h>
 #include <imgui/misc/freetype/imgui_freetype.h>
 
-#include <SFML/Graphics.hpp>
-
 #include "string_helpers.hpp"
 #include <tinydir/tinydir.h>
 #include "window_context.hpp"
