@@ -6,7 +6,8 @@
 #include <imgui/examples/imgui_impl_opengl3.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include "window_context.hpp"
+//#include "window_context.hpp"
+#include <toolkit/render_window.hpp>
 
 #include <codecvt>
 #include <locale>
@@ -20,7 +21,6 @@
 
 #include "auto_handlers.hpp"
 #include "copy_handler.hpp"
-#include "stacktrace.hpp"
 #include "editable_string.hpp"
 #include "tokeniser.hpp"
 #include "serialisables.hpp"
@@ -86,11 +86,6 @@ std::string make_lower(std::string in)
 void pretty_atomic_write_all(const std::string& file, const nlohmann::json& js)
 {
     atomic_write_all(file, js.dump(1));
-}
-
-void glfw_error_callback(int error, const char* description)
-{
-    fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
 std::string default_up_handling(const std::string& user, const std::string& server_msg, const std::string& scripts_dir)
@@ -218,8 +213,6 @@ int main(int argc, char* argv[])
 {
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
-    //stack_on_start();
-
     //token_tests();
 
     bool no_viewports = false;
@@ -246,6 +239,17 @@ int main(int argc, char* argv[])
 
     handle_auth(s_api, conn, "");
 
+    window_flags::window_flags flags = window_flags::NONE;
+
+    //if srgb
+    if(!no_viewports)
+    {
+        flags = (window_flags::window_flags)(flags | window_flags::VIEWPORTS);
+    }
+
+    render_window window({800, 600}, "net_code", flags);
+
+    #if 0
     glfwSetErrorCallback(glfw_error_callback);
 
     window_context window_ctx;
@@ -269,6 +273,7 @@ int main(int argc, char* argv[])
     //io.ConfigViewportsNoTaskBarIcon = true;
 
     ImGui::SetStyleLinearColor(window_ctx.is_srgb);
+    #endif // 0
 
     ImGui::PushSrgbStyleColor(ImGuiCol_WindowBg, ImGuiX::GetBgCol());
 
@@ -293,14 +298,12 @@ int main(int argc, char* argv[])
     io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 13.f);
     io.Fonts->AddFontDefault();*/
 
+    #if 0
     if(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
         style.WindowRounding = 0.0f;
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
     }
-
-    font_selector font_select;
-    font_select.reset_default_fonts(&atlas);
 
     printf("Fonts\n");
 
@@ -312,6 +315,10 @@ int main(int argc, char* argv[])
     ImGui_ImplOpenGL3_Init(window_ctx.glsl_version);
 
     printf("ImGui init OpenGL\n");
+    #endif // 0
+
+    font_selector font_select;
+    font_select.reset_default_fonts(&window.rctx.atlas);
 
     terminal_imgui term;
     chat_window chat_win;
@@ -493,8 +500,6 @@ int main(int argc, char* argv[])
     std::vector<std::string> on_pressed;
     std::vector<std::string> on_released;
 
-    bool running = true;
-
     double script_mousewheel_delta = 0.;
 
     invalidate_everything(term, chat_win);
@@ -517,16 +522,11 @@ int main(int argc, char* argv[])
 
     printf("Pre main loop\n");
 
-    while(running)
+    ImGuiIO& io = ImGui::GetIO();
+
+    //while(running)
+    while(!window.should_close())
     {
-        if(glfwWindowShouldClose(window_ctx.window))
-            running = false;
-
-        /*if(font_select.update_rebuild(window, font_select.current_base_font_size))
-        {
-            term.invalidate();
-        }*/
-
         if(connection_clock.getElapsedTime().asSeconds() > 5 && !conn.client_connected_to_server)
         {
             conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
@@ -573,13 +573,12 @@ int main(int argc, char* argv[])
         memcpy(lastKeysDown, io.KeysDown, sizeof(lastKeysDown));
         memcpy(lastMouseDown, io.MouseDown, sizeof(io.MouseDown));
 
-        //glfwPollEvents();
+        window.poll(1/33.);
 
-        glfwWaitEventsTimeout(1/33.);
-
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        /*if(font_select.update_rebuild(window, font_select.current_base_font_size))
+        {
+            term.invalidate();
+        }*/
 
         vec2f cursor_pos = {io.MousePos.x, io.MousePos.y};
 
@@ -895,12 +894,12 @@ int main(int argc, char* argv[])
 
         ImGui::PushFont(font_select.get_base_font());
 
-        font_select.render(window_ctx);
+        //font_select.render(window_ctx);
 
-        if(window_ctx.srgb_dirty)
+        /*if(window_ctx.srgb_dirty)
         {
             ImGui::SetStyleLinearColor(window_ctx.is_srgb);
-        }
+        }*/
 
         term.check_insert_user_command();
 
@@ -1113,7 +1112,7 @@ int main(int argc, char* argv[])
 
                 if(should_shutdown)
                 {
-                    running = false;
+                    window.close();
                 }
             }
 
@@ -1153,7 +1152,7 @@ int main(int argc, char* argv[])
             pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
             pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
 
-            window_ctx.save();
+            //window_ctx.save();
 
             write_clock.restart();
         }
@@ -1222,13 +1221,12 @@ int main(int argc, char* argv[])
 
         int was_closed_id = -1;
 
-        int display_w, display_h;
-        glfwGetFramebufferSize(window_ctx.window, &display_w, &display_h);
+        vec2i window_dim = window.get_window_size();
 
         //test_imgui_term.render(window);
         term.render_realtime_windows(conn, was_closed_id, font_select);
         chat_win.render(should_coordinate_focus);
-        term.render({display_w, display_h}, should_coordinate_focus);
+        term.render({window_dim.x(), window_dim.y()}, should_coordinate_focus);
 
         should_coordinate_focus = false;
 
@@ -1275,25 +1273,7 @@ int main(int argc, char* argv[])
 
         ImGui::PopFont();
 
-        ImGui::Render();
-
-        window_ctx.width = display_w;
-        window_ctx.height = display_h;
-
-        glViewport(0, 0, display_w, display_h);
-        glClearColor(0, 0, 0, 0);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        if(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
-            GLFWwindow* backup_current_context = glfwGetCurrentContext();
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-            glfwMakeContextCurrent(backup_current_context);
-        }
-
-        glfwSwapBuffers(window_ctx.window);
+        window.display();
 
         sf::sleep(sf::milliseconds(4));
     }
@@ -1301,16 +1281,7 @@ int main(int argc, char* argv[])
     atomic_write_all(notepad_file, notepad);
     pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
     pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
-    window_ctx.save();
-
-    CoUninitialize();
-
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-
-    glfwDestroyWindow(window_ctx.window);
-    glfwTerminate();
+    //window_ctx.save();
 
     return 0;
 }

@@ -227,7 +227,7 @@ void font_selector::render(window_context& window_ctx)
 
     ImGui::NewLine();
 
-    bool was_srgb = window_ctx.is_srgb;
+    /*bool was_srgb = window_ctx.is_srgb;
 
     ImGui::Checkbox("SrgbFramebuffer", &was_srgb);
 
@@ -236,7 +236,7 @@ void font_selector::render(window_context& window_ctx)
         window_ctx.set_is_srgb(was_srgb);
         window_ctx.srgb_dirty = true;
         window_ctx.save();
-    }
+    }*/
 
     ImGui::NewLine();
 

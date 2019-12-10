@@ -28,3 +28,6 @@
 [submodule "deps/ndb"]
 	path = deps/ndb
 	url = https://github.com/20k/ndb
+[submodule "deps/toolkit"]
+	path = deps/toolkit
+	url = https://github.com/20k/JGameToolkit
