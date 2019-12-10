@@ -44,7 +44,6 @@
 				<Compiler>
 					<Add option="-pg" />
 					<Add option="-Og" />
-					<Add option="-g" />
 					<Add option="-DLOCAL_IP" />
 				</Compiler>
 				<Linker>

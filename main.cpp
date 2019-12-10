@@ -474,9 +474,6 @@ int main(int argc, char* argv[])
 
     sf::Clock write_clock;
 
-    int active_frames_restart = 1;
-    int active_frames = active_frames_restart;
-
     sf::Keyboard key;
     sf::Mouse mouse;
 
@@ -530,8 +527,6 @@ int main(int argc, char* argv[])
         /*if(font_select.update_rebuild(window, font_select.current_base_font_size))
         {
             term.invalidate();
-
-            active_frames = active_frames_restart;
         }*/
 
         if(connection_clock.getElapsedTime().asSeconds() > 5 && !conn.client_connected_to_server)
@@ -817,8 +812,6 @@ int main(int argc, char* argv[])
             skip_first_event = false;
             ImGui::SFML::ProcessEvent(event);
 
-            active_frames = active_frames_restart;
-
             if(event.type == sf::Event::GainedFocus)
             {
                 focused = true;
@@ -909,8 +902,6 @@ int main(int argc, char* argv[])
         if(window_ctx.srgb_dirty)
         {
             ImGui::SetStyleLinearColor(window_ctx.is_srgb);
-
-            active_frames = active_frames_restart;
         }
 
         term.check_insert_user_command();
@@ -925,8 +916,6 @@ int main(int argc, char* argv[])
                     to_edit->cursor_pos_idx = to_edit->command.size();
                 }
             }
-
-            active_frames = active_frames_restart;
         }
 
         if(enter && to_edit->command.size() > 0)
@@ -1140,15 +1129,11 @@ int main(int argc, char* argv[])
 
         if(ImGui::IsMouseDown(0))
         {
-            active_frames = active_frames_restart;
-
             get_global_copy_handler()->on_hold_lclick(cursor_pos);
         }
 
         while(conn.has_read())
         {
-            active_frames = active_frames_restart;
-
             write_data dat = conn.read_from();
 
             std::string fdata = dat.data;
@@ -1260,7 +1245,6 @@ int main(int argc, char* argv[])
 
         if(term.auto_handle.tab_pressed)
         {
-            active_frames = active_frames_restart;
             last_line_invalidate_everything(term, chat_win);
         }
 
@@ -1288,7 +1272,6 @@ int main(int argc, char* argv[])
 
         if(char_inf::cwidth != lcwidth || char_inf::cheight != lcheight)
         {
-            active_frames = active_frames_restart;
             invalidate_everything(term, chat_win);
         }
 
