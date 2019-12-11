@@ -1116,34 +1116,6 @@
 			<Option target="DeployTestZAPCC" />
 			<Option target="LinuxDeploy" />
 		</Unit>
-		<Unit filename="window_context.cpp">
-			<Option target="Debug" />
-			<Option target="Release" />
-			<Option target="Profile" />
-			<Option target="Deploy" />
-			<Option target="DeployProfile" />
-			<Option target="DeployToSteam" />
-			<Option target="DeployTestDebug" />
-			<Option target="DeployTest" />
-			<Option target="DeployTestSubmodules" />
-			<Option target="ReleaseSubmodules" />
-			<Option target="DeployTestZAPCC" />
-			<Option target="LinuxDeploy" />
-		</Unit>
-		<Unit filename="window_context.hpp">
-			<Option target="Debug" />
-			<Option target="Release" />
-			<Option target="Profile" />
-			<Option target="Deploy" />
-			<Option target="DeployProfile" />
-			<Option target="DeployToSteam" />
-			<Option target="DeployTestDebug" />
-			<Option target="DeployTest" />
-			<Option target="DeployTestSubmodules" />
-			<Option target="ReleaseSubmodules" />
-			<Option target="DeployTestZAPCC" />
-			<Option target="LinuxDeploy" />
-		</Unit>
 		<Extensions>
 			<code_completion />
 			<envvars />

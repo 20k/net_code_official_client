@@ -7,14 +7,12 @@
 #include "font_cfg.hpp"
 #include <GL/gl.h>
 #include <GL/glext.h>
-#include "window_context.hpp"
 #include "local_commands.hpp"
 #include "imguix.hpp"
 #include <networking/networking.hpp>
 #include <imgui/imgui_internal.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
-
 
 void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar, format_cache_2& cache, vec2f dim)
 {
