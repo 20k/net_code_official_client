@@ -129,7 +129,7 @@ DEP_RELEASESUBMODULES =
 OUT_RELEASESUBMODULES = bin/Release/crapmud_client
 
 INC_LINUXDEPLOY = $(INC) -I/usr/include/freetype2
-CFLAGS_LINUXDEPLOY = $(CFLAGS) -O2 -g -DEXTERN_IP
+CFLAGS_LINUXDEPLOY = $(CFLAGS) -O2 -g -Wl,-rpath=./ -DEXTERN_IP
 RESINC_LINUXDEPLOY = $(RESINC)
 RCFLAGS_LINUXDEPLOY = $(RCFLAGS)
 LIBDIR_LINUXDEPLOY = $(LIBDIR) -Ldeps/steamworks_sdk_142/sdk/redistributable_bin/linux64
@@ -138,6 +138,17 @@ LDFLAGS_LINUXDEPLOY =  -O2 -l:libssl.a -l:libglfw3.a -l:libGLEW.a -lsfml-audio-s
 OBJDIR_LINUXDEPLOY = obj/LinuxDeploy
 DEP_LINUXDEPLOY = 
 OUT_LINUXDEPLOY = bin/LinuxDeploy/crapmud_client
+
+INC_MAKELINUXDEPLOY = $(INC)
+CFLAGS_MAKELINUXDEPLOY = $(CFLAGS) -Wl,-rpath=./ -DEXTERN_IP
+RESINC_MAKELINUXDEPLOY = $(RESINC)
+RCFLAGS_MAKELINUXDEPLOY = $(RCFLAGS)
+LIBDIR_MAKELINUXDEPLOY = $(LIBDIR)
+LIB_MAKELINUXDEPLOY = $(LIB)
+LDFLAGS_MAKELINUXDEPLOY = 
+OBJDIR_MAKELINUXDEPLOY = obj/LinuxDeploy
+DEP_MAKELINUXDEPLOY = 
+OUT_MAKELINUXDEPLOY = bin/LinuxDeploy/crapmud_client
 
 OBJ_DEBUG = $(OBJDIR_DEBUG)/deps/toolkit/stacktrace.o $(OBJDIR_DEBUG)/deps/toolkit/texture.o $(OBJDIR_DEBUG)/editable_string.o $(OBJDIR_DEBUG)/font_cfg.o $(OBJDIR_DEBUG)/format_cache.o $(OBJDIR_DEBUG)/imgui_ui_components.o $(OBJDIR_DEBUG)/imguix.o $(OBJDIR_DEBUG)/local_commands.o $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/serialisables.o $(OBJDIR_DEBUG)/steam_api.o $(OBJDIR_DEBUG)/string_helpers.o $(OBJDIR_DEBUG)/tokeniser.o $(OBJDIR_DEBUG)/window_context.o $(OBJDIR_DEBUG)/auto_handlers.o $(OBJDIR_DEBUG)/copy_handler.o $(OBJDIR_DEBUG)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_DEBUG)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_DEBUG)/deps/imgui/imgui.o $(OBJDIR_DEBUG)/deps/imgui/imgui_demo.o $(OBJDIR_DEBUG)/deps/imgui/imgui_draw.o $(OBJDIR_DEBUG)/deps/imgui/imgui_widgets.o $(OBJDIR_DEBUG)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_DEBUG)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEBUG)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEBUG)/deps/networking/networking.o $(OBJDIR_DEBUG)/deps/networking/serialisable.o $(OBJDIR_DEBUG)/deps/toolkit/base_serialisables.o $(OBJDIR_DEBUG)/deps/toolkit/opencl.o $(OBJDIR_DEBUG)/deps/toolkit/render_window.o
 
@@ -161,9 +172,11 @@ OBJ_RELEASESUBMODULES = $(OBJDIR_RELEASESUBMODULES)/deps/toolkit/stacktrace.o $(
 
 OBJ_LINUXDEPLOY = $(OBJDIR_LINUXDEPLOY)/deps/toolkit/stacktrace.o $(OBJDIR_LINUXDEPLOY)/deps/toolkit/texture.o $(OBJDIR_LINUXDEPLOY)/editable_string.o $(OBJDIR_LINUXDEPLOY)/font_cfg.o $(OBJDIR_LINUXDEPLOY)/format_cache.o $(OBJDIR_LINUXDEPLOY)/imgui_ui_components.o $(OBJDIR_LINUXDEPLOY)/imguix.o $(OBJDIR_LINUXDEPLOY)/local_commands.o $(OBJDIR_LINUXDEPLOY)/main.o $(OBJDIR_LINUXDEPLOY)/serialisables.o $(OBJDIR_LINUXDEPLOY)/steam_api.o $(OBJDIR_LINUXDEPLOY)/string_helpers.o $(OBJDIR_LINUXDEPLOY)/tokeniser.o $(OBJDIR_LINUXDEPLOY)/window_context.o $(OBJDIR_LINUXDEPLOY)/auto_handlers.o $(OBJDIR_LINUXDEPLOY)/copy_handler.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/imgui.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/imgui_demo.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/imgui_draw.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/imgui_widgets.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_LINUXDEPLOY)/deps/networking/beast_compilation_unit.o $(OBJDIR_LINUXDEPLOY)/deps/networking/networking.o $(OBJDIR_LINUXDEPLOY)/deps/networking/serialisable.o $(OBJDIR_LINUXDEPLOY)/deps/toolkit/base_serialisables.o $(OBJDIR_LINUXDEPLOY)/deps/toolkit/opencl.o $(OBJDIR_LINUXDEPLOY)/deps/toolkit/render_window.o
 
-all: debug release profile deploy deployprofile deploytosteam deploytestdebug deploytest deploytestsubmodules releasesubmodules deploytestzapcc linuxdeploy
+OBJ_MAKELINUXDEPLOY = 
 
-clean: clean_debug clean_release clean_profile clean_deploy clean_deployprofile clean_deploytosteam clean_deploytestdebug clean_deploytest clean_deploytestsubmodules clean_releasesubmodules clean_deploytestzapcc clean_linuxdeploy
+all: debug release profile deploy deployprofile deploytosteam deploytestdebug deploytest deploytestsubmodules releasesubmodules deploytestzapcc linuxdeploy makelinuxdeploy
+
+clean: clean_debug clean_release clean_profile clean_deploy clean_deployprofile clean_deploytosteam clean_deploytestdebug clean_deploytest clean_deploytestsubmodules clean_releasesubmodules clean_deploytestzapcc clean_linuxdeploy clean_makelinuxdeploy
 
 before_debug: 
 	test -d bin/Debug || mkdir -p bin/Debug
@@ -1478,5 +1491,21 @@ clean_linuxdeploy:
 	rm -rf $(OBJDIR_LINUXDEPLOY)/deps/imgui/misc/freetype
 	rm -rf $(OBJDIR_LINUXDEPLOY)/deps/networking
 
-.PHONY: before_debug after_debug clean_debug before_release after_release clean_release before_profile after_profile clean_profile before_deploy after_deploy clean_deploy before_deployprofile after_deployprofile clean_deployprofile before_deploytosteam after_deploytosteam clean_deploytosteam before_deploytestdebug after_deploytestdebug clean_deploytestdebug before_deploytest after_deploytest clean_deploytest before_deploytestsubmodules after_deploytestsubmodules clean_deploytestsubmodules before_releasesubmodules after_releasesubmodules clean_releasesubmodules before_linuxdeploy after_linuxdeploy clean_linuxdeploy
+before_makelinuxdeploy: 
+	update_makefile.bat
+	wsl make -j4 linuxdeploy
+	test -d bin/LinuxDeploy || mkdir -p bin/LinuxDeploy
+
+after_makelinuxdeploy: 
+
+makelinuxdeploy: before_makelinuxdeploy out_makelinuxdeploy after_makelinuxdeploy
+
+out_makelinuxdeploy: before_makelinuxdeploy $(OBJ_MAKELINUXDEPLOY) $(DEP_MAKELINUXDEPLOY)
+	$(LD) $(LIBDIR_MAKELINUXDEPLOY) -o $(OUT_MAKELINUXDEPLOY) $(OBJ_MAKELINUXDEPLOY)  $(LDFLAGS_MAKELINUXDEPLOY) $(LIB_MAKELINUXDEPLOY)
+
+clean_makelinuxdeploy: 
+	rm -f $(OBJ_MAKELINUXDEPLOY) $(OUT_MAKELINUXDEPLOY)
+	rm -rf bin/LinuxDeploy
+
+.PHONY: before_debug after_debug clean_debug before_release after_release clean_release before_profile after_profile clean_profile before_deploy after_deploy clean_deploy before_deployprofile after_deployprofile clean_deployprofile before_deploytosteam after_deploytosteam clean_deploytosteam before_deploytestdebug after_deploytestdebug clean_deploytestdebug before_deploytest after_deploytest clean_deploytest before_deploytestsubmodules after_deploytestsubmodules clean_deploytestsubmodules before_releasesubmodules after_releasesubmodules clean_releasesubmodules before_linuxdeploy after_linuxdeploy clean_linuxdeploy before_makelinuxdeploy after_makelinuxdeploy clean_makelinuxdeploy
 
