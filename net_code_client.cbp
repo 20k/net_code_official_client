@@ -263,6 +263,8 @@
 		<Unit filename="deps/networking/serialisable.cpp" />
 		<Unit filename="deps/networking/serialisable.hpp" />
 		<Unit filename="deps/networking/serialisable_fwd.hpp" />
+		<Unit filename="deps/toolkit/base_serialisables.cpp" />
+		<Unit filename="deps/toolkit/base_serialisables.hpp" />
 		<Unit filename="deps/toolkit/opencl.cpp" />
 		<Unit filename="deps/toolkit/opencl.hpp" />
 		<Unit filename="deps/toolkit/render_window.cpp" />

@@ -8,6 +8,7 @@
 #include <GLFW/glfw3.h>
 //#include "window_context.hpp"
 #include <toolkit/render_window.hpp>
+#include <toolkit/base_serialisables.hpp>
 
 #include <codecvt>
 #include <locale>
@@ -208,6 +209,9 @@ void handle_auth(steamapi& s_api, connection& conn, std::string current_user)
     }
 }
 
+#define BIT_SET(a,b) ((a) |= (1<<(b)))
+#define BIT_CLEAR(a,b) ((a) &= ~(1<<(b)))
+
 ///test new repo
 int main(int argc, char* argv[])
 {
@@ -239,15 +243,37 @@ int main(int argc, char* argv[])
 
     handle_auth(s_api, conn, "");
 
-    window_flags::window_flags flags = window_flags::NONE;
+    render_settings sett;
 
-    //if srgb
-    if(!no_viewports)
+    bool has_file = false;
+
+    if(file_exists("./window_2.txt"))
     {
-        flags = (window_flags::window_flags)(flags | window_flags::VIEWPORTS);
+        try
+        {
+            nlohmann::json window_nlohmann = load_from_file_json("./window_2.txt");
+
+            deserialise(window_nlohmann, sett, serialise_mode::DISK);
+
+            has_file = true;
+        }
+        catch(...)
+        {
+
+        }
     }
 
-    render_window window({800, 600}, "net_code", flags);
+    sett.viewports = !no_viewports;
+
+    if(!has_file)
+    {
+        sett.width = 1024;
+        sett.height = 768;
+
+        sett.is_srgb = true;
+    }
+
+    render_window window(sett, "net_code");
 
     #if 0
     glfwSetErrorCallback(glfw_error_callback);
