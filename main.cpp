@@ -463,9 +463,6 @@ int main(int argc, char* argv[])
 
     sf::Clock write_clock;
 
-    sf::Keyboard key;
-    sf::Mouse mouse;
-
     sf::Clock imgui_delta;
 
     sf::Clock mouse_clock;

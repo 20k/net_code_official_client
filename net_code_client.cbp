@@ -101,19 +101,6 @@
 					<Mode after="always" />
 				</ExtraCommands>
 			</Target>
-			<Target title="Linux">
-				<Option output="bin/Deploy/crapmud_client" prefix_auto="1" extension_auto="1" />
-				<Option object_output="obj/Deploy/" />
-				<Option type="1" />
-				<Option compiler="gcc" />
-				<Compiler>
-					<Add option="-O2" />
-					<Add option="-DEXTERN_IP" />
-				</Compiler>
-				<Linker>
-					<Add option="-s" />
-				</Linker>
-			</Target>
 			<Target title="DeployTestDebug">
 				<Option output="bin/DeployTestDebug/crapmud_client" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/DeployTestDebug/" />
@@ -177,6 +164,20 @@
 				<Option type="1" />
 				<Option compiler="zapcc" />
 				<Compiler>
+					<Add option="-g" />
+					<Add option="-DEXTERN_IP" />
+				</Compiler>
+				<Linker>
+					<Add option="-O2" />
+				</Linker>
+			</Target>
+			<Target title="LinuxDeploy">
+				<Option output="bin/LinuxDeploy/crapmud_client" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/LinuxDeploy/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
 					<Add option="-g" />
 					<Add option="-DEXTERN_IP" />
 				</Compiler>
@@ -282,7 +283,6 @@
 		<Unit filename="format_cache.hpp" />
 		<Unit filename="icon.res">
 			<Option target="Deploy" />
-			<Option target="Linux" />
 			<Option target="DeployTest" />
 			<Option target="DeployTestSubmodules" />
 			<Option target="DeployTestZAPCC" />

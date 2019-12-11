@@ -7,7 +7,6 @@
 
 #include "string_helpers.hpp"
 #include <tinydir/tinydir.h>
-#include "window_context.hpp"
 #include <iostream>
 
 font_selector::font_selector()

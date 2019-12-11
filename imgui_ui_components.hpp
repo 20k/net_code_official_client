@@ -5,7 +5,6 @@
 #include "colour_interop.hpp"
 #include "editable_string.hpp"
 #include "auto_handlers.hpp"
-#include <libncclient/c_shared_data.h>
 #include "format_cache.hpp"
 #include <SFML/System.hpp>
 
