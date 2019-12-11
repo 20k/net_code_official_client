@@ -1,8 +1,7 @@
 #include "string_helpers.hpp"
 #include "auto_handlers.hpp"
 #include "copy_handler.hpp"
-
-#include <windows.h>
+#include <GLFW/glfw3.h>
 
 interop_vec_t string_to_interop(const std::string& str, bool render_specials, auto_handler& auto_handle, bool parse_for_autocompletes)
 {
@@ -88,41 +87,17 @@ void de_newline(std::vector<interop_vec_t>& vec)
 
 std::string get_clipboard_contents()
 {
-    if(!OpenClipboard(NULL))
-    {
-        return std::string();
-    }
+    const char* ptr = glfwGetClipboardString(NULL);
 
-    HANDLE hData = GetClipboardData(CF_TEXT);
+    if(ptr == nullptr)
+        throw std::runtime_error("Clipboard Error");
 
-    if (hData == nullptr)
-    {
-        CloseClipboard();
-        return std::string();
-    }
-
-    // Lock the handle to get the actual text pointer
-    char * pszText = static_cast<char*>( GlobalLock(hData) );
-
-    std::string ntext(pszText);
-
-    GlobalUnlock( hData );
-
-    CloseClipboard();
-
-    return ntext;
+    return ptr;
 }
 
 void set_clipboard_contents(const std::string& data)
 {
-    HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, data.size() + 1);
-    memcpy(GlobalLock(hMem), data.c_str(), data.size());
-    GlobalUnlock(hMem);
-
-    OpenClipboard(NULL);
-    EmptyClipboard();
-    SetClipboardData(CF_TEXT, hMem);
-    CloseClipboard();
+    glfwSetClipboardString(NULL, data.c_str());
 }
 
 std::string escape_str(const std::string& in)

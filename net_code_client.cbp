@@ -180,6 +180,7 @@
 					<Add option="-O2" />
 					<Add option="-g" />
 					<Add option="-DEXTERN_IP" />
+					<Add directory="/usr/include/freetype2" />
 				</Compiler>
 				<Linker>
 					<Add option="-O2" />
