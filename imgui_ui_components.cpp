@@ -2,13 +2,11 @@
 #include <imgui/imgui.h>
 #include "string_helpers.hpp"
 #include <libncclient/nc_util.hpp>
-#include <libncclient/nc_string_interop.hpp>
-#include <libncclient/c_server_api.h>
 #include "copy_handler.hpp"
 #include "tag_manager.hpp"
 #include "font_cfg.hpp"
 #include <GL/gl.h>
-#include <gl/glext.h>
+#include <GL/glext.h>
 #include "window_context.hpp"
 #include "local_commands.hpp"
 #include "imguix.hpp"

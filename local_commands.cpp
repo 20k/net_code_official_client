@@ -1,16 +1,12 @@
 #include "local_commands.hpp"
 
-
 #include <libncclient/nc_util.hpp>
-#include <libncclient/c_shared_data.h>
 
 #include <tinydir/tinydir.h>
 
 #include "auto_handlers.hpp"
 #include "imgui_ui_components.hpp"
 
-#include <windows.h>
-#include <shellapi.h>
 #include <iostream>
 
 std::string get_scripts_directory()
@@ -257,7 +253,8 @@ std::string handle_local_command(const std::string& username, const std::string&
 
     if(starts_with(command, "#dir"))
     {
-        ShellExecute(NULL, "open", "scripts", NULL, NULL, SW_SHOWDEFAULT);
+        system("start scripts");
+        //ShellExecute(NULL, "open", "scripts", NULL, NULL, SW_SHOWDEFAULT);
     }
 
     return "";

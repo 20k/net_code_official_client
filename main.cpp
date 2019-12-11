@@ -39,7 +39,6 @@
 
 #include "imgui_ui_components.hpp"
 #include <nlohmann/json.hpp>
-#include <objbase.h>
 #include <stdio.h>
 #include "font_cfg.hpp"
 #include <iomanip>
@@ -215,8 +214,6 @@ void handle_auth(steamapi& s_api, connection& conn, std::string current_user)
 ///test new repo
 int main(int argc, char* argv[])
 {
-    CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-
     //token_tests();
 
     bool no_viewports = false;
