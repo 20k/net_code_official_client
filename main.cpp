@@ -247,11 +247,13 @@ int main(int argc, char* argv[])
 
     bool has_file = false;
 
-    if(file_exists("./window_2.txt"))
+    std::string window_file = "./window_v2.txt";
+
+    if(file_exists(window_file))
     {
         try
         {
-            nlohmann::json window_nlohmann = load_from_file_json("./window_2.txt");
+            nlohmann::json window_nlohmann = load_from_file_json(window_file);
 
             deserialise(window_nlohmann, sett, serialise_mode::DISK);
 
@@ -267,39 +269,16 @@ int main(int argc, char* argv[])
 
     if(!has_file)
     {
-        sett.width = 1024;
-        sett.height = 768;
+        sett.width = 1400;
+        sett.height = 900;
 
         sett.is_srgb = true;
     }
 
     render_window window(sett, "net_code");
 
-    #if 0
-    glfwSetErrorCallback(glfw_error_callback);
-
-    window_context window_ctx;
-
-    printf("Set up window context\n");
-
-    ImFontAtlas atlas = {};
-
-    ImGui::CreateContext(&atlas);
-
-    printf("ImGui create context\n");
-
-    ImGuiIO& io = ImGui::GetIO();
-
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
-    if(!no_viewports)
-        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     //io.ConfigViewportsNoTaskBarIcon = true;
-
-    ImGui::SetStyleLinearColor(window_ctx.is_srgb);
-    #endif // 0
 
     ImGui::PushSrgbStyleColor(ImGuiCol_WindowBg, ImGuiX::GetBgCol());
 
@@ -319,29 +298,6 @@ int main(int argc, char* argv[])
     style.DisplaySafeAreaPadding = ImVec2(0,0);
     style.DisplayWindowPadding = ImVec2(0,0);
     style.ItemInnerSpacing = ImVec2(0,0);*/
-
-    /*ImGuiIO& io = ImGui::GetIO();
-    io.Fonts->AddFontFromFileTTF("VeraMono.ttf", 13.f);
-    io.Fonts->AddFontDefault();*/
-
-    #if 0
-    if(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-    {
-        style.WindowRounding = 0.0f;
-        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-    }
-
-    printf("Fonts\n");
-
-    // Setup Platform/Renderer bindings
-    ImGui_ImplGlfw_InitForOpenGL(window_ctx.window, true);
-
-    printf("ImGui init for opengl\n");
-
-    ImGui_ImplOpenGL3_Init(window_ctx.glsl_version);
-
-    printf("ImGui init OpenGL\n");
-    #endif // 0
 
     font_selector font_select;
     font_select.reset_default_fonts(&window.rctx.atlas);
@@ -1178,7 +1134,9 @@ int main(int argc, char* argv[])
             pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
             pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
 
-            //window_ctx.save();
+            auto save_sett = window.get_render_settings();
+
+            pretty_atomic_write_all(window_file, serialise(save_sett, serialise_mode::DISK));
 
             write_clock.restart();
         }
@@ -1307,7 +1265,10 @@ int main(int argc, char* argv[])
     atomic_write_all(notepad_file, notepad);
     pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
     pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
-    //window_ctx.save();
+
+    auto save_sett = window.get_render_settings();
+
+    pretty_atomic_write_all(window_file, serialise(save_sett, serialise_mode::DISK));
 
     return 0;
 }
