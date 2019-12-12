@@ -8,6 +8,7 @@
 #include "string_helpers.hpp"
 #include <tinydir/tinydir.h>
 #include <iostream>
+#include <toolkit/render_window.hpp>
 
 font_selector::font_selector()
 {
@@ -178,7 +179,7 @@ bool handle_checkbox(const std::vector<std::string>& in, unsigned int& storage, 
 }
 
 // Call to draw interface
-void font_selector::render(window_context& window_ctx)
+void font_selector::render(render_window& window)
 {
     if(!is_open)
         return;
@@ -236,6 +237,13 @@ void font_selector::render(window_context& window_ctx)
         window_ctx.srgb_dirty = true;
         window_ctx.save();
     }*/
+
+    auto sett = window.get_render_settings();
+
+    if(ImGui::Checkbox("SrgbFramebuffer", &sett.is_srgb))
+    {
+        window.set_srgb(sett.is_srgb);
+    }
 
     ImGui::NewLine();
 

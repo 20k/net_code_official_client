@@ -870,7 +870,7 @@ int main(int argc, char* argv[])
 
         ImGui::PushFont(font_select.get_base_font());
 
-        //font_select.render(window_ctx);
+        font_select.render(window);
 
         /*if(window_ctx.srgb_dirty)
         {

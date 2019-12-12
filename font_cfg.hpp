@@ -5,7 +5,7 @@
 
 struct ImFont;
 
-struct window_context;
+struct render_window;
 struct ImFontAtlas;
 
 struct font_selector : serialisable
@@ -42,7 +42,7 @@ struct font_selector : serialisable
     // Call _BEFORE_ NewFrame()
     bool update_rebuild(float editor_font_size = 14.f);
     // Call to draw interface
-    void render(window_context& window_ctx);
+    void render(render_window& window_ctx);
 
     SERIALISE_SIGNATURE(font_selector)
     {
