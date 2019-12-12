@@ -227,17 +227,6 @@ void font_selector::render(render_window& window)
 
     ImGui::NewLine();
 
-    /*bool was_srgb = window_ctx.is_srgb;
-
-    ImGui::Checkbox("SrgbFramebuffer", &was_srgb);
-
-    if(window_ctx.is_srgb != was_srgb)
-    {
-        window_ctx.set_is_srgb(was_srgb);
-        window_ctx.srgb_dirty = true;
-        window_ctx.save();
-    }*/
-
     auto sett = window.get_render_settings();
 
     if(ImGui::Checkbox("SrgbFramebuffer", &sett.is_srgb))
