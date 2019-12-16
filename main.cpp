@@ -297,7 +297,7 @@ int main(int argc, char* argv[])
     style.ItemInnerSpacing = ImVec2(0,0);*/
 
     font_selector font_select;
-    font_select.reset_default_fonts(&window.rctx.atlas);
+    font_select.reset_default_fonts();
 
     terminal_imgui term;
     chat_window chat_win;

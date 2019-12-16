@@ -193,8 +193,6 @@
 					<Add option="-lsfml-system-s" />
 					<Add option="-l:libharfbuzz.a" />
 					<Add option="-l:libfreetype.a" />
-					<Add option="-l:libharfbuzz.a" />
-					<Add option="-l:libfreetype.a" />
 					<Add option="-l:libgraphite2.a" />
 					<Add option="-lGL" />
 					<Add option="-l:libFLAC.a" />
@@ -249,6 +247,8 @@
 			<Add directory="deps/freetype/include/freetype" />
 			<Add directory="deps/imgui" />
 			<Add directory="C:/Users/James/Desktop/projects/crapmud_client/deps/freetype/include" />
+			<Add directory="deps/imtui/include" />
+			<Add directory="C:/msys64/mingw64/include/ncurses" />
 		</Compiler>
 		<Linker>
 			<Add option="-static-libstdc++" />
@@ -282,6 +282,7 @@
 			<Add option="-lws2_32" />
 			<Add option="-lopencl" />
 			<Add option="-lsteam_api64" />
+			<Add option="-lncurses" />
 			<Add directory="deps/steamworks_sdk_142/sdk/redistributable_bin/win64" />
 		</Linker>
 		<Unit filename="auto_handlers.cpp">
@@ -550,6 +551,8 @@
 			<Option target="DeployTestZAPCC" />
 			<Option target="LinuxDeploy" />
 		</Unit>
+		<Unit filename="deps/imtui/src/imtui-impl-ncurses.cpp" />
+		<Unit filename="deps/imtui/src/imtui-impl-text.cpp" />
 		<Unit filename="deps/networking/beast_compilation_unit.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />

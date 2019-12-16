@@ -75,8 +75,10 @@ void for_each_file(const std::string& directory, const T& t)
 }
 
 
-void font_selector::reset_default_fonts(ImFontAtlas* atlas, float editor_font_size)
+void font_selector::reset_default_fonts(float editor_font_size)
 {
+    ImFontAtlas* atlas = ImGui::GetIO().Fonts;
+
     ImFontConfig font_cfg;
     font_cfg.GlyphExtraSpacing = ImVec2(char_inf::extra_glyph_spacing, 0);
 

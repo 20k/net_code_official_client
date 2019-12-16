@@ -31,3 +31,6 @@
 [submodule "deps/toolkit"]
 	path = deps/toolkit
 	url = https://github.com/20k/JGameToolkit
+[submodule "deps/imtui"]
+	path = deps/imtui
+	url = https://github.com/ggerganov/imtui
