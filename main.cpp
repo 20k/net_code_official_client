@@ -231,12 +231,16 @@ int main(int argc, char* argv[])
 
     steamapi s_api;
 
+    printf("Pre connect\n");
+
     connection conn;
     #ifndef __EMSCRIPTEN__
     conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
     #else
     conn.connect(HOST_IP, HOST_PORT, connection_type::PLAIN);
     #endif
+
+    printf("Post Connect\n");
 
     handle_auth(s_api, conn, "");
 
