@@ -208,9 +208,6 @@ void handle_auth(steamapi& s_api, connection& conn, std::string current_user)
     }
 }
 
-#define BIT_SET(a,b) ((a) |= (1<<(b)))
-#define BIT_CLEAR(a,b) ((a) &= ~(1<<(b)))
-
 ///test new repo
 int main(int argc, char* argv[])
 {
