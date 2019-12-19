@@ -2,7 +2,6 @@
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
-#include <imgui-sfml/imgui-SFML.h>
 #include <imgui/misc/freetype/imgui_freetype.h>
 
 #include "string_helpers.hpp"

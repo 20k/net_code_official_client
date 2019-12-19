@@ -35,7 +35,6 @@
 #include "steam_api.hpp"
 
 #include <imgui/imgui.h>
-#include <imgui-sfml/imgui-SFML.h>
 
 #include "imgui_ui_components.hpp"
 #include <nlohmann/json.hpp>
@@ -159,7 +158,7 @@ void handle_auth(steamapi& s_api, connection& conn, std::string current_user)
         while(s_api.should_wait_for_encrypted_token())
         {
             s_api.pump_callbacks();
-            sf::sleep(sf::milliseconds(1));
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
 
         if(!s_api.auth_success())
@@ -233,7 +232,11 @@ int main(int argc, char* argv[])
     steamapi s_api;
 
     connection conn;
+    #ifndef __EMSCRIPTEN__
     conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
+    #else
+    conn.connect(HOST_IP, HOST_PORT, connection_type::PLAIN);
+    #endif
 
     handle_auth(s_api, conn, "");
 
@@ -451,15 +454,12 @@ int main(int argc, char* argv[])
 
     printf("Loaded files\n");
 
-    sf::Clock render_clock;
+    steady_timer render_clock;
+    steady_timer request_clock;
+    steady_timer write_clock;
+    steady_timer imgui_delta;
 
-    sf::Clock request_clock;
-
-    sf::Clock write_clock;
-
-    sf::Clock imgui_delta;
-
-    sf::Clock mouse_clock;
+    steady_timer mouse_clock;
     float mouse_send_time_ms = 33;
 
     #ifdef TESTING
@@ -479,7 +479,7 @@ int main(int argc, char* argv[])
 
     std::string current_user = "";
 
-    sf::Clock connection_clock;
+    steady_timer connection_clock;
 
     bool lastKeysDown[512] = {};
     bool lastMouseDown[5] = {};
@@ -500,7 +500,7 @@ int main(int argc, char* argv[])
     //while(running)
     while(!window.should_close())
     {
-        if(connection_clock.getElapsedTime().asSeconds() > 5 && !conn.client_connected_to_server)
+        if(connection_clock.get_elapsed_time_s() > 5 && !conn.client_connected_to_server)
         {
             conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
             connection_clock.restart();
@@ -819,7 +819,7 @@ int main(int argc, char* argv[])
             conn.write(data.dump());
         }
 
-        if(term.get_id_of_focused_realtime_window() != -1 && mouse_clock.getElapsedTime().asMicroseconds() / 1000. >= mouse_send_time_ms)
+        if(term.get_id_of_focused_realtime_window() != -1 && mouse_clock.get_elapsed_time_s() * 1000 >= mouse_send_time_ms)
         {
             mouse_clock.restart();
 
@@ -1120,7 +1120,7 @@ int main(int argc, char* argv[])
             term.add_text_from_server(current_user, data, chat_win, font_select);
         }
 
-        if(write_clock.getElapsedTime().asMilliseconds() > 5000)
+        if(write_clock.get_elapsed_time_s() > 5)
         {
             pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
             pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
@@ -1136,7 +1136,7 @@ int main(int argc, char* argv[])
         ///this is inadequate
         ///we need to be able to request multiple scripts at once
         ///and receive multiple as well
-        if(term.auto_handle.found_unprocessed_autocompletes.size() > 0 && request_clock.getElapsedTime().asMilliseconds() > 300)
+        if(term.auto_handle.found_unprocessed_autocompletes.size() > 0 && request_clock.get_elapsed_time_s() > 0.3)
         {
             request_clock.restart();
 
@@ -1250,7 +1250,9 @@ int main(int argc, char* argv[])
 
         window.display();
 
-        sf::sleep(sf::milliseconds(4));
+        #ifndef __EMSCRIPTEN__
+        std::this_thread::sleep_for(std::chrono::milliseconds(4));
+        #endif // __EMSCRIPTEN__
     }
 
     atomic_write_all(notepad_file, notepad);

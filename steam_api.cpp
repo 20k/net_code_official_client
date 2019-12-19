@@ -127,6 +127,7 @@ bool steamapi::auth_success()
     if(!enabled)
         return false;
 
+    #ifndef NO_STEAM
     std::lock_guard guard(secret_environment->lock);
 
     if(secret_environment->auth_in_progress)
@@ -136,6 +137,9 @@ bool steamapi::auth_success()
         return false;
 
     return true;
+    #else
+    return false; //unreachable
+    #endif
 }
 
 steamapi::~steamapi()
@@ -143,10 +147,10 @@ steamapi::~steamapi()
     #ifndef NO_STEAM
     if(enabled)
         SteamAPI_Shutdown();
-    #endif // NO_STEAM
 
     delete secret_environment;
     secret_environment = nullptr;
+    #endif // NO_STEAM
 }
 
 bool steamapi::is_overlay_open()
@@ -154,21 +158,33 @@ bool steamapi::is_overlay_open()
     if(!enabled)
         return false;
 
+    #ifndef NO_STEAM
     std::lock_guard guard(secret_environment->lock);
 
     return secret_environment->overlay_open;
+    #else
+    return false; //unreachable
+    #endif
 }
 
 std::vector<uint8_t> steamapi::get_encrypted_token()
 {
+    #ifndef NO_STEAM
     std::lock_guard guard(secret_environment->lock);
 
     return secret_environment->encrypted_app_ticket;
+    #else
+    std::vector<uint8_t>();
+    #endif
 }
 
 bool steamapi::should_wait_for_encrypted_token()
 {
+    #ifndef NO_STEAM
     std::lock_guard guard(secret_environment->lock);
 
     return secret_environment->auth_in_progress;
+    #else
+    return false;
+    #endif
 }

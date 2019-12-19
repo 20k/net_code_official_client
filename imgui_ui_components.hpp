@@ -6,7 +6,7 @@
 #include "editable_string.hpp"
 #include "auto_handlers.hpp"
 #include "format_cache.hpp"
-#include <SFML/System.hpp>
+#include <toolkit/clock.hpp>
 
 #define MAX_TEXT_HISTORY 200
 
@@ -36,7 +36,7 @@ struct frameable
 
 struct realtime_script_run : frameable
 {
-    sf::Clock last_message;
+    steady_timer last_message;
 
     interop_vec_t parsed_data;
     bool focused = false;
@@ -55,7 +55,7 @@ struct realtime_script_run : frameable
     vec2f current_pos = {0,0};
     vec2i current_dim = {0,0};
     bool should_send_new_size = false;
-    sf::Clock last_resize;
+    steady_timer last_resize;
 
     format_cache_2 cache;
 };

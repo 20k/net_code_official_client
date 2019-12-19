@@ -1,7 +1,6 @@
 #include "auto_handlers.hpp"
 #include "string_helpers.hpp"
 #include <libncclient/nc_util.hpp>
-#include <SFML/System.hpp>
 #include "util.hpp"
 #include "tokeniser.hpp"
 

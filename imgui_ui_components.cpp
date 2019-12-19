@@ -313,7 +313,7 @@ void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_i
 
         run.was_square_font = run.is_square_font;
 
-        if(run.should_send_new_size && run.last_resize.getElapsedTime().asSeconds() >= 1)
+        if(run.should_send_new_size && run.last_resize.get_elapsed_time_s() >= 1)
         {
             vec2f br_absolute = run.current_pos + (vec2f){run.current_dim.x(), run.current_dim.y()};
             vec2f relative_dim = br_absolute - run.current_tl_cursor_pos;
