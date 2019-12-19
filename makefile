@@ -11,12 +11,12 @@ AR = ar
 LD = g++
 WINDRES = windres
 
-INC = -Ideps -Ideps/SFML/include -Ideps/freetype/include/freetype -Ideps/imgui -IC:/Users/James/Desktop/projects/crapmud_client/deps/freetype/include
-CFLAGS = -Wall -std=c++17 -fexceptions -Wno-narrowing -Werror=return-type -Wno-strict-aliasing -DNET_CLIENT -DNO_COMPRESSION -DIMGUI_IMPL_OPENGL_LOADER_GLEW -DSUBPIXEL_FONT_RENDERING -DSFML_STATIC -DGLEW_STATIC -DGRAPHITE2_STATIC
+INC = -Ideps -Ideps/SFML/include -Ideps/freetype/include/freetype -Ideps/imgui -IC:/Users/James/Desktop/projects/crapmud_client/deps/freetype/include -Ideps/imtui/include -IC:/msys64/mingw64/include/ncurses
+CFLAGS = -Wall -std=c++17 -fexceptions -Wno-narrowing -Werror=return-type -Wno-strict-aliasing -DNET_CLIENT -DNO_COMPRESSION -DIMGUI_IMPL_OPENGL_LOADER_GLEW -DSUBPIXEL_FONT_RENDERING -DSFML_STATIC -DGLEW_STATIC -DGRAPHITE2_STATIC -DUSE_IMTUI
 RESINC = 
 LIBDIR = -Ldeps/steamworks_sdk_142/sdk/redistributable_bin/win64
 LIB = 
-LDFLAGS = -static-libstdc++ -static-libgcc -static -lmingw32 -l:libssl.a -l:libglfw3.a -l:libglew32.a -lsfml-audio-s -lsfml-system-s -l:libharfbuzz.a -l:libfreetype.a -l:libharfbuzz.a -l:libfreetype.a -l:libgraphite2.a -lopengl32 -l:libflac.a -l:libpng.a -l:libz.a -l:libbz2.a -l:librpcrt4.a -l:libopenal.a -logg -lole32 -ldbgeng -lwinmm -l:libcrypto.a -lbacktrace -lgdi32 -lws2_32 -lopencl -lsteam_api64
+LDFLAGS = -static-libstdc++ -static-libgcc -static -lmingw32 -l:libssl.a -l:libglfw3.a -l:libglew32.a -lsfml-audio-s -lsfml-system-s -l:libharfbuzz.a -l:libfreetype.a -l:libharfbuzz.a -l:libfreetype.a -l:libgraphite2.a -lopengl32 -l:libflac.a -l:libpng.a -l:libz.a -l:libbz2.a -l:librpcrt4.a -l:libopenal.a -logg -lole32 -ldbgeng -lwinmm -l:libcrypto.a -lbacktrace -lgdi32 -lws2_32 -lopencl -lsteam_api64 -lncurses
 
 INC_DEBUG = $(INC)
 CFLAGS_DEBUG = $(CFLAGS) -g -Og -DLOCAL_IP
@@ -134,7 +134,7 @@ RESINC_LINUXDEPLOY = $(RESINC)
 RCFLAGS_LINUXDEPLOY = $(RCFLAGS)
 LIBDIR_LINUXDEPLOY = $(LIBDIR) -Ldeps/steamworks_sdk_142/sdk/redistributable_bin/linux64
 LIB_LINUXDEPLOY = $(LIB)
-LDFLAGS_LINUXDEPLOY =  -O2 -l:libssl.a -l:libglfw3.a -l:libGLEW.a -lsfml-audio-s -lsfml-system-s -l:libharfbuzz.a -l:libfreetype.a -l:libharfbuzz.a -l:libfreetype.a -l:libgraphite2.a -lGL -l:libFLAC.a -l:libpng.a -l:libz.a -l:libbz2.a -lopenal -logg -l:libcrypto.a -lbacktrace -lOpenCL -lpthread -ldl -lX11 -lsteam_api
+LDFLAGS_LINUXDEPLOY =  -O2 -l:libssl.a -l:libglfw3.a -l:libGLEW.a -lsfml-audio-s -lsfml-system-s -l:libharfbuzz.a -l:libfreetype.a -l:libgraphite2.a -lGL -l:libFLAC.a -l:libpng.a -l:libz.a -l:libbz2.a -lopenal -logg -l:libcrypto.a -lbacktrace -lOpenCL -lpthread -ldl -lX11 -lsteam_api -lncurses
 OBJDIR_LINUXDEPLOY = obj/LinuxDeploy
 DEP_LINUXDEPLOY = 
 OUT_LINUXDEPLOY = bin/LinuxDeploy/crapmud_client
@@ -150,29 +150,29 @@ OBJDIR_MAKELINUXDEPLOY = obj/LinuxDeploy
 DEP_MAKELINUXDEPLOY = 
 OUT_MAKELINUXDEPLOY = bin/LinuxDeploy/crapmud_client
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/deps/toolkit/stacktrace.o $(OBJDIR_DEBUG)/deps/toolkit/texture.o $(OBJDIR_DEBUG)/editable_string.o $(OBJDIR_DEBUG)/font_cfg.o $(OBJDIR_DEBUG)/format_cache.o $(OBJDIR_DEBUG)/imgui_ui_components.o $(OBJDIR_DEBUG)/imguix.o $(OBJDIR_DEBUG)/local_commands.o $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/serialisables.o $(OBJDIR_DEBUG)/steam_api.o $(OBJDIR_DEBUG)/string_helpers.o $(OBJDIR_DEBUG)/tokeniser.o $(OBJDIR_DEBUG)/window_context.o $(OBJDIR_DEBUG)/auto_handlers.o $(OBJDIR_DEBUG)/copy_handler.o $(OBJDIR_DEBUG)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_DEBUG)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_DEBUG)/deps/imgui/imgui.o $(OBJDIR_DEBUG)/deps/imgui/imgui_demo.o $(OBJDIR_DEBUG)/deps/imgui/imgui_draw.o $(OBJDIR_DEBUG)/deps/imgui/imgui_widgets.o $(OBJDIR_DEBUG)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_DEBUG)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEBUG)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEBUG)/deps/networking/networking.o $(OBJDIR_DEBUG)/deps/networking/serialisable.o $(OBJDIR_DEBUG)/deps/toolkit/base_serialisables.o $(OBJDIR_DEBUG)/deps/toolkit/opencl.o $(OBJDIR_DEBUG)/deps/toolkit/render_window.o
+OBJ_DEBUG = $(OBJDIR_DEBUG)/deps/toolkit/render_window.o $(OBJDIR_DEBUG)/deps/toolkit/stacktrace.o $(OBJDIR_DEBUG)/deps/toolkit/texture.o $(OBJDIR_DEBUG)/editable_string.o $(OBJDIR_DEBUG)/font_cfg.o $(OBJDIR_DEBUG)/format_cache.o $(OBJDIR_DEBUG)/imgui_ui_components.o $(OBJDIR_DEBUG)/imguix.o $(OBJDIR_DEBUG)/local_commands.o $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/serialisables.o $(OBJDIR_DEBUG)/steam_api.o $(OBJDIR_DEBUG)/string_helpers.o $(OBJDIR_DEBUG)/tokeniser.o $(OBJDIR_DEBUG)/auto_handlers.o $(OBJDIR_DEBUG)/copy_handler.o $(OBJDIR_DEBUG)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_DEBUG)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_DEBUG)/deps/imgui/imgui.o $(OBJDIR_DEBUG)/deps/imgui/imgui_demo.o $(OBJDIR_DEBUG)/deps/imgui/imgui_draw.o $(OBJDIR_DEBUG)/deps/imgui/imgui_widgets.o $(OBJDIR_DEBUG)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_DEBUG)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEBUG)/deps/imtui/src/imtui-impl-ncurses.o $(OBJDIR_DEBUG)/deps/imtui/src/imtui-impl-text.o $(OBJDIR_DEBUG)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEBUG)/deps/networking/networking.o $(OBJDIR_DEBUG)/deps/networking/serialisable.o $(OBJDIR_DEBUG)/deps/toolkit/base_serialisables.o $(OBJDIR_DEBUG)/deps/toolkit/opencl.o
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)/deps/toolkit/stacktrace.o $(OBJDIR_RELEASE)/deps/toolkit/texture.o $(OBJDIR_RELEASE)/editable_string.o $(OBJDIR_RELEASE)/font_cfg.o $(OBJDIR_RELEASE)/format_cache.o $(OBJDIR_RELEASE)/imgui_ui_components.o $(OBJDIR_RELEASE)/imguix.o $(OBJDIR_RELEASE)/local_commands.o $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/serialisables.o $(OBJDIR_RELEASE)/steam_api.o $(OBJDIR_RELEASE)/string_helpers.o $(OBJDIR_RELEASE)/tokeniser.o $(OBJDIR_RELEASE)/window_context.o $(OBJDIR_RELEASE)/auto_handlers.o $(OBJDIR_RELEASE)/copy_handler.o $(OBJDIR_RELEASE)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_RELEASE)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_RELEASE)/deps/imgui/imgui.o $(OBJDIR_RELEASE)/deps/imgui/imgui_demo.o $(OBJDIR_RELEASE)/deps/imgui/imgui_draw.o $(OBJDIR_RELEASE)/deps/imgui/imgui_widgets.o $(OBJDIR_RELEASE)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_RELEASE)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_RELEASE)/deps/networking/beast_compilation_unit.o $(OBJDIR_RELEASE)/deps/networking/networking.o $(OBJDIR_RELEASE)/deps/networking/serialisable.o $(OBJDIR_RELEASE)/deps/toolkit/base_serialisables.o $(OBJDIR_RELEASE)/deps/toolkit/opencl.o $(OBJDIR_RELEASE)/deps/toolkit/render_window.o
+OBJ_RELEASE = $(OBJDIR_RELEASE)/deps/toolkit/render_window.o $(OBJDIR_RELEASE)/deps/toolkit/stacktrace.o $(OBJDIR_RELEASE)/deps/toolkit/texture.o $(OBJDIR_RELEASE)/editable_string.o $(OBJDIR_RELEASE)/font_cfg.o $(OBJDIR_RELEASE)/format_cache.o $(OBJDIR_RELEASE)/imgui_ui_components.o $(OBJDIR_RELEASE)/imguix.o $(OBJDIR_RELEASE)/local_commands.o $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/serialisables.o $(OBJDIR_RELEASE)/steam_api.o $(OBJDIR_RELEASE)/string_helpers.o $(OBJDIR_RELEASE)/tokeniser.o $(OBJDIR_RELEASE)/auto_handlers.o $(OBJDIR_RELEASE)/copy_handler.o $(OBJDIR_RELEASE)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_RELEASE)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_RELEASE)/deps/imgui/imgui.o $(OBJDIR_RELEASE)/deps/imgui/imgui_demo.o $(OBJDIR_RELEASE)/deps/imgui/imgui_draw.o $(OBJDIR_RELEASE)/deps/imgui/imgui_widgets.o $(OBJDIR_RELEASE)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_RELEASE)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_RELEASE)/deps/imtui/src/imtui-impl-ncurses.o $(OBJDIR_RELEASE)/deps/imtui/src/imtui-impl-text.o $(OBJDIR_RELEASE)/deps/networking/beast_compilation_unit.o $(OBJDIR_RELEASE)/deps/networking/networking.o $(OBJDIR_RELEASE)/deps/networking/serialisable.o $(OBJDIR_RELEASE)/deps/toolkit/base_serialisables.o $(OBJDIR_RELEASE)/deps/toolkit/opencl.o
 
-OBJ_PROFILE = $(OBJDIR_PROFILE)/deps/toolkit/stacktrace.o $(OBJDIR_PROFILE)/deps/toolkit/texture.o $(OBJDIR_PROFILE)/editable_string.o $(OBJDIR_PROFILE)/font_cfg.o $(OBJDIR_PROFILE)/format_cache.o $(OBJDIR_PROFILE)/imgui_ui_components.o $(OBJDIR_PROFILE)/imguix.o $(OBJDIR_PROFILE)/local_commands.o $(OBJDIR_PROFILE)/main.o $(OBJDIR_PROFILE)/serialisables.o $(OBJDIR_PROFILE)/steam_api.o $(OBJDIR_PROFILE)/string_helpers.o $(OBJDIR_PROFILE)/tokeniser.o $(OBJDIR_PROFILE)/window_context.o $(OBJDIR_PROFILE)/auto_handlers.o $(OBJDIR_PROFILE)/copy_handler.o $(OBJDIR_PROFILE)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_PROFILE)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_PROFILE)/deps/imgui/imgui.o $(OBJDIR_PROFILE)/deps/imgui/imgui_demo.o $(OBJDIR_PROFILE)/deps/imgui/imgui_draw.o $(OBJDIR_PROFILE)/deps/imgui/imgui_widgets.o $(OBJDIR_PROFILE)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_PROFILE)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_PROFILE)/deps/networking/beast_compilation_unit.o $(OBJDIR_PROFILE)/deps/networking/networking.o $(OBJDIR_PROFILE)/deps/networking/serialisable.o $(OBJDIR_PROFILE)/deps/toolkit/base_serialisables.o $(OBJDIR_PROFILE)/deps/toolkit/opencl.o $(OBJDIR_PROFILE)/deps/toolkit/render_window.o
+OBJ_PROFILE = $(OBJDIR_PROFILE)/deps/toolkit/render_window.o $(OBJDIR_PROFILE)/deps/toolkit/stacktrace.o $(OBJDIR_PROFILE)/deps/toolkit/texture.o $(OBJDIR_PROFILE)/editable_string.o $(OBJDIR_PROFILE)/font_cfg.o $(OBJDIR_PROFILE)/format_cache.o $(OBJDIR_PROFILE)/imgui_ui_components.o $(OBJDIR_PROFILE)/imguix.o $(OBJDIR_PROFILE)/local_commands.o $(OBJDIR_PROFILE)/main.o $(OBJDIR_PROFILE)/serialisables.o $(OBJDIR_PROFILE)/steam_api.o $(OBJDIR_PROFILE)/string_helpers.o $(OBJDIR_PROFILE)/tokeniser.o $(OBJDIR_PROFILE)/auto_handlers.o $(OBJDIR_PROFILE)/copy_handler.o $(OBJDIR_PROFILE)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_PROFILE)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_PROFILE)/deps/imgui/imgui.o $(OBJDIR_PROFILE)/deps/imgui/imgui_demo.o $(OBJDIR_PROFILE)/deps/imgui/imgui_draw.o $(OBJDIR_PROFILE)/deps/imgui/imgui_widgets.o $(OBJDIR_PROFILE)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_PROFILE)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_PROFILE)/deps/imtui/src/imtui-impl-ncurses.o $(OBJDIR_PROFILE)/deps/imtui/src/imtui-impl-text.o $(OBJDIR_PROFILE)/deps/networking/beast_compilation_unit.o $(OBJDIR_PROFILE)/deps/networking/networking.o $(OBJDIR_PROFILE)/deps/networking/serialisable.o $(OBJDIR_PROFILE)/deps/toolkit/base_serialisables.o $(OBJDIR_PROFILE)/deps/toolkit/opencl.o
 
-OBJ_DEPLOY = $(OBJDIR_DEPLOY)/deps/toolkit/stacktrace.o $(OBJDIR_DEPLOY)/deps/toolkit/texture.o $(OBJDIR_DEPLOY)/editable_string.o $(OBJDIR_DEPLOY)/font_cfg.o $(OBJDIR_DEPLOY)/format_cache.o $(OBJDIR_DEPLOY)/icon.o $(OBJDIR_DEPLOY)/imgui_ui_components.o $(OBJDIR_DEPLOY)/imguix.o $(OBJDIR_DEPLOY)/local_commands.o $(OBJDIR_DEPLOY)/main.o $(OBJDIR_DEPLOY)/serialisables.o $(OBJDIR_DEPLOY)/steam_api.o $(OBJDIR_DEPLOY)/string_helpers.o $(OBJDIR_DEPLOY)/tokeniser.o $(OBJDIR_DEPLOY)/window_context.o $(OBJDIR_DEPLOY)/auto_handlers.o $(OBJDIR_DEPLOY)/copy_handler.o $(OBJDIR_DEPLOY)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_DEPLOY)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_DEPLOY)/deps/imgui/imgui.o $(OBJDIR_DEPLOY)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOY)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOY)/deps/imgui/imgui_widgets.o $(OBJDIR_DEPLOY)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_DEPLOY)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOY)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEPLOY)/deps/networking/networking.o $(OBJDIR_DEPLOY)/deps/networking/serialisable.o $(OBJDIR_DEPLOY)/deps/toolkit/base_serialisables.o $(OBJDIR_DEPLOY)/deps/toolkit/opencl.o $(OBJDIR_DEPLOY)/deps/toolkit/render_window.o
+OBJ_DEPLOY = $(OBJDIR_DEPLOY)/deps/toolkit/render_window.o $(OBJDIR_DEPLOY)/deps/toolkit/stacktrace.o $(OBJDIR_DEPLOY)/deps/toolkit/texture.o $(OBJDIR_DEPLOY)/editable_string.o $(OBJDIR_DEPLOY)/font_cfg.o $(OBJDIR_DEPLOY)/format_cache.o $(OBJDIR_DEPLOY)/icon.o $(OBJDIR_DEPLOY)/imgui_ui_components.o $(OBJDIR_DEPLOY)/imguix.o $(OBJDIR_DEPLOY)/local_commands.o $(OBJDIR_DEPLOY)/main.o $(OBJDIR_DEPLOY)/serialisables.o $(OBJDIR_DEPLOY)/steam_api.o $(OBJDIR_DEPLOY)/string_helpers.o $(OBJDIR_DEPLOY)/tokeniser.o $(OBJDIR_DEPLOY)/auto_handlers.o $(OBJDIR_DEPLOY)/copy_handler.o $(OBJDIR_DEPLOY)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_DEPLOY)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_DEPLOY)/deps/imgui/imgui.o $(OBJDIR_DEPLOY)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOY)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOY)/deps/imgui/imgui_widgets.o $(OBJDIR_DEPLOY)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_DEPLOY)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOY)/deps/imtui/src/imtui-impl-ncurses.o $(OBJDIR_DEPLOY)/deps/imtui/src/imtui-impl-text.o $(OBJDIR_DEPLOY)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEPLOY)/deps/networking/networking.o $(OBJDIR_DEPLOY)/deps/networking/serialisable.o $(OBJDIR_DEPLOY)/deps/toolkit/base_serialisables.o $(OBJDIR_DEPLOY)/deps/toolkit/opencl.o
 
-OBJ_DEPLOYPROFILE = $(OBJDIR_DEPLOYPROFILE)/deps/toolkit/stacktrace.o $(OBJDIR_DEPLOYPROFILE)/deps/toolkit/texture.o $(OBJDIR_DEPLOYPROFILE)/editable_string.o $(OBJDIR_DEPLOYPROFILE)/font_cfg.o $(OBJDIR_DEPLOYPROFILE)/format_cache.o $(OBJDIR_DEPLOYPROFILE)/imgui_ui_components.o $(OBJDIR_DEPLOYPROFILE)/imguix.o $(OBJDIR_DEPLOYPROFILE)/local_commands.o $(OBJDIR_DEPLOYPROFILE)/main.o $(OBJDIR_DEPLOYPROFILE)/serialisables.o $(OBJDIR_DEPLOYPROFILE)/steam_api.o $(OBJDIR_DEPLOYPROFILE)/string_helpers.o $(OBJDIR_DEPLOYPROFILE)/tokeniser.o $(OBJDIR_DEPLOYPROFILE)/window_context.o $(OBJDIR_DEPLOYPROFILE)/auto_handlers.o $(OBJDIR_DEPLOYPROFILE)/copy_handler.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_widgets.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYPROFILE)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEPLOYPROFILE)/deps/networking/networking.o $(OBJDIR_DEPLOYPROFILE)/deps/networking/serialisable.o $(OBJDIR_DEPLOYPROFILE)/deps/toolkit/base_serialisables.o $(OBJDIR_DEPLOYPROFILE)/deps/toolkit/opencl.o $(OBJDIR_DEPLOYPROFILE)/deps/toolkit/render_window.o
+OBJ_DEPLOYPROFILE = $(OBJDIR_DEPLOYPROFILE)/deps/toolkit/render_window.o $(OBJDIR_DEPLOYPROFILE)/deps/toolkit/stacktrace.o $(OBJDIR_DEPLOYPROFILE)/deps/toolkit/texture.o $(OBJDIR_DEPLOYPROFILE)/editable_string.o $(OBJDIR_DEPLOYPROFILE)/font_cfg.o $(OBJDIR_DEPLOYPROFILE)/format_cache.o $(OBJDIR_DEPLOYPROFILE)/imgui_ui_components.o $(OBJDIR_DEPLOYPROFILE)/imguix.o $(OBJDIR_DEPLOYPROFILE)/local_commands.o $(OBJDIR_DEPLOYPROFILE)/main.o $(OBJDIR_DEPLOYPROFILE)/serialisables.o $(OBJDIR_DEPLOYPROFILE)/steam_api.o $(OBJDIR_DEPLOYPROFILE)/string_helpers.o $(OBJDIR_DEPLOYPROFILE)/tokeniser.o $(OBJDIR_DEPLOYPROFILE)/auto_handlers.o $(OBJDIR_DEPLOYPROFILE)/copy_handler.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/imgui_widgets.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYPROFILE)/deps/imtui/src/imtui-impl-ncurses.o $(OBJDIR_DEPLOYPROFILE)/deps/imtui/src/imtui-impl-text.o $(OBJDIR_DEPLOYPROFILE)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEPLOYPROFILE)/deps/networking/networking.o $(OBJDIR_DEPLOYPROFILE)/deps/networking/serialisable.o $(OBJDIR_DEPLOYPROFILE)/deps/toolkit/base_serialisables.o $(OBJDIR_DEPLOYPROFILE)/deps/toolkit/opencl.o
 
-OBJ_DEPLOYTOSTEAM = $(OBJDIR_DEPLOYTOSTEAM)/deps/toolkit/stacktrace.o $(OBJDIR_DEPLOYTOSTEAM)/deps/toolkit/texture.o $(OBJDIR_DEPLOYTOSTEAM)/editable_string.o $(OBJDIR_DEPLOYTOSTEAM)/font_cfg.o $(OBJDIR_DEPLOYTOSTEAM)/format_cache.o $(OBJDIR_DEPLOYTOSTEAM)/imgui_ui_components.o $(OBJDIR_DEPLOYTOSTEAM)/imguix.o $(OBJDIR_DEPLOYTOSTEAM)/local_commands.o $(OBJDIR_DEPLOYTOSTEAM)/main.o $(OBJDIR_DEPLOYTOSTEAM)/serialisables.o $(OBJDIR_DEPLOYTOSTEAM)/steam_api.o $(OBJDIR_DEPLOYTOSTEAM)/string_helpers.o $(OBJDIR_DEPLOYTOSTEAM)/tokeniser.o $(OBJDIR_DEPLOYTOSTEAM)/window_context.o $(OBJDIR_DEPLOYTOSTEAM)/auto_handlers.o $(OBJDIR_DEPLOYTOSTEAM)/copy_handler.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_widgets.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTOSTEAM)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEPLOYTOSTEAM)/deps/networking/networking.o $(OBJDIR_DEPLOYTOSTEAM)/deps/networking/serialisable.o $(OBJDIR_DEPLOYTOSTEAM)/deps/toolkit/base_serialisables.o $(OBJDIR_DEPLOYTOSTEAM)/deps/toolkit/opencl.o $(OBJDIR_DEPLOYTOSTEAM)/deps/toolkit/render_window.o
+OBJ_DEPLOYTOSTEAM = $(OBJDIR_DEPLOYTOSTEAM)/deps/toolkit/render_window.o $(OBJDIR_DEPLOYTOSTEAM)/deps/toolkit/stacktrace.o $(OBJDIR_DEPLOYTOSTEAM)/deps/toolkit/texture.o $(OBJDIR_DEPLOYTOSTEAM)/editable_string.o $(OBJDIR_DEPLOYTOSTEAM)/font_cfg.o $(OBJDIR_DEPLOYTOSTEAM)/format_cache.o $(OBJDIR_DEPLOYTOSTEAM)/imgui_ui_components.o $(OBJDIR_DEPLOYTOSTEAM)/imguix.o $(OBJDIR_DEPLOYTOSTEAM)/local_commands.o $(OBJDIR_DEPLOYTOSTEAM)/main.o $(OBJDIR_DEPLOYTOSTEAM)/serialisables.o $(OBJDIR_DEPLOYTOSTEAM)/steam_api.o $(OBJDIR_DEPLOYTOSTEAM)/string_helpers.o $(OBJDIR_DEPLOYTOSTEAM)/tokeniser.o $(OBJDIR_DEPLOYTOSTEAM)/auto_handlers.o $(OBJDIR_DEPLOYTOSTEAM)/copy_handler.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/imgui_widgets.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imtui/src/imtui-impl-ncurses.o $(OBJDIR_DEPLOYTOSTEAM)/deps/imtui/src/imtui-impl-text.o $(OBJDIR_DEPLOYTOSTEAM)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEPLOYTOSTEAM)/deps/networking/networking.o $(OBJDIR_DEPLOYTOSTEAM)/deps/networking/serialisable.o $(OBJDIR_DEPLOYTOSTEAM)/deps/toolkit/base_serialisables.o $(OBJDIR_DEPLOYTOSTEAM)/deps/toolkit/opencl.o
 
-OBJ_DEPLOYTESTDEBUG = $(OBJDIR_DEPLOYTESTDEBUG)/deps/toolkit/stacktrace.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/toolkit/texture.o $(OBJDIR_DEPLOYTESTDEBUG)/editable_string.o $(OBJDIR_DEPLOYTESTDEBUG)/font_cfg.o $(OBJDIR_DEPLOYTESTDEBUG)/format_cache.o $(OBJDIR_DEPLOYTESTDEBUG)/imgui_ui_components.o $(OBJDIR_DEPLOYTESTDEBUG)/imguix.o $(OBJDIR_DEPLOYTESTDEBUG)/local_commands.o $(OBJDIR_DEPLOYTESTDEBUG)/main.o $(OBJDIR_DEPLOYTESTDEBUG)/serialisables.o $(OBJDIR_DEPLOYTESTDEBUG)/steam_api.o $(OBJDIR_DEPLOYTESTDEBUG)/string_helpers.o $(OBJDIR_DEPLOYTESTDEBUG)/tokeniser.o $(OBJDIR_DEPLOYTESTDEBUG)/window_context.o $(OBJDIR_DEPLOYTESTDEBUG)/auto_handlers.o $(OBJDIR_DEPLOYTESTDEBUG)/copy_handler.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_widgets.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking/networking.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking/serialisable.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/toolkit/base_serialisables.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/toolkit/opencl.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/toolkit/render_window.o
+OBJ_DEPLOYTESTDEBUG = $(OBJDIR_DEPLOYTESTDEBUG)/deps/toolkit/render_window.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/toolkit/stacktrace.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/toolkit/texture.o $(OBJDIR_DEPLOYTESTDEBUG)/editable_string.o $(OBJDIR_DEPLOYTESTDEBUG)/font_cfg.o $(OBJDIR_DEPLOYTESTDEBUG)/format_cache.o $(OBJDIR_DEPLOYTESTDEBUG)/imgui_ui_components.o $(OBJDIR_DEPLOYTESTDEBUG)/imguix.o $(OBJDIR_DEPLOYTESTDEBUG)/local_commands.o $(OBJDIR_DEPLOYTESTDEBUG)/main.o $(OBJDIR_DEPLOYTESTDEBUG)/serialisables.o $(OBJDIR_DEPLOYTESTDEBUG)/steam_api.o $(OBJDIR_DEPLOYTESTDEBUG)/string_helpers.o $(OBJDIR_DEPLOYTESTDEBUG)/tokeniser.o $(OBJDIR_DEPLOYTESTDEBUG)/auto_handlers.o $(OBJDIR_DEPLOYTESTDEBUG)/copy_handler.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/imgui_widgets.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imtui/src/imtui-impl-ncurses.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imtui/src/imtui-impl-text.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking/networking.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking/serialisable.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/toolkit/base_serialisables.o $(OBJDIR_DEPLOYTESTDEBUG)/deps/toolkit/opencl.o
 
-OBJ_DEPLOYTEST = $(OBJDIR_DEPLOYTEST)/deps/toolkit/stacktrace.o $(OBJDIR_DEPLOYTEST)/deps/toolkit/texture.o $(OBJDIR_DEPLOYTEST)/editable_string.o $(OBJDIR_DEPLOYTEST)/font_cfg.o $(OBJDIR_DEPLOYTEST)/format_cache.o $(OBJDIR_DEPLOYTEST)/icon.o $(OBJDIR_DEPLOYTEST)/imgui_ui_components.o $(OBJDIR_DEPLOYTEST)/imguix.o $(OBJDIR_DEPLOYTEST)/local_commands.o $(OBJDIR_DEPLOYTEST)/main.o $(OBJDIR_DEPLOYTEST)/serialisables.o $(OBJDIR_DEPLOYTEST)/steam_api.o $(OBJDIR_DEPLOYTEST)/string_helpers.o $(OBJDIR_DEPLOYTEST)/tokeniser.o $(OBJDIR_DEPLOYTEST)/window_context.o $(OBJDIR_DEPLOYTEST)/auto_handlers.o $(OBJDIR_DEPLOYTEST)/copy_handler.o $(OBJDIR_DEPLOYTEST)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_DEPLOYTEST)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_widgets.o $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTEST)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEPLOYTEST)/deps/networking/networking.o $(OBJDIR_DEPLOYTEST)/deps/networking/serialisable.o $(OBJDIR_DEPLOYTEST)/deps/toolkit/base_serialisables.o $(OBJDIR_DEPLOYTEST)/deps/toolkit/opencl.o $(OBJDIR_DEPLOYTEST)/deps/toolkit/render_window.o
+OBJ_DEPLOYTEST = $(OBJDIR_DEPLOYTEST)/deps/toolkit/render_window.o $(OBJDIR_DEPLOYTEST)/deps/toolkit/stacktrace.o $(OBJDIR_DEPLOYTEST)/deps/toolkit/texture.o $(OBJDIR_DEPLOYTEST)/editable_string.o $(OBJDIR_DEPLOYTEST)/font_cfg.o $(OBJDIR_DEPLOYTEST)/format_cache.o $(OBJDIR_DEPLOYTEST)/icon.o $(OBJDIR_DEPLOYTEST)/imgui_ui_components.o $(OBJDIR_DEPLOYTEST)/imguix.o $(OBJDIR_DEPLOYTEST)/local_commands.o $(OBJDIR_DEPLOYTEST)/main.o $(OBJDIR_DEPLOYTEST)/serialisables.o $(OBJDIR_DEPLOYTEST)/steam_api.o $(OBJDIR_DEPLOYTEST)/string_helpers.o $(OBJDIR_DEPLOYTEST)/tokeniser.o $(OBJDIR_DEPLOYTEST)/auto_handlers.o $(OBJDIR_DEPLOYTEST)/copy_handler.o $(OBJDIR_DEPLOYTEST)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_DEPLOYTEST)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTEST)/deps/imgui/imgui_widgets.o $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTEST)/deps/imtui/src/imtui-impl-ncurses.o $(OBJDIR_DEPLOYTEST)/deps/imtui/src/imtui-impl-text.o $(OBJDIR_DEPLOYTEST)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEPLOYTEST)/deps/networking/networking.o $(OBJDIR_DEPLOYTEST)/deps/networking/serialisable.o $(OBJDIR_DEPLOYTEST)/deps/toolkit/base_serialisables.o $(OBJDIR_DEPLOYTEST)/deps/toolkit/opencl.o
 
-OBJ_DEPLOYTESTSUBMODULES = $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/toolkit/stacktrace.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/toolkit/texture.o $(OBJDIR_DEPLOYTESTSUBMODULES)/editable_string.o $(OBJDIR_DEPLOYTESTSUBMODULES)/font_cfg.o $(OBJDIR_DEPLOYTESTSUBMODULES)/format_cache.o $(OBJDIR_DEPLOYTESTSUBMODULES)/icon.o $(OBJDIR_DEPLOYTESTSUBMODULES)/imgui_ui_components.o $(OBJDIR_DEPLOYTESTSUBMODULES)/imguix.o $(OBJDIR_DEPLOYTESTSUBMODULES)/local_commands.o $(OBJDIR_DEPLOYTESTSUBMODULES)/main.o $(OBJDIR_DEPLOYTESTSUBMODULES)/serialisables.o $(OBJDIR_DEPLOYTESTSUBMODULES)/steam_api.o $(OBJDIR_DEPLOYTESTSUBMODULES)/string_helpers.o $(OBJDIR_DEPLOYTESTSUBMODULES)/tokeniser.o $(OBJDIR_DEPLOYTESTSUBMODULES)/window_context.o $(OBJDIR_DEPLOYTESTSUBMODULES)/auto_handlers.o $(OBJDIR_DEPLOYTESTSUBMODULES)/copy_handler.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_widgets.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking/networking.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking/serialisable.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/toolkit/base_serialisables.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/toolkit/opencl.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/toolkit/render_window.o
+OBJ_DEPLOYTESTSUBMODULES = $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/toolkit/render_window.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/toolkit/stacktrace.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/toolkit/texture.o $(OBJDIR_DEPLOYTESTSUBMODULES)/editable_string.o $(OBJDIR_DEPLOYTESTSUBMODULES)/font_cfg.o $(OBJDIR_DEPLOYTESTSUBMODULES)/format_cache.o $(OBJDIR_DEPLOYTESTSUBMODULES)/icon.o $(OBJDIR_DEPLOYTESTSUBMODULES)/imgui_ui_components.o $(OBJDIR_DEPLOYTESTSUBMODULES)/imguix.o $(OBJDIR_DEPLOYTESTSUBMODULES)/local_commands.o $(OBJDIR_DEPLOYTESTSUBMODULES)/main.o $(OBJDIR_DEPLOYTESTSUBMODULES)/serialisables.o $(OBJDIR_DEPLOYTESTSUBMODULES)/steam_api.o $(OBJDIR_DEPLOYTESTSUBMODULES)/string_helpers.o $(OBJDIR_DEPLOYTESTSUBMODULES)/tokeniser.o $(OBJDIR_DEPLOYTESTSUBMODULES)/auto_handlers.o $(OBJDIR_DEPLOYTESTSUBMODULES)/copy_handler.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_demo.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_draw.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/imgui_widgets.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imtui/src/imtui-impl-ncurses.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imtui/src/imtui-impl-text.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking/beast_compilation_unit.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking/networking.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking/serialisable.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/toolkit/base_serialisables.o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/toolkit/opencl.o
 
-OBJ_RELEASESUBMODULES = $(OBJDIR_RELEASESUBMODULES)/deps/toolkit/stacktrace.o $(OBJDIR_RELEASESUBMODULES)/deps/toolkit/texture.o $(OBJDIR_RELEASESUBMODULES)/editable_string.o $(OBJDIR_RELEASESUBMODULES)/font_cfg.o $(OBJDIR_RELEASESUBMODULES)/format_cache.o $(OBJDIR_RELEASESUBMODULES)/imgui_ui_components.o $(OBJDIR_RELEASESUBMODULES)/imguix.o $(OBJDIR_RELEASESUBMODULES)/local_commands.o $(OBJDIR_RELEASESUBMODULES)/main.o $(OBJDIR_RELEASESUBMODULES)/serialisables.o $(OBJDIR_RELEASESUBMODULES)/steam_api.o $(OBJDIR_RELEASESUBMODULES)/string_helpers.o $(OBJDIR_RELEASESUBMODULES)/tokeniser.o $(OBJDIR_RELEASESUBMODULES)/window_context.o $(OBJDIR_RELEASESUBMODULES)/auto_handlers.o $(OBJDIR_RELEASESUBMODULES)/copy_handler.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_demo.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_draw.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_widgets.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_RELEASESUBMODULES)/deps/networking/beast_compilation_unit.o $(OBJDIR_RELEASESUBMODULES)/deps/networking/networking.o $(OBJDIR_RELEASESUBMODULES)/deps/networking/serialisable.o $(OBJDIR_RELEASESUBMODULES)/deps/toolkit/base_serialisables.o $(OBJDIR_RELEASESUBMODULES)/deps/toolkit/opencl.o $(OBJDIR_RELEASESUBMODULES)/deps/toolkit/render_window.o
+OBJ_RELEASESUBMODULES = $(OBJDIR_RELEASESUBMODULES)/deps/toolkit/render_window.o $(OBJDIR_RELEASESUBMODULES)/deps/toolkit/stacktrace.o $(OBJDIR_RELEASESUBMODULES)/deps/toolkit/texture.o $(OBJDIR_RELEASESUBMODULES)/editable_string.o $(OBJDIR_RELEASESUBMODULES)/font_cfg.o $(OBJDIR_RELEASESUBMODULES)/format_cache.o $(OBJDIR_RELEASESUBMODULES)/imgui_ui_components.o $(OBJDIR_RELEASESUBMODULES)/imguix.o $(OBJDIR_RELEASESUBMODULES)/local_commands.o $(OBJDIR_RELEASESUBMODULES)/main.o $(OBJDIR_RELEASESUBMODULES)/serialisables.o $(OBJDIR_RELEASESUBMODULES)/steam_api.o $(OBJDIR_RELEASESUBMODULES)/string_helpers.o $(OBJDIR_RELEASESUBMODULES)/tokeniser.o $(OBJDIR_RELEASESUBMODULES)/auto_handlers.o $(OBJDIR_RELEASESUBMODULES)/copy_handler.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_demo.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_draw.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/imgui_widgets.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_RELEASESUBMODULES)/deps/imtui/src/imtui-impl-ncurses.o $(OBJDIR_RELEASESUBMODULES)/deps/imtui/src/imtui-impl-text.o $(OBJDIR_RELEASESUBMODULES)/deps/networking/beast_compilation_unit.o $(OBJDIR_RELEASESUBMODULES)/deps/networking/networking.o $(OBJDIR_RELEASESUBMODULES)/deps/networking/serialisable.o $(OBJDIR_RELEASESUBMODULES)/deps/toolkit/base_serialisables.o $(OBJDIR_RELEASESUBMODULES)/deps/toolkit/opencl.o
 
-OBJ_LINUXDEPLOY = $(OBJDIR_LINUXDEPLOY)/deps/toolkit/stacktrace.o $(OBJDIR_LINUXDEPLOY)/deps/toolkit/texture.o $(OBJDIR_LINUXDEPLOY)/editable_string.o $(OBJDIR_LINUXDEPLOY)/font_cfg.o $(OBJDIR_LINUXDEPLOY)/format_cache.o $(OBJDIR_LINUXDEPLOY)/imgui_ui_components.o $(OBJDIR_LINUXDEPLOY)/imguix.o $(OBJDIR_LINUXDEPLOY)/local_commands.o $(OBJDIR_LINUXDEPLOY)/main.o $(OBJDIR_LINUXDEPLOY)/serialisables.o $(OBJDIR_LINUXDEPLOY)/steam_api.o $(OBJDIR_LINUXDEPLOY)/string_helpers.o $(OBJDIR_LINUXDEPLOY)/tokeniser.o $(OBJDIR_LINUXDEPLOY)/window_context.o $(OBJDIR_LINUXDEPLOY)/auto_handlers.o $(OBJDIR_LINUXDEPLOY)/copy_handler.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/imgui.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/imgui_demo.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/imgui_draw.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/imgui_widgets.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_LINUXDEPLOY)/deps/networking/beast_compilation_unit.o $(OBJDIR_LINUXDEPLOY)/deps/networking/networking.o $(OBJDIR_LINUXDEPLOY)/deps/networking/serialisable.o $(OBJDIR_LINUXDEPLOY)/deps/toolkit/base_serialisables.o $(OBJDIR_LINUXDEPLOY)/deps/toolkit/opencl.o $(OBJDIR_LINUXDEPLOY)/deps/toolkit/render_window.o
+OBJ_LINUXDEPLOY = $(OBJDIR_LINUXDEPLOY)/deps/toolkit/render_window.o $(OBJDIR_LINUXDEPLOY)/deps/toolkit/stacktrace.o $(OBJDIR_LINUXDEPLOY)/deps/toolkit/texture.o $(OBJDIR_LINUXDEPLOY)/editable_string.o $(OBJDIR_LINUXDEPLOY)/font_cfg.o $(OBJDIR_LINUXDEPLOY)/format_cache.o $(OBJDIR_LINUXDEPLOY)/imgui_ui_components.o $(OBJDIR_LINUXDEPLOY)/imguix.o $(OBJDIR_LINUXDEPLOY)/local_commands.o $(OBJDIR_LINUXDEPLOY)/main.o $(OBJDIR_LINUXDEPLOY)/serialisables.o $(OBJDIR_LINUXDEPLOY)/steam_api.o $(OBJDIR_LINUXDEPLOY)/string_helpers.o $(OBJDIR_LINUXDEPLOY)/tokeniser.o $(OBJDIR_LINUXDEPLOY)/auto_handlers.o $(OBJDIR_LINUXDEPLOY)/copy_handler.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/examples/imgui_impl_glfw.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/examples/imgui_impl_opengl3.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/imgui.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/imgui_demo.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/imgui_draw.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/imgui_widgets.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/misc/cpp/imgui_stdlib.o $(OBJDIR_LINUXDEPLOY)/deps/imgui/misc/freetype/imgui_freetype.o $(OBJDIR_LINUXDEPLOY)/deps/imtui/src/imtui-impl-ncurses.o $(OBJDIR_LINUXDEPLOY)/deps/imtui/src/imtui-impl-text.o $(OBJDIR_LINUXDEPLOY)/deps/networking/beast_compilation_unit.o $(OBJDIR_LINUXDEPLOY)/deps/networking/networking.o $(OBJDIR_LINUXDEPLOY)/deps/networking/serialisable.o $(OBJDIR_LINUXDEPLOY)/deps/toolkit/base_serialisables.o $(OBJDIR_LINUXDEPLOY)/deps/toolkit/opencl.o
 
-OBJ_MAKELINUXDEPLOY = 
+OBJ_MAKELINUXDEPLOY = $(OBJDIR_MAKELINUXDEPLOY)/deps/imtui/src/imtui-impl-ncurses.o $(OBJDIR_MAKELINUXDEPLOY)/deps/imtui/src/imtui-impl-text.o
 
 all: debug release profile deploy deployprofile deploytosteam deploytestdebug deploytest deploytestsubmodules releasesubmodules deploytestzapcc linuxdeploy makelinuxdeploy
 
@@ -186,6 +186,7 @@ before_debug:
 	test -d $(OBJDIR_DEBUG)/deps/imgui || mkdir -p $(OBJDIR_DEBUG)/deps/imgui
 	test -d $(OBJDIR_DEBUG)/deps/imgui/misc/cpp || mkdir -p $(OBJDIR_DEBUG)/deps/imgui/misc/cpp
 	test -d $(OBJDIR_DEBUG)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEBUG)/deps/imgui/misc/freetype
+	test -d $(OBJDIR_DEBUG)/deps/imtui/src || mkdir -p $(OBJDIR_DEBUG)/deps/imtui/src
 	test -d $(OBJDIR_DEBUG)/deps/networking || mkdir -p $(OBJDIR_DEBUG)/deps/networking
 
 after_debug: 
@@ -194,6 +195,9 @@ debug: before_debug out_debug after_debug
 
 out_debug: before_debug $(OBJ_DEBUG) $(DEP_DEBUG)
 	$(LD) $(LIBDIR_DEBUG) -o $(OUT_DEBUG) $(OBJ_DEBUG)  $(LDFLAGS_DEBUG) $(LIB_DEBUG)
+
+$(OBJDIR_DEBUG)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/toolkit/render_window.cpp -o $(OBJDIR_DEBUG)/deps/toolkit/render_window.o
 
 $(OBJDIR_DEBUG)/deps/toolkit/stacktrace.o: deps/toolkit/stacktrace.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/toolkit/stacktrace.cpp -o $(OBJDIR_DEBUG)/deps/toolkit/stacktrace.o
@@ -234,9 +238,6 @@ $(OBJDIR_DEBUG)/string_helpers.o: string_helpers.cpp
 $(OBJDIR_DEBUG)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c tokeniser.cpp -o $(OBJDIR_DEBUG)/tokeniser.o
 
-$(OBJDIR_DEBUG)/window_context.o: window_context.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c window_context.cpp -o $(OBJDIR_DEBUG)/window_context.o
-
 $(OBJDIR_DEBUG)/auto_handlers.o: auto_handlers.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c auto_handlers.cpp -o $(OBJDIR_DEBUG)/auto_handlers.o
 
@@ -267,6 +268,12 @@ $(OBJDIR_DEBUG)/deps/imgui/misc/cpp/imgui_stdlib.o: deps/imgui/misc/cpp/imgui_st
 $(OBJDIR_DEBUG)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEBUG)/deps/imgui/misc/freetype/imgui_freetype.o
 
+$(OBJDIR_DEBUG)/deps/imtui/src/imtui-impl-ncurses.o: deps/imtui/src/imtui-impl-ncurses.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/imtui/src/imtui-impl-ncurses.cpp -o $(OBJDIR_DEBUG)/deps/imtui/src/imtui-impl-ncurses.o
+
+$(OBJDIR_DEBUG)/deps/imtui/src/imtui-impl-text.o: deps/imtui/src/imtui-impl-text.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/imtui/src/imtui-impl-text.cpp -o $(OBJDIR_DEBUG)/deps/imtui/src/imtui-impl-text.o
+
 $(OBJDIR_DEBUG)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_DEBUG)/deps/networking/beast_compilation_unit.o
 
@@ -282,9 +289,6 @@ $(OBJDIR_DEBUG)/deps/toolkit/base_serialisables.o: deps/toolkit/base_serialisabl
 $(OBJDIR_DEBUG)/deps/toolkit/opencl.o: deps/toolkit/opencl.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/toolkit/opencl.cpp -o $(OBJDIR_DEBUG)/deps/toolkit/opencl.o
 
-$(OBJDIR_DEBUG)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c deps/toolkit/render_window.cpp -o $(OBJDIR_DEBUG)/deps/toolkit/render_window.o
-
 clean_debug: 
 	rm -f $(OBJ_DEBUG) $(OUT_DEBUG)
 	rm -rf bin/Debug
@@ -294,6 +298,7 @@ clean_debug:
 	rm -rf $(OBJDIR_DEBUG)/deps/imgui
 	rm -rf $(OBJDIR_DEBUG)/deps/imgui/misc/cpp
 	rm -rf $(OBJDIR_DEBUG)/deps/imgui/misc/freetype
+	rm -rf $(OBJDIR_DEBUG)/deps/imtui/src
 	rm -rf $(OBJDIR_DEBUG)/deps/networking
 
 before_release: 
@@ -304,6 +309,7 @@ before_release:
 	test -d $(OBJDIR_RELEASE)/deps/imgui || mkdir -p $(OBJDIR_RELEASE)/deps/imgui
 	test -d $(OBJDIR_RELEASE)/deps/imgui/misc/cpp || mkdir -p $(OBJDIR_RELEASE)/deps/imgui/misc/cpp
 	test -d $(OBJDIR_RELEASE)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_RELEASE)/deps/imgui/misc/freetype
+	test -d $(OBJDIR_RELEASE)/deps/imtui/src || mkdir -p $(OBJDIR_RELEASE)/deps/imtui/src
 	test -d $(OBJDIR_RELEASE)/deps/networking || mkdir -p $(OBJDIR_RELEASE)/deps/networking
 
 after_release: 
@@ -313,6 +319,9 @@ release: before_release out_release after_release
 
 out_release: before_release $(OBJ_RELEASE) $(DEP_RELEASE)
 	$(LD) $(LIBDIR_RELEASE) -o $(OUT_RELEASE) $(OBJ_RELEASE)  $(LDFLAGS_RELEASE) $(LIB_RELEASE)
+
+$(OBJDIR_RELEASE)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/toolkit/render_window.cpp -o $(OBJDIR_RELEASE)/deps/toolkit/render_window.o
 
 $(OBJDIR_RELEASE)/deps/toolkit/stacktrace.o: deps/toolkit/stacktrace.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/toolkit/stacktrace.cpp -o $(OBJDIR_RELEASE)/deps/toolkit/stacktrace.o
@@ -353,9 +362,6 @@ $(OBJDIR_RELEASE)/string_helpers.o: string_helpers.cpp
 $(OBJDIR_RELEASE)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c tokeniser.cpp -o $(OBJDIR_RELEASE)/tokeniser.o
 
-$(OBJDIR_RELEASE)/window_context.o: window_context.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c window_context.cpp -o $(OBJDIR_RELEASE)/window_context.o
-
 $(OBJDIR_RELEASE)/auto_handlers.o: auto_handlers.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c auto_handlers.cpp -o $(OBJDIR_RELEASE)/auto_handlers.o
 
@@ -386,6 +392,12 @@ $(OBJDIR_RELEASE)/deps/imgui/misc/cpp/imgui_stdlib.o: deps/imgui/misc/cpp/imgui_
 $(OBJDIR_RELEASE)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_RELEASE)/deps/imgui/misc/freetype/imgui_freetype.o
 
+$(OBJDIR_RELEASE)/deps/imtui/src/imtui-impl-ncurses.o: deps/imtui/src/imtui-impl-ncurses.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/imtui/src/imtui-impl-ncurses.cpp -o $(OBJDIR_RELEASE)/deps/imtui/src/imtui-impl-ncurses.o
+
+$(OBJDIR_RELEASE)/deps/imtui/src/imtui-impl-text.o: deps/imtui/src/imtui-impl-text.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/imtui/src/imtui-impl-text.cpp -o $(OBJDIR_RELEASE)/deps/imtui/src/imtui-impl-text.o
+
 $(OBJDIR_RELEASE)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_RELEASE)/deps/networking/beast_compilation_unit.o
 
@@ -401,9 +413,6 @@ $(OBJDIR_RELEASE)/deps/toolkit/base_serialisables.o: deps/toolkit/base_serialisa
 $(OBJDIR_RELEASE)/deps/toolkit/opencl.o: deps/toolkit/opencl.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/toolkit/opencl.cpp -o $(OBJDIR_RELEASE)/deps/toolkit/opencl.o
 
-$(OBJDIR_RELEASE)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c deps/toolkit/render_window.cpp -o $(OBJDIR_RELEASE)/deps/toolkit/render_window.o
-
 clean_release: 
 	rm -f $(OBJ_RELEASE) $(OUT_RELEASE)
 	rm -rf bin/Release
@@ -413,6 +422,7 @@ clean_release:
 	rm -rf $(OBJDIR_RELEASE)/deps/imgui
 	rm -rf $(OBJDIR_RELEASE)/deps/imgui/misc/cpp
 	rm -rf $(OBJDIR_RELEASE)/deps/imgui/misc/freetype
+	rm -rf $(OBJDIR_RELEASE)/deps/imtui/src
 	rm -rf $(OBJDIR_RELEASE)/deps/networking
 
 before_profile: 
@@ -423,6 +433,7 @@ before_profile:
 	test -d $(OBJDIR_PROFILE)/deps/imgui || mkdir -p $(OBJDIR_PROFILE)/deps/imgui
 	test -d $(OBJDIR_PROFILE)/deps/imgui/misc/cpp || mkdir -p $(OBJDIR_PROFILE)/deps/imgui/misc/cpp
 	test -d $(OBJDIR_PROFILE)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_PROFILE)/deps/imgui/misc/freetype
+	test -d $(OBJDIR_PROFILE)/deps/imtui/src || mkdir -p $(OBJDIR_PROFILE)/deps/imtui/src
 	test -d $(OBJDIR_PROFILE)/deps/networking || mkdir -p $(OBJDIR_PROFILE)/deps/networking
 
 after_profile: 
@@ -431,6 +442,9 @@ profile: before_profile out_profile after_profile
 
 out_profile: before_profile $(OBJ_PROFILE) $(DEP_PROFILE)
 	$(LD) $(LIBDIR_PROFILE) -o $(OUT_PROFILE) $(OBJ_PROFILE)  $(LDFLAGS_PROFILE) $(LIB_PROFILE)
+
+$(OBJDIR_PROFILE)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/toolkit/render_window.cpp -o $(OBJDIR_PROFILE)/deps/toolkit/render_window.o
 
 $(OBJDIR_PROFILE)/deps/toolkit/stacktrace.o: deps/toolkit/stacktrace.cpp
 	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/toolkit/stacktrace.cpp -o $(OBJDIR_PROFILE)/deps/toolkit/stacktrace.o
@@ -471,9 +485,6 @@ $(OBJDIR_PROFILE)/string_helpers.o: string_helpers.cpp
 $(OBJDIR_PROFILE)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c tokeniser.cpp -o $(OBJDIR_PROFILE)/tokeniser.o
 
-$(OBJDIR_PROFILE)/window_context.o: window_context.cpp
-	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c window_context.cpp -o $(OBJDIR_PROFILE)/window_context.o
-
 $(OBJDIR_PROFILE)/auto_handlers.o: auto_handlers.cpp
 	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c auto_handlers.cpp -o $(OBJDIR_PROFILE)/auto_handlers.o
 
@@ -504,6 +515,12 @@ $(OBJDIR_PROFILE)/deps/imgui/misc/cpp/imgui_stdlib.o: deps/imgui/misc/cpp/imgui_
 $(OBJDIR_PROFILE)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_PROFILE)/deps/imgui/misc/freetype/imgui_freetype.o
 
+$(OBJDIR_PROFILE)/deps/imtui/src/imtui-impl-ncurses.o: deps/imtui/src/imtui-impl-ncurses.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/imtui/src/imtui-impl-ncurses.cpp -o $(OBJDIR_PROFILE)/deps/imtui/src/imtui-impl-ncurses.o
+
+$(OBJDIR_PROFILE)/deps/imtui/src/imtui-impl-text.o: deps/imtui/src/imtui-impl-text.cpp
+	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/imtui/src/imtui-impl-text.cpp -o $(OBJDIR_PROFILE)/deps/imtui/src/imtui-impl-text.o
+
 $(OBJDIR_PROFILE)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
 	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_PROFILE)/deps/networking/beast_compilation_unit.o
 
@@ -519,9 +536,6 @@ $(OBJDIR_PROFILE)/deps/toolkit/base_serialisables.o: deps/toolkit/base_serialisa
 $(OBJDIR_PROFILE)/deps/toolkit/opencl.o: deps/toolkit/opencl.cpp
 	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/toolkit/opencl.cpp -o $(OBJDIR_PROFILE)/deps/toolkit/opencl.o
 
-$(OBJDIR_PROFILE)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
-	$(CXX) $(CFLAGS_PROFILE) $(INC_PROFILE) -c deps/toolkit/render_window.cpp -o $(OBJDIR_PROFILE)/deps/toolkit/render_window.o
-
 clean_profile: 
 	rm -f $(OBJ_PROFILE) $(OUT_PROFILE)
 	rm -rf bin/Profile
@@ -531,6 +545,7 @@ clean_profile:
 	rm -rf $(OBJDIR_PROFILE)/deps/imgui
 	rm -rf $(OBJDIR_PROFILE)/deps/imgui/misc/cpp
 	rm -rf $(OBJDIR_PROFILE)/deps/imgui/misc/freetype
+	rm -rf $(OBJDIR_PROFILE)/deps/imtui/src
 	rm -rf $(OBJDIR_PROFILE)/deps/networking
 
 before_deploy: 
@@ -541,6 +556,7 @@ before_deploy:
 	test -d $(OBJDIR_DEPLOY)/deps/imgui || mkdir -p $(OBJDIR_DEPLOY)/deps/imgui
 	test -d $(OBJDIR_DEPLOY)/deps/imgui/misc/cpp || mkdir -p $(OBJDIR_DEPLOY)/deps/imgui/misc/cpp
 	test -d $(OBJDIR_DEPLOY)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEPLOY)/deps/imgui/misc/freetype
+	test -d $(OBJDIR_DEPLOY)/deps/imtui/src || mkdir -p $(OBJDIR_DEPLOY)/deps/imtui/src
 	test -d $(OBJDIR_DEPLOY)/deps/networking || mkdir -p $(OBJDIR_DEPLOY)/deps/networking
 
 after_deploy: 
@@ -549,6 +565,9 @@ deploy: before_deploy out_deploy after_deploy
 
 out_deploy: before_deploy $(OBJ_DEPLOY) $(DEP_DEPLOY)
 	$(LD) $(LIBDIR_DEPLOY) -o $(OUT_DEPLOY) $(OBJ_DEPLOY)  $(LDFLAGS_DEPLOY) $(LIB_DEPLOY)
+
+$(OBJDIR_DEPLOY)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/toolkit/render_window.cpp -o $(OBJDIR_DEPLOY)/deps/toolkit/render_window.o
 
 $(OBJDIR_DEPLOY)/deps/toolkit/stacktrace.o: deps/toolkit/stacktrace.cpp
 	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/toolkit/stacktrace.cpp -o $(OBJDIR_DEPLOY)/deps/toolkit/stacktrace.o
@@ -592,9 +611,6 @@ $(OBJDIR_DEPLOY)/string_helpers.o: string_helpers.cpp
 $(OBJDIR_DEPLOY)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c tokeniser.cpp -o $(OBJDIR_DEPLOY)/tokeniser.o
 
-$(OBJDIR_DEPLOY)/window_context.o: window_context.cpp
-	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c window_context.cpp -o $(OBJDIR_DEPLOY)/window_context.o
-
 $(OBJDIR_DEPLOY)/auto_handlers.o: auto_handlers.cpp
 	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c auto_handlers.cpp -o $(OBJDIR_DEPLOY)/auto_handlers.o
 
@@ -625,6 +641,12 @@ $(OBJDIR_DEPLOY)/deps/imgui/misc/cpp/imgui_stdlib.o: deps/imgui/misc/cpp/imgui_s
 $(OBJDIR_DEPLOY)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEPLOY)/deps/imgui/misc/freetype/imgui_freetype.o
 
+$(OBJDIR_DEPLOY)/deps/imtui/src/imtui-impl-ncurses.o: deps/imtui/src/imtui-impl-ncurses.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/imtui/src/imtui-impl-ncurses.cpp -o $(OBJDIR_DEPLOY)/deps/imtui/src/imtui-impl-ncurses.o
+
+$(OBJDIR_DEPLOY)/deps/imtui/src/imtui-impl-text.o: deps/imtui/src/imtui-impl-text.cpp
+	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/imtui/src/imtui-impl-text.cpp -o $(OBJDIR_DEPLOY)/deps/imtui/src/imtui-impl-text.o
+
 $(OBJDIR_DEPLOY)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
 	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_DEPLOY)/deps/networking/beast_compilation_unit.o
 
@@ -640,9 +662,6 @@ $(OBJDIR_DEPLOY)/deps/toolkit/base_serialisables.o: deps/toolkit/base_serialisab
 $(OBJDIR_DEPLOY)/deps/toolkit/opencl.o: deps/toolkit/opencl.cpp
 	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/toolkit/opencl.cpp -o $(OBJDIR_DEPLOY)/deps/toolkit/opencl.o
 
-$(OBJDIR_DEPLOY)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
-	$(CXX) $(CFLAGS_DEPLOY) $(INC_DEPLOY) -c deps/toolkit/render_window.cpp -o $(OBJDIR_DEPLOY)/deps/toolkit/render_window.o
-
 clean_deploy: 
 	rm -f $(OBJ_DEPLOY) $(OUT_DEPLOY)
 	rm -rf bin/Deploy
@@ -652,6 +671,7 @@ clean_deploy:
 	rm -rf $(OBJDIR_DEPLOY)/deps/imgui
 	rm -rf $(OBJDIR_DEPLOY)/deps/imgui/misc/cpp
 	rm -rf $(OBJDIR_DEPLOY)/deps/imgui/misc/freetype
+	rm -rf $(OBJDIR_DEPLOY)/deps/imtui/src
 	rm -rf $(OBJDIR_DEPLOY)/deps/networking
 
 before_deployprofile: 
@@ -662,6 +682,7 @@ before_deployprofile:
 	test -d $(OBJDIR_DEPLOYPROFILE)/deps/imgui || mkdir -p $(OBJDIR_DEPLOYPROFILE)/deps/imgui
 	test -d $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/cpp || mkdir -p $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/cpp
 	test -d $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype
+	test -d $(OBJDIR_DEPLOYPROFILE)/deps/imtui/src || mkdir -p $(OBJDIR_DEPLOYPROFILE)/deps/imtui/src
 	test -d $(OBJDIR_DEPLOYPROFILE)/deps/networking || mkdir -p $(OBJDIR_DEPLOYPROFILE)/deps/networking
 
 after_deployprofile: 
@@ -670,6 +691,9 @@ deployprofile: before_deployprofile out_deployprofile after_deployprofile
 
 out_deployprofile: before_deployprofile $(OBJ_DEPLOYPROFILE) $(DEP_DEPLOYPROFILE)
 	$(LD) $(LIBDIR_DEPLOYPROFILE) -o $(OUT_DEPLOYPROFILE) $(OBJ_DEPLOYPROFILE)  $(LDFLAGS_DEPLOYPROFILE) $(LIB_DEPLOYPROFILE)
+
+$(OBJDIR_DEPLOYPROFILE)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/toolkit/render_window.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/toolkit/render_window.o
 
 $(OBJDIR_DEPLOYPROFILE)/deps/toolkit/stacktrace.o: deps/toolkit/stacktrace.cpp
 	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/toolkit/stacktrace.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/toolkit/stacktrace.o
@@ -710,9 +734,6 @@ $(OBJDIR_DEPLOYPROFILE)/string_helpers.o: string_helpers.cpp
 $(OBJDIR_DEPLOYPROFILE)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c tokeniser.cpp -o $(OBJDIR_DEPLOYPROFILE)/tokeniser.o
 
-$(OBJDIR_DEPLOYPROFILE)/window_context.o: window_context.cpp
-	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c window_context.cpp -o $(OBJDIR_DEPLOYPROFILE)/window_context.o
-
 $(OBJDIR_DEPLOYPROFILE)/auto_handlers.o: auto_handlers.cpp
 	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c auto_handlers.cpp -o $(OBJDIR_DEPLOYPROFILE)/auto_handlers.o
 
@@ -743,6 +764,12 @@ $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/cpp/imgui_stdlib.o: deps/imgui/misc/cpp/
 $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype/imgui_freetype.o
 
+$(OBJDIR_DEPLOYPROFILE)/deps/imtui/src/imtui-impl-ncurses.o: deps/imtui/src/imtui-impl-ncurses.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/imtui/src/imtui-impl-ncurses.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/imtui/src/imtui-impl-ncurses.o
+
+$(OBJDIR_DEPLOYPROFILE)/deps/imtui/src/imtui-impl-text.o: deps/imtui/src/imtui-impl-text.cpp
+	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/imtui/src/imtui-impl-text.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/imtui/src/imtui-impl-text.o
+
 $(OBJDIR_DEPLOYPROFILE)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
 	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/networking/beast_compilation_unit.o
 
@@ -758,9 +785,6 @@ $(OBJDIR_DEPLOYPROFILE)/deps/toolkit/base_serialisables.o: deps/toolkit/base_ser
 $(OBJDIR_DEPLOYPROFILE)/deps/toolkit/opencl.o: deps/toolkit/opencl.cpp
 	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/toolkit/opencl.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/toolkit/opencl.o
 
-$(OBJDIR_DEPLOYPROFILE)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
-	$(CXX) $(CFLAGS_DEPLOYPROFILE) $(INC_DEPLOYPROFILE) -c deps/toolkit/render_window.cpp -o $(OBJDIR_DEPLOYPROFILE)/deps/toolkit/render_window.o
-
 clean_deployprofile: 
 	rm -f $(OBJ_DEPLOYPROFILE) $(OUT_DEPLOYPROFILE)
 	rm -rf DebugDeploy
@@ -770,6 +794,7 @@ clean_deployprofile:
 	rm -rf $(OBJDIR_DEPLOYPROFILE)/deps/imgui
 	rm -rf $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/cpp
 	rm -rf $(OBJDIR_DEPLOYPROFILE)/deps/imgui/misc/freetype
+	rm -rf $(OBJDIR_DEPLOYPROFILE)/deps/imtui/src
 	rm -rf $(OBJDIR_DEPLOYPROFILE)/deps/networking
 
 before_deploytosteam: 
@@ -780,6 +805,7 @@ before_deploytosteam:
 	test -d $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui || mkdir -p $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui
 	test -d $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/cpp || mkdir -p $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/cpp
 	test -d $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype
+	test -d $(OBJDIR_DEPLOYTOSTEAM)/deps/imtui/src || mkdir -p $(OBJDIR_DEPLOYTOSTEAM)/deps/imtui/src
 	test -d $(OBJDIR_DEPLOYTOSTEAM)/deps/networking || mkdir -p $(OBJDIR_DEPLOYTOSTEAM)/deps/networking
 
 after_deploytosteam: 
@@ -790,6 +816,9 @@ deploytosteam: before_deploytosteam out_deploytosteam after_deploytosteam
 
 out_deploytosteam: before_deploytosteam $(OBJ_DEPLOYTOSTEAM) $(DEP_DEPLOYTOSTEAM)
 	$(LD) $(LIBDIR_DEPLOYTOSTEAM) -o $(OUT_DEPLOYTOSTEAM) $(OBJ_DEPLOYTOSTEAM)  $(LDFLAGS_DEPLOYTOSTEAM) $(LIB_DEPLOYTOSTEAM)
+
+$(OBJDIR_DEPLOYTOSTEAM)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/toolkit/render_window.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/toolkit/render_window.o
 
 $(OBJDIR_DEPLOYTOSTEAM)/deps/toolkit/stacktrace.o: deps/toolkit/stacktrace.cpp
 	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/toolkit/stacktrace.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/toolkit/stacktrace.o
@@ -830,9 +859,6 @@ $(OBJDIR_DEPLOYTOSTEAM)/string_helpers.o: string_helpers.cpp
 $(OBJDIR_DEPLOYTOSTEAM)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c tokeniser.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/tokeniser.o
 
-$(OBJDIR_DEPLOYTOSTEAM)/window_context.o: window_context.cpp
-	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c window_context.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/window_context.o
-
 $(OBJDIR_DEPLOYTOSTEAM)/auto_handlers.o: auto_handlers.cpp
 	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c auto_handlers.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/auto_handlers.o
 
@@ -863,6 +889,12 @@ $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/cpp/imgui_stdlib.o: deps/imgui/misc/cpp/
 $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype/imgui_freetype.o
 
+$(OBJDIR_DEPLOYTOSTEAM)/deps/imtui/src/imtui-impl-ncurses.o: deps/imtui/src/imtui-impl-ncurses.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/imtui/src/imtui-impl-ncurses.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/imtui/src/imtui-impl-ncurses.o
+
+$(OBJDIR_DEPLOYTOSTEAM)/deps/imtui/src/imtui-impl-text.o: deps/imtui/src/imtui-impl-text.cpp
+	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/imtui/src/imtui-impl-text.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/imtui/src/imtui-impl-text.o
+
 $(OBJDIR_DEPLOYTOSTEAM)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
 	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/networking/beast_compilation_unit.o
 
@@ -878,9 +910,6 @@ $(OBJDIR_DEPLOYTOSTEAM)/deps/toolkit/base_serialisables.o: deps/toolkit/base_ser
 $(OBJDIR_DEPLOYTOSTEAM)/deps/toolkit/opencl.o: deps/toolkit/opencl.cpp
 	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/toolkit/opencl.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/toolkit/opencl.o
 
-$(OBJDIR_DEPLOYTOSTEAM)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
-	$(CXX) $(CFLAGS_DEPLOYTOSTEAM) $(INC_DEPLOYTOSTEAM) -c deps/toolkit/render_window.cpp -o $(OBJDIR_DEPLOYTOSTEAM)/deps/toolkit/render_window.o
-
 clean_deploytosteam: 
 	rm -f $(OBJ_DEPLOYTOSTEAM) $(OUT_DEPLOYTOSTEAM)
 	rm -rf bin/Deploy
@@ -890,6 +919,7 @@ clean_deploytosteam:
 	rm -rf $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui
 	rm -rf $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/cpp
 	rm -rf $(OBJDIR_DEPLOYTOSTEAM)/deps/imgui/misc/freetype
+	rm -rf $(OBJDIR_DEPLOYTOSTEAM)/deps/imtui/src
 	rm -rf $(OBJDIR_DEPLOYTOSTEAM)/deps/networking
 
 before_deploytestdebug: 
@@ -900,6 +930,7 @@ before_deploytestdebug:
 	test -d $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui || mkdir -p $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui
 	test -d $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/cpp || mkdir -p $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/cpp
 	test -d $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype
+	test -d $(OBJDIR_DEPLOYTESTDEBUG)/deps/imtui/src || mkdir -p $(OBJDIR_DEPLOYTESTDEBUG)/deps/imtui/src
 	test -d $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking || mkdir -p $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking
 
 after_deploytestdebug: 
@@ -908,6 +939,9 @@ deploytestdebug: before_deploytestdebug out_deploytestdebug after_deploytestdebu
 
 out_deploytestdebug: before_deploytestdebug $(OBJ_DEPLOYTESTDEBUG) $(DEP_DEPLOYTESTDEBUG)
 	$(LD) $(LIBDIR_DEPLOYTESTDEBUG) -o $(OUT_DEPLOYTESTDEBUG) $(OBJ_DEPLOYTESTDEBUG)  $(LDFLAGS_DEPLOYTESTDEBUG) $(LIB_DEPLOYTESTDEBUG)
+
+$(OBJDIR_DEPLOYTESTDEBUG)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/toolkit/render_window.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/toolkit/render_window.o
 
 $(OBJDIR_DEPLOYTESTDEBUG)/deps/toolkit/stacktrace.o: deps/toolkit/stacktrace.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/toolkit/stacktrace.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/toolkit/stacktrace.o
@@ -948,9 +982,6 @@ $(OBJDIR_DEPLOYTESTDEBUG)/string_helpers.o: string_helpers.cpp
 $(OBJDIR_DEPLOYTESTDEBUG)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c tokeniser.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/tokeniser.o
 
-$(OBJDIR_DEPLOYTESTDEBUG)/window_context.o: window_context.cpp
-	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c window_context.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/window_context.o
-
 $(OBJDIR_DEPLOYTESTDEBUG)/auto_handlers.o: auto_handlers.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c auto_handlers.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/auto_handlers.o
 
@@ -981,6 +1012,12 @@ $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/cpp/imgui_stdlib.o: deps/imgui/misc/cp
 $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype/imgui_freetype.o
 
+$(OBJDIR_DEPLOYTESTDEBUG)/deps/imtui/src/imtui-impl-ncurses.o: deps/imtui/src/imtui-impl-ncurses.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/imtui/src/imtui-impl-ncurses.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imtui/src/imtui-impl-ncurses.o
+
+$(OBJDIR_DEPLOYTESTDEBUG)/deps/imtui/src/imtui-impl-text.o: deps/imtui/src/imtui-impl-text.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/imtui/src/imtui-impl-text.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/imtui/src/imtui-impl-text.o
+
 $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking/beast_compilation_unit.o
 
@@ -996,9 +1033,6 @@ $(OBJDIR_DEPLOYTESTDEBUG)/deps/toolkit/base_serialisables.o: deps/toolkit/base_s
 $(OBJDIR_DEPLOYTESTDEBUG)/deps/toolkit/opencl.o: deps/toolkit/opencl.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/toolkit/opencl.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/toolkit/opencl.o
 
-$(OBJDIR_DEPLOYTESTDEBUG)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
-	$(CXX) $(CFLAGS_DEPLOYTESTDEBUG) $(INC_DEPLOYTESTDEBUG) -c deps/toolkit/render_window.cpp -o $(OBJDIR_DEPLOYTESTDEBUG)/deps/toolkit/render_window.o
-
 clean_deploytestdebug: 
 	rm -f $(OBJ_DEPLOYTESTDEBUG) $(OUT_DEPLOYTESTDEBUG)
 	rm -rf bin/DeployTestDebug
@@ -1008,6 +1042,7 @@ clean_deploytestdebug:
 	rm -rf $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui
 	rm -rf $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/cpp
 	rm -rf $(OBJDIR_DEPLOYTESTDEBUG)/deps/imgui/misc/freetype
+	rm -rf $(OBJDIR_DEPLOYTESTDEBUG)/deps/imtui/src
 	rm -rf $(OBJDIR_DEPLOYTESTDEBUG)/deps/networking
 
 before_deploytest: 
@@ -1018,6 +1053,7 @@ before_deploytest:
 	test -d $(OBJDIR_DEPLOYTEST)/deps/imgui || mkdir -p $(OBJDIR_DEPLOYTEST)/deps/imgui
 	test -d $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/cpp || mkdir -p $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/cpp
 	test -d $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype
+	test -d $(OBJDIR_DEPLOYTEST)/deps/imtui/src || mkdir -p $(OBJDIR_DEPLOYTEST)/deps/imtui/src
 	test -d $(OBJDIR_DEPLOYTEST)/deps/networking || mkdir -p $(OBJDIR_DEPLOYTEST)/deps/networking
 
 after_deploytest: 
@@ -1026,6 +1062,9 @@ deploytest: before_deploytest out_deploytest after_deploytest
 
 out_deploytest: before_deploytest $(OBJ_DEPLOYTEST) $(DEP_DEPLOYTEST)
 	$(LD) $(LIBDIR_DEPLOYTEST) -o $(OUT_DEPLOYTEST) $(OBJ_DEPLOYTEST)  $(LDFLAGS_DEPLOYTEST) $(LIB_DEPLOYTEST)
+
+$(OBJDIR_DEPLOYTEST)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/toolkit/render_window.cpp -o $(OBJDIR_DEPLOYTEST)/deps/toolkit/render_window.o
 
 $(OBJDIR_DEPLOYTEST)/deps/toolkit/stacktrace.o: deps/toolkit/stacktrace.cpp
 	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/toolkit/stacktrace.cpp -o $(OBJDIR_DEPLOYTEST)/deps/toolkit/stacktrace.o
@@ -1069,9 +1108,6 @@ $(OBJDIR_DEPLOYTEST)/string_helpers.o: string_helpers.cpp
 $(OBJDIR_DEPLOYTEST)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c tokeniser.cpp -o $(OBJDIR_DEPLOYTEST)/tokeniser.o
 
-$(OBJDIR_DEPLOYTEST)/window_context.o: window_context.cpp
-	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c window_context.cpp -o $(OBJDIR_DEPLOYTEST)/window_context.o
-
 $(OBJDIR_DEPLOYTEST)/auto_handlers.o: auto_handlers.cpp
 	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c auto_handlers.cpp -o $(OBJDIR_DEPLOYTEST)/auto_handlers.o
 
@@ -1102,6 +1138,12 @@ $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/cpp/imgui_stdlib.o: deps/imgui/misc/cpp/img
 $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype/imgui_freetype.o
 
+$(OBJDIR_DEPLOYTEST)/deps/imtui/src/imtui-impl-ncurses.o: deps/imtui/src/imtui-impl-ncurses.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/imtui/src/imtui-impl-ncurses.cpp -o $(OBJDIR_DEPLOYTEST)/deps/imtui/src/imtui-impl-ncurses.o
+
+$(OBJDIR_DEPLOYTEST)/deps/imtui/src/imtui-impl-text.o: deps/imtui/src/imtui-impl-text.cpp
+	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/imtui/src/imtui-impl-text.cpp -o $(OBJDIR_DEPLOYTEST)/deps/imtui/src/imtui-impl-text.o
+
 $(OBJDIR_DEPLOYTEST)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
 	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_DEPLOYTEST)/deps/networking/beast_compilation_unit.o
 
@@ -1117,9 +1159,6 @@ $(OBJDIR_DEPLOYTEST)/deps/toolkit/base_serialisables.o: deps/toolkit/base_serial
 $(OBJDIR_DEPLOYTEST)/deps/toolkit/opencl.o: deps/toolkit/opencl.cpp
 	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/toolkit/opencl.cpp -o $(OBJDIR_DEPLOYTEST)/deps/toolkit/opencl.o
 
-$(OBJDIR_DEPLOYTEST)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
-	$(CXX) $(CFLAGS_DEPLOYTEST) $(INC_DEPLOYTEST) -c deps/toolkit/render_window.cpp -o $(OBJDIR_DEPLOYTEST)/deps/toolkit/render_window.o
-
 clean_deploytest: 
 	rm -f $(OBJ_DEPLOYTEST) $(OUT_DEPLOYTEST)
 	rm -rf bin/DeployTest
@@ -1129,6 +1168,7 @@ clean_deploytest:
 	rm -rf $(OBJDIR_DEPLOYTEST)/deps/imgui
 	rm -rf $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/cpp
 	rm -rf $(OBJDIR_DEPLOYTEST)/deps/imgui/misc/freetype
+	rm -rf $(OBJDIR_DEPLOYTEST)/deps/imtui/src
 	rm -rf $(OBJDIR_DEPLOYTEST)/deps/networking
 
 before_deploytestsubmodules: 
@@ -1140,6 +1180,7 @@ before_deploytestsubmodules:
 	test -d $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui || mkdir -p $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui
 	test -d $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/cpp || mkdir -p $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/cpp
 	test -d $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype
+	test -d $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imtui/src || mkdir -p $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imtui/src
 	test -d $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking || mkdir -p $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking
 
 after_deploytestsubmodules: 
@@ -1148,6 +1189,9 @@ deploytestsubmodules: before_deploytestsubmodules out_deploytestsubmodules after
 
 out_deploytestsubmodules: before_deploytestsubmodules $(OBJ_DEPLOYTESTSUBMODULES) $(DEP_DEPLOYTESTSUBMODULES)
 	$(LD) $(LIBDIR_DEPLOYTESTSUBMODULES) -o $(OUT_DEPLOYTESTSUBMODULES) $(OBJ_DEPLOYTESTSUBMODULES)  $(LDFLAGS_DEPLOYTESTSUBMODULES) $(LIB_DEPLOYTESTSUBMODULES)
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/toolkit/render_window.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/toolkit/render_window.o
 
 $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/toolkit/stacktrace.o: deps/toolkit/stacktrace.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/toolkit/stacktrace.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/toolkit/stacktrace.o
@@ -1191,9 +1235,6 @@ $(OBJDIR_DEPLOYTESTSUBMODULES)/string_helpers.o: string_helpers.cpp
 $(OBJDIR_DEPLOYTESTSUBMODULES)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c tokeniser.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/tokeniser.o
 
-$(OBJDIR_DEPLOYTESTSUBMODULES)/window_context.o: window_context.cpp
-	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c window_context.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/window_context.o
-
 $(OBJDIR_DEPLOYTESTSUBMODULES)/auto_handlers.o: auto_handlers.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c auto_handlers.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/auto_handlers.o
 
@@ -1224,6 +1265,12 @@ $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/cpp/imgui_stdlib.o: deps/imgui/mi
 $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o
 
+$(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imtui/src/imtui-impl-ncurses.o: deps/imtui/src/imtui-impl-ncurses.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/imtui/src/imtui-impl-ncurses.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imtui/src/imtui-impl-ncurses.o
+
+$(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imtui/src/imtui-impl-text.o: deps/imtui/src/imtui-impl-text.cpp
+	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/imtui/src/imtui-impl-text.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imtui/src/imtui-impl-text.o
+
 $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking/beast_compilation_unit.o
 
@@ -1239,9 +1286,6 @@ $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/toolkit/base_serialisables.o: deps/toolkit/b
 $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/toolkit/opencl.o: deps/toolkit/opencl.cpp
 	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/toolkit/opencl.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/toolkit/opencl.o
 
-$(OBJDIR_DEPLOYTESTSUBMODULES)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
-	$(CXX) $(CFLAGS_DEPLOYTESTSUBMODULES) $(INC_DEPLOYTESTSUBMODULES) -c deps/toolkit/render_window.cpp -o $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/toolkit/render_window.o
-
 clean_deploytestsubmodules: 
 	rm -f $(OBJ_DEPLOYTESTSUBMODULES) $(OUT_DEPLOYTESTSUBMODULES)
 	rm -rf bin/Deploy
@@ -1251,6 +1295,7 @@ clean_deploytestsubmodules:
 	rm -rf $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui
 	rm -rf $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/cpp
 	rm -rf $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imgui/misc/freetype
+	rm -rf $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/imtui/src
 	rm -rf $(OBJDIR_DEPLOYTESTSUBMODULES)/deps/networking
 
 before_releasesubmodules: 
@@ -1262,6 +1307,7 @@ before_releasesubmodules:
 	test -d $(OBJDIR_RELEASESUBMODULES)/deps/imgui || mkdir -p $(OBJDIR_RELEASESUBMODULES)/deps/imgui
 	test -d $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/cpp || mkdir -p $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/cpp
 	test -d $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype
+	test -d $(OBJDIR_RELEASESUBMODULES)/deps/imtui/src || mkdir -p $(OBJDIR_RELEASESUBMODULES)/deps/imtui/src
 	test -d $(OBJDIR_RELEASESUBMODULES)/deps/networking || mkdir -p $(OBJDIR_RELEASESUBMODULES)/deps/networking
 
 after_releasesubmodules: 
@@ -1271,6 +1317,9 @@ releasesubmodules: before_releasesubmodules out_releasesubmodules after_releases
 
 out_releasesubmodules: before_releasesubmodules $(OBJ_RELEASESUBMODULES) $(DEP_RELEASESUBMODULES)
 	$(LD) $(LIBDIR_RELEASESUBMODULES) -o $(OUT_RELEASESUBMODULES) $(OBJ_RELEASESUBMODULES)  $(LDFLAGS_RELEASESUBMODULES) $(LIB_RELEASESUBMODULES)
+
+$(OBJDIR_RELEASESUBMODULES)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/toolkit/render_window.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/toolkit/render_window.o
 
 $(OBJDIR_RELEASESUBMODULES)/deps/toolkit/stacktrace.o: deps/toolkit/stacktrace.cpp
 	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/toolkit/stacktrace.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/toolkit/stacktrace.o
@@ -1311,9 +1360,6 @@ $(OBJDIR_RELEASESUBMODULES)/string_helpers.o: string_helpers.cpp
 $(OBJDIR_RELEASESUBMODULES)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c tokeniser.cpp -o $(OBJDIR_RELEASESUBMODULES)/tokeniser.o
 
-$(OBJDIR_RELEASESUBMODULES)/window_context.o: window_context.cpp
-	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c window_context.cpp -o $(OBJDIR_RELEASESUBMODULES)/window_context.o
-
 $(OBJDIR_RELEASESUBMODULES)/auto_handlers.o: auto_handlers.cpp
 	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c auto_handlers.cpp -o $(OBJDIR_RELEASESUBMODULES)/auto_handlers.o
 
@@ -1344,6 +1390,12 @@ $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/cpp/imgui_stdlib.o: deps/imgui/misc/
 $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype/imgui_freetype.o
 
+$(OBJDIR_RELEASESUBMODULES)/deps/imtui/src/imtui-impl-ncurses.o: deps/imtui/src/imtui-impl-ncurses.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/imtui/src/imtui-impl-ncurses.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/imtui/src/imtui-impl-ncurses.o
+
+$(OBJDIR_RELEASESUBMODULES)/deps/imtui/src/imtui-impl-text.o: deps/imtui/src/imtui-impl-text.cpp
+	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/imtui/src/imtui-impl-text.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/imtui/src/imtui-impl-text.o
+
 $(OBJDIR_RELEASESUBMODULES)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
 	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/networking/beast_compilation_unit.o
 
@@ -1359,9 +1411,6 @@ $(OBJDIR_RELEASESUBMODULES)/deps/toolkit/base_serialisables.o: deps/toolkit/base
 $(OBJDIR_RELEASESUBMODULES)/deps/toolkit/opencl.o: deps/toolkit/opencl.cpp
 	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/toolkit/opencl.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/toolkit/opencl.o
 
-$(OBJDIR_RELEASESUBMODULES)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
-	$(CXX) $(CFLAGS_RELEASESUBMODULES) $(INC_RELEASESUBMODULES) -c deps/toolkit/render_window.cpp -o $(OBJDIR_RELEASESUBMODULES)/deps/toolkit/render_window.o
-
 clean_releasesubmodules: 
 	rm -f $(OBJ_RELEASESUBMODULES) $(OUT_RELEASESUBMODULES)
 	rm -rf bin/Release
@@ -1371,6 +1420,7 @@ clean_releasesubmodules:
 	rm -rf $(OBJDIR_RELEASESUBMODULES)/deps/imgui
 	rm -rf $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/cpp
 	rm -rf $(OBJDIR_RELEASESUBMODULES)/deps/imgui/misc/freetype
+	rm -rf $(OBJDIR_RELEASESUBMODULES)/deps/imtui/src
 	rm -rf $(OBJDIR_RELEASESUBMODULES)/deps/networking
 
 before_linuxdeploy: 
@@ -1381,6 +1431,7 @@ before_linuxdeploy:
 	test -d $(OBJDIR_LINUXDEPLOY)/deps/imgui || mkdir -p $(OBJDIR_LINUXDEPLOY)/deps/imgui
 	test -d $(OBJDIR_LINUXDEPLOY)/deps/imgui/misc/cpp || mkdir -p $(OBJDIR_LINUXDEPLOY)/deps/imgui/misc/cpp
 	test -d $(OBJDIR_LINUXDEPLOY)/deps/imgui/misc/freetype || mkdir -p $(OBJDIR_LINUXDEPLOY)/deps/imgui/misc/freetype
+	test -d $(OBJDIR_LINUXDEPLOY)/deps/imtui/src || mkdir -p $(OBJDIR_LINUXDEPLOY)/deps/imtui/src
 	test -d $(OBJDIR_LINUXDEPLOY)/deps/networking || mkdir -p $(OBJDIR_LINUXDEPLOY)/deps/networking
 
 after_linuxdeploy: 
@@ -1389,6 +1440,9 @@ linuxdeploy: before_linuxdeploy out_linuxdeploy after_linuxdeploy
 
 out_linuxdeploy: before_linuxdeploy $(OBJ_LINUXDEPLOY) $(DEP_LINUXDEPLOY)
 	$(LD) $(LIBDIR_LINUXDEPLOY) -o $(OUT_LINUXDEPLOY) $(OBJ_LINUXDEPLOY)  $(LDFLAGS_LINUXDEPLOY) $(LIB_LINUXDEPLOY)
+
+$(OBJDIR_LINUXDEPLOY)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
+	$(CXX) $(CFLAGS_LINUXDEPLOY) $(INC_LINUXDEPLOY) -c deps/toolkit/render_window.cpp -o $(OBJDIR_LINUXDEPLOY)/deps/toolkit/render_window.o
 
 $(OBJDIR_LINUXDEPLOY)/deps/toolkit/stacktrace.o: deps/toolkit/stacktrace.cpp
 	$(CXX) $(CFLAGS_LINUXDEPLOY) $(INC_LINUXDEPLOY) -c deps/toolkit/stacktrace.cpp -o $(OBJDIR_LINUXDEPLOY)/deps/toolkit/stacktrace.o
@@ -1429,9 +1483,6 @@ $(OBJDIR_LINUXDEPLOY)/string_helpers.o: string_helpers.cpp
 $(OBJDIR_LINUXDEPLOY)/tokeniser.o: tokeniser.cpp
 	$(CXX) $(CFLAGS_LINUXDEPLOY) $(INC_LINUXDEPLOY) -c tokeniser.cpp -o $(OBJDIR_LINUXDEPLOY)/tokeniser.o
 
-$(OBJDIR_LINUXDEPLOY)/window_context.o: window_context.cpp
-	$(CXX) $(CFLAGS_LINUXDEPLOY) $(INC_LINUXDEPLOY) -c window_context.cpp -o $(OBJDIR_LINUXDEPLOY)/window_context.o
-
 $(OBJDIR_LINUXDEPLOY)/auto_handlers.o: auto_handlers.cpp
 	$(CXX) $(CFLAGS_LINUXDEPLOY) $(INC_LINUXDEPLOY) -c auto_handlers.cpp -o $(OBJDIR_LINUXDEPLOY)/auto_handlers.o
 
@@ -1462,6 +1513,12 @@ $(OBJDIR_LINUXDEPLOY)/deps/imgui/misc/cpp/imgui_stdlib.o: deps/imgui/misc/cpp/im
 $(OBJDIR_LINUXDEPLOY)/deps/imgui/misc/freetype/imgui_freetype.o: deps/imgui/misc/freetype/imgui_freetype.cpp
 	$(CXX) $(CFLAGS_LINUXDEPLOY) $(INC_LINUXDEPLOY) -c deps/imgui/misc/freetype/imgui_freetype.cpp -o $(OBJDIR_LINUXDEPLOY)/deps/imgui/misc/freetype/imgui_freetype.o
 
+$(OBJDIR_LINUXDEPLOY)/deps/imtui/src/imtui-impl-ncurses.o: deps/imtui/src/imtui-impl-ncurses.cpp
+	$(CXX) $(CFLAGS_LINUXDEPLOY) $(INC_LINUXDEPLOY) -c deps/imtui/src/imtui-impl-ncurses.cpp -o $(OBJDIR_LINUXDEPLOY)/deps/imtui/src/imtui-impl-ncurses.o
+
+$(OBJDIR_LINUXDEPLOY)/deps/imtui/src/imtui-impl-text.o: deps/imtui/src/imtui-impl-text.cpp
+	$(CXX) $(CFLAGS_LINUXDEPLOY) $(INC_LINUXDEPLOY) -c deps/imtui/src/imtui-impl-text.cpp -o $(OBJDIR_LINUXDEPLOY)/deps/imtui/src/imtui-impl-text.o
+
 $(OBJDIR_LINUXDEPLOY)/deps/networking/beast_compilation_unit.o: deps/networking/beast_compilation_unit.cpp
 	$(CXX) $(CFLAGS_LINUXDEPLOY) $(INC_LINUXDEPLOY) -c deps/networking/beast_compilation_unit.cpp -o $(OBJDIR_LINUXDEPLOY)/deps/networking/beast_compilation_unit.o
 
@@ -1477,9 +1534,6 @@ $(OBJDIR_LINUXDEPLOY)/deps/toolkit/base_serialisables.o: deps/toolkit/base_seria
 $(OBJDIR_LINUXDEPLOY)/deps/toolkit/opencl.o: deps/toolkit/opencl.cpp
 	$(CXX) $(CFLAGS_LINUXDEPLOY) $(INC_LINUXDEPLOY) -c deps/toolkit/opencl.cpp -o $(OBJDIR_LINUXDEPLOY)/deps/toolkit/opencl.o
 
-$(OBJDIR_LINUXDEPLOY)/deps/toolkit/render_window.o: deps/toolkit/render_window.cpp
-	$(CXX) $(CFLAGS_LINUXDEPLOY) $(INC_LINUXDEPLOY) -c deps/toolkit/render_window.cpp -o $(OBJDIR_LINUXDEPLOY)/deps/toolkit/render_window.o
-
 clean_linuxdeploy: 
 	rm -f $(OBJ_LINUXDEPLOY) $(OUT_LINUXDEPLOY)
 	rm -rf bin/LinuxDeploy
@@ -1489,12 +1543,14 @@ clean_linuxdeploy:
 	rm -rf $(OBJDIR_LINUXDEPLOY)/deps/imgui
 	rm -rf $(OBJDIR_LINUXDEPLOY)/deps/imgui/misc/cpp
 	rm -rf $(OBJDIR_LINUXDEPLOY)/deps/imgui/misc/freetype
+	rm -rf $(OBJDIR_LINUXDEPLOY)/deps/imtui/src
 	rm -rf $(OBJDIR_LINUXDEPLOY)/deps/networking
 
 before_makelinuxdeploy: 
 	update_makefile.bat
 	wsl make -j4 linuxdeploy
 	test -d bin/LinuxDeploy || mkdir -p bin/LinuxDeploy
+	test -d $(OBJDIR_MAKELINUXDEPLOY)/deps/imtui/src || mkdir -p $(OBJDIR_MAKELINUXDEPLOY)/deps/imtui/src
 
 after_makelinuxdeploy: 
 
@@ -1503,9 +1559,16 @@ makelinuxdeploy: before_makelinuxdeploy out_makelinuxdeploy after_makelinuxdeplo
 out_makelinuxdeploy: before_makelinuxdeploy $(OBJ_MAKELINUXDEPLOY) $(DEP_MAKELINUXDEPLOY)
 	$(LD) $(LIBDIR_MAKELINUXDEPLOY) -o $(OUT_MAKELINUXDEPLOY) $(OBJ_MAKELINUXDEPLOY)  $(LDFLAGS_MAKELINUXDEPLOY) $(LIB_MAKELINUXDEPLOY)
 
+$(OBJDIR_MAKELINUXDEPLOY)/deps/imtui/src/imtui-impl-ncurses.o: deps/imtui/src/imtui-impl-ncurses.cpp
+	$(CXX) $(CFLAGS_MAKELINUXDEPLOY) $(INC_MAKELINUXDEPLOY) -c deps/imtui/src/imtui-impl-ncurses.cpp -o $(OBJDIR_MAKELINUXDEPLOY)/deps/imtui/src/imtui-impl-ncurses.o
+
+$(OBJDIR_MAKELINUXDEPLOY)/deps/imtui/src/imtui-impl-text.o: deps/imtui/src/imtui-impl-text.cpp
+	$(CXX) $(CFLAGS_MAKELINUXDEPLOY) $(INC_MAKELINUXDEPLOY) -c deps/imtui/src/imtui-impl-text.cpp -o $(OBJDIR_MAKELINUXDEPLOY)/deps/imtui/src/imtui-impl-text.o
+
 clean_makelinuxdeploy: 
 	rm -f $(OBJ_MAKELINUXDEPLOY) $(OUT_MAKELINUXDEPLOY)
 	rm -rf bin/LinuxDeploy
+	rm -rf $(OBJDIR_MAKELINUXDEPLOY)/deps/imtui/src
 
 .PHONY: before_debug after_debug clean_debug before_release after_release clean_release before_profile after_profile clean_profile before_deploy after_deploy clean_deploy before_deployprofile after_deployprofile clean_deployprofile before_deploytosteam after_deploytosteam clean_deploytosteam before_deploytestdebug after_deploytestdebug clean_deploytestdebug before_deploytest after_deploytest clean_deploytest before_deploytestsubmodules after_deploytestsubmodules clean_deploytestsubmodules before_releasesubmodules after_releasesubmodules clean_releasesubmodules before_linuxdeploy after_linuxdeploy clean_linuxdeploy before_makelinuxdeploy after_makelinuxdeploy clean_makelinuxdeploy
 
