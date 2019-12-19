@@ -9,6 +9,7 @@
 //#include "window_context.hpp"
 #include <toolkit/render_window.hpp>
 #include <toolkit/base_serialisables.hpp>
+#include <functional>
 
 #include <codecvt>
 #include <locale>
@@ -43,6 +44,11 @@
 #include <iomanip>
 #include "imguix.hpp"
 #include <misc/cpp/imgui_stdlib.h>
+
+#ifdef __EMSCRIPTEN__
+  #include <emscripten/emscripten.h>
+  #include <emscripten/html5.h>
+#endif // __EMSCRIPTEN__
 
 std::string make_lower(std::string in)
 {
@@ -192,9 +198,15 @@ void handle_auth(steamapi& s_api, connection& conn, std::string current_user)
     }
     else
     {
+        #ifndef __EMSCRIPTEN__
         ///no auth available
         printf("No auth methods available, use steam or hex_key.key file");
         throw std::runtime_error("No auth method available");
+        #else
+        nlohmann::json data;
+        data["type"] = "key_auth";
+        data["data"] = "551A472E1660CD254CE84B2BC44549E5A0F58F1013BC164244ECF0E3C439AEBFD0B3ADBFE720CB3B7B72220822EFA7617DF8B27DCA096E5961E95DD710712C5C2722A65DEFE3820EEADDEFCC10603271CCE9E9AF2366541E1A873423F7D59C7836C20BA73B56BE9267AAEE9DF9BD30CC94A688C7A81B09E8C6D3FD0758321AA5";
+        #endif
     }
 
     if(current_user.size() > 0)
@@ -205,6 +217,13 @@ void handle_auth(steamapi& s_api, connection& conn, std::string current_user)
 
         conn.write(data.dump());
     }
+}
+
+std::function<void()> hptr;
+
+void main_loop_helper()
+{
+    hptr();
 }
 
 ///test new repo
@@ -237,7 +256,7 @@ int main(int argc, char* argv[])
     #ifndef __EMSCRIPTEN__
     conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
     #else
-    conn.connect(HOST_IP, HOST_PORT, connection_type::PLAIN);
+    conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::PLAIN);
     #endif
 
     printf("Post Connect\n");
@@ -502,8 +521,12 @@ int main(int argc, char* argv[])
     ImGuiIO& io = ImGui::GetIO();
 
     //while(running)
+    #ifndef __EMSCRIPTEN__
     while(!window.should_close())
+    #endif // __EMSCRIPTEN__
     {
+        hptr = [&]()
+        {
         if(connection_clock.get_elapsed_time_s() > 5 && !conn.client_connected_to_server)
         {
             conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
@@ -1257,6 +1280,13 @@ int main(int argc, char* argv[])
         #ifndef __EMSCRIPTEN__
         std::this_thread::sleep_for(std::chrono::milliseconds(4));
         #endif // __EMSCRIPTEN__
+    };
+
+    #ifndef __EMSCRIPTEN__
+    hptr();
+    #else
+    emscripten_set_main_loop_arg((em_arg_callback_func)main_loop_helper, nullptr, 0, 1);
+    #endif
     }
 
     atomic_write_all(notepad_file, notepad);

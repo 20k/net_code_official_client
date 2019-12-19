@@ -86,14 +86,21 @@ void font_selector::reset_default_fonts(float editor_font_size)
     io.Fonts->Clear();
     //io.Fonts->ClearFonts();
 
+    #ifndef __EMSCRIPTEN__
     ///BASE
     io.Fonts->AddFontFromFileTTF("VeraMono.ttf", current_base_font_size, &font_cfg);
     io.Fonts->AddFontFromFileTTF("square.ttf", round(current_base_font_size*0.7), &font_cfg);
+    #endif // __EMSCRIPTEN__
     ///TEXT_EDITOR
     //io.Fonts->AddFontFromFileTTF("VeraMono.ttf", editor_font_size, &font_cfg);
     ///DEFAULT
     io.Fonts->AddFontDefault();
 
+    #ifdef __EMSCRIPTEN__
+    io.Fonts->AddFontDefault(); ///kinda hacky
+    #endif // __EMSCRIPTEN__
+
+    #ifndef __EMSCRIPTEN__
     for_each_file("./", [&](const std::string& name, const std::string& ext)
     {
         if(ext != "ttf")
@@ -104,6 +111,7 @@ void font_selector::reset_default_fonts(float editor_font_size)
 
         io.Fonts->AddFontFromFileTTF(name.c_str(), current_base_font_size, &font_cfg);
     });
+    #endif // __EMSCRIPTEN__
 
     wants_rebuild = true;
 
