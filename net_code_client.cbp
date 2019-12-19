@@ -667,6 +667,8 @@
 			<Option target="DeployTestZAPCC" />
 			<Option target="LinuxDeploy" />
 		</Unit>
+		<Unit filename="deps/toolkit/clock.cpp" />
+		<Unit filename="deps/toolkit/clock.hpp" />
 		<Unit filename="deps/toolkit/opencl.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />

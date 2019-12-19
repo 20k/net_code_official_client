@@ -5,9 +5,12 @@
 #include <vector>
 #include <iostream>
 
+#include <toolkit/config.hpp>
+
 #include <steamworks_sdk_142/sdk/public/steam/steam_api.h>
 #include <steamworks_sdk_142/sdk/public/steam/isteamuser.h>
 
+#ifndef NO_STEAM
 struct callback_environment
 {
     std::mutex lock;
@@ -76,14 +79,16 @@ void callback_environment::OnRequestEncryptedAppTicket( EncryptedAppTicketRespon
     std::cout << "Failed to get auth " << pEncryptedAppTicketResponse->m_eResult << std::endl;
     auth_in_progress = false;
 }
+#endif // NO_STEAM
 
 steamapi::steamapi()
 {
+    #ifndef NO_STEAM
     enabled = SteamAPI_Init();
+    secret_environment = new callback_environment;
+    #endif // NO_STEAM
 
     std::cout << "steamapi support is " << enabled << std::endl;
-
-    secret_environment = new callback_environment;
 }
 
 void steamapi::pump_callbacks()
@@ -91,7 +96,9 @@ void steamapi::pump_callbacks()
     if(!enabled)
         return;
 
+    #ifndef NO_STEAM
     SteamAPI_RunCallbacks();
+    #endif // NO_STEAM
 }
 
 void steamapi::request_auth_token(const std::string& user_data)
@@ -99,6 +106,7 @@ void steamapi::request_auth_token(const std::string& user_data)
     if(!enabled)
         return;
 
+    #ifndef NO_STEAM
     std::string lstr = user_data;
 
     SteamAPICall_t scall;
@@ -111,6 +119,7 @@ void steamapi::request_auth_token(const std::string& user_data)
     std::lock_guard guard(secret_environment->lock);
     secret_environment->auth_in_progress = true;
     secret_environment->m_OnRequestEncryptedAppTicketCallResult.Set( scall, secret_environment, &callback_environment::OnRequestEncryptedAppTicket );
+    #endif // NO_STEAM
 }
 
 bool steamapi::auth_success()
@@ -131,8 +140,10 @@ bool steamapi::auth_success()
 
 steamapi::~steamapi()
 {
+    #ifndef NO_STEAM
     if(enabled)
         SteamAPI_Shutdown();
+    #endif // NO_STEAM
 
     delete secret_environment;
     secret_environment = nullptr;
