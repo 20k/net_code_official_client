@@ -511,6 +511,8 @@ int main(int argc, char* argv[])
 
     bool lastKeysDown[512] = {};
     bool lastMouseDown[5] = {};
+    ImVec2 last_mouse_pos = ImVec2(0,0);
+    ImVec2 last_display_size = ImVec2(0,0);
 
     auto just_pressed = [&](int key)
     {
@@ -583,160 +585,250 @@ int main(int argc, char* argv[])
         std::vector<int> mouse_pressed_data;
         std::vector<int> mouse_released_data;
 
+        bool any_events = false;
+
+        any_events = any_events || (memcmp(lastKeysDown, io.KeysDown, sizeof(lastKeysDown)) != 0) || (memcmp(lastMouseDown, io.MouseDown, sizeof(lastMouseDown)) != 0);
+
+        for(int i=0; i < 512; i++)
+        {
+            if(io.KeysDown[i])
+                any_events = true;
+        }
+
+        for(int i=0; i < 5; i++)
+        {
+            if(io.MouseDown[i])
+                any_events = true;
+        }
+
         memcpy(lastKeysDown, io.KeysDown, sizeof(lastKeysDown));
         memcpy(lastMouseDown, io.MouseDown, sizeof(io.MouseDown));
 
+        static_assert(sizeof(lastKeysDown) == sizeof(io.KeysDown));
+        static_assert(sizeof(lastMouseDown) == sizeof(io.MouseDown));
+
+        #ifndef __EMSCRIPTEN__
         window.poll(1/33.);
+        #else
+        window.poll_events_only();
+        #endif
 
-        /*if(font_select.update_rebuild(window, font_select.current_base_font_size))
+        any_events = any_events || (memcmp(lastKeysDown, io.KeysDown, sizeof(lastKeysDown)) != 0) || (memcmp(lastMouseDown, io.MouseDown, sizeof(lastMouseDown)) != 0);
+
+        any_events = any_events || (io.MousePos.x != last_mouse_pos.x || io.MousePos.y != last_mouse_pos.y);
+        any_events = any_events || (io.MouseDelta.x != 0 || io.MouseDelta.y != 0);
+        any_events = any_events || (io.MouseWheel != 0 || io.MouseWheelH != 0);
+
+        any_events = any_events || (io.DisplaySize.x != last_display_size.x || io.DisplaySize.y != last_display_size.y);
+
+        any_events = any_events || conn.has_read();
+
+        //printf("Any events? %i %f %f\n", any_events, io.MousePos.x, io.MousePos.y);
+
+        last_display_size = io.DisplaySize;
+        last_mouse_pos = io.MousePos;
+
+        #ifdef __EMSCRIPTEN__
+        if(any_events)
+        #endif // __EMSCRIPTEN__
         {
-            term.invalidate();
-        }*/
+            #ifdef __EMSCRIPTEN__
+            window.poll_issue_new_frame_only();
+            #endif // __EMSCRIPTEN__
 
-        vec2f cursor_pos = {io.MousePos.x, io.MousePos.y};
-
-        for(int i=0; i < sizeof(io.KeysDown) / sizeof(io.KeysDown[0]); i++)
-        {
-            if((io.KeysDown[i] && !lastKeysDown[i]) || ImGui::IsKeyPressed(i))
+            /*if(font_select.update_rebuild(window, font_select.current_base_font_size))
             {
-                glfw_key_pressed_data.push_back(i);
+                term.invalidate();
+            }*/
+
+            vec2f cursor_pos = {io.MousePos.x, io.MousePos.y};
+
+            for(int i=0; i < sizeof(io.KeysDown) / sizeof(io.KeysDown[0]); i++)
+            {
+                if((io.KeysDown[i] && !lastKeysDown[i]) || ImGui::IsKeyPressed(i))
+                {
+                    glfw_key_pressed_data.push_back(i);
+                }
+
+                if(!io.KeysDown[i] && lastKeysDown[i])
+                {
+                    glfw_key_released_data.push_back(i);
+                }
             }
 
-            if(!io.KeysDown[i] && lastKeysDown[i])
+            for(int i=0; i < sizeof(io.MouseDown) / sizeof(io.MouseDown[0]); i++)
             {
-                glfw_key_released_data.push_back(i);
+                if(io.MouseDown[i] && !lastMouseDown[i])
+                {
+                    mouse_pressed_data.push_back(i);
+                }
+
+                if(!io.MouseDown[i] && lastMouseDown[i])
+                {
+                    mouse_released_data.push_back(i);
+                }
             }
-        }
 
-        for(int i=0; i < sizeof(io.MouseDown) / sizeof(io.MouseDown[0]); i++)
-        {
-            if(io.MouseDown[i] && !lastMouseDown[i])
+            float scroll_y = io.MouseWheel;
+            float scroll_x = io.MouseWheelH;
+
+            std::vector<uint32_t> input_utf32;
+
+            for(auto& i : io.InputQueueCharacters)
             {
-                mouse_pressed_data.push_back(i);
+                input_utf32.push_back(i);
             }
 
-            if(!io.MouseDown[i] && lastMouseDown[i])
+            for(uint32_t i : input_utf32)
             {
-                mouse_released_data.push_back(i);
+                if(i <= 126 && i >= 32)
+                {
+                    std::u32string utf32;
+                    utf32.push_back(i);
+
+                    std::string utf8;
+
+                    std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> cvt;
+
+                    utf8 = cvt.to_bytes(utf32);
+
+                    to_edit->add_to_command(i);
+
+                    last_line_invalidate_everything(term, chat_win);
+
+                    std::string str = utf8;
+
+                    if(str == " ")
+                        str = "space";
+
+                    realtime_str.push_back(str);
+                }
             }
-        }
 
-        float scroll_y = io.MouseWheel;
-        float scroll_x = io.MouseWheelH;
-
-        std::vector<uint32_t> input_utf32;
-
-        for(auto& i : io.InputQueueCharacters)
-        {
-            input_utf32.push_back(i);
-        }
-
-        for(uint32_t i : input_utf32)
-        {
-            if(i <= 126 && i >= 32)
+            for(int i : glfw_key_pressed_data)
             {
-                std::u32string utf32;
-                utf32.push_back(i);
+                if(on_input_map.find(i) != on_input_map.end())
+                    realtime_str.push_back(on_input_map[i]);
 
-                std::string utf8;
-
-                std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> cvt;
-
-                utf8 = cvt.to_bytes(utf32);
-
-                to_edit->add_to_command(i);
+                if(key_map.find(i) != key_map.end())
+                    on_pressed.push_back(key_map[i]);
 
                 last_line_invalidate_everything(term, chat_win);
 
-                std::string str = utf8;
-
-                if(str == " ")
-                    str = "space";
-
-                realtime_str.push_back(str);
-            }
-        }
-
-        for(int i : glfw_key_pressed_data)
-        {
-            if(on_input_map.find(i) != on_input_map.end())
-                realtime_str.push_back(on_input_map[i]);
-
-            if(key_map.find(i) != key_map.end())
-                on_pressed.push_back(key_map[i]);
-
-            last_line_invalidate_everything(term, chat_win);
-
-            if(i == GLFW_KEY_BACKSPACE)
-            {
-                if(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
+                if(i == GLFW_KEY_BACKSPACE)
                 {
-                    for(int i=0; i < 5; i++)
+                    if(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
+                    {
+                        for(int i=0; i < 5; i++)
+                            to_edit->process_backspace();
+                    }
+                    else
+                    {
                         to_edit->process_backspace();
+                    }
                 }
-                else
-                {
-                    to_edit->process_backspace();
-                }
-            }
 
-            if(i == GLFW_KEY_DELETE)
-            {
-                if(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
+                if(i == GLFW_KEY_DELETE)
                 {
-                    for(int i=0; i < 5; i++)
+                    if(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
+                    {
+                        for(int i=0; i < 5; i++)
+                            to_edit->process_delete();
+                    }
+                    else
+                    {
                         to_edit->process_delete();
+                    }
                 }
-                else
+
+                if(i == GLFW_KEY_UP)
                 {
-                    to_edit->process_delete();
+                    to_edit->move_command_history_idx(-1);
+                }
+
+                if(i == GLFW_KEY_DOWN)
+                {
+                    to_edit->move_command_history_idx(1);
+                }
+
+                if(i == GLFW_KEY_LEFT)
+                {
+                    if(!ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
+                        to_edit->move_cursor(-1);
+                    else
+                        to_edit->move_cursor(-5);
+                }
+
+                if(i == GLFW_KEY_RIGHT)
+                {
+                    if(!ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
+                        to_edit->move_cursor(1);
+                    else
+                        to_edit->move_cursor(5);
+                }
+
+                if(i == GLFW_KEY_HOME)
+                {
+                    to_edit->move_cursor(-(int)to_edit->command.size());
+                }
+
+                if(i == GLFW_KEY_END)
+                {
+                    to_edit->move_cursor(to_edit->command.size());
+                }
+
+                if(i == GLFW_KEY_ESCAPE)
+                {
+                    to_edit->clear_command();
+                }
+
+                if(i == GLFW_KEY_V)
+                {
+                    if(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
+                    {
+                        std::string add_text = get_clipboard_contents();
+
+                        for(auto& i : add_text)
+                        {
+                            to_edit->add_to_command(i);
+                        }
+                    }
+                }
+
+                if(i == GLFW_KEY_F1)
+                {
+                    font_select.is_open = !font_select.is_open;
+                }
+
+                if(i == GLFW_KEY_ENTER || i == GLFW_KEY_KP_ENTER)
+                {
+                    if(to_edit != &realtime_shim && to_edit != &no_string)
+                    {
+                        if(!ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) && !ImGui::IsKeyDown(GLFW_KEY_LEFT_SHIFT))
+                            enter = true;
+                        else
+                            to_edit->add_to_command('\n');
+                    }
+                    else
+                        to_edit->add_to_command('\n');
                 }
             }
 
-            if(i == GLFW_KEY_UP)
+            for(int i : glfw_key_released_data)
             {
-                to_edit->move_command_history_idx(-1);
+                if(key_map.find(i) != key_map.end())
+                    on_released.push_back(key_map[i]);
             }
 
-            if(i == GLFW_KEY_DOWN)
+            for(int i : mouse_pressed_data)
             {
-                to_edit->move_command_history_idx(1);
-            }
+                if(mouse_map.find(i) != mouse_map.end())
+                    on_pressed.push_back(mouse_map[i]);
 
-            if(i == GLFW_KEY_LEFT)
-            {
-                if(!ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
-                    to_edit->move_cursor(-1);
-                else
-                    to_edit->move_cursor(-5);
-            }
+                if(mouse_map.find(i) != mouse_map.end())
+                    realtime_str.push_back(mouse_map[i]);
 
-            if(i == GLFW_KEY_RIGHT)
-            {
-                if(!ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
-                    to_edit->move_cursor(1);
-                else
-                    to_edit->move_cursor(5);
-            }
-
-            if(i == GLFW_KEY_HOME)
-            {
-                to_edit->move_cursor(-(int)to_edit->command.size());
-            }
-
-            if(i == GLFW_KEY_END)
-            {
-                to_edit->move_cursor(to_edit->command.size());
-            }
-
-            if(i == GLFW_KEY_ESCAPE)
-            {
-                to_edit->clear_command();
-            }
-
-            if(i == GLFW_KEY_V)
-            {
-                if(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
+                if(i == 1)
                 {
                     std::string add_text = get_clipboard_contents();
 
@@ -744,551 +836,513 @@ int main(int argc, char* argv[])
                     {
                         to_edit->add_to_command(i);
                     }
+
+                    last_line_invalidate_everything(term, chat_win);
                 }
-            }
 
-            if(i == GLFW_KEY_F1)
-            {
-                font_select.is_open = !font_select.is_open;
-            }
-
-            if(i == GLFW_KEY_ENTER || i == GLFW_KEY_KP_ENTER)
-            {
-                if(to_edit != &realtime_shim && to_edit != &no_string)
+                if(i == 0)
                 {
-                    if(!ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) && !ImGui::IsKeyDown(GLFW_KEY_LEFT_SHIFT))
-                        enter = true;
-                    else
-                        to_edit->add_to_command('\n');
+                    last_line_invalidate_everything(term, chat_win);
+
+                    get_global_copy_handler()->on_lclick(cursor_pos);
                 }
-                else
-                    to_edit->add_to_command('\n');
             }
-        }
 
-        for(int i : glfw_key_released_data)
-        {
-            if(key_map.find(i) != key_map.end())
-                on_released.push_back(key_map[i]);
-        }
-
-        for(int i : mouse_pressed_data)
-        {
-            if(mouse_map.find(i) != mouse_map.end())
-                on_pressed.push_back(mouse_map[i]);
-
-            if(mouse_map.find(i) != mouse_map.end())
-                realtime_str.push_back(mouse_map[i]);
-
-            if(i == 1)
+            for(int i : mouse_released_data)
             {
-                std::string add_text = get_clipboard_contents();
+                if(mouse_map.find(i) != mouse_map.end())
+                    on_released.push_back(mouse_map[i]);
 
-                for(auto& i : add_text)
+                if(i == 0)
                 {
-                    to_edit->add_to_command(i);
+                    last_line_invalidate_everything(term, chat_win);
+
+                    get_global_copy_handler()->on_lclick_release(cursor_pos);
+                }
+            }
+
+            mouse_delta += scroll_y;
+            script_mousewheel_delta += scroll_y;
+
+            #if 0
+            while(skip_first_event || window.pollEvent(event))
+            {
+                skip_first_event = false;
+                ImGui::SFML::ProcessEvent(event);
+
+                if(event.type == sf::Event::GainedFocus)
+                {
+                    focused = true;
+
+                    term.invalidate();
                 }
 
-                last_line_invalidate_everything(term, chat_win);
+                if(event.type == sf::Event::LostFocus)
+                    focused = false;
+
+                if(event.type == sf::Event::Resized)
+                {
+                    window.setSize({event.size.width, event.size.height});
+                    window.setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));
+
+                    term.invalidate();
+
+                    window_ctx.width = event.size.width;
+                    window_ctx.height = event.size.height;
+
+                    window_ctx.save();
+                }
             }
+            #endif // 0
 
-            if(i == 0)
+            if(term.get_id_of_focused_realtime_window() != -1 && (realtime_str.size() > 0 || on_pressed.size() > 0 || on_released.size() > 0))
             {
-                last_line_invalidate_everything(term, chat_win);
-
-                get_global_copy_handler()->on_lclick(cursor_pos);
-            }
-        }
-
-        for(int i : mouse_released_data)
-        {
-            if(mouse_map.find(i) != mouse_map.end())
-                on_released.push_back(mouse_map[i]);
-
-            if(i == 0)
-            {
-                last_line_invalidate_everything(term, chat_win);
-
-                get_global_copy_handler()->on_lclick_release(cursor_pos);
-            }
-        }
-
-        mouse_delta += scroll_y;
-        script_mousewheel_delta += scroll_y;
-
-        #if 0
-        while(skip_first_event || window.pollEvent(event))
-        {
-            skip_first_event = false;
-            ImGui::SFML::ProcessEvent(event);
-
-            if(event.type == sf::Event::GainedFocus)
-            {
-                focused = true;
-
-                term.invalidate();
-            }
-
-            if(event.type == sf::Event::LostFocus)
-                focused = false;
-
-            if(event.type == sf::Event::Resized)
-            {
-                window.setSize({event.size.width, event.size.height});
-                window.setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));
-
-                term.invalidate();
-
-                window_ctx.width = event.size.width;
-                window_ctx.height = event.size.height;
-
-                window_ctx.save();
-            }
-        }
-        #endif // 0
-
-        if(term.get_id_of_focused_realtime_window() != -1 && (realtime_str.size() > 0 || on_pressed.size() > 0 || on_released.size() > 0))
-        {
-            nlohmann::json data;
-            data["type"] = "send_keystrokes_to_script";
-            data["id"] = term.get_id_of_focused_realtime_window();
-            data["input_keys"] = realtime_str;
-            data["pressed_keys"] = on_pressed;
-            data["released_keys"] = on_released;
-
-            conn.write(data.dump());
-        }
-
-        if(term.get_id_of_focused_realtime_window() != -1 && mouse_clock.get_elapsed_time_s() * 1000 >= mouse_send_time_ms)
-        {
-            mouse_clock.restart();
-
-            vec2f mpos = cursor_pos;
-
-            realtime_script_run& run = term.realtime_script_windows[term.get_id_of_focused_realtime_window()];
-
-            mpos = mpos - run.current_tl_cursor_pos;
-
-            vec2f br_absolute = run.current_pos + (vec2f){run.current_dim.x(), run.current_dim.y()};
-            vec2f relative_dim = br_absolute - run.current_tl_cursor_pos;
-
-            //vec2i dim = run.current_dim;
-
-            vec2f dim = relative_dim;
-
-            if(mpos.x() >= 0 && mpos.y() >= 0 && mpos.x() <= dim.x() && mpos.y() <= dim.y())
-            {
-                vec2f char_mpos = mpos / (vec2f){char_inf::cwidth, char_inf::cheight};
-
                 nlohmann::json data;
-                data["type"] = "update_mouse_to_script";
+                data["type"] = "send_keystrokes_to_script";
                 data["id"] = term.get_id_of_focused_realtime_window();
-                data["mouse_x"] = char_mpos.x();
-                data["mouse_y"] = char_mpos.y();
-                data["mousewheel_x"] = 0.f;
-                data["mousewheel_y"] = script_mousewheel_delta;
+                data["input_keys"] = realtime_str;
+                data["pressed_keys"] = on_pressed;
+                data["released_keys"] = on_released;
 
                 conn.write(data.dump());
             }
 
-            script_mousewheel_delta = 0;
-        }
-
-        if(term.get_id_of_focused_realtime_window() == -1)
-            script_mousewheel_delta = 0;
-
-        term.scroll_hack.scrolled_this_frame = mouse_delta;
-        chat_win.scroll_hack.scrolled_this_frame = mouse_delta;
-
-        for(auto& i : term.realtime_script_windows)
-        {
-            i.second.scroll_hack.scrolled_this_frame = mouse_delta;
-        }
-
-        ImGui::PushFont(font_select.get_base_font());
-
-        font_select.render(window);
-
-        /*if(window_ctx.srgb_dirty)
-        {
-            ImGui::SetStyleLinearColor(window_ctx.is_srgb);
-        }*/
-
-        term.check_insert_user_command();
-
-        if(starts_with(to_edit->command, "user user ") && term.focused)
-        {
-            if((int)to_edit->command.size() > (int)strlen("user "))
+            if(term.get_id_of_focused_realtime_window() != -1 && mouse_clock.get_elapsed_time_s() * 1000 >= mouse_send_time_ms)
             {
-                for(int i=0; i < (int)strlen("user "); i++)
+                mouse_clock.restart();
+
+                vec2f mpos = cursor_pos;
+
+                realtime_script_run& run = term.realtime_script_windows[term.get_id_of_focused_realtime_window()];
+
+                mpos = mpos - run.current_tl_cursor_pos;
+
+                vec2f br_absolute = run.current_pos + (vec2f){run.current_dim.x(), run.current_dim.y()};
+                vec2f relative_dim = br_absolute - run.current_tl_cursor_pos;
+
+                //vec2i dim = run.current_dim;
+
+                vec2f dim = relative_dim;
+
+                if(mpos.x() >= 0 && mpos.y() >= 0 && mpos.x() <= dim.x() && mpos.y() <= dim.y())
                 {
-                    to_edit->command.erase(to_edit->command.begin());
-                    to_edit->cursor_pos_idx = to_edit->command.size();
-                }
-            }
-        }
-
-        if(enter && to_edit->command.size() > 0)
-        {
-            if(term.focused)
-            {
-                term.consider_resetting_scrollbar = true;
-            }
-
-            if(!chat_win.focused)
-                to_edit->command = strip_whitespace(to_edit->command);
-
-            to_edit->push_command_to_history(to_edit->command);
-
-            std::string swapping_users = "user ";
-
-            if(term.focused && term.command.command.substr(0, swapping_users.length()) == swapping_users)
-            {
-                std::vector<std::string> spl = no_ss_split(term.command.command, " ");
-
-                ///HACK ALERT
-                ///NEED TO WAIT FOR SERVER CONFIRMATION
-                if(spl.size() >= 2)
-                {
-                    current_user = spl[1];
-                }
-            }
-
-            if(term.focused)
-            {
-                term.cache.invalidate();
-
-                if(!is_local_command(term.command.command))
-                {
-                    std::string up_data = default_up_handling(current_user, term.command.command, "./scripts/");
+                    vec2f char_mpos = mpos / (vec2f){char_inf::cwidth, char_inf::cheight};
 
                     nlohmann::json data;
-                    data["type"] = "generic_server_command";
-                    data["data"] = up_data;
+                    data["type"] = "update_mouse_to_script";
+                    data["id"] = term.get_id_of_focused_realtime_window();
+                    data["mouse_x"] = char_mpos.x();
+                    data["mouse_y"] = char_mpos.y();
+                    data["mousewheel_x"] = 0.f;
+                    data["mousewheel_y"] = script_mousewheel_delta;
 
                     conn.write(data.dump());
                 }
+
+                script_mousewheel_delta = 0;
             }
-            else
+
+            if(term.get_id_of_focused_realtime_window() == -1)
+                script_mousewheel_delta = 0;
+
+            term.scroll_hack.scrolled_this_frame = mouse_delta;
+            chat_win.scroll_hack.scrolled_this_frame = mouse_delta;
+
+            for(auto& i : term.realtime_script_windows)
             {
-                std::string command = "";
+                i.second.scroll_hack.scrolled_this_frame = mouse_delta;
+            }
 
-                std::optional<chat_thread*> thrd = chat_win.get_focused_chat_thread();
+            ImGui::PushFont(font_select.get_base_font());
 
-                if(thrd.has_value())
+            font_select.render(window);
+
+            /*if(window_ctx.srgb_dirty)
+            {
+                ImGui::SetStyleLinearColor(window_ctx.is_srgb);
+            }*/
+
+            term.check_insert_user_command();
+
+            if(starts_with(to_edit->command, "user user ") && term.focused)
+            {
+                if((int)to_edit->command.size() > (int)strlen("user "))
                 {
-                    command = thrd.value()->command.command;
-                    thrd.value()->cache.invalidate();
-                }
-
-                bool bump = false;
-
-                if(command == "/join")
-                {
-                    term.add_text("Syntax is /join channel password");
-                    bump = true;
-                }
-                else if(command == "/leave")
-                {
-                    term.add_text("Syntax is /leave channel");
-                    bump = true;
-                }
-                else if(command == "/create")
-                {
-                    term.add_text("Syntax is /create channel password");
-                    bump = true;
-                }
-                else if(starts_with(command, "/"))
-                {
-                    bump = true;
-
-                    int idx = 0;
-
-                    for(; idx < (int)command.size() && command[idx] != ' '; idx++);
-
-                    if(idx + 1 >= (int)command.size())
+                    for(int i=0; i < (int)strlen("user "); i++)
                     {
-                        term.add_text("First argument must be a channel name, eg /join global");
-                    }
-                    else
-                    {
-                        idx++;
-
-                        std::string channel_name;
-
-                        for(; idx < (int)command.size() && command[idx] != ' '; idx++)
-                        {
-                            channel_name.push_back(command[idx]);
-                        }
-
-                        std::string channel_password;
-
-                        if(idx + 1 < (int)command.size())
-                        {
-                            idx++;
-
-                            ///password may include whitespace
-                            for(; idx < (int)command.size(); idx++)
-                            {
-                                channel_password.push_back(command[idx]);
-                            }
-                        }
-
-                        std::string args = "{name:\"" + escape_str(channel_name) + "\"";
-
-                        if(channel_password != "")
-                        {
-                            args += ", password:\"" + escape_str(channel_password) + "\"}";
-                        }
-                        else
-                        {
-                            args += "}";
-                        }
-
-                        std::string final_command;
-
-                        if(starts_with(command, "/join"))
-                        {
-                            final_command = "#channel.join(" + args + ")";
-                        }
-                        else if(starts_with(command, "/leave"))
-                        {
-                            final_command = "#channel.leave(" + args + ")";
-                        }
-                        else if(starts_with(command, "/create"))
-                        {
-                            final_command = "#channel.create(" + args + ")";
-                        }
-                        else
-                        {
-                            term.add_text("Not a valid command, try /join, /leave or /create");
-                        }
-
-                        if(final_command != "")
-                        {
-                            nlohmann::json data;
-                            data["type"] = "client_chat";
-                            data["respond"] = 1;
-                            data["data"] = final_command;
-
-                            conn.write(data.dump());
-                        }
+                        to_edit->command.erase(to_edit->command.begin());
+                        to_edit->cursor_pos_idx = to_edit->command.size();
                     }
                 }
-                else if(has_chat_window)
-                {
-                    std::optional<chat_thread*> thrd = chat_win.get_focused_chat_thread();
+            }
 
-                    if(thrd.has_value())
+            if(enter && to_edit->command.size() > 0)
+            {
+                if(term.focused)
+                {
+                    term.consider_resetting_scrollbar = true;
+                }
+
+                if(!chat_win.focused)
+                    to_edit->command = strip_whitespace(to_edit->command);
+
+                to_edit->push_command_to_history(to_edit->command);
+
+                std::string swapping_users = "user ";
+
+                if(term.focused && term.command.command.substr(0, swapping_users.length()) == swapping_users)
+                {
+                    std::vector<std::string> spl = no_ss_split(term.command.command, " ");
+
+                    ///HACK ALERT
+                    ///NEED TO WAIT FOR SERVER CONFIRMATION
+                    if(spl.size() >= 2)
                     {
-                        std::string escaped_string = escape_str(thrd.value()->command.command);
+                        current_user = spl[1];
+                    }
+                }
+
+                if(term.focused)
+                {
+                    term.cache.invalidate();
+
+                    if(!is_local_command(term.command.command))
+                    {
+                        std::string up_data = default_up_handling(current_user, term.command.command, "./scripts/");
 
                         nlohmann::json data;
-                        data["type"] = "client_chat";
-                        data["data"] = "#hs.msg.send({channel:\"" + thrd.value()->name + "\", msg:\"" + escaped_string + "\"})";
+                        data["type"] = "generic_server_command";
+                        data["data"] = up_data;
 
                         conn.write(data.dump());
                     }
                 }
-
-                if(bump)
+                else
                 {
-                    chat_win.add_text_to_focused(command);
+                    std::string command = "";
 
                     std::optional<chat_thread*> thrd = chat_win.get_focused_chat_thread();
 
-                    if(thrd)
+                    if(thrd.has_value())
                     {
+                        command = thrd.value()->command.command;
                         thrd.value()->cache.invalidate();
                     }
+
+                    bool bump = false;
+
+                    if(command == "/join")
+                    {
+                        term.add_text("Syntax is /join channel password");
+                        bump = true;
+                    }
+                    else if(command == "/leave")
+                    {
+                        term.add_text("Syntax is /leave channel");
+                        bump = true;
+                    }
+                    else if(command == "/create")
+                    {
+                        term.add_text("Syntax is /create channel password");
+                        bump = true;
+                    }
+                    else if(starts_with(command, "/"))
+                    {
+                        bump = true;
+
+                        int idx = 0;
+
+                        for(; idx < (int)command.size() && command[idx] != ' '; idx++);
+
+                        if(idx + 1 >= (int)command.size())
+                        {
+                            term.add_text("First argument must be a channel name, eg /join global");
+                        }
+                        else
+                        {
+                            idx++;
+
+                            std::string channel_name;
+
+                            for(; idx < (int)command.size() && command[idx] != ' '; idx++)
+                            {
+                                channel_name.push_back(command[idx]);
+                            }
+
+                            std::string channel_password;
+
+                            if(idx + 1 < (int)command.size())
+                            {
+                                idx++;
+
+                                ///password may include whitespace
+                                for(; idx < (int)command.size(); idx++)
+                                {
+                                    channel_password.push_back(command[idx]);
+                                }
+                            }
+
+                            std::string args = "{name:\"" + escape_str(channel_name) + "\"";
+
+                            if(channel_password != "")
+                            {
+                                args += ", password:\"" + escape_str(channel_password) + "\"}";
+                            }
+                            else
+                            {
+                                args += "}";
+                            }
+
+                            std::string final_command;
+
+                            if(starts_with(command, "/join"))
+                            {
+                                final_command = "#channel.join(" + args + ")";
+                            }
+                            else if(starts_with(command, "/leave"))
+                            {
+                                final_command = "#channel.leave(" + args + ")";
+                            }
+                            else if(starts_with(command, "/create"))
+                            {
+                                final_command = "#channel.create(" + args + ")";
+                            }
+                            else
+                            {
+                                term.add_text("Not a valid command, try /join, /leave or /create");
+                            }
+
+                            if(final_command != "")
+                            {
+                                nlohmann::json data;
+                                data["type"] = "client_chat";
+                                data["respond"] = 1;
+                                data["data"] = final_command;
+
+                                conn.write(data.dump());
+                            }
+                        }
+                    }
+                    else if(has_chat_window)
+                    {
+                        std::optional<chat_thread*> thrd = chat_win.get_focused_chat_thread();
+
+                        if(thrd.has_value())
+                        {
+                            std::string escaped_string = escape_str(thrd.value()->command.command);
+
+                            nlohmann::json data;
+                            data["type"] = "client_chat";
+                            data["data"] = "#hs.msg.send({channel:\"" + thrd.value()->name + "\", msg:\"" + escaped_string + "\"})";
+
+                            conn.write(data.dump());
+                        }
+                    }
+
+                    if(bump)
+                    {
+                        chat_win.add_text_to_focused(command);
+
+                        std::optional<chat_thread*> thrd = chat_win.get_focused_chat_thread();
+
+                        if(thrd)
+                        {
+                            thrd.value()->cache.invalidate();
+                        }
+                    }
                 }
-            }
 
-            std::string cmd = term.command.command;
+                std::string cmd = term.command.command;
 
-            if(term.focused)
-            {
-                term.bump_command_to_history();
-            }
-            else if(auto opt = chat_win.get_focused_chat_thread(); opt.has_value())
-            {
-                opt.value()->command.clear_command();
-            }
-
-            if(term.focused && is_local_command(cmd))
-            {
-                bool should_shutdown = false;
-
-                std::string data = handle_local_command(current_user, cmd, term.auto_handle, should_shutdown, term, chat_win);
-
-                term.add_text(data);
-
-                if(should_shutdown)
+                if(term.focused)
                 {
-                    window.close();
+                    term.bump_command_to_history();
                 }
+                else if(auto opt = chat_win.get_focused_chat_thread(); opt.has_value())
+                {
+                    opt.value()->command.clear_command();
+                }
+
+                if(term.focused && is_local_command(cmd))
+                {
+                    bool should_shutdown = false;
+
+                    std::string data = handle_local_command(current_user, cmd, term.auto_handle, should_shutdown, term, chat_win);
+
+                    term.add_text(data);
+
+                    if(should_shutdown)
+                    {
+                        window.close();
+                    }
+                }
+
+                pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
+                pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
+            }
+            else if(enter && to_edit->command.size() == 0)
+            {
+                term.add_text(" ");
             }
 
-            pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
-            pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
-        }
-        else if(enter && to_edit->command.size() == 0)
-        {
-            term.add_text(" ");
-        }
+            if(ImGui::IsMouseDown(0))
+            {
+                get_global_copy_handler()->on_hold_lclick(cursor_pos);
+            }
 
-        if(ImGui::IsMouseDown(0))
-        {
-            get_global_copy_handler()->on_hold_lclick(cursor_pos);
-        }
+            while(conn.has_read())
+            {
+                write_data dat = conn.read_from();
 
-        while(conn.has_read())
-        {
-            write_data dat = conn.read_from();
+                std::string fdata = dat.data;
 
-            std::string fdata = dat.data;
+                conn.pop_read(dat.id);
 
-            conn.pop_read(dat.id);
+                #ifdef TESTING
+                api_calls.push_back(fdata);
+                #endif // TESTING
 
-            #ifdef TESTING
-            api_calls.push_back(fdata);
-            #endif // TESTING
+                ///this is temporary before the other end of the api gets changed
+                nlohmann::json data = nlohmann::json::parse(fdata);
 
-            ///this is temporary before the other end of the api gets changed
-            nlohmann::json data = nlohmann::json::parse(fdata);
+                term.add_text_from_server(current_user, data, chat_win, font_select);
+            }
 
-            term.add_text_from_server(current_user, data, chat_win, font_select);
-        }
+            if(write_clock.get_elapsed_time_s() > 5)
+            {
+                pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
+                pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
 
-        if(write_clock.get_elapsed_time_s() > 5)
-        {
-            pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
-            pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
+                auto save_sett = window.get_render_settings();
 
-            auto save_sett = window.get_render_settings();
+                pretty_atomic_write_all(window_file, serialise(save_sett, serialise_mode::DISK));
 
-            pretty_atomic_write_all(window_file, serialise(save_sett, serialise_mode::DISK));
+                write_clock.restart();
+            }
 
-            write_clock.restart();
-        }
+            ///hmm
+            ///this is inadequate
+            ///we need to be able to request multiple scripts at once
+            ///and receive multiple as well
+            if(term.auto_handle.found_unprocessed_autocompletes.size() > 0 && request_clock.get_elapsed_time_s() > 0.3)
+            {
+                request_clock.restart();
 
-        ///hmm
-        ///this is inadequate
-        ///we need to be able to request multiple scripts at once
-        ///and receive multiple as well
-        if(term.auto_handle.found_unprocessed_autocompletes.size() > 0 && request_clock.get_elapsed_time_s() > 0.3)
-        {
-            request_clock.restart();
+                for(const std::string& str : term.auto_handle.found_unprocessed_autocompletes)
+                {
+                    nlohmann::json data;
+                    data["type"] = "autocomplete_request";
+                    data["data"] = str;
 
-            for(const std::string& str : term.auto_handle.found_unprocessed_autocompletes)
+                    conn.write(data.dump());
+
+                    break;
+                }
+
+                if(term.auto_handle.found_unprocessed_autocompletes.size() > 0)
+                    term.auto_handle.found_unprocessed_autocompletes.erase(term.auto_handle.found_unprocessed_autocompletes.begin());
+            }
+
+            if((term.focused || term.get_id_of_focused_realtime_window() != 1) && ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) && just_pressed(GLFW_KEY_C))
             {
                 nlohmann::json data;
-                data["type"] = "autocomplete_request";
-                data["data"] = str;
+                data["type"] = "client_terminate_scripts";
+                data["id"] = -1;
 
                 conn.write(data.dump());
-
-                break;
             }
 
-            if(term.auto_handle.found_unprocessed_autocompletes.size() > 0)
-                term.auto_handle.found_unprocessed_autocompletes.erase(term.auto_handle.found_unprocessed_autocompletes.begin());
-        }
-
-        if((term.focused || term.get_id_of_focused_realtime_window() != 1) && ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) && just_pressed(GLFW_KEY_C))
-        {
-            nlohmann::json data;
-            data["type"] = "client_terminate_scripts";
-            data["id"] = -1;
-
-            conn.write(data.dump());
-        }
-
-        if(has_settings_window)
-        {
-            ImGui::Begin("Settings", &has_settings_window);
-
-            ImGui::Checkbox("Show chat in terminal", &chat_win.show_chat_in_main_window);
-
-            ImGui::End();
-        }
-
-        {
-            ImGui::Begin("notepad");
-
-            bool changed = ImGui::InputTextMultiline("Doot", &notepad, ImGui::GetContentRegionAvail(), ImGuiInputTextFlags_None);
-
-            if(changed)
+            if(has_settings_window)
             {
-                atomic_write_all(notepad_file, notepad);
+                ImGui::Begin("Settings", &has_settings_window);
+
+                ImGui::Checkbox("Show chat in terminal", &chat_win.show_chat_in_main_window);
+
+                ImGui::End();
             }
 
-            ImGui::End();
+            {
+                ImGui::Begin("notepad");
+
+                bool changed = ImGui::InputTextMultiline("Doot", &notepad, ImGui::GetContentRegionAvail(), ImGuiInputTextFlags_None);
+
+                if(changed)
+                {
+                    atomic_write_all(notepad_file, notepad);
+                }
+
+                ImGui::End();
+            }
+
+            if(ImGui::IsKeyPressed(GLFW_KEY_F3))
+                has_settings_window = !has_settings_window;
+
+            //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
+
+            term.auto_handle.window_in_focus = true;
+            chat_win.auto_handle.window_in_focus = true;
+
+            int was_closed_id = -1;
+
+            vec2i window_dim = window.get_window_size();
+
+            //test_imgui_term.render(window);
+            term.render_realtime_windows(conn, was_closed_id, font_select);
+            chat_win.render(should_coordinate_focus);
+            term.render({window_dim.x(), window_dim.y()}, should_coordinate_focus);
+
+            should_coordinate_focus = false;
+
+            if(was_closed_id != -1)
+            {
+                nlohmann::json data;
+                data["type"] = "client_terminate_scripts";
+                data["id"] = was_closed_id;
+
+                conn.write(data.dump());
+            }
+
+            if(term.auto_handle.tab_pressed)
+            {
+                last_line_invalidate_everything(term, chat_win);
+            }
+
+            term.auto_handle.tab_pressed = ImGui::IsKeyPressed(GLFW_KEY_TAB);
+
+            if(term.auto_handle.tab_pressed)
+            {
+                last_line_invalidate_everything(term, chat_win);
+            }
+
+            ///this is a hack to fix the fact that sometimes
+            ///click input doesn't make clean click/release pairs
+            if(!ImGui::IsMouseDown(0))
+            {
+                get_global_copy_handler()->finished = false;
+                get_global_copy_handler()->held = false;
+            }
+
+
+            int lcwidth = char_inf::cwidth;
+            int lcheight = char_inf::cheight;
+
+            char_inf::cwidth = ImGui::CalcTextSize("A").x + char_inf::extra_glyph_spacing;
+            char_inf::cheight = ImGui::CalcTextSize("A").y;
+
+            if(char_inf::cwidth != lcwidth || char_inf::cheight != lcheight)
+            {
+                invalidate_everything(term, chat_win);
+            }
+
+            ImGui::PopFont();
+            window.display();
         }
-
-        if(ImGui::IsKeyPressed(GLFW_KEY_F3))
-            has_settings_window = !has_settings_window;
-
-        //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
-
-        term.auto_handle.window_in_focus = true;
-        chat_win.auto_handle.window_in_focus = true;
-
-        int was_closed_id = -1;
-
-        vec2i window_dim = window.get_window_size();
-
-        //test_imgui_term.render(window);
-        term.render_realtime_windows(conn, was_closed_id, font_select);
-        chat_win.render(should_coordinate_focus);
-        term.render({window_dim.x(), window_dim.y()}, should_coordinate_focus);
-
-        should_coordinate_focus = false;
-
-        if(was_closed_id != -1)
+        #ifdef __EMSCRIPTEN__
+        else
         {
-            nlohmann::json data;
-            data["type"] = "client_terminate_scripts";
-            data["id"] = was_closed_id;
-
-            conn.write(data.dump());
+            window.display_last_frame();
         }
-
-        if(term.auto_handle.tab_pressed)
-        {
-            last_line_invalidate_everything(term, chat_win);
-        }
-
-        term.auto_handle.tab_pressed = ImGui::IsKeyPressed(GLFW_KEY_TAB);
-
-        if(term.auto_handle.tab_pressed)
-        {
-            last_line_invalidate_everything(term, chat_win);
-        }
-
-        ///this is a hack to fix the fact that sometimes
-        ///click input doesn't make clean click/release pairs
-        if(!ImGui::IsMouseDown(0))
-        {
-            get_global_copy_handler()->finished = false;
-            get_global_copy_handler()->held = false;
-        }
-
-
-        int lcwidth = char_inf::cwidth;
-        int lcheight = char_inf::cheight;
-
-        char_inf::cwidth = ImGui::CalcTextSize("A").x + char_inf::extra_glyph_spacing;
-        char_inf::cheight = ImGui::CalcTextSize("A").y;
-
-        if(char_inf::cwidth != lcwidth || char_inf::cheight != lcheight)
-        {
-            invalidate_everything(term, chat_win);
-        }
-
-        ImGui::PopFont();
-
-        window.display();
+        #endif // __EMSCRIPTEN__
     };
 
     #ifdef __EMSCRIPTEN__
