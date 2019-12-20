@@ -145,6 +145,9 @@ std::string default_up_handling(const std::string& user, const std::string& serv
 
 void handle_auth(steamapi& s_api, connection& conn, std::string current_user)
 {
+    //if(!conn.client_connected_to_server)
+    //    return;
+
     if(s_api.enabled)
     {
         ///embed hex_key.key
@@ -532,7 +535,7 @@ int main(int argc, char* argv[])
     hptr = [&]()
     #endif
     {
-        if(connection_clock.get_elapsed_time_s() > 5 && !conn.client_connected_to_server)
+        if(connection_clock.get_elapsed_time_s() > 5 && !conn.client_connected_to_server && !conn.connection_pending())
         {
             #ifndef __EMSCRIPTEN__
             conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
