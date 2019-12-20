@@ -28,7 +28,9 @@ UNAME_S := $(shell uname -s)
 
 #EMS = -s USE_SDL=2 -s WASM=1
 EMS = -s WASM=1 -s USE_GLFW=3 -s USE_FREETYPE=1 -s USE_WEBGL2=1 -s USE_BOOST_HEADERS=1 -s USE_PTHREADS=1 -s WASM_MEM_MAX=1073741824
-EMS += -s ALLOW_MEMORY_GROWTH=1
+#EMS += -s ALLOW_MEMORY_GROWTH=1
+#EMS += -s PROXY_TO_PTHREAD=1
+EMS += -s TOTAL_MEMORY=1073741824
 EMS += -s DISABLE_EXCEPTION_CATCHING=0 -s NO_EXIT_RUNTIME=0
 EMS += -s ASSERTIONS=1
 #EMS += -s NO_FILESYSTEM=1 -DIMGUI_DISABLE_FILE_FUNCTIONS
@@ -42,7 +44,7 @@ CPPFLAGS += -Wall -Wformat -O3 -std=c++17
 CPPFLAGS += -DLOCAL_IP
 CPPFLAGS += $(EMS)
 LIBS = $(EMS)
-LDFLAGS = --shell-file index_in.html -lglfw3 -s USE_PTHREADS=1 -s SOCKET_DEBUG=1
+LDFLAGS = --shell-file index_in.html -lglfw3 -s USE_PTHREADS=1 -s SOCKET_DEBUG=0
 #LDFLAGS = --shell-file index_in.html -lglfw3 -s USE_PTHREADS=1 -s WEBSOCKET_URL=wss://
 
 ##---------------------------------------------------------------------
