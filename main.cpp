@@ -523,10 +523,12 @@ int main(int argc, char* argv[])
     //while(running)
     #ifndef __EMSCRIPTEN__
     while(!window.should_close())
-    #endif // __EMSCRIPTEN__
+    #else
+    hptr = [&]()
+    #endif
     {
-        hptr = [&]()
-        {
+        printf("Callback\n");
+
         if(connection_clock.get_elapsed_time_s() > 5 && !conn.client_connected_to_server)
         {
             conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
@@ -1282,12 +1284,9 @@ int main(int argc, char* argv[])
         #endif // __EMSCRIPTEN__
     };
 
-    #ifndef __EMSCRIPTEN__
-    hptr();
-    #else
+    #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop_arg((em_arg_callback_func)main_loop_helper, nullptr, 0, 1);
     #endif
-    }
 
     atomic_write_all(notepad_file, notepad);
     pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
