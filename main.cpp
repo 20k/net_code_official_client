@@ -221,7 +221,7 @@ void handle_auth(steamapi& s_api, connection& conn, std::string current_user)
 
 std::function<void()> hptr;
 
-void main_loop_helper()
+void main_loop_helper(void* ptr)
 {
     hptr();
 }
@@ -256,7 +256,7 @@ int main(int argc, char* argv[])
     #ifndef __EMSCRIPTEN__
     conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
     #else
-    conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::PLAIN);
+    conn.connect(HOST_IP, HOST_PORT, connection_type::PLAIN);
     #endif
 
     printf("Post Connect\n");
