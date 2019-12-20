@@ -205,7 +205,9 @@ void handle_auth(steamapi& s_api, connection& conn, std::string current_user)
         #else
         nlohmann::json data;
         data["type"] = "key_auth";
-        data["data"] = "551A472E1660CD254CE84B2BC44549E5A0F58F1013BC164244ECF0E3C439AEBFD0B3ADBFE720CB3B7B72220822EFA7617DF8B27DCA096E5961E95DD710712C5C2722A65DEFE3820EEADDEFCC10603271CCE9E9AF2366541E1A873423F7D59C7836C20BA73B56BE9267AAEE9DF9BD30CC94A688C7A81B09E8C6D3FD0758321AA5";
+        data["data"] = "5FE7F90855A578F4184356954DEB0DA389C4D69672884F01FD27E72CAD89EBB54D9A92EE5E36B4F96FB6A53403012406A41270A80BE7035D167DB2550C3CCE89EA010E1FC403788AD43B068460C5B762944D0A2F10377D6B021E121B4D75C4AAD0990D5445431F0522090FB2862E290C986F53C60B3EE42C7F8E6038475F1BD1";
+
+        conn.write(data.dump());
         #endif
     }
 
@@ -520,6 +522,9 @@ int main(int argc, char* argv[])
 
     ImGuiIO& io = ImGui::GetIO();
 
+    int iconn = conn.client_connected_to_server;
+    printf("Am connected? %i\n", iconn);
+
     //while(running)
     #ifndef __EMSCRIPTEN__
     while(!window.should_close())
@@ -531,7 +536,12 @@ int main(int argc, char* argv[])
 
         if(connection_clock.get_elapsed_time_s() > 5 && !conn.client_connected_to_server)
         {
+            #ifndef __EMSCRIPTEN__
             conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
+            #else
+            conn.connect(HOST_IP, HOST_PORT, connection_type::PLAIN);
+            #endif
+
             connection_clock.restart();
 
             handle_auth(s_api, conn, current_user);
