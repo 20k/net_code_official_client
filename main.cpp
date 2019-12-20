@@ -1286,10 +1286,6 @@ int main(int argc, char* argv[])
         ImGui::PopFont();
 
         window.display();
-
-        #ifndef __EMSCRIPTEN__
-        std::this_thread::sleep_for(std::chrono::milliseconds(4));
-        #endif // __EMSCRIPTEN__
     };
 
     #ifdef __EMSCRIPTEN__
