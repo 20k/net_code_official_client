@@ -530,6 +530,9 @@ int main(int argc, char* argv[])
     int iconn = conn.client_connected_to_server;
     printf("Am connected? %i\n", iconn);
 
+    int max_unprocessed_frames = 10;
+    int unprocessed_frames = unprocessed_frames;
+
     //while(running)
     #ifndef __EMSCRIPTEN__
     while(!window.should_close())
@@ -623,6 +626,8 @@ int main(int argc, char* argv[])
 
         any_events = any_events || conn.has_read();
 
+        any_events = any_events || (unprocessed_frames >= max_unprocessed_frames);
+
         //printf("Any events? %i %f %f\n", any_events, io.MousePos.x, io.MousePos.y);
 
         last_display_size = io.DisplaySize;
@@ -635,6 +640,8 @@ int main(int argc, char* argv[])
             #ifdef __EMSCRIPTEN__
             window.poll_issue_new_frame_only();
             #endif // __EMSCRIPTEN__
+
+            unprocessed_frames = 0;
 
             /*if(font_select.update_rebuild(window, font_select.current_base_font_size))
             {
@@ -1340,6 +1347,7 @@ int main(int argc, char* argv[])
         #ifdef __EMSCRIPTEN__
         else
         {
+            unprocessed_frames++;
             window.display_last_frame();
         }
         #endif // __EMSCRIPTEN__

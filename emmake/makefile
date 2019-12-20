@@ -32,7 +32,7 @@ EMS = -s WASM=1 -s USE_GLFW=3 -s USE_FREETYPE=1 -s USE_WEBGL2=1 -s USE_BOOST_HEA
 #EMS += -s PROXY_TO_PTHREAD=1
 EMS += -s TOTAL_MEMORY=1073741824
 EMS += -s DISABLE_EXCEPTION_CATCHING=0 -s NO_EXIT_RUNTIME=0
-EMS += -s ASSERTIONS=1
+#EMS += -s ASSERTIONS=1
 #EMS += -s NO_FILESYSTEM=1 -DIMGUI_DISABLE_FILE_FUNCTIONS
 # Uncomment next line to fix possible rendering bugs with emscripten version older then 1.39.0 (https://github.com/ocornut/imgui/issues/2877)
 #EMS += -s BINARYEN_TRAP_MODE=clamp
