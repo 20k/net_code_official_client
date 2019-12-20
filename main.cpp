@@ -532,8 +532,6 @@ int main(int argc, char* argv[])
     hptr = [&]()
     #endif
     {
-        printf("Callback\n");
-
         if(connection_clock.get_elapsed_time_s() > 5 && !conn.client_connected_to_server)
         {
             #ifndef __EMSCRIPTEN__
