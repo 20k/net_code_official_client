@@ -45,6 +45,7 @@ CPPFLAGS += -DLOCAL_IP
 CPPFLAGS += $(EMS)
 LIBS = $(EMS)
 LDFLAGS = --shell-file index_in.html -lglfw3 -s USE_PTHREADS=1 -s SOCKET_DEBUG=0
+LDFLAGS += -s WEBSOCKET_URL=wss://
 #LDFLAGS = --shell-file index_in.html -lglfw3 -s USE_PTHREADS=1 -s WEBSOCKET_URL=wss://
 
 ##---------------------------------------------------------------------
