@@ -21,7 +21,7 @@ SOURCES = ../main.cpp ../auto_handlers.cpp ../copy_handler.cpp ../editable_strin
 SOURCES += ../deps/imgui.cpp ../deps/imgui_draw.cpp ../deps/imgui_widgets.cpp
 SOURCES += ../deps/examples/imgui_impl_opengl3.cpp ../deps/examples/imgui_impl_glfw.cpp
 SOURCES += ../deps/misc/freetype/imgui_freetype.cpp ../deps/misc/cpp/imgui_stdlib.cpp
-SOURCES += ../deps/toolkit/base_serialisables.cpp ../deps/toolkit/clock.cpp ../deps/toolkit/opencl.cpp ../deps/toolkit/render_window.cpp ../deps/toolkit/stacktrace.cpp ../deps/toolkit/texture.cpp
+SOURCES += ../deps/toolkit/base_serialisables.cpp ../deps/toolkit/clock.cpp ../deps/toolkit/opencl.cpp ../deps/toolkit/render_window.cpp ../deps/toolkit/stacktrace.cpp ../deps/toolkit/texture.cpp ../deps/toolkit/fs_helpers.cpp
 SOURCES += ../deps/networking/beast_compilation_unit.cpp ../deps/networking/networking.cpp ../deps/networking/serialisable.cpp
 OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 UNAME_S := $(shell uname -s)
@@ -45,7 +45,7 @@ CPPFLAGS += -DLOCAL_IP
 CPPFLAGS += $(EMS)
 LIBS = $(EMS)
 LDFLAGS = --shell-file index_in.html -lglfw3 -s USE_PTHREADS=1 -s SOCKET_DEBUG=0
-LDFLAGS += -s WEBSOCKET_URL=wss://
+LDFLAGS += -s WEBSOCKET_URL=wss:// -lidbfs.js
 #LDFLAGS = --shell-file index_in.html -lglfw3 -s USE_PTHREADS=1 -s WEBSOCKET_URL=wss://
 
 ##---------------------------------------------------------------------

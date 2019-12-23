@@ -1,8 +1,9 @@
 #include "local_commands.hpp"
 
-#include <libncclient/nc_util.hpp>
+#include <toolkit/fs_helpers.hpp>
 
 #include <tinydir/tinydir.h>
+#include <libncclient/nc_util.hpp>
 
 #include "auto_handlers.hpp"
 #include "imgui_ui_components.hpp"
@@ -11,7 +12,7 @@
 
 std::string get_scripts_directory()
 {
-    return "./scripts";
+    return "scripts";
 }
 
 std::vector<std::string> get_all_scripts_list()
@@ -19,7 +20,11 @@ std::vector<std::string> get_all_scripts_list()
     std::vector<std::string> ret;
 
     tinydir_dir dir;
-    tinydir_open(&dir, "./scripts");
+    #ifndef __EMSCRIPTEN__
+    tinydir_open(&dir, get_scripts_directory().c_str());
+    #else
+    tinydir_open(&dir, ("web/" + get_scripts_directory()).c_str());
+    #endif
 
     while (dir.has_next)
     {
@@ -47,7 +52,11 @@ std::vector<std::string> get_scripts_list(const std::string& username)
     std::vector<std::string> ret;
 
     tinydir_dir dir;
-    tinydir_open(&dir, "./scripts");
+    #ifndef __EMSCRIPTEN__
+    tinydir_open(&dir, get_scripts_directory().c_str());
+    #else
+    tinydir_open(&dir, ("web/" + get_scripts_directory()).c_str());
+    #endif
 
     while (dir.has_next)
     {
@@ -132,7 +141,11 @@ std::string handle_local_command(const std::string& username, const std::string&
         std::vector<std::string> fname;
 
         tinydir_dir dir;
-        tinydir_open(&dir, "./scripts");
+        #ifndef __EMSCRIPTEN__
+        tinydir_open(&dir, get_scripts_directory());
+        #else
+        tinydir_open(&dir, ("web/" + get_scripts_directory()).c_str());
+        #endif
 
         while (dir.has_next)
         {
@@ -185,14 +198,14 @@ std::string handle_local_command(const std::string& username, const std::string&
 
         std::string name = fname[1];
 
-        std::string es5_file_name = "./scripts/" + username + "." + name + ".es5.js";
-        std::string es6_file_name = "./scripts/" + username + "." + name + ".js";
+        std::string es5_file_name = "scripts/" + username + "." + name + ".es5.js";
+        std::string es6_file_name = "scripts/" + username + "." + name + ".js";
 
         std::string file_name = es6_file_name;
 
         ///#edit defaults to opening an es6 file
         ///but defaults to creating an es5 file
-        if(file_exists(es6_file_name) && !file_exists(file_name))
+        if(file::exists(es6_file_name) && !file::exists(file_name))
             file_name = es6_file_name;
 
         bool requested_es6 = starts_with(command, "#edit_es6 ");
@@ -202,9 +215,9 @@ std::string handle_local_command(const std::string& username, const std::string&
         {
             file_name = es6_file_name;
 
-            if(file_exists(es5_file_name) && !file_exists(es6_file_name))
+            if(file::exists(es5_file_name) && !file::exists(es6_file_name))
             {
-                rename(es5_file_name.c_str(), es6_file_name.c_str());
+                file::rename(es5_file_name.c_str(), es6_file_name.c_str());
             }
         }
 
@@ -212,17 +225,17 @@ std::string handle_local_command(const std::string& username, const std::string&
         {
             file_name = es5_file_name;
 
-            if(file_exists(es6_file_name) && !file_exists(es5_file_name))
+            if(file::exists(es6_file_name) && !file::exists(es5_file_name))
             {
-                rename(es6_file_name.c_str(), es5_file_name.c_str());
+                file::rename(es6_file_name.c_str(), es5_file_name.c_str());
             }
         }
 
-        if(!file_exists(file_name))
+        if(!file::exists(file_name))
         {
             std::cout << "Trying to create " << file_name << std::endl;
 
-            write_all_bin(file_name, "function(context, args)\n{\n\n}");
+            file::write(file_name, "function(context, args)\n{\n\n}");
         }
 
         ipc_open(file_name);
@@ -237,15 +250,15 @@ std::string handle_local_command(const std::string& username, const std::string&
 
         std::string name = fname[1];
 
-        std::string es5_file_name = "./scripts/" + username + "." + name + ".es5.js";
-        std::string es6_file_name = "./scripts/" + username + "." + name + ".js";
+        std::string es5_file_name = "scripts/" + username + "." + name + ".es5.js";
+        std::string es6_file_name = "scripts/" + username + "." + name + ".js";
 
         std::string file_name = es5_file_name;
 
-        if(file_exists(es6_file_name))
+        if(file::exists(es6_file_name))
             file_name = es6_file_name;
 
-        if(!file_exists(file_name))
+        if(!file::exists(file_name))
             return "No such file";
 
         ipc_open(file_name);

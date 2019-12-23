@@ -8,6 +8,7 @@
 #include <tinydir/tinydir.h>
 #include <iostream>
 #include <toolkit/render_window.hpp>
+#include <toolkit/fs_helpers.hpp>
 
 font_selector::font_selector()
 {
@@ -279,7 +280,7 @@ void font_selector::render(render_window& window)
 
     if(wants_rebuild)
     {
-        save_to_file_json("./font_sett.txt", ::serialise(*this, serialise_mode::DISK));
+        file::write("font_sett.txt", ::serialise(*this, serialise_mode::DISK).dump());
     }
 
     ImGui::End();

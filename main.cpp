@@ -33,6 +33,7 @@
 ///need to structure this project properly
 #include "local_commands.hpp"
 #include <libncclient/nc_util.hpp>
+#include <toolkit/fs_helpers.hpp>
 #include "steam_api.hpp"
 
 #include <imgui/imgui.h>
@@ -44,6 +45,7 @@
 #include <iomanip>
 #include "imguix.hpp"
 #include <misc/cpp/imgui_stdlib.h>
+#include <toolkit/fs_helpers.hpp>
 
 #ifdef __EMSCRIPTEN__
   #include <emscripten/emscripten.h>
@@ -90,7 +92,7 @@ std::string make_lower(std::string in)
 
 void pretty_atomic_write_all(const std::string& file, const nlohmann::json& js)
 {
-    atomic_write_all(file, js.dump(1));
+    file::write_atomic(file, js.dump(1));
 }
 
 std::string default_up_handling(const std::string& user, const std::string& server_msg, const std::string& scripts_dir)
@@ -117,18 +119,18 @@ std::string default_up_handling(const std::string& user, const std::string& serv
 
         std::string data = "";
 
-        if(file_exists(diskname))
-            data = read_file(diskname);
+        if(file::exists(diskname))
+            data = file::read(diskname);
 
-        if(file_exists(diskname_es6))
+        if(file::exists(diskname_es6))
         {
-            data = read_file(diskname_es6);
+            data = file::read(diskname_es6);
             comm = up_es6;
         }
 
-        if(file_exists(diskname_ts))
+        if(file::exists(diskname_ts))
         {
-            data = read_file(diskname_ts);
+            data = file::read(diskname_ts);
             comm = up_es6;
         }
 
@@ -143,7 +145,7 @@ std::string default_up_handling(const std::string& user, const std::string& serv
     return server_msg;
 }
 
-void handle_auth(steamapi& s_api, connection& conn, std::string current_user)
+bool handle_auth(steamapi& s_api, connection& conn, std::string current_user)
 {
     //if(!conn.client_connected_to_server)
     //    return;
@@ -151,11 +153,11 @@ void handle_auth(steamapi& s_api, connection& conn, std::string current_user)
     if(s_api.enabled)
     {
         ///embed hex_key.key
-        if(file_exists("hey_key.key"))
+        if(file::exists("hey_key.key"))
         {
             printf("Embedding key auth in steam auth\n");
 
-            s_api.request_auth_token(read_file_bin("hex_key.key"));
+            s_api.request_auth_token(file::read("hex_key.key"));
         }
         else
         {
@@ -189,19 +191,19 @@ void handle_auth(steamapi& s_api, connection& conn, std::string current_user)
         printf("Postwrite\n");
     }
     ///use key based auth
-    else if(file_exists("hex_key.key"))
+    else if(file::exists("hex_key.key"))
     {
         printf("Pure key auth\n");
 
         nlohmann::json data;
         data["type"] = "key_auth";
-        data["data"] = read_file_bin("hex_key.key");
+        data["data"] = file::read("hex_key.key");
 
         conn.write(data.dump());
     }
     else
     {
-        #ifndef __EMSCRIPTEN__
+        /*#ifndef __EMSCRIPTEN__
         ///no auth available
         printf("No auth methods available, use steam or hex_key.key file");
         throw std::runtime_error("No auth method available");
@@ -211,7 +213,9 @@ void handle_auth(steamapi& s_api, connection& conn, std::string current_user)
         data["data"] = "5FE7F90855A578F4184356954DEB0DA389C4D69672884F01FD27E72CAD89EBB54D9A92EE5E36B4F96FB6A53403012406A41270A80BE7035D167DB2550C3CCE89EA010E1FC403788AD43B068460C5B762944D0A2F10377D6B021E121B4D75C4AAD0990D5445431F0522090FB2862E290C986F53C60B3EE42C7F8E6038475F1BD1";
 
         conn.write(data.dump());
-        #endif
+        #endif*/
+
+        return true;
     }
 
     if(current_user.size() > 0)
@@ -222,6 +226,8 @@ void handle_auth(steamapi& s_api, connection& conn, std::string current_user)
 
         conn.write(data.dump());
     }
+
+    return false;
 }
 
 std::function<void()> hptr;
@@ -266,19 +272,22 @@ int main(int argc, char* argv[])
 
     printf("Post Connect\n");
 
-    handle_auth(s_api, conn, "");
+    bool display_auth_dialogue = false;
+    std::string auth_dialogue_text;
+
+    display_auth_dialogue = handle_auth(s_api, conn, "");
 
     render_settings sett;
 
     bool has_file = false;
 
-    std::string window_file = "./window_v2.txt";
+    std::string window_file = "window_v2.txt";
 
-    if(file_exists(window_file))
+    if(file::exists(window_file))
     {
         try
         {
-            nlohmann::json window_nlohmann = load_from_file_json(window_file);
+            nlohmann::json window_nlohmann = nlohmann::json::parse(file::read(window_file));
 
             deserialise(window_nlohmann, sett, serialise_mode::DISK);
 
@@ -437,17 +446,17 @@ int main(int argc, char* argv[])
 
     printf("Specials\n");
 
-    std::string terminal_file = "./terminal_v6.txt";
-    std::string chat_file = "./chat_v6.txt";
-    //std::string settings_file = "./text_sett_v1.txt";
-    std::string font_file = "./font_sett_v1.txt";
-    std::string notepad_file = "./notepad.txt";
+    std::string terminal_file = "terminal_v6.txt";
+    std::string chat_file = "chat_v6.txt";
+    //std::string settings_file = "text_sett_v1.txt";
+    std::string font_file = "font_sett_v1.txt";
+    std::string notepad_file = "notepad.txt";
 
     try
     {
-        if(file_exists(terminal_file))
+        if(file::exists(terminal_file))
         {
-            nlohmann::json dat = load_from_file_json(terminal_file);
+            nlohmann::json dat = nlohmann::json::parse(file::read(terminal_file));
             deserialise(dat, term, serialise_mode::DISK);
         }
     }
@@ -455,9 +464,9 @@ int main(int argc, char* argv[])
 
     try
     {
-        if(file_exists(chat_file))
+        if(file::exists(chat_file))
         {
-            nlohmann::json dat = load_from_file_json(chat_file);
+            nlohmann::json dat = nlohmann::json::parse(file::read(chat_file));
             deserialise(dat, chat_win, serialise_mode::DISK);
         }
     }
@@ -465,9 +474,9 @@ int main(int argc, char* argv[])
 
     try
     {
-        if(file_exists(font_file))
+        if(file::exists(font_file))
         {
-            nlohmann::json dat = load_from_file_json(font_file);
+            nlohmann::json dat = nlohmann::json::parse(file::read(font_file));
             deserialise(dat, font_select, serialise_mode::DISK);
         }
     }
@@ -475,9 +484,9 @@ int main(int argc, char* argv[])
 
     std::string notepad;
 
-    if(file_exists(notepad_file))
+    if(file::exists(notepad_file))
     {
-        notepad = read_file(notepad_file);
+        notepad = file::read(notepad_file);
     }
 
     printf("Loaded files\n");
@@ -550,7 +559,7 @@ int main(int argc, char* argv[])
 
             connection_clock.restart();
 
-            handle_auth(s_api, conn, current_user);
+            display_auth_dialogue = handle_auth(s_api, conn, current_user);
 
             term.add_text("Connecting...");
         }
@@ -962,6 +971,44 @@ int main(int argc, char* argv[])
 
             ImGui::PushFont(font_select.get_base_font());
 
+            if(display_auth_dialogue)
+            {
+                ImGui::Begin("Input Auth", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+
+                ImGui::Text("hex_key.key");
+
+                ImGui::SameLine();
+
+                ImGui::PushItemWidth(16 * char_inf::cwidth + char_inf::cwidth * 2);
+
+                ImGui::InputText(" ###inputtexto", &auth_dialogue_text);
+
+                ImGui::PopItemWidth();
+
+                ImGui::SameLine();
+
+                if(auth_dialogue_text.size() != 256)
+                {
+                    ImGui::Text("Auth Hex is 256 characters long");
+                }
+                else
+                {
+                    if(ImGui::Button("Enter"))
+                    {
+                        file::write("hex_key.key", auth_dialogue_text);
+                        display_auth_dialogue = handle_auth(s_api, conn, current_user);
+
+                        if(display_auth_dialogue)
+                        {
+                            term.add_text("Something went wrong, try again");
+                        }
+                    }
+                }
+
+
+                ImGui::End();
+            }
+
             font_select.render(window);
 
             /*if(window_ctx.srgb_dirty)
@@ -1015,7 +1062,7 @@ int main(int argc, char* argv[])
 
                     if(!is_local_command(term.command.command))
                     {
-                        std::string up_data = default_up_handling(current_user, term.command.command, "./scripts/");
+                        std::string up_data = default_up_handling(current_user, term.command.command, "scripts/");
 
                         nlohmann::json data;
                         data["type"] = "generic_server_command";
@@ -1275,7 +1322,7 @@ int main(int argc, char* argv[])
 
                 if(changed)
                 {
-                    atomic_write_all(notepad_file, notepad);
+                    file::write_atomic(notepad_file, notepad);
                 }
 
                 ImGui::End();
@@ -1357,7 +1404,7 @@ int main(int argc, char* argv[])
     emscripten_set_main_loop_arg((em_arg_callback_func)main_loop_helper, nullptr, 0, 1);
     #endif
 
-    atomic_write_all(notepad_file, notepad);
+    file::write_atomic(notepad_file, notepad);
     pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
     pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
 
