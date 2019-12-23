@@ -13,6 +13,7 @@
 #include <imgui/imgui_internal.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <toolkit/fs_helpers.hpp>
 
 void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar, format_cache_2& cache, vec2f dim)
 {
@@ -699,7 +700,7 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
 
         std::string save_name = get_scripts_directory() + "/" + name + ".down.js";
 
-        write_all_bin(save_name, data);
+        file::write(save_name, data);
 
         str = make_success_col("Downloaded and saved script to " + name + ".down.js") + "\n";
         push = true;
@@ -717,9 +718,9 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
         std::string key = in["data"];
         std::string key_file = "hex_key.key";
 
-        if(!file_exists(key_file))
+        if(!file::exists(key_file))
         {
-            write_all_bin(key_file, key);
+            file::write(key_file, key);
 
             add_text(make_success_col("Success! Try user lowercase_name to get started, and then #scripts.core()"));
         }
@@ -757,7 +758,7 @@ void chat_window::render(bool refocus)
     if(refocus && side_buttons.size() > 0)
         ImGui::SetNextWindowFocus();
 
-    static bool once = file_exists("./ui_setup_once");
+    static bool once = file::exists("ui_setup_once");
     static ImGuiID dock_id = -1;
 
     if(!once || ImGui::IsKeyPressed(GLFW_KEY_F2))
@@ -775,7 +776,7 @@ void chat_window::render(bool refocus)
 
         ImGui::DockBuilderFinish(dock_id);
 
-        write_all_bin("./ui_setup_once", "1");
+        file::write("ui_setup_once", "1");
     }
 
     std::map<int, int> dock_ids;
