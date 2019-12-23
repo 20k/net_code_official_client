@@ -48,6 +48,7 @@ LIBS = $(EMS)
 LDFLAGS = --shell-file index_in.html -lglfw3 -s USE_PTHREADS=1 -s SOCKET_DEBUG=0
 LDFLAGS += -s WEBSOCKET_URL=wss:// -lidbfs.js
 LDFLAGS += -s ASYNCIFY=1 -O3
+#LDFLAGS += -s ASYNCIFY=1 -O3 --closure 1 --llvm-lto 3
 #LDFLAGS = --shell-file index_in.html -lglfw3 -s USE_PTHREADS=1 -s WEBSOCKET_URL=wss://
 
 ##---------------------------------------------------------------------
