@@ -261,18 +261,6 @@ int main(int argc, char* argv[])
         }
     }
 
-    printf("InMain\n");
-
-    if(file::exists("yay.text"))
-    {
-        std::cout << file::read("yay.text") << std::endl;
-    }
-    else
-    {
-        file::write("yay.text", "hello there");
-        return 0;
-    }
-
     steamapi s_api;
 
     printf("Pre connect\n");
