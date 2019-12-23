@@ -142,7 +142,7 @@ std::string handle_local_command(const std::string& username, const std::string&
 
         tinydir_dir dir;
         #ifndef __EMSCRIPTEN__
-        tinydir_open(&dir, get_scripts_directory());
+        tinydir_open(&dir, get_scripts_directory().c_str());
         #else
         tinydir_open(&dir, ("web/" + get_scripts_directory()).c_str());
         #endif
