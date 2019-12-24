@@ -25,10 +25,13 @@
             image-rendering: pixelated;
             -ms-interpolation-mode: nearest-neighbor;
         }
+        
+        .fullscreendiv{width:100%; height:100%}
     </style>
   </head>
   <body>
     <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+    <div class="fullscreendiv" id="fullscreenoverlay">hello?</div>
     <script type='text/javascript'>
       var Module = {
         preRun: [],
