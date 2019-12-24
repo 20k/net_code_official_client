@@ -669,11 +669,20 @@ int main(int argc, char* argv[])
                 {
                     std::vector<std::string> post_split = no_ss_split(drop.name, ".");
 
-                    if(post_split.size() == 2 && post_split[1] == "js")
+                    std::cout << "DROP NAME " << drop.name << " post split " << post_split.size() << std::endl;
+
+                    std::cout << "PSBACK " << post_split.back().size() << "|HI" << std::endl;
+
+                    ///i20k.scriptname.js or scriptname.js
+                    if((post_split.size() == 2 || post_split.size() == 3) && post_split.back() == "js")
                     {
-                        if(is_valid_full_name_string(current_user + "." + post_split[0]))
+                        std::string name = post_split.size() == 2 ? post_split[0] : post_split[1];
+
+                        if(is_valid_full_name_string(current_user + "." + name))
                         {
-                            conn.write("#up_es6 " + post_split[0] + " " + drop.data);
+                            printf("Hello\n");
+
+                            conn.write("#up_es6 " + name + " " + drop.data);
                         }
                     }
 
