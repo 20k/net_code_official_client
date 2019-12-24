@@ -640,6 +640,8 @@ int main(int argc, char* argv[])
 
         any_events = any_events || (unprocessed_frames >= max_unprocessed_frames);
 
+        any_events = any_events || window.has_dropped_file();
+
         //printf("Any events? %i %f %f\n", any_events, io.MousePos.x, io.MousePos.y);
 
         last_display_size = io.DisplaySize;
@@ -652,6 +654,32 @@ int main(int argc, char* argv[])
             #ifdef __EMSCRIPTEN__
             window.poll_issue_new_frame_only();
             #endif // __EMSCRIPTEN__
+
+            if(window.has_dropped_file())
+            {
+                ImGui::Begin("Testo?", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+
+                dropped_file drop = window.get_next_dropped_file();
+                //window.pop_dropped_file();
+
+                ImGui::TextUnformatted(drop.name.c_str());
+
+                ImGui::SameLine();
+
+                if(ImGui::Button("Upload"))
+                {
+                    window.pop_dropped_file();
+                }
+
+                ImGui::SameLine();
+
+                if(ImGui::Button("Cancel"))
+                {
+                    window.pop_dropped_file();
+                }
+
+                ImGui::End();
+            }
 
             unprocessed_frames = 0;
 
