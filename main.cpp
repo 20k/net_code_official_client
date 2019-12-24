@@ -660,7 +660,6 @@ int main(int argc, char* argv[])
                 ImGui::Begin("Testo?", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
                 dropped_file drop = window.get_next_dropped_file();
-                //window.pop_dropped_file();
 
                 ImGui::TextUnformatted(drop.name.c_str());
 
@@ -668,6 +667,16 @@ int main(int argc, char* argv[])
 
                 if(ImGui::Button("Upload"))
                 {
+                    std::vector<std::string> post_split = no_ss_split(drop.name, ".");
+
+                    if(post_split.size() == 2 && post_split[1] == "js")
+                    {
+                        if(is_valid_full_name_string(current_user + "." + post_split[0]))
+                        {
+                            conn.write("#up_es6 " + post_split[0] + " " + drop.data);
+                        }
+                    }
+
                     window.pop_dropped_file();
                 }
 
