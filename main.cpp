@@ -50,6 +50,7 @@
 #ifdef __EMSCRIPTEN__
   #include <emscripten/emscripten.h>
   #include <emscripten/html5.h>
+  #include <emscripten/bind.h>
 #endif // __EMSCRIPTEN__
 
 std::string make_lower(std::string in)
@@ -203,7 +204,7 @@ bool handle_auth(steamapi& s_api, connection& conn, std::string current_user)
     }
     else
     {
-        /*#ifndef __EMSCRIPTEN__
+        #ifndef __EMSCRIPTEN__
         ///no auth available
         printf("No auth methods available, use steam or hex_key.key file");
         throw std::runtime_error("No auth method available");
@@ -213,9 +214,9 @@ bool handle_auth(steamapi& s_api, connection& conn, std::string current_user)
         data["data"] = "5FE7F90855A578F4184356954DEB0DA389C4D69672884F01FD27E72CAD89EBB54D9A92EE5E36B4F96FB6A53403012406A41270A80BE7035D167DB2550C3CCE89EA010E1FC403788AD43B068460C5B762944D0A2F10377D6B021E121B4D75C4AAD0990D5445431F0522090FB2862E290C986F53C60B3EE42C7F8E6038475F1BD1";
 
         conn.write(data.dump());
-        #endif*/
+        #endif
 
-        return true;
+        //return true;
     }
 
     if(current_user.size() > 0)
@@ -1405,6 +1406,13 @@ int main(int argc, char* argv[])
     #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop_arg((em_arg_callback_func)main_loop_helper, nullptr, 0, 1);
     #endif
+
+    /*#ifdef __EMSCRIPTEN__
+    emscripten::val::global("window").call<void>(
+    "handle_download",
+    std::string("filename.ext")
+    );
+    #endif // __EMSCRIPTEN__*/
 
     file::write_atomic(notepad_file, notepad);
     pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));

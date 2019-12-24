@@ -702,6 +702,11 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
 
         file::write(save_name, data);
 
+        #ifdef __EMSCRIPTEN__
+        std::string webdlname = name + ".down.js";
+        file::download(webdlname, data);
+        #endif // __EMSCRIPTEN__
+
         str = make_success_col("Downloaded and saved script to " + name + ".down.js") + "\n";
         push = true;
     }
