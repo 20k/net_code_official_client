@@ -204,19 +204,7 @@ bool handle_auth(steamapi& s_api, connection& conn, std::string current_user)
     }
     else
     {
-        #ifndef __EMSCRIPTEN__
-        ///no auth available
-        printf("No auth methods available, use steam or hex_key.key file");
-        throw std::runtime_error("No auth method available");
-        #else
-        nlohmann::json data;
-        data["type"] = "key_auth";
-        data["data"] = "5FE7F90855A578F4184356954DEB0DA389C4D69672884F01FD27E72CAD89EBB54D9A92EE5E36B4F96FB6A53403012406A41270A80BE7035D167DB2550C3CCE89EA010E1FC403788AD43B068460C5B762944D0A2F10377D6B021E121B4D75C4AAD0990D5445431F0522090FB2862E290C986F53C60B3EE42C7F8E6038475F1BD1";
-
-        conn.write(data.dump());
-        #endif
-
-        //return true;
+        return true;
     }
 
     if(current_user.size() > 0)
@@ -657,50 +645,70 @@ int main(int argc, char* argv[])
 
             if(window.has_dropped_file())
             {
-                ImGui::Begin("Testo?", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-
                 dropped_file drop = window.get_next_dropped_file();
 
-                ImGui::TextUnformatted(drop.name.c_str());
-
-                ImGui::SameLine();
-
-                if(ImGui::Button("Upload"))
+                if(!is_key_file(drop.name))
                 {
-                    std::vector<std::string> post_split = no_ss_split(drop.name, ".");
+                    ImGui::Begin("Testo?", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
-                    std::cout << "DROP NAME " << drop.name << " post split " << post_split.size() << std::endl;
+                    ImGui::TextUnformatted(drop.name.c_str());
 
-                    std::cout << "PSBACK " << post_split.back().size() << "|HI" << std::endl;
+                    ImGui::SameLine();
 
-                    ///i20k.scriptname.js or scriptname.js
-                    if((post_split.size() == 2 || post_split.size() == 3) && post_split.back() == "js")
+                    if(ImGui::Button("Upload"))
                     {
-                        std::string name = post_split.size() == 2 ? post_split[0] : post_split[1];
+                        std::vector<std::string> post_split = no_ss_split(drop.name, ".");
 
-                        if(is_valid_full_name_string(current_user + "." + name))
+                        std::cout << "DROP NAME " << drop.name << " post split " << post_split.size() << std::endl;
+
+                        std::cout << "PSBACK " << post_split.back().size() << "|HI" << std::endl;
+
+                        ///i20k.scriptname.js or scriptname.js
+                        if((post_split.size() == 2 || post_split.size() == 3) && post_split.back() == "js")
                         {
-                            std::string fstr = "#up_es6 " + name + " " + drop.data;
+                            std::string name = post_split.size() == 2 ? post_split[0] : post_split[1];
 
-                            nlohmann::json data;
-                            data["type"] = "generic_server_command";
-                            data["data"] = fstr;
+                            if(is_valid_full_name_string(current_user + "." + name))
+                            {
+                                std::string fstr = "#up_es6 " + name + " " + drop.data;
 
-                            conn.write(data.dump());
+                                nlohmann::json data;
+                                data["type"] = "generic_server_command";
+                                data["data"] = fstr;
+
+                                conn.write(data.dump());
+                            }
                         }
+
+                        window.pop_dropped_file();
+                    }
+
+                    ImGui::SameLine();
+
+                    if(ImGui::Button("Cancel"))
+                    {
+                        window.pop_dropped_file();
+                    }
+
+                    ImGui::End();
+                }
+                else
+                {
+                    nlohmann::json data;
+                    data["type"] = "key_auth";
+                    data["data"] = drop.data;
+
+                    conn.write(data.dump());
+
+                    bool should_save = !file::exists("hex_key.key");
+
+                    if(should_save)
+                    {
+                        file::write("hex_key.key", drop.data, file::mode::BINARY);
                     }
 
                     window.pop_dropped_file();
                 }
-
-                ImGui::SameLine();
-
-                if(ImGui::Button("Cancel"))
-                {
-                    window.pop_dropped_file();
-                }
-
-                ImGui::End();
             }
 
             unprocessed_frames = 0;
@@ -1027,6 +1035,7 @@ int main(int argc, char* argv[])
                     }
                 }
 
+                ImGui::Text("Or drag and drop a valid *.key file into the window");
 
                 ImGui::End();
             }

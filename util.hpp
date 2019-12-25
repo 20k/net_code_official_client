@@ -1,6 +1,8 @@
 #ifndef UTIL_HPP_INCLUDED
 #define UTIL_HPP_INCLUDED
 
+#include <libncclient/nc_util.hpp>
+
 /*template<sf::Keyboard::Key k, int n, int c>
 inline
 bool once()
@@ -70,6 +72,17 @@ std::string binary_to_hex(const std::string& in, bool swap_endianness = false)
     }
 
     return ret;
+}
+
+inline
+bool is_key_file(const std::string& filename)
+{
+    auto post_split = no_ss_split(filename, ".");
+
+    if(post_split.size() == 2 && post_split.back() == "key")
+        return true;
+
+    return false;
 }
 
 #endif // UTIL_HPP_INCLUDED
