@@ -261,6 +261,8 @@ int main(int argc, char* argv[])
     conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::PLAIN);
     #endif
 
+    bool has_valid_auth = false;
+
     printf("Post Connect\n");
 
     bool display_auth_dialogue = false;
@@ -547,6 +549,8 @@ int main(int argc, char* argv[])
             #else
             conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::PLAIN);
             #endif
+
+            has_valid_auth = false;
 
             connection_clock.restart();
 
@@ -1040,6 +1044,11 @@ int main(int argc, char* argv[])
                 ImGui::End();
             }
 
+            if(has_valid_auth)
+            {
+                display_auth_dialogue = false;
+            }
+
             font_select.render(window);
 
             /*if(window_ctx.srgb_dirty)
@@ -1290,7 +1299,7 @@ int main(int argc, char* argv[])
                 ///this is temporary before the other end of the api gets changed
                 nlohmann::json data = nlohmann::json::parse(fdata);
 
-                term.add_text_from_server(current_user, data, chat_win, font_select);
+                term.add_text_from_server(has_valid_auth, current_user, data, chat_win, font_select);
             }
 
             if(write_clock.get_elapsed_time_s() > 5)

@@ -438,7 +438,7 @@ void terminal_imgui::add_text(const std::string& str)
     cache.invalidate();
 }
 
-void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts)
+void terminal_imgui::add_text_from_server(bool& is_authenticated, std::string& in_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts)
 {
     if(in == "")
         return;
@@ -472,6 +472,15 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
         {
             str += "\n";
         }
+
+        if(in.count("authenticated") > 0 && in["authenticated"] == 1)
+        {
+            is_authenticated = true;
+
+            printf("YAY!\n");
+        }
+
+        std::cout << "INDUMP " << in.dump() << std::endl;
 
         push = true;
     }
