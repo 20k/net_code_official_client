@@ -653,7 +653,7 @@ int main(int argc, char* argv[])
 
                 if(!is_key_file(drop.name))
                 {
-                    ImGui::Begin("Testo?", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+                    ImGui::Begin("File Upload Dialogue", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
                     ImGui::TextUnformatted(drop.name.c_str());
 
