@@ -933,37 +933,6 @@ int main(int argc, char* argv[])
             mouse_delta += scroll_y;
             script_mousewheel_delta += scroll_y;
 
-            #if 0
-            while(skip_first_event || window.pollEvent(event))
-            {
-                skip_first_event = false;
-                ImGui::SFML::ProcessEvent(event);
-
-                if(event.type == sf::Event::GainedFocus)
-                {
-                    focused = true;
-
-                    term.invalidate();
-                }
-
-                if(event.type == sf::Event::LostFocus)
-                    focused = false;
-
-                if(event.type == sf::Event::Resized)
-                {
-                    window.setSize({event.size.width, event.size.height});
-                    window.setView(sf::View(sf::FloatRect(0, 0, event.size.width, event.size.height)));
-
-                    term.invalidate();
-
-                    window_ctx.width = event.size.width;
-                    window_ctx.height = event.size.height;
-
-                    window_ctx.save();
-                }
-            }
-            #endif // 0
-
             if(term.get_id_of_focused_realtime_window() != -1 && (realtime_str.size() > 0 || on_pressed.size() > 0 || on_released.size() > 0))
             {
                 nlohmann::json data;
