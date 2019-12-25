@@ -121,17 +121,17 @@ std::string default_up_handling(const std::string& user, const std::string& serv
         std::string data = "";
 
         if(file::exists(diskname))
-            data = file::read(diskname);
+            data = file::read(diskname, file::mode::TEXT);
 
         if(file::exists(diskname_es6))
         {
-            data = file::read(diskname_es6);
+            data = file::read(diskname_es6, file::mode::TEXT);
             comm = up_es6;
         }
 
         if(file::exists(diskname_ts))
         {
-            data = file::read(diskname_ts);
+            data = file::read(diskname_ts, file::mode::TEXT);
             comm = up_es6;
         }
 
@@ -158,7 +158,7 @@ bool handle_auth(steamapi& s_api, connection& conn, std::string current_user)
         {
             printf("Embedding key auth in steam auth\n");
 
-            s_api.request_auth_token(file::read("hex_key.key"));
+            s_api.request_auth_token(file::read("hex_key.key", file::mode::BINARY));
         }
         else
         {
@@ -198,7 +198,7 @@ bool handle_auth(steamapi& s_api, connection& conn, std::string current_user)
 
         nlohmann::json data;
         data["type"] = "key_auth";
-        data["data"] = file::read("hex_key.key");
+        data["data"] = file::read("hex_key.key", file::mode::BINARY);
 
         conn.write(data.dump());
     }
@@ -290,7 +290,7 @@ int main(int argc, char* argv[])
     {
         try
         {
-            nlohmann::json window_nlohmann = nlohmann::json::parse(file::read(window_file));
+            nlohmann::json window_nlohmann = nlohmann::json::parse(file::read(window_file, file::mode::TEXT));
 
             deserialise(window_nlohmann, sett, serialise_mode::DISK);
 
@@ -459,7 +459,7 @@ int main(int argc, char* argv[])
     {
         if(file::exists(terminal_file))
         {
-            nlohmann::json dat = nlohmann::json::parse(file::read(terminal_file));
+            nlohmann::json dat = nlohmann::json::parse(file::read(terminal_file, file::mode::TEXT));
             deserialise(dat, term, serialise_mode::DISK);
         }
     }
@@ -469,7 +469,7 @@ int main(int argc, char* argv[])
     {
         if(file::exists(chat_file))
         {
-            nlohmann::json dat = nlohmann::json::parse(file::read(chat_file));
+            nlohmann::json dat = nlohmann::json::parse(file::read(chat_file, file::mode::TEXT));
             deserialise(dat, chat_win, serialise_mode::DISK);
         }
     }
@@ -479,7 +479,7 @@ int main(int argc, char* argv[])
     {
         if(file::exists(font_file))
         {
-            nlohmann::json dat = nlohmann::json::parse(file::read(font_file));
+            nlohmann::json dat = nlohmann::json::parse(file::read(font_file, file::mode::TEXT));
             deserialise(dat, font_select, serialise_mode::DISK);
         }
     }
@@ -489,7 +489,7 @@ int main(int argc, char* argv[])
 
     if(file::exists(notepad_file))
     {
-        notepad = file::read(notepad_file);
+        notepad = file::read(notepad_file, file::mode::TEXT);
     }
 
     printf("Loaded files\n");
@@ -680,9 +680,13 @@ int main(int argc, char* argv[])
 
                         if(is_valid_full_name_string(current_user + "." + name))
                         {
-                            printf("Hello\n");
+                            std::string fstr = "#up_es6 " + name + " " + drop.data;
 
-                            conn.write("#up_es6 " + name + " " + drop.data);
+                            nlohmann::json data;
+                            data["type"] = "generic_server_command";
+                            data["data"] = fstr;
+
+                            conn.write(data.dump());
                         }
                     }
 
@@ -1044,7 +1048,7 @@ int main(int argc, char* argv[])
                 {
                     if(ImGui::Button("Enter"))
                     {
-                        file::write("hex_key.key", auth_dialogue_text);
+                        file::write("hex_key.key", auth_dialogue_text, file::mode::BINARY);
                         display_auth_dialogue = handle_auth(s_api, conn, current_user);
 
                         if(display_auth_dialogue)

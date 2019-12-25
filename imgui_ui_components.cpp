@@ -700,7 +700,7 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
 
         std::string save_name = get_scripts_directory() + "/" + name + ".down.js";
 
-        file::write(save_name, data);
+        file::write(save_name, data, file::mode::TEXT);
 
         #ifdef __EMSCRIPTEN__
         std::string webdlname = name + ".down.js";
@@ -725,7 +725,7 @@ void terminal_imgui::add_text_from_server(std::string& in_user, const nlohmann::
 
         if(!file::exists(key_file))
         {
-            file::write(key_file, key);
+            file::write(key_file, key, file::mode::BINARY);
 
             add_text(make_success_col("Success! Try user lowercase_name to get started, and then #scripts.core()"));
         }
@@ -781,7 +781,7 @@ void chat_window::render(bool refocus)
 
         ImGui::DockBuilderFinish(dock_id);
 
-        file::write("ui_setup_once", "1");
+        file::write("ui_setup_once", "1", file::mode::BINARY);
     }
 
     std::map<int, int> dock_ids;

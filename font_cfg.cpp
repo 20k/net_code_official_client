@@ -280,7 +280,7 @@ void font_selector::render(render_window& window)
 
     if(wants_rebuild)
     {
-        file::write("font_sett.txt", ::serialise(*this, serialise_mode::DISK).dump());
+        file::write("font_sett.txt", ::serialise(*this, serialise_mode::DISK).dump(), file::mode::TEXT);
     }
 
     ImGui::End();

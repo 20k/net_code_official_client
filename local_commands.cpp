@@ -235,7 +235,7 @@ std::string handle_local_command(const std::string& username, const std::string&
         {
             std::cout << "Trying to create " << file_name << std::endl;
 
-            file::write(file_name, "function(context, args)\n{\n\n}");
+            file::write(file_name, "function(context, args)\n{\n\n}", file::mode::TEXT);
         }
 
         ipc_open(file_name);
