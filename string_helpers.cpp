@@ -88,16 +88,6 @@ void de_newline(std::vector<interop_vec_t>& vec)
     vec = rep;
 }
 
-std::string get_clipboard_contents()
-{
-    const char* ptr = glfwGetClipboardString(NULL);
-
-    if(ptr == nullptr)
-        throw std::runtime_error("Clipboard Error");
-
-    return ptr;
-}
-
 std::string escape_str(const std::string& in)
 {
     std::string str = in;

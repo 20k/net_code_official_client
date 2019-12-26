@@ -9,6 +9,7 @@
 //#include "window_context.hpp"
 #include <toolkit/render_window.hpp>
 #include <toolkit/base_serialisables.hpp>
+#include <toolkit/clipboard.hpp>
 #include <functional>
 
 #include <codecvt>
@@ -867,7 +868,7 @@ int main(int argc, char* argv[])
                 {
                     if(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
                     {
-                        std::string add_text = get_clipboard_contents();
+                        std::string add_text = clipboard::get();
 
                         for(auto& i : add_text)
                         {
@@ -911,7 +912,7 @@ int main(int argc, char* argv[])
 
                 if(i == 1)
                 {
-                    std::string add_text = get_clipboard_contents();
+                    std::string add_text = clipboard::get();
 
                     for(auto& i : add_text)
                     {

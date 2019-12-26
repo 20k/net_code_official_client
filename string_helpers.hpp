@@ -128,8 +128,6 @@ std::vector<formatted_char> format_characters(const std::vector<interop_char>& i
 
 struct auto_handler;
 
-std::string get_clipboard_contents();
-
 std::string escape_str(const std::string& in);
 
 #endif // STRING_HELPERS_HPP_INCLUDED
