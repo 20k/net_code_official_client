@@ -2,6 +2,7 @@
 #include "string_helpers.hpp"
 #include <vec/vec.hpp>
 #include <iostream>
+#include <toolkit/clipboard.hpp>
 
 copy_handler global_copy_handler;
 
@@ -65,7 +66,7 @@ bool copy_handler::trigger_copy()
 
 void copy_handler::set_clipboard(const std::string& str)
 {
-    set_clipboard_contents(str);
+    clipboard::set(str);
 
     finished = false;
     held = false;

@@ -2,6 +2,9 @@
 #include "auto_handlers.hpp"
 #include "copy_handler.hpp"
 #include <GLFW/glfw3.h>
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif // __EMSCRIPTEN__
 
 interop_vec_t string_to_interop(const std::string& str, bool render_specials, auto_handler& auto_handle, bool parse_for_autocompletes)
 {
@@ -93,11 +96,6 @@ std::string get_clipboard_contents()
         throw std::runtime_error("Clipboard Error");
 
     return ptr;
-}
-
-void set_clipboard_contents(const std::string& data)
-{
-    glfwSetClipboardString(NULL, data.c_str());
 }
 
 std::string escape_str(const std::string& in)

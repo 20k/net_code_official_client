@@ -129,7 +129,6 @@ std::vector<formatted_char> format_characters(const std::vector<interop_char>& i
 struct auto_handler;
 
 std::string get_clipboard_contents();
-void set_clipboard_contents(const std::string& str);
 
 std::string escape_str(const std::string& in);
 
