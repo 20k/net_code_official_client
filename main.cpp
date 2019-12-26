@@ -644,6 +644,8 @@ int main(int argc, char* argv[])
         if(any_events)
         #endif // __EMSCRIPTEN__
         {
+            clipboard::poll();
+
             #ifdef __EMSCRIPTEN__
             window.poll_issue_new_frame_only();
             #endif // __EMSCRIPTEN__
