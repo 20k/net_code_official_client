@@ -440,6 +440,7 @@ int main(int argc, char* argv[])
     bool lastMouseDown[5] = {};
     ImVec2 last_mouse_pos = ImVec2(0,0);
     ImVec2 last_display_size = ImVec2(0,0);
+    bool last_can_suppress_inputs = false;
 
     auto just_pressed = [&](int key)
     {
@@ -539,21 +540,38 @@ int main(int argc, char* argv[])
         static_assert(sizeof(lastKeysDown) == sizeof(io.KeysDown));
         static_assert(sizeof(lastMouseDown) == sizeof(io.MouseDown));
 
-        #ifndef __EMSCRIPTEN__
+        /*#ifndef __EMSCRIPTEN__
         window.poll(1/33.);
         #else
         window.poll_events_only();
-        #endif
+        #endif*/
+
+        steady_timer poll_time;
+
+        window.poll_events_only(1/33.);
+
+        double slept_for = poll_time.get_elapsed_time_s();
+
+        bool can_suppress_inputs = !(ImGui::IsAnyItemActive() || ImGui::IsAnyItemHovered());
 
         any_events = any_events || (memcmp(lastKeysDown, io.KeysDown, sizeof(lastKeysDown)) != 0) || (memcmp(lastMouseDown, io.MouseDown, sizeof(lastMouseDown)) != 0);
 
-        any_events = any_events || (io.MousePos.x != last_mouse_pos.x || io.MousePos.y != last_mouse_pos.y);
-        any_events = any_events || (io.MouseDelta.x != 0 || io.MouseDelta.y != 0);
+        bool has_mouse_delta = false;
+
+        has_mouse_delta = has_mouse_delta || (io.MousePos.x != last_mouse_pos.x || io.MousePos.y != last_mouse_pos.y);
+        has_mouse_delta = has_mouse_delta || (io.MouseDelta.x != 0 || io.MouseDelta.y != 0);
+
+        /*if(can_suppress_inputs)
+        {
+            has_mouse_delta = false;
+        }*/
+
+        any_events = any_events || has_mouse_delta;
         any_events = any_events || (io.MouseWheel != 0 || io.MouseWheelH != 0);
-
         any_events = any_events || (io.DisplaySize.x != last_display_size.x || io.DisplaySize.y != last_display_size.y);
-
         any_events = any_events || conn.has_read();
+        any_events = any_events || (last_can_suppress_inputs != can_suppress_inputs);
+        any_events = any_events || (ImGui::IsAnyItemActive() || ImGui::IsAnyItemHovered());
 
         //any_events = any_events || (unprocessed_frames >= max_unprocessed_frames);
 
@@ -563,16 +581,15 @@ int main(int argc, char* argv[])
 
         last_display_size = io.DisplaySize;
         last_mouse_pos = io.MousePos;
+        last_can_suppress_inputs = can_suppress_inputs;
 
-        #ifdef __EMSCRIPTEN__
         if(any_events)
-        #endif // __EMSCRIPTEN__
         {
             clipboard::poll();
 
-            #ifdef __EMSCRIPTEN__
+            //#ifdef __EMSCRIPTEN__
             window.poll_issue_new_frame_only();
-            #endif // __EMSCRIPTEN__
+            //#endif // __EMSCRIPTEN__
 
             if(window.has_dropped_file())
             {
@@ -1316,13 +1333,22 @@ int main(int argc, char* argv[])
             ImGui::PopFont();
             window.display();
         }
-        #ifdef __EMSCRIPTEN__
         else
         {
+            /*#ifndef __EMSCRIPTEN__
+            double max_sleep = 1/33.f;
+            double extra = max_sleep - slept_for;
+
+            if(extra > 0)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds((int)round(extra * 1000)));
+            }
+
+            #endif // __EMSCRIPTEN__*/
+
             unprocessed_frames++;
             //window.display_last_frame();
         }
-        #endif // __EMSCRIPTEN__
     };
 
     #ifdef __EMSCRIPTEN__
