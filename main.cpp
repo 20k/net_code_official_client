@@ -543,6 +543,8 @@ int main(int argc, char* argv[])
     hptr = [&]()
     #endif
     {
+        file::manual_fs_sync manual_sync;
+
         if(connection_clock.get_elapsed_time_s() > 5 && !conn.client_connected_to_server && !conn.connection_pending())
         {
             #ifndef __EMSCRIPTEN__
