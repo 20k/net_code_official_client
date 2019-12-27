@@ -89,7 +89,7 @@ void auth_manager::display(terminal_imgui& term, steamapi& s_api, connection& co
 
     ImGui::Begin("No Auth Found", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
-    ImGui::Text("hex_key.key");
+    ImGui::Text("Input hex_key.key");
 
     ImGui::SameLine();
 
@@ -99,11 +99,11 @@ void auth_manager::display(terminal_imgui& term, steamapi& s_api, connection& co
 
     ImGui::PopItemWidth();
 
-    ImGui::SameLine();
+    //ImGui::SameLine();
 
     if(auth_dialogue_text.size() != 256)
     {
-        ImGui::Text("Auth Hex is 256 characters long");
+
     }
     else
     {
