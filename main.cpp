@@ -533,7 +533,7 @@ int main(int argc, char* argv[])
     int iconn = conn.client_connected_to_server;
     printf("Am connected? %i\n", iconn);
 
-    int max_unprocessed_frames = 10;
+    int max_unprocessed_frames = 20;
     int unprocessed_frames = unprocessed_frames;
 
     //while(running)
