@@ -1438,7 +1438,7 @@ int main(int argc, char* argv[])
         else
         {
             unprocessed_frames++;
-            window.display_last_frame();
+            //window.display_last_frame();
         }
         #endif // __EMSCRIPTEN__
     };
