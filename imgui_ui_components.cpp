@@ -14,6 +14,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <toolkit/fs_helpers.hpp>
+#include "auth_manager.hpp"
 
 void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar, format_cache_2& cache, vec2f dim)
 {
@@ -438,7 +439,7 @@ void terminal_imgui::add_text(const std::string& str)
     cache.invalidate();
 }
 
-void terminal_imgui::add_text_from_server(bool& is_authenticated, std::string& in_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts)
+void terminal_imgui::add_text_from_server(auth_manager& auth_manage, std::string& in_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts)
 {
     if(in == "")
         return;
@@ -475,7 +476,7 @@ void terminal_imgui::add_text_from_server(bool& is_authenticated, std::string& i
 
         if(in.count("authenticated") > 0 && in["authenticated"] == 1)
         {
-            is_authenticated = true;
+            auth_manage.am_authenticated = true;
 
             printf("YAY!\n");
         }

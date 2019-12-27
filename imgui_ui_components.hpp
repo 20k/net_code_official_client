@@ -12,6 +12,7 @@
 
 struct chat_thread;
 struct chat_window;
+struct auth_manager;
 
 struct scrollbar_hack
 {
@@ -136,7 +137,7 @@ struct terminal_imgui : serialisable, cacheable, frameable, free_function
     void bump_command_to_history();
 
     void add_text(const std::string& str);
-    void add_text_from_server(bool& is_authenticated, std::string& current_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts);
+    void add_text_from_server(auth_manager& auth_manage, std::string& current_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts);
 
     ///returns -1 on none
     int get_id_of_focused_realtime_window();

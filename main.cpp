@@ -29,6 +29,7 @@
 #include "serialisables.hpp"
 #include <networking/networking.hpp>
 #include <cstdlib>
+#include "auth_manager.hpp"
 
 ///ruh roh
 ///need to structure this project properly
@@ -49,9 +50,9 @@
 #include <toolkit/fs_helpers.hpp>
 
 #ifdef __EMSCRIPTEN__
-  #include <emscripten/emscripten.h>
-  #include <emscripten/html5.h>
-  #include <emscripten/bind.h>
+#include <emscripten/emscripten.h>
+#include <emscripten/html5.h>
+#include <emscripten/bind.h>
 #endif // __EMSCRIPTEN__
 
 std::string make_lower(std::string in)
@@ -147,79 +148,6 @@ std::string default_up_handling(const std::string& user, const std::string& serv
     return server_msg;
 }
 
-bool handle_auth(steamapi& s_api, connection& conn, std::string current_user)
-{
-    //if(!conn.client_connected_to_server)
-    //    return;
-
-    if(s_api.enabled)
-    {
-        ///embed hex_key.key
-        if(file::exists("hey_key.key"))
-        {
-            printf("Embedding key auth in steam auth\n");
-
-            s_api.request_auth_token(file::read("hex_key.key", file::mode::BINARY));
-        }
-        else
-        {
-            printf("Steam auth, no key auth");
-
-            s_api.request_auth_token("");
-        }
-
-        while(s_api.should_wait_for_encrypted_token())
-        {
-            s_api.pump_callbacks();
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
-
-        if(!s_api.auth_success())
-        {
-            printf("Failed to get encrypted token");
-            throw std::runtime_error("Could not fetch steam token");
-        }
-
-        auto res = s_api.get_encrypted_token();
-
-        std::string etoken = std::string(res.begin(), res.end());
-
-        nlohmann::json data;
-        data["type"] = "steam_auth";
-        data["data"] = binary_to_hex(etoken);
-
-        conn.write(data.dump());
-
-        printf("Postwrite\n");
-    }
-    ///use key based auth
-    else if(file::exists("hex_key.key"))
-    {
-        printf("Pure key auth\n");
-
-        nlohmann::json data;
-        data["type"] = "key_auth";
-        data["data"] = file::read("hex_key.key", file::mode::BINARY);
-
-        conn.write(data.dump());
-    }
-    else
-    {
-        return true;
-    }
-
-    if(current_user.size() > 0)
-    {
-        nlohmann::json data;
-        data["type"] = "generic_server_command";
-        data["data"] = "user " + current_user;
-
-        conn.write(data.dump());
-    }
-
-    return false;
-}
-
 std::function<void()> hptr;
 
 void main_loop_helper(void* ptr)
@@ -262,16 +190,12 @@ int main(int argc, char* argv[])
     conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::PLAIN);
     #endif
 
-    bool has_valid_auth = false;
-
     printf("Post Connect\n");
 
-    bool display_auth_dialogue = false;
-    std::string auth_dialogue_text;
-
-    display_auth_dialogue = handle_auth(s_api, conn, "");
-
     render_settings sett;
+
+    auth_manager auth_manage;
+    auth_manage.check(s_api, conn, "");
 
     bool has_file = false;
 
@@ -553,11 +477,9 @@ int main(int argc, char* argv[])
             conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::PLAIN);
             #endif
 
-            has_valid_auth = false;
-
             connection_clock.restart();
 
-            display_auth_dialogue = handle_auth(s_api, conn, current_user);
+            auth_manage.check(s_api, conn, current_user);
 
             term.add_text("Connecting...");
         }
@@ -1010,6 +932,9 @@ int main(int argc, char* argv[])
 
             ImGui::PushFont(font_select.get_base_font());
 
+            auth_manage.display(term, s_api, conn, current_user);
+
+            #if 0
             if(display_auth_dialogue)
             {
                 ImGui::Begin("Input Auth", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
@@ -1053,6 +978,7 @@ int main(int argc, char* argv[])
             {
                 display_auth_dialogue = false;
             }
+            #endif // 0
 
             font_select.render(window);
 
@@ -1304,7 +1230,7 @@ int main(int argc, char* argv[])
                 ///this is temporary before the other end of the api gets changed
                 nlohmann::json data = nlohmann::json::parse(fdata);
 
-                term.add_text_from_server(has_valid_auth, current_user, data, chat_win, font_select);
+                term.add_text_from_server(auth_manage, current_user, data, chat_win, font_select);
             }
 
             if(write_clock.get_elapsed_time_s() > 5)
