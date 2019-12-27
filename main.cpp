@@ -934,52 +934,6 @@ int main(int argc, char* argv[])
 
             auth_manage.display(term, s_api, conn, current_user);
 
-            #if 0
-            if(display_auth_dialogue)
-            {
-                ImGui::Begin("Input Auth", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-
-                ImGui::Text("hex_key.key");
-
-                ImGui::SameLine();
-
-                ImGui::PushItemWidth(16 * char_inf::cwidth + char_inf::cwidth * 2);
-
-                ImGui::InputText(" ###inputtexto", &auth_dialogue_text);
-
-                ImGui::PopItemWidth();
-
-                ImGui::SameLine();
-
-                if(auth_dialogue_text.size() != 256)
-                {
-                    ImGui::Text("Auth Hex is 256 characters long");
-                }
-                else
-                {
-                    if(ImGui::Button("Enter"))
-                    {
-                        file::write("hex_key.key", auth_dialogue_text, file::mode::BINARY);
-                        display_auth_dialogue = handle_auth(s_api, conn, current_user);
-
-                        if(display_auth_dialogue)
-                        {
-                            term.add_text("Something went wrong, try again");
-                        }
-                    }
-                }
-
-                ImGui::Text("Or drag and drop a valid *.key file into the window");
-
-                ImGui::End();
-            }
-
-            if(has_valid_auth)
-            {
-                display_auth_dialogue = false;
-            }
-            #endif // 0
-
             font_select.render(window);
 
             /*if(window_ctx.srgb_dirty)
