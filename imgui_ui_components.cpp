@@ -25,15 +25,7 @@ void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar, format_cache_2&
     if(approx_num < 0)
         approx_num = 1;
 
-    vec2f start_pos = xy_to_vec(ImGui::GetCursorPos());
-
-    for(int i=0; i < approx_num + 1; i++)
-    {
-        ImGui::TextUnformatted("\n");
-
-        start_pos += (vec2f){0, cdim.y()};
-        ImGui::SetCursorPos({start_pos.x(), start_pos.y()});
-    }
+    ImGui::Dummy(ImVec2(cdim.x(), cdim.y() * (approx_num + 1)));
 
     if(set_scrollbar)
     {
