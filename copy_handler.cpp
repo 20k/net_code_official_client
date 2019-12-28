@@ -11,7 +11,7 @@ bool copy_handler::char_is_within_select_box(vec2f pos, vec2f cdim)
     if(!held && !trigger_copy())
         return false;
 
-    if((copy_end - copy_start).length() < MIN_SELECT_DISTANCE)
+    if((copy_end - copy_start).squared_length() < (MIN_SELECT_DISTANCE * MIN_SELECT_DISTANCE))
         return false;
 
     vec2f p1 = pos;
@@ -53,7 +53,7 @@ bool copy_handler::trigger_copy()
 
     bool trigger = false;
 
-    if((copy_end - copy_start).length() >= MIN_SELECT_DISTANCE)
+    if((copy_end - copy_start).squared_length() >= (MIN_SELECT_DISTANCE * MIN_SELECT_DISTANCE))
     {
         trigger = true;
     }
