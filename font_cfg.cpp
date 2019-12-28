@@ -244,6 +244,11 @@ void font_selector::render(render_window& window)
         window.set_srgb(sett.is_srgb);
     }
 
+    if(ImGui::Checkbox("Vsync Enabled", &sett.vsync))
+    {
+        window.set_vsync(sett.vsync);
+    }
+
     ImGui::NewLine();
 
     ImGui::NewLine();

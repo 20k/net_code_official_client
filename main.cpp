@@ -225,6 +225,7 @@ int main(int argc, char* argv[])
         sett.height = 900;
 
         sett.is_srgb = true;
+        sett.vsync = true;
     }
 
     render_window window(sett, "net_code");
@@ -583,7 +584,9 @@ int main(int argc, char* argv[])
         last_mouse_pos = io.MousePos;
         last_can_suppress_inputs = can_suppress_inputs;
 
+        #ifdef __EMSCRIPTEN__
         if(any_events)
+        #endif // __EMSCRIPTEN__
         {
             clipboard::poll();
 
@@ -1333,6 +1336,7 @@ int main(int argc, char* argv[])
             ImGui::PopFont();
             window.display();
         }
+        #ifdef __EMSCRIPTEN__
         else
         {
             /*#ifndef __EMSCRIPTEN__
@@ -1349,6 +1353,7 @@ int main(int argc, char* argv[])
             unprocessed_frames++;
             //window.display_last_frame();
         }
+        #endif
     };
 
     #ifdef __EMSCRIPTEN__
