@@ -673,6 +673,7 @@ int main(int argc, char* argv[])
 
             for(int i=0; i < sizeof(io.KeysDown) / sizeof(io.KeysDown[0]); i++)
             {
+                ///this isn't working correctly on emscripten, probably due to the callback issue
                 if((io.KeysDown[i] && !lastKeysDown[i]) || ImGui::IsKeyPressed(i))
                 {
                     glfw_key_pressed_data.push_back(i);
