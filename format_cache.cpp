@@ -3,6 +3,7 @@
 #include <imgui/imgui.h>
 #include <iostream>
 #include "copy_handler.hpp"
+#include "string_helpers.hpp"
 
 void format_cache_2::ensure_built(vec2f window_dimensions, const std::vector<interop_vec_t>& all_chars)
 {
@@ -84,7 +85,7 @@ void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<f
     vec2f final_pos = screen_pos + text[idx_1].internal_pos;
     vec2f start_check_pos = screen_pos + text[idx_2 - 1].internal_pos;
 
-    vec2f cdim = xy_to_vec(ImGui::CalcTextSize("A"));
+    vec2f cdim = {char_inf::cached_imgui_width, char_inf::cached_imgui_height};
 
     if(final_pos.y() - cdim.y() >= screen_cull_y_bottom)
         return;

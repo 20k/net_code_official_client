@@ -952,6 +952,9 @@ int main(int argc, char* argv[])
 
             ImGui::PushFont(font_select.get_base_font());
 
+            char_inf::cached_imgui_width = ImGui::CalcTextSize("A").x;
+            char_inf::cached_imgui_height = ImGui::CalcTextSize("A").y;
+
             auth_manage.display(term, s_api, conn, current_user);
 
             font_select.render(window);
@@ -1327,6 +1330,9 @@ int main(int argc, char* argv[])
 
             char_inf::cwidth = ImGui::CalcTextSize("A").x + char_inf::extra_glyph_spacing;
             char_inf::cheight = ImGui::CalcTextSize("A").y;
+
+            char_inf::cached_imgui_width = ImGui::CalcTextSize("A").x;
+            char_inf::cached_imgui_height = ImGui::CalcTextSize("A").y;
 
             if(char_inf::cwidth != lcwidth || char_inf::cheight != lcheight)
             {
