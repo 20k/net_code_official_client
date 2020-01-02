@@ -439,6 +439,8 @@ int main(int argc, char* argv[])
 
     bool lastKeysDown[512] = {};
     bool lastMouseDown[5] = {};
+    bool curKeysDown[512] = {};
+    bool curMouseDown[5] = {};
     ImVec2 last_mouse_pos = ImVec2(0,0);
     ImVec2 last_display_size = ImVec2(0,0);
     bool last_can_suppress_inputs = false;
@@ -447,7 +449,7 @@ int main(int argc, char* argv[])
     {
         ImGuiIO& io = ImGui::GetIO();
 
-        return io.KeysDown[key] && !lastKeysDown[key];
+        return curKeysDown[key] && !lastKeysDown[key];
     };
 
     bool has_settings_window = false;
@@ -521,25 +523,25 @@ int main(int argc, char* argv[])
 
         bool any_events = false;
 
-        any_events = any_events || (memcmp(lastKeysDown, io.KeysDown, sizeof(lastKeysDown)) != 0) || (memcmp(lastMouseDown, io.MouseDown, sizeof(lastMouseDown)) != 0);
+        any_events = any_events || (memcmp(lastKeysDown, curKeysDown, sizeof(lastKeysDown)) != 0) || (memcmp(lastMouseDown, curMouseDown, sizeof(lastMouseDown)) != 0);
 
         for(int i=0; i < 512; i++)
         {
-            if(io.KeysDown[i])
+            if(curKeysDown[i])
                 any_events = true;
         }
 
         for(int i=0; i < 5; i++)
         {
-            if(io.MouseDown[i])
+            if(curMouseDown[i])
                 any_events = true;
         }
 
-        memcpy(lastKeysDown, io.KeysDown, sizeof(lastKeysDown));
-        memcpy(lastMouseDown, io.MouseDown, sizeof(io.MouseDown));
+        memcpy(lastKeysDown, curKeysDown, sizeof(lastKeysDown));
+        memcpy(lastMouseDown, curMouseDown, sizeof(curMouseDown));
 
-        static_assert(sizeof(lastKeysDown) == sizeof(io.KeysDown));
-        static_assert(sizeof(lastMouseDown) == sizeof(io.MouseDown));
+        static_assert(sizeof(lastKeysDown) == sizeof(curKeysDown));
+        static_assert(sizeof(lastMouseDown) == sizeof(curMouseDown));
 
         /*#ifndef __EMSCRIPTEN__
         window.poll(1/33.);
@@ -551,21 +553,36 @@ int main(int argc, char* argv[])
 
         window.poll_events_only(1/33.);
 
+        memcpy(curKeysDown, io.KeysDown, sizeof(curKeysDown));
+        memcpy(curMouseDown, io.MouseDown, sizeof(curMouseDown));
+
         double slept_for = poll_time.get_elapsed_time_s();
 
-        bool can_suppress_inputs = !(ImGui::IsAnyItemActive() || ImGui::IsAnyItemHovered());
+        ImGui::UpdateHoveredWindowAndCaptureFlags();
 
-        any_events = any_events || (memcmp(lastKeysDown, io.KeysDown, sizeof(lastKeysDown)) != 0) || (memcmp(lastMouseDown, io.MouseDown, sizeof(lastMouseDown)) != 0);
+        //bool can_suppress_inputs = !(ImGui::IsAnyItemActive() || ImGui::IsAnyItemHovered());
+
+        bool can_suppress_inputs = (!ImGui::IsAnyWindowHovered()) || (ImGui::GetCurrentContext()->HoveredWindow != nullptr && ImGui::GetCurrentContext()->HoveredWindow->ID == term.get_id());
+
+        if(ImGui::GetCurrentContext()->HoveredWindow != nullptr)
+        {
+            std::cout << "FID " << ImGui::GetCurrentContext()->HoveredWindow->ID;
+            std::cout << "CID " << term.get_id() << std::endl;
+        }
+
+        std::cout << "Can suppress " << can_suppress_inputs << " HOVERED ID " << ImGui::GetHoveredID() << " WIN HOVER " << ImGui::IsAnyWindowHovered() << std::endl;
+
+        any_events = any_events || (memcmp(lastKeysDown, curKeysDown, sizeof(lastKeysDown)) != 0) || (memcmp(lastMouseDown, curMouseDown, sizeof(lastMouseDown)) != 0);
 
         bool has_mouse_delta = false;
 
         has_mouse_delta = has_mouse_delta || (io.MousePos.x != last_mouse_pos.x || io.MousePos.y != last_mouse_pos.y);
         has_mouse_delta = has_mouse_delta || (io.MouseDelta.x != 0 || io.MouseDelta.y != 0);
 
-        /*if(can_suppress_inputs)
+        if(can_suppress_inputs)
         {
             has_mouse_delta = false;
-        }*/
+        }
 
         any_events = any_events || has_mouse_delta;
         any_events = any_events || (io.MouseWheel != 0 || io.MouseWheelH != 0);
@@ -584,9 +601,9 @@ int main(int argc, char* argv[])
         last_mouse_pos = io.MousePos;
         last_can_suppress_inputs = can_suppress_inputs;
 
-        #ifdef __EMSCRIPTEN__
+        //#ifdef __EMSCRIPTEN__
         if(any_events)
-        #endif // __EMSCRIPTEN__
+        //#endif // __EMSCRIPTEN__
         {
             clipboard::poll();
 
@@ -671,28 +688,28 @@ int main(int argc, char* argv[])
 
             vec2f cursor_pos = {io.MousePos.x, io.MousePos.y};
 
-            for(int i=0; i < sizeof(io.KeysDown) / sizeof(io.KeysDown[0]); i++)
+            for(int i=0; i < sizeof(curKeysDown) / sizeof(curKeysDown[0]); i++)
             {
                 ///this isn't working correctly on emscripten, probably due to the callback issue
-                if((io.KeysDown[i] && !lastKeysDown[i]) || ImGui::IsKeyPressed(i))
+                if((curKeysDown[i] && !lastKeysDown[i]) || ImGui::IsKeyPressed(i))
                 {
                     glfw_key_pressed_data.push_back(i);
                 }
 
-                if(!io.KeysDown[i] && lastKeysDown[i])
+                if(!curKeysDown[i] && lastKeysDown[i])
                 {
                     glfw_key_released_data.push_back(i);
                 }
             }
 
-            for(int i=0; i < sizeof(io.MouseDown) / sizeof(io.MouseDown[0]); i++)
+            for(int i=0; i < sizeof(curMouseDown) / sizeof(curMouseDown[0]); i++)
             {
-                if(io.MouseDown[i] && !lastMouseDown[i])
+                if(curMouseDown[i] && !lastMouseDown[i])
                 {
                     mouse_pressed_data.push_back(i);
                 }
 
-                if(!io.MouseDown[i] && lastMouseDown[i])
+                if(!curMouseDown[i] && lastMouseDown[i])
                 {
                     mouse_released_data.push_back(i);
                 }
@@ -1343,10 +1360,10 @@ int main(int argc, char* argv[])
             ImGui::PopFont();
             window.display();
         }
-        #ifdef __EMSCRIPTEN__
+        //#ifdef __EMSCRIPTEN__
         else
         {
-            /*#ifndef __EMSCRIPTEN__
+            #ifndef __EMSCRIPTEN__
             double max_sleep = 1/33.f;
             double extra = max_sleep - slept_for;
 
@@ -1355,12 +1372,12 @@ int main(int argc, char* argv[])
                 std::this_thread::sleep_for(std::chrono::milliseconds((int)round(extra * 1000)));
             }
 
-            #endif // __EMSCRIPTEN__*/
+            #endif // __EMSCRIPTEN__
 
             unprocessed_frames++;
             //window.display_last_frame();
         }
-        #endif
+        //#endif
     };
 
     #ifdef __EMSCRIPTEN__

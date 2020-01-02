@@ -9,6 +9,7 @@
 #include <toolkit/clock.hpp>
 
 #define MAX_TEXT_HISTORY 200
+#include <imgui/imgui.h>
 
 struct chat_thread;
 struct chat_window;
@@ -132,6 +133,7 @@ struct terminal_imgui : serialisable, cacheable, frameable, free_function
     void clear_terminal();
 
     terminal_imgui();
+    ImGuiID get_id();
     void render(vec2f window_size, bool refocus);
     void render_realtime_windows(connection& conn, int& was_closed_id, font_selector& fonts);
     void bump_command_to_history();
@@ -141,6 +143,9 @@ struct terminal_imgui : serialisable, cacheable, frameable, free_function
 
     ///returns -1 on none
     int get_id_of_focused_realtime_window();
+
+private:
+    ImGuiID last_id = 0;
 };
 
 void clear_everything(terminal_imgui& term, chat_window& chat);

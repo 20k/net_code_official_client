@@ -204,6 +204,11 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
     return text_area_focused;
 }
 
+ImGuiID terminal_imgui::get_id()
+{
+    return last_id;
+}
+
 void terminal_imgui::render(vec2f window_size, bool refocus)
 {
     copy_handler* handle = get_global_copy_handler();
@@ -214,7 +219,9 @@ void terminal_imgui::render(vec2f window_size, bool refocus)
     if(refocus)
         ImGui::SetNextWindowFocus();
 
-    ImGui::Begin("asdf1", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking);
+    ImGui::Begin("main_terminal", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking);
+
+    last_id = ImGui::GetCurrentWindow()->ID;
 
     focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
     hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
