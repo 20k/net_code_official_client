@@ -523,20 +523,6 @@ int main(int argc, char* argv[])
 
         bool any_events = false;
 
-        any_events = any_events || (memcmp(lastKeysDown, curKeysDown, sizeof(lastKeysDown)) != 0) || (memcmp(lastMouseDown, curMouseDown, sizeof(lastMouseDown)) != 0);
-
-        for(int i=0; i < 512; i++)
-        {
-            if(curKeysDown[i])
-                any_events = true;
-        }
-
-        for(int i=0; i < 5; i++)
-        {
-            if(curMouseDown[i])
-                any_events = true;
-        }
-
         memcpy(lastKeysDown, curKeysDown, sizeof(lastKeysDown));
         memcpy(lastMouseDown, curMouseDown, sizeof(curMouseDown));
 
@@ -555,6 +541,18 @@ int main(int argc, char* argv[])
 
         memcpy(curKeysDown, io.KeysDown, sizeof(curKeysDown));
         memcpy(curMouseDown, io.MouseDown, sizeof(curMouseDown));
+
+        for(int i=0; i < 512; i++)
+        {
+            if(curKeysDown[i])
+                any_events = true;
+        }
+
+        for(int i=0; i < 5; i++)
+        {
+            if(curMouseDown[i])
+                any_events = true;
+        }
 
         double slept_for = poll_time.get_elapsed_time_s();
 
