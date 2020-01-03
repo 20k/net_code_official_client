@@ -1247,7 +1247,7 @@ int main(int argc, char* argv[])
                 term.add_text_from_server(auth_manage, current_user, data, chat_win, font_select);
             }
 
-            if(write_clock.get_elapsed_time_s() > 5)
+            if(write_clock.get_elapsed_time_s() > 5 && (!term.cache.valid() || chat_win.any_cache_invalid()))
             {
                 pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
                 pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
@@ -1257,6 +1257,8 @@ int main(int argc, char* argv[])
                 pretty_atomic_write_all(window_file, serialise(save_sett, serialise_mode::DISK));
 
                 write_clock.restart();
+
+                std::cout << "Writing " << term.cache.valid() << " two " << chat_win.any_cache_invalid() << std::endl;
             }
 
             ///hmm

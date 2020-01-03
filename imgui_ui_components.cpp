@@ -75,6 +75,19 @@ void chat_window::clear_chat()
     chat_threads.clear();
 }
 
+bool chat_window::any_cache_invalid()
+{
+    for(auto& i : side_buttons)
+    {
+        chat_thread& thread = chat_threads[i];
+
+        if(!thread.cache.valid())
+            return true;
+    }
+
+    return false;
+}
+
 void clear_everything(terminal_imgui& term, chat_window& chat)
 {
     term.clear_terminal();

@@ -97,7 +97,7 @@ struct chat_window : serialisable, frameable, free_function
 
     void set_side_channels(const std::vector<std::string>& sides);
 
-    void invalidate();
+    bool any_cache_invalid();
     void clear_chat();
 
     std::optional<editable_string*> get_focused_editable();
