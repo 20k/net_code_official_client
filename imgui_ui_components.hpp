@@ -142,9 +142,6 @@ struct terminal_imgui : serialisable, cacheable, frameable, free_function
 
     ///returns -1 on none
     int get_id_of_focused_realtime_window();
-
-private:
-    ImGuiID last_id = 0;
 };
 
 void clear_everything(terminal_imgui& term, chat_window& chat);
