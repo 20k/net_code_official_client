@@ -135,8 +135,8 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     cache.was_focused = is_focused;
 
-    vec2f dim = {ImGui::GetWindowSize().x, ImGui::GetWindowSize().y};
-    vec2f pos = {ImGui::GetWindowPos().x, ImGui::GetWindowPos().y};
+    vec2f dim = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
+    vec2f pos = {ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y};
 
     if(dim.x() != cache.last_window_size.x())
         cache.invalidate();
