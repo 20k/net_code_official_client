@@ -617,8 +617,12 @@ int main(int argc, char* argv[])
                 {
                     i.second.cache.invalidate_visual_cache();
                 }
-            }
 
+                for(auto& i : term.realtime_script_windows)
+                {
+                    i.second.cache.invalidate_visual_cache();
+                }
+            }
 
             clipboard::poll();
 
