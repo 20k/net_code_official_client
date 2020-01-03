@@ -87,13 +87,19 @@ terminal_imgui::terminal_imgui()
     auto_handle.use_autocolour = true;
 }
 
-bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, format_cache_2& cache, frameable& frame, float extra_shrink = 0, std::string command_padding = "")
+bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, format_cache_2& cache, frameable& frame, std::string command_padding = "")
 {
     float overall_width = ImGui::GetWindowWidth();
 
     bool is_focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
-    ImGui::BeginChild("left_sub", ImVec2(overall_width - 40 - extra_shrink, 0.f), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove);
+    ImGuiStyle& style = ImGui::GetStyle();
+
+    vec2f window_padding = {style.WindowPadding.x, style.WindowPadding.y};
+
+    ImGui::SetNextItemWidth(overall_width - 40);
+
+    ImGui::BeginGroup();
 
     if(ImGui::IsWindowHovered() && scroll_hack.scrolled_this_frame != 0)
     {
@@ -123,7 +129,13 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
     cache.was_focused = is_focused;
 
     vec2f dim = {ImGui::GetWindowSize().x, ImGui::GetWindowSize().y};
+    ///scrollbar
+    dim.x() += -20;
+
     vec2f pos = {ImGui::GetWindowPos().x, ImGui::GetWindowPos().y};
+
+    dim -= window_padding*2;
+    pos += window_padding;
 
     if(dim.x() != cache.last_window_size.x())
         cache.invalidate();
@@ -181,7 +193,7 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     bool text_area_focused = ImGui::IsWindowFocused();
 
-    ImGui::EndChild();
+    ImGui::EndGroup();
 
     ImGui::SameLine(0.f, 0.f);
 
@@ -229,7 +241,7 @@ void terminal_imgui::render(vec2f window_size, bool refocus)
     if(refocus)
         ImGui::SetNextWindowFocus();
 
-    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, *this, 0.f, colour_string(current_user) + "> ");
+    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, *this, colour_string(current_user) + "> ");
 
     ImGui::End();
 
@@ -847,7 +859,7 @@ void chat_window::render(bool refocus)
             thread.was_hovered = true;
         }
 
-        render_handle_imgui(scroll_hack, thread.command.command, thread.command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this, 0);
+        render_handle_imgui(scroll_hack, thread.command.command, thread.command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this);
 
         ImGui::End();
     }
