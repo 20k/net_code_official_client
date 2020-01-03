@@ -10,7 +10,6 @@ namespace ImGuiX
     ImVec4 GetBgCol();
 
     ImVec4 GetStyleCol(ImGuiCol name);
-    void Text(const std::string& str);
 }
 
 #endif // IMGUIX_HPP_INCLUDED

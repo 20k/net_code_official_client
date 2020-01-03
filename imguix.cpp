@@ -16,8 +16,3 @@ ImVec4 ImGuiX::GetStyleCol(ImGuiCol name)
 
     return ImGui::ColorConvertU32ToFloat4(res);
 }
-
-void ImGuiX::Text(const std::string& str)
-{
-    ImGui::Text(str.c_str());
-}
