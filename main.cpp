@@ -463,6 +463,9 @@ int main(int argc, char* argv[])
 
     int max_unprocessed_frames = 20;
     int unprocessed_frames = unprocessed_frames;
+    bool last_item_active = false;
+
+    steady_timer sleep_limiter;
 
     //while(running)
     #ifndef __EMSCRIPTEN__
@@ -521,8 +524,6 @@ int main(int argc, char* argv[])
         std::vector<int> mouse_pressed_data;
         std::vector<int> mouse_released_data;
 
-        bool any_events = false;
-
         memcpy(lastKeysDown, curKeysDown, sizeof(lastKeysDown));
         memcpy(lastMouseDown, curMouseDown, sizeof(curMouseDown));
 
@@ -542,71 +543,83 @@ int main(int argc, char* argv[])
         memcpy(curKeysDown, io.KeysDown, sizeof(curKeysDown));
         memcpy(curMouseDown, io.MouseDown, sizeof(curMouseDown));
 
+        bool visual_events = false;
+
         for(int i=0; i < 512; i++)
         {
-            if(curKeysDown[i])
-                any_events = true;
+            if(curKeysDown[i] || (lastKeysDown[i] != curKeysDown[i]) || ImGui::IsKeyPressed(i) || ImGui::IsKeyReleased(i))
+                visual_events = true;
         }
 
         for(int i=0; i < 5; i++)
         {
-            if(curMouseDown[i])
-                any_events = true;
+            if(curMouseDown[i] || (lastMouseDown[i] != curMouseDown[i]) || ImGui::IsMouseClicked(i) || ImGui::IsMouseReleased(i))
+                visual_events = true;
         }
 
         double slept_for = poll_time.get_elapsed_time_s();
 
-        ImGui::UpdateHoveredWindowAndCaptureFlags();
-
-        //bool can_suppress_inputs = !(ImGui::IsAnyItemActive() || ImGui::IsAnyItemHovered());
-
-        bool can_suppress_inputs = false;
-
-        //bool can_suppress_inputs = (!ImGui::IsAnyWindowHovered()) || (ImGui::GetCurrentContext()->HoveredWindow != nullptr && t);
-
         //bool can_suppress_inputs = false;
-
-        /*if(ImGui::GetCurrentContext()->HoveredWindow != nullptr)
-        {
-            std::cout << "FID " << ImGui::GetCurrentContext()->HoveredWindow->ID;
-            std::cout << "CID " << ImGui::GetCurrentContext()->HoveredWindow->Name << std::endl;
-        }*/
-
-        //std::cout << "Can suppress " << can_suppress_inputs << " HOVERED ID " << ImGui::GetHoveredID() << " WIN HOVER " << ImGui::IsAnyWindowHovered() << std::endl;
-
-        any_events = any_events || (memcmp(lastKeysDown, curKeysDown, sizeof(lastKeysDown)) != 0) || (memcmp(lastMouseDown, curMouseDown, sizeof(lastMouseDown)) != 0);
 
         bool has_mouse_delta = false;
 
         has_mouse_delta = has_mouse_delta || (io.MousePos.x != last_mouse_pos.x || io.MousePos.y != last_mouse_pos.y);
         has_mouse_delta = has_mouse_delta || (io.MouseDelta.x != 0 || io.MouseDelta.y != 0);
 
-        if(can_suppress_inputs)
+        /*if(can_suppress_inputs)
         {
             has_mouse_delta = false;
-        }
+        }*/
 
-        any_events = any_events || has_mouse_delta;
-        any_events = any_events || (io.MouseWheel != 0 || io.MouseWheelH != 0);
-        any_events = any_events || (io.DisplaySize.x != last_display_size.x || io.DisplaySize.y != last_display_size.y);
-        any_events = any_events || conn.has_read();
-        any_events = any_events || (last_can_suppress_inputs != can_suppress_inputs);
-        any_events = any_events || (ImGui::IsAnyItemActive() || ImGui::IsAnyItemHovered());
+        //any_events = any_events || has_mouse_delta;
+        visual_events = visual_events || (io.MouseWheel != 0 || io.MouseWheelH != 0);
+        visual_events = visual_events || (io.DisplaySize.x != last_display_size.x || io.DisplaySize.y != last_display_size.y);
+        visual_events = visual_events || conn.has_read();
+        //any_events = any_events || (last_can_suppress_inputs != can_suppress_inputs);
+        //any_events = any_events || (ImGui::IsAnyItemActive() || ImGui::IsAnyItemHovered());
 
         //any_events = any_events || (unprocessed_frames >= max_unprocessed_frames);
 
-        any_events = any_events || window.has_dropped_file();
+        visual_events = visual_events || window.has_dropped_file();
+        bool any_active = (ImGui::IsAnyItemActive() || ImGui::IsAnyItemHovered());
+
+        //std::cout << "Hovered? " << any_active << std::endl;
+
+        visual_events = visual_events || any_active;
+        last_item_active = any_active;
+        visual_events = visual_events || (last_item_active != any_active);
+
+        if(s_api.enabled)
+            visual_events = visual_events || (sleep_limiter.get_elapsed_time_s() > 1/30.f);
+
+        bool non_visual_events = has_mouse_delta;
 
         //printf("Any events? %i %f %f\n", any_events, io.MousePos.x, io.MousePos.y);
 
         last_display_size = io.DisplaySize;
         last_mouse_pos = io.MousePos;
-        last_can_suppress_inputs = can_suppress_inputs;
+        //last_can_suppress_inputs = can_suppress_inputs;
 
         //#ifdef __EMSCRIPTEN__
-        if(any_events)
+        if(visual_events || non_visual_events)
         //#endif // __EMSCRIPTEN__
         {
+            if(visual_events)
+            {
+                sleep_limiter.restart();
+            }
+
+            if(visual_events)
+            {
+                term.cache.invalidate_visual_cache();
+
+                for(auto& i : chat_win.chat_threads)
+                {
+                    i.second.cache.invalidate_visual_cache();
+                }
+            }
+
+
             clipboard::poll();
 
             //#ifdef __EMSCRIPTEN__
@@ -1344,7 +1357,6 @@ int main(int argc, char* argv[])
                 get_global_copy_handler()->held = false;
             }
 
-
             int lcwidth = char_inf::cwidth;
             int lcheight = char_inf::cheight;
 
@@ -1360,7 +1372,20 @@ int main(int argc, char* argv[])
             }
 
             ImGui::PopFont();
-            window.display();
+
+            if(visual_events)
+                window.display();
+
+            if(!visual_events)
+            {
+                ImGui::Render();
+
+                if(!no_viewports)
+                {
+                    ImGui::UpdatePlatformWindows();
+                    ImGui::RenderPlatformWindowsDefault();
+                }
+            }
         }
         //#ifdef __EMSCRIPTEN__
         else

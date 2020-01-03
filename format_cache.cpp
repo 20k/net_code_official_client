@@ -266,4 +266,5 @@ void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)
     }
 
     last_content_size = (vec2f){dim.x(), (content_end - content_start).y()};
+    valid_visual_cache = true;
 }

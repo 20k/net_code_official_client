@@ -10,9 +10,9 @@ struct format_cache_2
 {
     bool valid_cache = false;
     bool valid_last_line = false;
+    bool valid_visual_cache = false;
     bool was_focused = false;
     vec2f last_window_size = {0,0};
-
     vec2f last_content_size = {0,0};
 
     ///runs from top to bottom
@@ -25,16 +25,28 @@ struct format_cache_2
     void invalidate()
     {
         valid_cache = false;
+        valid_visual_cache = false;
     }
 
     void invalidate_last_line()
     {
         valid_last_line = false;
+        valid_visual_cache = false;
+    }
+
+    void invalidate_visual_cache()
+    {
+        valid_visual_cache = false;
     }
 
     bool valid()
     {
         return valid_cache && valid_last_line;
+    }
+
+    bool must_rerender()
+    {
+        return !valid_visual_cache;
     }
 
     void render_imgui(vec2f position, vec2f dim, float scroll_lines);

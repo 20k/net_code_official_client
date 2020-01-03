@@ -177,7 +177,10 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
         cache.ensure_built(dim, next_history);
     }
 
-    cache.render_imgui(pos, dim, scroll_hack.scrolled);
+    if(cache.must_rerender())
+        cache.render_imgui(pos, dim, scroll_hack.scrolled);
+    else
+        ImGui::Dummy(ImVec2(cache.last_content_size.x(), cache.last_content_size.y()));
 
     ImGui::EndChild();
 
