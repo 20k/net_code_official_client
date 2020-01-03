@@ -87,7 +87,7 @@ terminal_imgui::terminal_imgui()
     auto_handle.use_autocolour = true;
 }
 
-bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, format_cache_2& cache, frameable& frame, std::string command_padding = "")
+void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, format_cache_2& cache, frameable& frame, std::string command_padding = "")
 {
     float overall_width = ImGui::GetWindowWidth();
 
@@ -179,8 +179,6 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     cache.render_imgui(pos, dim, scroll_hack.scrolled);
 
-    bool text_area_focused = ImGui::IsWindowFocused();
-
     ImGui::EndChild();
 
     ImGui::SameLine(0.f, 0.f);
@@ -200,13 +198,6 @@ bool render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
         //cache.invalidate();
     }
-
-    return text_area_focused;
-}
-
-ImGuiID terminal_imgui::get_id()
-{
-    return last_id;
 }
 
 void terminal_imgui::render(vec2f window_size, bool refocus)
@@ -221,20 +212,15 @@ void terminal_imgui::render(vec2f window_size, bool refocus)
 
     ImGui::Begin("main_terminal", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking);
 
-    last_id = ImGui::GetCurrentWindow()->ID;
-
     focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
     hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
 
     if(refocus)
         ImGui::SetNextWindowFocus();
 
-    bool child_focused = render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, *this, colour_string(current_user) + "> ");
+    render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, *this, colour_string(current_user) + "> ");
 
     ImGui::End();
-
-    //if(focused && child_focused)
-    //    handle->process_formatted(cache.out);
 }
 
 void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_id, font_selector& fonts)

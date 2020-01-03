@@ -133,7 +133,6 @@ struct terminal_imgui : serialisable, cacheable, frameable, free_function
     void clear_terminal();
 
     terminal_imgui();
-    ImGuiID get_id();
     void render(vec2f window_size, bool refocus);
     void render_realtime_windows(connection& conn, int& was_closed_id, font_selector& fonts);
     void bump_command_to_history();

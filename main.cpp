@@ -560,15 +560,19 @@ int main(int argc, char* argv[])
 
         //bool can_suppress_inputs = !(ImGui::IsAnyItemActive() || ImGui::IsAnyItemHovered());
 
-        bool can_suppress_inputs = (!ImGui::IsAnyWindowHovered()) || (ImGui::GetCurrentContext()->HoveredWindow != nullptr && ImGui::GetCurrentContext()->HoveredWindow->ID == term.get_id());
+        bool can_suppress_inputs = false;
 
-        if(ImGui::GetCurrentContext()->HoveredWindow != nullptr)
+        //bool can_suppress_inputs = (!ImGui::IsAnyWindowHovered()) || (ImGui::GetCurrentContext()->HoveredWindow != nullptr && t);
+
+        //bool can_suppress_inputs = false;
+
+        /*if(ImGui::GetCurrentContext()->HoveredWindow != nullptr)
         {
             std::cout << "FID " << ImGui::GetCurrentContext()->HoveredWindow->ID;
-            std::cout << "CID " << term.get_id() << std::endl;
-        }
+            std::cout << "CID " << ImGui::GetCurrentContext()->HoveredWindow->Name << std::endl;
+        }*/
 
-        std::cout << "Can suppress " << can_suppress_inputs << " HOVERED ID " << ImGui::GetHoveredID() << " WIN HOVER " << ImGui::IsAnyWindowHovered() << std::endl;
+        //std::cout << "Can suppress " << can_suppress_inputs << " HOVERED ID " << ImGui::GetHoveredID() << " WIN HOVER " << ImGui::IsAnyWindowHovered() << std::endl;
 
         any_events = any_events || (memcmp(lastKeysDown, curKeysDown, sizeof(lastKeysDown)) != 0) || (memcmp(lastMouseDown, curMouseDown, sizeof(lastMouseDown)) != 0);
 
