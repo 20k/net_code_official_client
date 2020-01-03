@@ -187,7 +187,7 @@ int main(int argc, char* argv[])
     #ifndef __EMSCRIPTEN__
     conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
     #else
-    conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::PLAIN);
+    conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::EMSCRIPTEN_AUTOMATIC);
     #endif
 
     printf("Post Connect\n");
@@ -481,7 +481,7 @@ int main(int argc, char* argv[])
             #ifndef __EMSCRIPTEN__
             conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
             #else
-            conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::PLAIN);
+            conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::EMSCRIPTEN_AUTOMATIC);
             #endif
 
             connection_clock.restart();
