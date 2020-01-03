@@ -1389,7 +1389,7 @@ int main(int argc, char* argv[])
                 if(ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
                 {
                     ImGui::UpdatePlatformWindows();
-                    ImGui::RenderPlatformWindowsDefault();
+                    //ImGui::RenderPlatformWindowsDefault();
                 }
             }
         }
