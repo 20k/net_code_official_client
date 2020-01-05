@@ -538,7 +538,12 @@ int main(int argc, char* argv[])
 
         steady_timer poll_time;
 
+        //#define NO_SLEEP
+        #ifndef NO_SLEEP
         window.poll_events_only(1/33.);
+        #else
+        window.poll_events_only(0);
+        #endif // NO_SLEEP
 
         memcpy(curKeysDown, io.KeysDown, sizeof(curKeysDown));
         memcpy(curMouseDown, io.MouseDown, sizeof(curMouseDown));
@@ -599,6 +604,11 @@ int main(int argc, char* argv[])
         last_display_size = io.DisplaySize;
         last_mouse_pos = io.MousePos;
         //last_can_suppress_inputs = can_suppress_inputs;
+
+        #ifdef NO_SLEEP
+        visual_events = true;
+        non_visual_events = true;
+        #endif // NO_SLEEP
 
         //#ifdef __EMSCRIPTEN__
         if(visual_events || non_visual_events)
