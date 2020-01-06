@@ -192,8 +192,6 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     if(cache.must_rerender())
         cache.render_imgui(pos, dim, scroll_hack.scrolled);
-    else
-        ImGui::Dummy(ImVec2(cache.last_content_size.x(), cache.last_content_size.y()));
 
     ImGui::EndChild();
 
@@ -849,7 +847,7 @@ void chat_window::render(bool refocus)
             thread.was_hovered = true;
         }
 
-        render_handle_imgui(scroll_hack, thread.command.command, thread.command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this);
+        render_handle_imgui(thread.scroll_hack, thread.command.command, thread.command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this);
 
         ImGui::End();
     }

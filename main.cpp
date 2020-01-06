@@ -990,7 +990,11 @@ int main(int argc, char* argv[])
                 script_mousewheel_delta = 0;
 
             term.scroll_hack.scrolled_this_frame = mouse_delta;
-            chat_win.scroll_hack.scrolled_this_frame = mouse_delta;
+
+            for(auto& i : chat_win.chat_threads)
+            {
+                i.second.scroll_hack.scrolled_this_frame = mouse_delta;
+            }
 
             for(auto& i : term.realtime_script_windows)
             {

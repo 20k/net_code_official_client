@@ -69,13 +69,12 @@ struct chat_thread : serialisable, cacheable, free_function
     bool was_hovered = false;
     editable_string command;
     std::string name;
+    scrollbar_hack scroll_hack;
 };
 
 struct chat_window : serialisable, frameable, free_function
 {
     std::map<std::string, chat_thread> chat_threads;
-
-    scrollbar_hack scroll_hack;
 
     vec2f render_start = {0,0};
     vec2i dim = {500, 300};
