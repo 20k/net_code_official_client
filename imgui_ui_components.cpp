@@ -284,63 +284,66 @@ void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_i
 
         run.set_size = false;
 
-        ImGui::Begin((title_str + "###" + str).c_str(), &run.open);
+        bool should_render = ImGui::Begin((title_str + "###" + str).c_str(), &run.open);
 
-        run.current_tl_cursor_pos = {ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y};
-
-        run.focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
-        run.hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
-
-        int cpos = -1;
-        std::string cmd = " ";
-
-        //run.cache.invalidate();
-
-        if(run.is_square_font)
-            ImGui::PushFont(fonts.get_square_font());
-
-        render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, run.cache, *this);
-
-        ImVec2 window_size = ImGui::GetWindowSize();
-
-        vec2i last_dim = run.current_dim;
-        run.current_dim = {window_size.x, window_size.y};
-
-        if(run.current_dim.x() != last_dim.x() || run.current_dim.y() != last_dim.y())
-            run.should_send_new_size = true;
-
-        if(run.is_square_font != run.was_square_font)
-            run.should_send_new_size = true;
-
-        run.was_square_font = run.is_square_font;
-
-        if(run.should_send_new_size && run.last_resize.get_elapsed_time_s() >= 1)
+        if(should_render)
         {
-            vec2f br_absolute = run.current_pos + (vec2f){run.current_dim.x(), run.current_dim.y()};
-            vec2f relative_dim = br_absolute - run.current_tl_cursor_pos;
+            run.current_tl_cursor_pos = {ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y};
 
-            vec2f dim = relative_dim;
+            run.focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+            run.hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
 
-            vec2f cdim = xy_to_vec(ImGui::CalcTextSize("A"));
+            int cpos = -1;
+            std::string cmd = " ";
 
-            nlohmann::json data;
-            data["type"] = "send_script_info";
-            data["id"] = i.first;
-            data["width"] = (dim.x() / cdim.x()) - 5;
-            data["height"] = dim.y() / cdim.y();
+            //run.cache.invalidate();
 
-            conn.write(data.dump());
+            if(run.is_square_font)
+                ImGui::PushFont(fonts.get_square_font());
 
-            run.last_resize.restart();
-            run.should_send_new_size = false;
+            render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, run.cache, *this);
+
+            ImVec2 window_size = ImGui::GetWindowSize();
+
+            vec2i last_dim = run.current_dim;
+            run.current_dim = {window_size.x, window_size.y};
+
+            if(run.current_dim.x() != last_dim.x() || run.current_dim.y() != last_dim.y())
+                run.should_send_new_size = true;
+
+            if(run.is_square_font != run.was_square_font)
+                run.should_send_new_size = true;
+
+            run.was_square_font = run.is_square_font;
+
+            if(run.should_send_new_size && run.last_resize.get_elapsed_time_s() >= 1)
+            {
+                vec2f br_absolute = run.current_pos + (vec2f){run.current_dim.x(), run.current_dim.y()};
+                vec2f relative_dim = br_absolute - run.current_tl_cursor_pos;
+
+                vec2f dim = relative_dim;
+
+                vec2f cdim = xy_to_vec(ImGui::CalcTextSize("A"));
+
+                nlohmann::json data;
+                data["type"] = "send_script_info";
+                data["id"] = i.first;
+                data["width"] = (dim.x() / cdim.x()) - 5;
+                data["height"] = dim.y() / cdim.y();
+
+                conn.write(data.dump());
+
+                run.last_resize.restart();
+                run.should_send_new_size = false;
+            }
+
+            if(run.is_square_font)
+                ImGui::PopFont();
+
+            auto my_pos = ImGui::GetWindowPos();
+
+            run.current_pos = {my_pos.x, my_pos.y};
         }
-
-        if(run.is_square_font)
-            ImGui::PopFont();
-
-        auto my_pos = ImGui::GetWindowPos();
-
-        run.current_pos = {my_pos.x, my_pos.y};
 
         ImGui::End();
     }
@@ -812,42 +815,45 @@ void chat_window::render(bool refocus)
 
         ImGui::SetNextWindowDockID(dock_id, ImGuiCond_FirstUseEver);
 
-        ImGui::Begin(full_str.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing);
+        bool should_render = ImGui::Begin(full_str.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing);
 
-        if(dock_id == (ImGuiID)-1)
+        if(should_render)
         {
-            dock_ids[ImGui::GetWindowDockID()]++;
-        }
-
-        bool me_focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
-
-        thread.was_focused = me_focused;
-        thread.name = side_buttons[i];
-
-        if(me_focused)
-        {
-            thread.dirty = false;
-            any_focused = true;
-
-            for(auto& text : unprocessed_input)
+            if(dock_id == (ImGuiID)-1)
             {
-                thread.raw_history.push_back(text);
-                thread.history.push_back(string_to_interop(text, false, auto_handle, false));
+                dock_ids[ImGui::GetWindowDockID()]++;
             }
 
-            limit_size(thread.raw_history, MAX_TEXT_HISTORY);
-            limit_size(thread.history, MAX_TEXT_HISTORY);
+            bool me_focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
-            unprocessed_input.clear();
+            thread.was_focused = me_focused;
+            thread.name = side_buttons[i];
+
+            if(me_focused)
+            {
+                thread.dirty = false;
+                any_focused = true;
+
+                for(auto& text : unprocessed_input)
+                {
+                    thread.raw_history.push_back(text);
+                    thread.history.push_back(string_to_interop(text, false, auto_handle, false));
+                }
+
+                limit_size(thread.raw_history, MAX_TEXT_HISTORY);
+                limit_size(thread.history, MAX_TEXT_HISTORY);
+
+                unprocessed_input.clear();
+            }
+
+            if(ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
+            {
+                any_hovered = true;
+                thread.was_hovered = true;
+            }
+
+            render_handle_imgui(thread.scroll_hack, thread.command.command, thread.command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this);
         }
-
-        if(ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
-        {
-            any_hovered = true;
-            thread.was_hovered = true;
-        }
-
-        render_handle_imgui(thread.scroll_hack, thread.command.command, thread.command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this);
 
         ImGui::End();
     }
