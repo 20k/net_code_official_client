@@ -476,6 +476,8 @@ int main(int argc, char* argv[])
     {
         file::manual_fs_sync manual_sync;
 
+        bool visual_events = false;
+
         if(connection_clock.get_elapsed_time_s() > 5 && !conn.client_connected_to_server && !conn.connection_pending())
         {
             #ifndef __EMSCRIPTEN__
@@ -548,8 +550,6 @@ int main(int argc, char* argv[])
         memcpy(curKeysDown, io.KeysDown, sizeof(curKeysDown));
         memcpy(curMouseDown, io.MouseDown, sizeof(curMouseDown));
 
-        bool visual_events = false;
-
         for(int i=0; i < 512; i++)
         {
             if(curKeysDown[i] || (lastKeysDown[i] != curKeysDown[i]) || ImGui::IsKeyPressed(i) || ImGui::IsKeyReleased(i))
@@ -604,6 +604,15 @@ int main(int argc, char* argv[])
         last_display_size = io.DisplaySize;
         last_mouse_pos = io.MousePos;
         //last_can_suppress_inputs = can_suppress_inputs;
+
+        if(!term.cache.valid())
+            visual_events = true;
+
+        for(auto& i : chat_win.chat_threads)
+        {
+            if(!i.second.cache.valid())
+                visual_events = true;
+        }
 
         #ifdef NO_SLEEP
         visual_events = true;
