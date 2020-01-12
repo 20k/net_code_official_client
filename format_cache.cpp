@@ -77,15 +77,13 @@ void render_raw(const std::string& str, vec3f col, vec2f render_pos)
     imlist->AddText(ImVec2(render_pos.x(), render_pos.y()), IM_COL32((int)col.x(), (int)col.y(), (int)col.z(), 255), str.c_str());
 }
 
-void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<formatted_char>& text, bool check_copy, float screen_cull_y_bottom, float screen_cull_y_top)
+void render_indices(vec2f screen_pos, int& idx_1, int idx_2, const std::vector<formatted_char>& text, bool check_copy, float screen_cull_y_bottom, float screen_cull_y_top, vec2f cdim)
 {
     if(idx_1 == idx_2)
         return;
 
     vec2f final_pos = screen_pos + text[idx_1].internal_pos;
     vec2f start_check_pos = screen_pos + text[idx_2 - 1].internal_pos;
-
-    vec2f cdim = {char_inf::cached_imgui_width, char_inf::cached_imgui_height};
 
     if(final_pos.y() - cdim.y() >= screen_cull_y_bottom)
         return;
@@ -147,9 +145,9 @@ void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text,
         if(cur.ioc.is_cursor)
         {
             ///render previous string
-            render_indices(screen_pos, lidx, idx, text, check_copy, screen_cull_y_bottom, screen_cull_y_top);
+            render_indices(screen_pos, lidx, idx, text, check_copy, screen_cull_y_bottom, screen_cull_y_top, cdim);
             ///render cursor
-            render_indices(screen_pos, lidx, idx + 1, text, check_copy, screen_cull_y_bottom, screen_cull_y_top);
+            render_indices(screen_pos, lidx, idx + 1, text, check_copy, screen_cull_y_bottom, screen_cull_y_top, cdim);
             continue;
         }
 
@@ -160,12 +158,12 @@ void render_formatted(vec2f screen_pos, const std::vector<formatted_char>& text,
            cur.internal_pos.y() != next.internal_pos.y() ||
            handle->char_is_within_select_box(p1, cdim) != handle->char_is_within_select_box(p2, cdim))
         {
-            render_indices(screen_pos, lidx, idx+1, text, check_copy, screen_cull_y_bottom, screen_cull_y_top);
+            render_indices(screen_pos, lidx, idx+1, text, check_copy, screen_cull_y_bottom, screen_cull_y_top, cdim);
             continue;
         }
     }
 
-    render_indices(screen_pos, lidx, (int)text.size(), text, check_copy, screen_cull_y_bottom, screen_cull_y_top);
+    render_indices(screen_pos, lidx, (int)text.size(), text, check_copy, screen_cull_y_bottom, screen_cull_y_top, cdim);
 }
 
 void format_cache_2::render_imgui(vec2f position, vec2f dim, float scroll_lines)

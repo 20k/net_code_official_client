@@ -9,9 +9,6 @@ namespace char_inf
     inline int cheight = 16;
     inline int cwbuf = 4;
 
-    inline float cached_imgui_width = 0;
-    inline float cached_imgui_height = 0;
-
     inline int font_size = 12;
 
     inline float extra_glyph_spacing = 0;

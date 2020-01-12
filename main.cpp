@@ -1012,9 +1012,6 @@ int main(int argc, char* argv[])
 
             ImGui::PushFont(font_select.get_base_font());
 
-            char_inf::cached_imgui_width = ImGui::CalcTextSize("A").x;
-            char_inf::cached_imgui_height = ImGui::CalcTextSize("A").y;
-
             auth_manage.display(term, s_api, conn, current_user);
 
             font_select.render(window);
