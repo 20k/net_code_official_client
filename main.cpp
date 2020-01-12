@@ -1389,9 +1389,6 @@ int main(int argc, char* argv[])
             char_inf::cwidth = ImGui::CalcTextSize("A").x + char_inf::extra_glyph_spacing;
             char_inf::cheight = ImGui::CalcTextSize("A").y;
 
-            char_inf::cached_imgui_width = ImGui::CalcTextSize("A").x;
-            char_inf::cached_imgui_height = ImGui::CalcTextSize("A").y;
-
             if(char_inf::cwidth != lcwidth || char_inf::cheight != lcheight)
             {
                 invalidate_everything(term, chat_win);
