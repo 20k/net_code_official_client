@@ -166,7 +166,14 @@ bool font_selector::update_rebuild(float editor_font_size)
     return true;
     #endif // 0
 
-    return false;
+    if(!wants_rebuild)
+        return false;
+
+    ImGuiFreeType::BuildFontAtlas(ImGui::GetIO().Fonts, fonts_flags, subpixel_flags);
+
+    wants_rebuild = false;
+
+    return true;
 }
 
 bool handle_checkbox(const std::vector<std::string>& in, unsigned int& storage, const std::vector<int>& to_set)
