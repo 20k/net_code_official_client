@@ -643,6 +643,17 @@ int main(int argc, char* argv[])
                 }
             }
 
+            if(font_select.update_rebuild())
+            {
+                invalidate_everything(term, chat_win);
+
+                ImGui_ImplOpenGL3_DestroyDeviceObjects();
+                ImGui_ImplOpenGL3_CreateDeviceObjects();
+
+                unsigned char* pixels = nullptr;
+                ImGui::GetIO().Fonts->GetTexDataAsRGBA32(&pixels, nullptr, nullptr, nullptr);
+            }
+
             clipboard::poll();
 
             //#ifdef __EMSCRIPTEN__
