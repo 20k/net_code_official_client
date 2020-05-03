@@ -441,6 +441,21 @@ void terminal_imgui::add_text(const std::string& str)
     cache.invalidate();
 }
 
+void terminal_imgui::extend_text(const std::string& str)
+{
+    if(raw_history.size() == 0)
+        return add_text(str);
+
+    assert(history.size() > 0);
+
+    std::string old = raw_history.back();
+
+    raw_history.pop_back();
+    history.pop_back();
+
+    add_text(old + str);
+}
+
 void terminal_imgui::add_text_from_server(auth_manager& auth_manage, std::string& in_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts)
 {
     if(in == "")

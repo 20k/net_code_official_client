@@ -467,6 +467,8 @@ int main(int argc, char* argv[])
 
     steady_timer sleep_limiter;
 
+    bool printed_connecting = false;
+
     //while(running)
     #ifndef __EMSCRIPTEN__
     while(!window.should_close())
@@ -490,7 +492,17 @@ int main(int argc, char* argv[])
 
             auth_manage.check(s_api, conn, current_user);
 
-            term.add_text("Connecting...");
+            if(!printed_connecting)
+                term.add_text("Connecting...");
+            else
+                term.extend_text(".");
+
+            printed_connecting = true;
+        }
+
+        if(conn.client_connected_to_server)
+        {
+            printed_connecting = false;
         }
 
         realtime_shim.clear_command();
