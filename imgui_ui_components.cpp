@@ -217,6 +217,7 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
 void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
 {
+    glfw_backend* bck = (glfw_backend*)win.backend;
     copy_handler* handle = get_global_copy_handler();
 
     vec2f window_pos = xy_to_vec(ImGui::GetMainViewport()->Pos);
@@ -233,7 +234,10 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
     ImGui::PushStyleColor(ImGuiCol_TitleBg, style_col);
     ImGui::PushStyleColor(ImGuiCol_TitleBgCollapsed, style_col);
 
-    ImGui::Begin(" NET_CODE_", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking);
+    ImVec4 resize_col = ImGui::GetStyleColorVec4(ImGuiCol_ResizeGrip);
+    ImU32 resize_colu32 = ImGui::ColorConvertFloat4ToU32(resize_col);
+
+    ImGui::Begin(" NET_CODE_", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize);
 
     if(ImGui::IsItemHovered() &&
        ImGui::IsMouseDragging(0) && !title_dragging && !resize_dragging)
@@ -246,19 +250,22 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
     }
 
     vec2f window_br = window_pos + window_size;
-    vec2f window_tl = window_br - (vec2f){20, 20};
+    //window_br.x() += ImGui::GetStyle().WindowBorderSize + 5;
+    vec2f window_tl = window_br - (vec2f){30, 30};
 
-    if(ImGui::IsMouseHoveringRect({window_tl.x(), window_tl.y()}, {window_br.x(), window_br.y()}, true) &&
-       ImGui::IsMouseDragging(0) && !title_dragging && !resize_dragging)
+    if(ImGui::IsMouseHoveringRect({window_tl.x(), window_tl.y()}, {window_br.x(), window_br.y()}, true))
     {
-        if(!resize_dragging)
+        resize_colu32 = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_ResizeGripActive));
+
+        if(ImGui::IsMouseDragging(0) && !title_dragging && !resize_dragging)
         {
-            resize_dragging = true;
-            resize_start_pos = {window_size.x(), window_size.y()};
+            if(!resize_dragging)
+            {
+                resize_dragging = true;
+                resize_start_pos = {window_size.x(), window_size.y()};
+            }
         }
     }
-
-    glfw_backend* bck = (glfw_backend*)win.backend;
 
     if(title_dragging)
     {
@@ -295,6 +302,8 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
         ImGui::SetNextWindowFocus();
 
     render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, colour_string(current_user) + "> ");
+
+    ImGui::GetWindowDrawList()->AddTriangleFilled({window_tl.x(), window_br.y()}, {window_br.x(), window_br.y()}, {window_br.x(), window_tl.y()}, resize_colu32);
 
     ImGui::End();
 

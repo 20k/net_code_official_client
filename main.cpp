@@ -230,6 +230,8 @@ int main(int argc, char* argv[])
     }
 
     render_window window(sett, "net_code");
+    ImGui::GetIO().MouseDragThreshold = 0;
+    //ImGui::GetIO().ConfigWindowsResizeFromEdges = false;
 
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     //io.ConfigViewportsNoTaskBarIcon = true;
