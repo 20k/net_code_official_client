@@ -119,6 +119,7 @@ struct terminal_imgui : serialisable, cacheable, free_function
     ImVec2 title_delta = ImVec2(0,0);
     bool dragging = false;
     ImVec2 start_pos = ImVec2(0,0);
+    bool open = true;
 
     std::string current_user;
     bool one_time_user_insertion = true;

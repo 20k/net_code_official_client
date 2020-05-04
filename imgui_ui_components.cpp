@@ -226,7 +226,7 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
     if(refocus)
         ImGui::SetNextWindowFocus();
 
-    ImGui::Begin("main_terminal", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking);
+    ImGui::Begin("main_terminal", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking);
 
     if(ImGui::IsItemHovered() && ImGui::IsMouseDragging(0))
     {

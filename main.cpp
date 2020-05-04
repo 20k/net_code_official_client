@@ -473,7 +473,7 @@ int main(int argc, char* argv[])
 
     //while(running)
     #ifndef __EMSCRIPTEN__
-    while(!window.should_close())
+    while(!window.should_close() && term.open)
     #else
     hptr = [&]()
     #endif
