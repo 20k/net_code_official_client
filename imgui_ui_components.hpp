@@ -111,9 +111,14 @@ struct chat_window : serialisable, free_function
     void add_text_to_focused(const std::string& str);
 };
 
+struct render_window;
+
 struct terminal_imgui : serialisable, cacheable, free_function
 {
     scrollbar_hack scroll_hack;
+    ImVec2 title_delta = ImVec2(0,0);
+    bool dragging = false;
+    ImVec2 start_pos = ImVec2(0,0);
 
     std::string current_user;
     bool one_time_user_insertion = true;
@@ -133,7 +138,7 @@ struct terminal_imgui : serialisable, cacheable, free_function
     void clear_terminal();
 
     terminal_imgui();
-    void render(vec2f window_size, bool refocus);
+    void render(render_window& win, vec2f window_size, bool refocus);
     void bump_command_to_history();
 
     void add_text(const std::string& str);

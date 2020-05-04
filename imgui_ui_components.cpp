@@ -15,6 +15,7 @@
 #include <iostream>
 #include <toolkit/fs_helpers.hpp>
 #include "auth_manager.hpp"
+#include <toolkit/render_window.hpp>
 
 void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar, format_cache_2& cache, vec2f dim)
 {
@@ -214,27 +215,98 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
     }
 }
 
-void terminal_imgui::render(vec2f window_size, bool refocus)
+void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
 {
     copy_handler* handle = get_global_copy_handler();
 
+    ImGui::SetNextWindowSize(ImVec2(window_size.x()/2, window_size.y()/2));
     ImGui::SetNextWindowPos(ImGui::GetMainViewport()->Pos);
-    ImGui::SetNextWindowSize(ImVec2(window_size.x(), window_size.y()));
+    ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
 
     if(refocus)
         ImGui::SetNextWindowFocus();
 
-    ImGui::Begin("main_terminal", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking);
+    ImGui::Begin("main_terminal", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking);
+
+    //IsItemHovered() guaranteed to be title bar
+    //if(ImGui::IsMouseDragging(0) && ImGui::IsItemHovered())
+
+    if(ImGui::IsItemHovered() && ImGui::IsMouseDragging(0))
+    {
+        if(!dragging)
+        {
+            dragging = true;
+            start_pos = ImGui::GetMainViewport()->Pos;
+        }
+
+        printf("Drag\n");
+    }
+
+    if(dragging)
+    {
+        ImVec2 delta = ImGui::GetMouseDragDelta();
+        title_delta.x = delta.x;
+        title_delta.y = delta.y;
+    }
+
+    if(!ImGui::IsMouseDown(0))
+    {
+        dragging = false;
+    }
+
+    //ImVec2 main_pos = ImGui::GetMainViewport()->Pos;
+    //ImVec2 my_pos = ImGui::GetWindowPos();
+
+    //ImGui::SetWindowPos(ImGui::GetMainViewport()->Pos);
 
     focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
     hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
+
+    //ImGui::BeginChild("Hello There");
 
     if(refocus)
         ImGui::SetNextWindowFocus();
 
     render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, colour_string(current_user) + "> ");
 
+    //ImGui::EndChild();
+
+    /*ImGuiViewportP* port = GImGui->Viewports[0];
+
+    //ImGui::GetCurrentWindow()->ViewportAllowPlatformMonitorExtend = -1;
+
+    ImGuiWindow* imwin = ImGui::GetCurrentWindow();
+
+    imwin->ViewportAllowPlatformMonitorExtend = -1;
+    imwin->Viewport = port;
+    imwin->ViewportId = port->ID;
+    imwin->ViewportOwned = (port->Window == imwin);
+
+    std::cout << "WINID " << imwin->ID << std::endl;*/
+
     ImGui::End();
+
+    glfw_backend* bck = (glfw_backend*)win.backend;
+
+    /*int px, py;
+    glfwGetWindowPos(bck->ctx.window, &px, &py);*/
+
+    if(dragging)
+    {
+        ImVec2 real_pos;
+        real_pos.x = title_delta.x + start_pos.x;
+        real_pos.y = title_delta.y + start_pos.y;
+
+        int px, py;
+
+        px = real_pos.x;
+        py = real_pos.y;
+
+        //title_delta.x = 0;
+        //title_delta.y = 0;
+
+        glfwSetWindowPos(bck->ctx.window, px, py);
+    }
 }
 
 void realtime_script_manager::render_realtime_windows(connection& conn, int& was_closed_id, font_selector& fonts, auto_handler& auto_handle)

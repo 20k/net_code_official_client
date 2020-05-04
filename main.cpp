@@ -1375,7 +1375,7 @@ int main(int argc, char* argv[])
             //test_imgui_term.render(window);
             realtime_scripts.render_realtime_windows(conn, was_closed_id, font_select, term.auto_handle);
             chat_win.render(should_coordinate_focus);
-            term.render({window_dim.x(), window_dim.y()}, should_coordinate_focus);
+            term.render(window, {window_dim.x(), window_dim.y()}, should_coordinate_focus);
 
             should_coordinate_focus = false;
 
