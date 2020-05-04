@@ -258,8 +258,17 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
         }
     }
 
+    if(ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+    {
+        int maximised = glfwGetWindowAttrib(bck->ctx.window, GLFW_MAXIMIZED);
+
+        if(!maximised)
+            glfwMaximizeWindow(bck->ctx.window);
+        else
+            glfwRestoreWindow(bck->ctx.window);
+    }
+
     vec2f window_br = window_pos + window_size;
-    //window_br.x() += ImGui::GetStyle().WindowBorderSize + 5;
     vec2f window_tl = window_br - (vec2f){30, 30};
 
     bool hovering_label = ImGui::IsMouseHoveringRect({window_tl.x(), window_tl.y()}, {window_br.x(), window_br.y()}, true);
