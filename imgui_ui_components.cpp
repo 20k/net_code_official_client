@@ -267,7 +267,7 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
     if(hovering_label || resize_dragging)
         resize_colu32 = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_ResizeGripActive));
 
-    if(hovering_label)
+    if(hovering_label && !scroll_hack.scrolling)
     {
         if(ImGui::IsMouseDragging(0) && !title_dragging && !resize_dragging)
         {
