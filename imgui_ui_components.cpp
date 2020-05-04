@@ -28,7 +28,9 @@ void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar, format_cache_2&
 
     ImGui::Dummy(ImVec2(cdim.x(), cdim.y() * (approx_num + 1)));
 
-    if(set_scrollbar)
+    int scroll_max_y = ImGui::GetScrollMaxY();
+
+    if(set_scrollbar && scroll_max_y > 0)
     {
         ///scrolled is lines above 0
         float scrolled_frac = scrolled / approx_num;
@@ -37,7 +39,10 @@ void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar, format_cache_2&
         ImGui::SetScrollY(ivscrolled * ImGui::GetScrollMaxY());
     }
 
-    output_scroll_frac = ImGui::GetScrollY() / ImGui::GetScrollMaxY();
+    if(scroll_max_y > 0)
+        output_scroll_frac = ImGui::GetScrollY() / ImGui::GetScrollMaxY();
+    else
+        output_scroll_frac = 1;
 
     if(ImGui::IsMouseDown(0) && ImGui::IsWindowFocused())
     {
@@ -49,6 +54,11 @@ void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar, format_cache_2&
     }
 
     ImGui::EndChild();
+
+    if(scrolling)
+    {
+        scrolled = (1.f - output_scroll_frac) * approx_num;
+    }
 }
 
 void terminal_imgui::check_insert_user_command()
@@ -206,13 +216,6 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
     ///rough
     //ImGui::SetNextWindowContentSize({cache.last_content_size.x(), cache.last_content_size.y()});
     scroll_hack.do_hack(flines, true, cache, dim);
-
-    if(scroll_hack.scrolling)
-    {
-        scroll_hack.scrolled = (1.f - scroll_hack.output_scroll_frac) * flines;
-
-        //cache.invalidate();
-    }
 }
 
 void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
@@ -253,10 +256,13 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
     //window_br.x() += ImGui::GetStyle().WindowBorderSize + 5;
     vec2f window_tl = window_br - (vec2f){30, 30};
 
-    if(ImGui::IsMouseHoveringRect({window_tl.x(), window_tl.y()}, {window_br.x(), window_br.y()}, true))
-    {
+    bool hovering_label = ImGui::IsMouseHoveringRect({window_tl.x(), window_tl.y()}, {window_br.x(), window_br.y()}, true);
+
+    if(hovering_label || resize_dragging)
         resize_colu32 = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_ResizeGripActive));
 
+    if(hovering_label)
+    {
         if(ImGui::IsMouseDragging(0) && !title_dragging && !resize_dragging)
         {
             if(!resize_dragging)
