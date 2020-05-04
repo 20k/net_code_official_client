@@ -95,7 +95,7 @@ std::string make_lower(std::string in)
 
 void pretty_atomic_write_all(const std::string& file, const nlohmann::json& js)
 {
-    file::write_atomic(file, js.dump(1));
+    file::write(file, js.dump(1), file::mode::TEXT);
 }
 
 std::string default_up_handling(const std::string& user, const std::string& server_msg, const std::string& scripts_dir)
@@ -1352,7 +1352,7 @@ int main(int argc, char* argv[])
 
                 if(changed)
                 {
-                    file::write_atomic(notepad_file, notepad);
+                    file::write(notepad_file, notepad, file::mode::TEXT);
                 }
 
                 ImGui::End();
@@ -1463,7 +1463,7 @@ int main(int argc, char* argv[])
     );
     #endif // __EMSCRIPTEN__*/
 
-    file::write_atomic(notepad_file, notepad);
+    file::write(notepad_file, notepad, file::mode::TEXT);
     pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
     pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
 
