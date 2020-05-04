@@ -239,9 +239,20 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
 
     if(dragging)
     {
+        glfw_backend* bck = (glfw_backend*)win.backend;
+
         ImVec2 delta = ImGui::GetMouseDragDelta();
-        title_delta.x = delta.x;
-        title_delta.y = delta.y;
+
+        ImVec2 real_pos;
+        real_pos.x = delta.x + start_pos.x;
+        real_pos.y = delta.y + start_pos.y;
+
+        int px, py;
+
+        px = real_pos.x;
+        py = real_pos.y;
+
+        glfwSetWindowPos(bck->ctx.window, px, py);
     }
 
     if(!ImGui::IsMouseDown(0))
@@ -259,20 +270,11 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
 
     ImGui::End();
 
-    glfw_backend* bck = (glfw_backend*)win.backend;
+
 
     if(dragging)
     {
-        ImVec2 real_pos;
-        real_pos.x = title_delta.x + start_pos.x;
-        real_pos.y = title_delta.y + start_pos.y;
 
-        int px, py;
-
-        px = real_pos.x;
-        py = real_pos.y;
-
-        glfwSetWindowPos(bck->ctx.window, px, py);
     }
 }
 
