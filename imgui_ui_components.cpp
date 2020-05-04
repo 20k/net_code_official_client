@@ -100,7 +100,7 @@ terminal_imgui::terminal_imgui()
     auto_handle.use_autocolour = true;
 }
 
-void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, format_cache_2& cache, frameable& frame, std::string command_padding = "")
+void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, format_cache_2& cache, std::string command_padding = "")
 {
     float overall_width = ImGui::GetWindowWidth();
 
@@ -232,18 +232,18 @@ void terminal_imgui::render(vec2f window_size, bool refocus)
     if(refocus)
         ImGui::SetNextWindowFocus();
 
-    render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, *this, colour_string(current_user) + "> ");
+    render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, colour_string(current_user) + "> ");
 
     ImGui::End();
 }
 
-void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_id, font_selector& fonts)
+void realtime_script_manager::render_realtime_windows(connection& conn, int& was_closed_id, font_selector& fonts, auto_handler& auto_handle)
 {
     was_closed_id = -1;
 
     copy_handler* handle = get_global_copy_handler();
 
-    for(auto& i : realtime_script_windows)
+    for(auto& i : windows)
     {
         realtime_script_run& run = i.second;
 
@@ -301,7 +301,7 @@ void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_i
             if(run.is_square_font)
                 ImGui::PushFont(fonts.get_square_font());
 
-            render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, run.cache, *this);
+            render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, run.cache);
 
             ImVec2 window_size = ImGui::GetWindowSize();
 
@@ -349,9 +349,9 @@ void terminal_imgui::render_realtime_windows(connection& conn, int& was_closed_i
     }
 }
 
-int terminal_imgui::get_id_of_focused_realtime_window()
+int realtime_script_manager::get_id_of_focused_realtime_window()
 {
-    for(auto& i : realtime_script_windows)
+    for(auto& i : windows)
     {
         if(i.second.focused && i.second.open)
             return i.first;
@@ -456,7 +456,7 @@ void terminal_imgui::extend_text(const std::string& str)
     add_text(old + str);
 }
 
-void terminal_imgui::add_text_from_server(auth_manager& auth_manage, std::string& in_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts)
+void process_text_from_server(terminal_imgui& term, auth_manager& auth_manage, std::string& in_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts, realtime_script_manager& realtime_scripts)
 {
     if(in == "")
         return;
@@ -506,7 +506,7 @@ void terminal_imgui::add_text_from_server(auth_manager& auth_manage, std::string
     {
         int id = in["id"];
 
-        realtime_script_run& run = realtime_script_windows[id];
+        realtime_script_run& run = realtime_scripts.windows[id];
 
         int width = 0;
         int height = 0;
@@ -537,7 +537,7 @@ void terminal_imgui::add_text_from_server(auth_manager& auth_manage, std::string
 
         if(should_close)
         {
-            for(auto& i : realtime_script_windows)
+            for(auto& i : realtime_scripts.windows)
             {
                 int fid = i.first;
                 realtime_script_run& run = i.second;
@@ -610,22 +610,22 @@ void terminal_imgui::add_text_from_server(auth_manager& auth_manage, std::string
         {
             fix_tabs(i);
 
-            raw_history.push_back(i + "\n");
-            history.push_back(string_to_interop_no_autos(i + "\n", false));
+            term.raw_history.push_back(i + "\n");
+            term.history.push_back(string_to_interop_no_autos(i + "\n", false));
         }
 
         if(notifs.size() > 0)
-            cache.invalidate();
+            term.cache.invalidate();
 
         if(tell_msgs.size() > 0)
-            cache.invalidate();
+            term.cache.invalidate();
 
         std::string next_user = in["user"];
 
-        if(next_user != current_user)
+        if(next_user != term.current_user)
         {
-            cache.invalidate();
-            current_user = next_user;
+            term.cache.invalidate();
+            term.current_user = next_user;
         }
 
         std::string root_user = in["root_user"];
@@ -640,10 +640,10 @@ void terminal_imgui::add_text_from_server(auth_manager& auth_manage, std::string
 
             if(chat_win.show_chat_in_main_window)
             {
-                raw_history.push_back(msgs[i]);
-                history.push_back(string_to_interop(msgs[i] + "\n", false, chat_win.auto_handle));
+                term.raw_history.push_back(msgs[i]);
+                term.history.push_back(string_to_interop(msgs[i] + "\n", false, chat_win.auto_handle));
 
-                cache.invalidate();
+                term.cache.invalidate();
             }
 
             chat_win.chat_threads[chnls[i]].raw_history.push_back(msgs[i]);
@@ -664,13 +664,13 @@ void terminal_imgui::add_text_from_server(auth_manager& auth_manage, std::string
 
             fix_tabs(text);
 
-            raw_history.push_back(text + "\n");
-            history.push_back(string_to_interop_no_autos(text + "\n", false));
+            term.raw_history.push_back(text + "\n");
+            term.history.push_back(string_to_interop_no_autos(text + "\n", false));
         }
 
-        limit_size(raw_history, MAX_TEXT_HISTORY);
-        limit_size(history, MAX_TEXT_HISTORY);
-        de_newline(history);
+        limit_size(term.raw_history, MAX_TEXT_HISTORY);
+        limit_size(term.history, MAX_TEXT_HISTORY);
+        de_newline(term.history);
     }
     else if(in["type"] == "script_args")
     {
@@ -690,8 +690,8 @@ void terminal_imgui::add_text_from_server(auth_manager& auth_manage, std::string
                 auto_args.push_back({key, val});
             }
 
-            auto_handle.found_args[scriptname] = auto_args;
-            auto_handle.is_valid[scriptname] = true;
+            term.auto_handle.found_args[scriptname] = auto_args;
+            term.auto_handle.is_valid[scriptname] = true;
         }
     }
     else if(in["type"] == "script_args_invalid")
@@ -702,7 +702,7 @@ void terminal_imgui::add_text_from_server(auth_manager& auth_manage, std::string
 
         if(scriptname.size() > 0)
         {
-            auto_handle.is_valid[scriptname] = false;
+            term.auto_handle.is_valid[scriptname] = false;
         }
     }
     else if(in["type"] == "script_args_ratelimit")
@@ -713,7 +713,7 @@ void terminal_imgui::add_text_from_server(auth_manager& auth_manage, std::string
 
         if(name.size() > 0)
         {
-            auto_handle.found_unprocessed_autocompletes.push_back(name);
+            term.auto_handle.found_unprocessed_autocompletes.push_back(name);
         }
     }
     else if(in["type"] == "server_ping")
@@ -754,11 +754,11 @@ void terminal_imgui::add_text_from_server(auth_manager& auth_manage, std::string
         {
             file::write(key_file, key, file::mode::BINARY);
 
-            add_text(make_success_col("Success! Try user lowercase_name to get started, and then #scripts.core()"));
+            term.add_text(make_success_col("Success! Try user lowercase_name to get started, and then #scripts.core()"));
         }
         else
         {
-            add_text(make_error_col("Did not overwrite existing key file, you are already registered"));
+            term.add_text(make_error_col("Did not overwrite existing key file, you are already registered"));
         }
     }
     else
@@ -770,16 +770,16 @@ void terminal_imgui::add_text_from_server(auth_manager& auth_manage, std::string
     {
         fix_tabs(str);
 
-        raw_history.push_back(str);
-        history.push_back(string_to_interop(str, false, auto_handle));
+        term.raw_history.push_back(str);
+        term.history.push_back(string_to_interop(str, false, term.auto_handle));
 
-        limit_size(raw_history, MAX_TEXT_HISTORY);
-        limit_size(history, MAX_TEXT_HISTORY);
-        consider_resetting_scrollbar = true;
+        limit_size(term.raw_history, MAX_TEXT_HISTORY);
+        limit_size(term.history, MAX_TEXT_HISTORY);
+        term.consider_resetting_scrollbar = true;
 
-        de_newline(history);
+        de_newline(term.history);
 
-        cache.invalidate();
+        term.cache.invalidate();
     }
 }
 
@@ -867,7 +867,7 @@ void chat_window::render(bool refocus)
                 thread.was_hovered = true;
             }
 
-            render_handle_imgui(thread.scroll_hack, thread.command.command, thread.command.cursor_pos_idx, thread.history, auto_handle, thread.cache, *this);
+            render_handle_imgui(thread.scroll_hack, thread.command.command, thread.command.cursor_pos_idx, thread.history, auto_handle, thread.cache);
         }
 
         ImGui::End();

@@ -257,6 +257,7 @@ int main(int argc, char* argv[])
 
     terminal_imgui term;
     chat_window chat_win;
+    realtime_script_manager realtime_scripts;
 
     printf("Terminal + Chat window\n");
 
@@ -521,7 +522,7 @@ int main(int argc, char* argv[])
         if(chat_win.focused && has_chat_window)
             to_edit = chat_win.get_focused_editable().value_or(&no_string);
 
-        if(term.get_id_of_focused_realtime_window() != -1)
+        if(realtime_scripts.get_id_of_focused_realtime_window() != -1)
             to_edit = &realtime_shim;
 
         bool enter = false;
@@ -649,7 +650,7 @@ int main(int argc, char* argv[])
                     i.second.cache.invalidate_visual_cache();
                 }
 
-                for(auto& i : term.realtime_script_windows)
+                for(auto& i : realtime_scripts.windows)
                 {
                     i.second.cache.invalidate_visual_cache();
                 }
@@ -971,11 +972,11 @@ int main(int argc, char* argv[])
             mouse_delta += scroll_y;
             script_mousewheel_delta += scroll_y;
 
-            if(term.get_id_of_focused_realtime_window() != -1 && (realtime_str.size() > 0 || on_pressed.size() > 0 || on_released.size() > 0))
+            if(realtime_scripts.get_id_of_focused_realtime_window() != -1 && (realtime_str.size() > 0 || on_pressed.size() > 0 || on_released.size() > 0))
             {
                 nlohmann::json data;
                 data["type"] = "send_keystrokes_to_script";
-                data["id"] = term.get_id_of_focused_realtime_window();
+                data["id"] = realtime_scripts.get_id_of_focused_realtime_window();
                 data["input_keys"] = realtime_str;
                 data["pressed_keys"] = on_pressed;
                 data["released_keys"] = on_released;
@@ -983,13 +984,13 @@ int main(int argc, char* argv[])
                 conn.write(data.dump());
             }
 
-            if(term.get_id_of_focused_realtime_window() != -1 && mouse_clock.get_elapsed_time_s() * 1000 >= mouse_send_time_ms)
+            if(realtime_scripts.get_id_of_focused_realtime_window() != -1 && mouse_clock.get_elapsed_time_s() * 1000 >= mouse_send_time_ms)
             {
                 mouse_clock.restart();
 
                 vec2f mpos = cursor_pos;
 
-                realtime_script_run& run = term.realtime_script_windows[term.get_id_of_focused_realtime_window()];
+                realtime_script_run& run = realtime_scripts.windows[realtime_scripts.get_id_of_focused_realtime_window()];
 
                 mpos = mpos - run.current_tl_cursor_pos;
 
@@ -1006,7 +1007,7 @@ int main(int argc, char* argv[])
 
                     nlohmann::json data;
                     data["type"] = "update_mouse_to_script";
-                    data["id"] = term.get_id_of_focused_realtime_window();
+                    data["id"] = realtime_scripts.get_id_of_focused_realtime_window();
                     data["mouse_x"] = char_mpos.x();
                     data["mouse_y"] = char_mpos.y();
                     data["mousewheel_x"] = 0.f;
@@ -1018,7 +1019,7 @@ int main(int argc, char* argv[])
                 script_mousewheel_delta = 0;
             }
 
-            if(term.get_id_of_focused_realtime_window() == -1)
+            if(realtime_scripts.get_id_of_focused_realtime_window() == -1)
                 script_mousewheel_delta = 0;
 
             term.scroll_hack.scrolled_this_frame = mouse_delta;
@@ -1028,7 +1029,7 @@ int main(int argc, char* argv[])
                 i.second.scroll_hack.scrolled_this_frame = mouse_delta;
             }
 
-            for(auto& i : term.realtime_script_windows)
+            for(auto& i : realtime_scripts.windows)
             {
                 i.second.scroll_hack.scrolled_this_frame = mouse_delta;
             }
@@ -1287,7 +1288,8 @@ int main(int argc, char* argv[])
                 ///this is temporary before the other end of the api gets changed
                 nlohmann::json data = nlohmann::json::parse(fdata);
 
-                term.add_text_from_server(auth_manage, current_user, data, chat_win, font_select);
+                process_text_from_server(term, auth_manage, current_user, data, chat_win, font_select, realtime_scripts);
+                //term.add_text_from_server(auth_manage, current_user, data, chat_win, font_select);
             }
 
             if(write_clock.get_elapsed_time_s() > 5 && (!term.cache.valid() || chat_win.any_cache_invalid()))
@@ -1327,7 +1329,7 @@ int main(int argc, char* argv[])
                     term.auto_handle.found_unprocessed_autocompletes.erase(term.auto_handle.found_unprocessed_autocompletes.begin());
             }
 
-            if((term.focused || term.get_id_of_focused_realtime_window() != 1) && ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) && just_pressed(GLFW_KEY_C))
+            if((term.focused || realtime_scripts.get_id_of_focused_realtime_window() != 1) && ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) && just_pressed(GLFW_KEY_C))
             {
                 nlohmann::json data;
                 data["type"] = "client_terminate_scripts";
@@ -1371,7 +1373,7 @@ int main(int argc, char* argv[])
             vec2i window_dim = window.get_window_size();
 
             //test_imgui_term.render(window);
-            term.render_realtime_windows(conn, was_closed_id, font_select);
+            realtime_scripts.render_realtime_windows(conn, was_closed_id, font_select, term.auto_handle);
             chat_win.render(should_coordinate_focus);
             term.render({window_dim.x(), window_dim.y()}, should_coordinate_focus);
 

@@ -62,6 +62,19 @@ struct realtime_script_run : frameable
     format_cache_2 cache;
 };
 
+struct connection;
+struct font_selector;
+
+struct realtime_script_manager
+{
+    std::map<int, realtime_script_run> windows;
+
+    void render_realtime_windows(connection& conn, int& was_closed_id, font_selector& fonts, auto_handler& auto_handle);
+
+    ///returns -1 on none
+    int get_id_of_focused_realtime_window();
+};
+
 struct chat_thread : serialisable, cacheable, free_function
 {
     bool dirty = false;
@@ -105,14 +118,9 @@ struct chat_window : serialisable, frameable, free_function
     void add_text_to_focused(const std::string& str);
 };
 
-struct connection;
-struct font_selector;
-
 struct terminal_imgui : serialisable, cacheable, frameable, free_function
 {
     scrollbar_hack scroll_hack;
-
-    std::map<int, realtime_script_run> realtime_script_windows;
 
     std::string current_user;
     bool one_time_user_insertion = true;
@@ -133,16 +141,14 @@ struct terminal_imgui : serialisable, cacheable, frameable, free_function
 
     terminal_imgui();
     void render(vec2f window_size, bool refocus);
-    void render_realtime_windows(connection& conn, int& was_closed_id, font_selector& fonts);
     void bump_command_to_history();
 
     void add_text(const std::string& str);
     void extend_text(const std::string& str);
-    void add_text_from_server(auth_manager& auth_manage, std::string& current_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts);
-
-    ///returns -1 on none
-    int get_id_of_focused_realtime_window();
+    //void add_text_from_server(auth_manager& auth_manage, std::string& current_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts);
 };
+
+void process_text_from_server(terminal_imgui& term, auth_manager& auth_manage, std::string& current_user, const nlohmann::json& data, chat_window& chat_win, font_selector& fonts, realtime_script_manager& realtime_scripts);
 
 void clear_everything(terminal_imgui& term, chat_window& chat);
 void invalidate_everything(terminal_imgui& term, chat_window& chat);
