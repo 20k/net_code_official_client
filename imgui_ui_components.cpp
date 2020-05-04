@@ -219,45 +219,73 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
 {
     copy_handler* handle = get_global_copy_handler();
 
+    vec2f window_pos = xy_to_vec(ImGui::GetMainViewport()->Pos);
+
     ImGui::SetNextWindowSize(ImVec2(window_size.x(), window_size.y()));
-    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->Pos);
+    ImGui::SetNextWindowPos({window_pos.x(), window_pos.y()});
     ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
 
     if(refocus)
         ImGui::SetNextWindowFocus();
 
-    ImGui::Begin("main_terminal", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking);
+    ImVec4 style_col = ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive);
 
-    if(ImGui::IsItemHovered() && ImGui::IsMouseDragging(0))
+    ImGui::PushStyleColor(ImGuiCol_TitleBg, style_col);
+    ImGui::PushStyleColor(ImGuiCol_TitleBgCollapsed, style_col);
+
+    ImGui::Begin(" NET_CODE_", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking);
+
+    if(ImGui::IsItemHovered() &&
+       ImGui::IsMouseDragging(0) && !title_dragging && !resize_dragging)
     {
-        if(!dragging)
+        if(!title_dragging)
         {
-            dragging = true;
-            start_pos = ImGui::GetMainViewport()->Pos;
+            title_dragging = true;
+            title_start_pos = ImGui::GetMainViewport()->Pos;
         }
     }
 
-    if(dragging)
-    {
-        glfw_backend* bck = (glfw_backend*)win.backend;
+    vec2f window_br = window_pos + window_size;
+    vec2f window_tl = window_br - (vec2f){20, 20};
 
+    if(ImGui::IsMouseHoveringRect({window_tl.x(), window_tl.y()}, {window_br.x(), window_br.y()}, true) &&
+       ImGui::IsMouseDragging(0) && !title_dragging && !resize_dragging)
+    {
+        if(!resize_dragging)
+        {
+            resize_dragging = true;
+            resize_start_pos = {window_size.x(), window_size.y()};
+        }
+    }
+
+    glfw_backend* bck = (glfw_backend*)win.backend;
+
+    if(title_dragging)
+    {
         ImVec2 delta = ImGui::GetMouseDragDelta();
 
         ImVec2 real_pos;
-        real_pos.x = delta.x + start_pos.x;
-        real_pos.y = delta.y + start_pos.y;
+        real_pos.x = delta.x + title_start_pos.x;
+        real_pos.y = delta.y + title_start_pos.y;
 
-        int px, py;
+        glfwSetWindowPos(bck->ctx.window, real_pos.x, real_pos.y);
+    }
 
-        px = real_pos.x;
-        py = real_pos.y;
+    if(resize_dragging)
+    {
+        ImVec2 delta = ImGui::GetMouseDragDelta();
 
-        glfwSetWindowPos(bck->ctx.window, px, py);
+        int width = delta.x + resize_start_pos.x;
+        int height = delta.y + resize_start_pos.y;
+
+        if(width >= 50 && height >= 50)
+            glfwSetWindowSize(bck->ctx.window, width, height);
     }
 
     if(!ImGui::IsMouseDown(0))
     {
-        dragging = false;
+        title_dragging = false;
+        resize_dragging = false;
     }
 
     focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
@@ -270,12 +298,7 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
 
     ImGui::End();
 
-
-
-    if(dragging)
-    {
-
-    }
+    ImGui::PopStyleColor(2);
 }
 
 void realtime_script_manager::render_realtime_windows(connection& conn, int& was_closed_id, font_selector& fonts, auto_handler& auto_handle)

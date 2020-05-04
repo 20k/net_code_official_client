@@ -116,8 +116,12 @@ struct render_window;
 struct terminal_imgui : serialisable, cacheable, free_function
 {
     scrollbar_hack scroll_hack;
-    bool dragging = false;
-    ImVec2 start_pos = ImVec2(0,0);
+    bool title_dragging = false;
+    ImVec2 title_start_pos = ImVec2(0,0);
+
+    bool resize_dragging = false;
+    ImVec2 resize_start_pos = ImVec2(0,0);
+
     bool open = true;
 
     std::string current_user;
