@@ -281,6 +281,7 @@
 			<Add option="-lwinmm" />
 			<Add option="-l:libcrypto.a" />
 			<Add option="-lbacktrace" />
+			<Add option="-lUsp10" />
 			<Add option="-lgdi32" />
 			<Add option="-lws2_32" />
 			<Add option="-lopencl" />
