@@ -219,7 +219,7 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
 {
     copy_handler* handle = get_global_copy_handler();
 
-    ImGui::SetNextWindowSize(ImVec2(window_size.x()/2, window_size.y()/2));
+    ImGui::SetNextWindowSize(ImVec2(window_size.x(), window_size.y()));
     ImGui::SetNextWindowPos(ImGui::GetMainViewport()->Pos);
     ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
 
@@ -228,9 +228,6 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
 
     ImGui::Begin("main_terminal", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking);
 
-    //IsItemHovered() guaranteed to be title bar
-    //if(ImGui::IsMouseDragging(0) && ImGui::IsItemHovered())
-
     if(ImGui::IsItemHovered() && ImGui::IsMouseDragging(0))
     {
         if(!dragging)
@@ -238,8 +235,6 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
             dragging = true;
             start_pos = ImGui::GetMainViewport()->Pos;
         }
-
-        printf("Drag\n");
     }
 
     if(dragging)
@@ -254,42 +249,17 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
         dragging = false;
     }
 
-    //ImVec2 main_pos = ImGui::GetMainViewport()->Pos;
-    //ImVec2 my_pos = ImGui::GetWindowPos();
-
-    //ImGui::SetWindowPos(ImGui::GetMainViewport()->Pos);
-
     focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
     hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
-
-    //ImGui::BeginChild("Hello There");
 
     if(refocus)
         ImGui::SetNextWindowFocus();
 
     render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, colour_string(current_user) + "> ");
 
-    //ImGui::EndChild();
-
-    /*ImGuiViewportP* port = GImGui->Viewports[0];
-
-    //ImGui::GetCurrentWindow()->ViewportAllowPlatformMonitorExtend = -1;
-
-    ImGuiWindow* imwin = ImGui::GetCurrentWindow();
-
-    imwin->ViewportAllowPlatformMonitorExtend = -1;
-    imwin->Viewport = port;
-    imwin->ViewportId = port->ID;
-    imwin->ViewportOwned = (port->Window == imwin);
-
-    std::cout << "WINID " << imwin->ID << std::endl;*/
-
     ImGui::End();
 
     glfw_backend* bck = (glfw_backend*)win.backend;
-
-    /*int px, py;
-    glfwGetWindowPos(bck->ctx.window, &px, &py);*/
 
     if(dragging)
     {
@@ -301,9 +271,6 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
 
         px = real_pos.x;
         py = real_pos.y;
-
-        //title_delta.x = 0;
-        //title_delta.y = 0;
 
         glfwSetWindowPos(bck->ctx.window, px, py);
     }
