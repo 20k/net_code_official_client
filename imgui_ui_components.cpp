@@ -19,9 +19,15 @@
 
 void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar, format_cache_2& cache, vec2f dim)
 {
-    ImGui::BeginChild("right_child", ImVec2(0,0), false, ImGuiWindowFlags_NoScrollWithMouse);
+    int win_size = ImGui::GetWindowSize().y - 50;
+
+    if(win_size < 0)
+        return;
+
+    ImGui::BeginChild("right_child", ImVec2(0, win_size), false, ImGuiWindowFlags_NoScrollWithMouse);
 
     vec2f cdim = xy_to_vec(ImGui::CalcTextSize("A"));
+    cdim.y() = ImGui::GetTextLineHeightWithSpacing();
 
     if(approx_num < 0)
         approx_num = 1;
@@ -36,13 +42,13 @@ void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar, format_cache_2&
         float scrolled_frac = scrolled / approx_num;
         float ivscrolled = 1.f - scrolled_frac;
 
-        ImGui::SetScrollY(ivscrolled * ImGui::GetScrollMaxY());
+        ImGui::SetScrollY(ivscrolled * scroll_max_y);
     }
 
+    float output_scroll_frac = 1;
+
     if(scroll_max_y > 0)
-        output_scroll_frac = ImGui::GetScrollY() / ImGui::GetScrollMaxY();
-    else
-        output_scroll_frac = 1;
+        output_scroll_frac = ImGui::GetScrollY() / scroll_max_y;
 
     if(ImGui::IsMouseDown(0) && ImGui::IsWindowFocused())
     {
@@ -240,7 +246,7 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
     ImVec4 resize_col = ImGui::GetStyleColorVec4(ImGuiCol_ResizeGrip);
     ImU32 resize_colu32 = ImGui::ColorConvertFloat4ToU32(resize_col);
 
-    ImGui::Begin(" NET_CODE_", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize);
+    ImGui::Begin(" NET_CODE_", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
 
     if(ImGui::IsItemHovered() &&
        ImGui::IsMouseDragging(0) && !title_dragging && !resize_dragging)
