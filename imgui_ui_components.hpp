@@ -29,14 +29,7 @@ struct scrollbar_hack
     void do_hack(int approx_num, bool set_scrollbar, format_cache_2& cache, vec2f dim);
 };
 
-///has a frame, aka is a window
-struct frameable
-{
-    ///how high the render area is in character sized rows;
-    int render_height = 0;
-};
-
-struct realtime_script_run : frameable
+struct realtime_script_run
 {
     steady_timer last_message;
 
@@ -85,7 +78,7 @@ struct chat_thread : serialisable, cacheable, free_function
     scrollbar_hack scroll_hack;
 };
 
-struct chat_window : serialisable, frameable, free_function
+struct chat_window : serialisable, free_function
 {
     std::map<std::string, chat_thread> chat_threads;
 
@@ -118,7 +111,7 @@ struct chat_window : serialisable, frameable, free_function
     void add_text_to_focused(const std::string& str);
 };
 
-struct terminal_imgui : serialisable, cacheable, frameable, free_function
+struct terminal_imgui : serialisable, cacheable, free_function
 {
     scrollbar_hack scroll_hack;
 
