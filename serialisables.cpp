@@ -48,6 +48,8 @@ DEFINE_SERIALISE_FUNCTION(terminal_imgui)
     DO_FSERIALISE(raw_history);
     DO_FSERIALISE(command);
     DO_FSERIALISE(auto_handle);
+    DO_FSERIALISE(new_terminal);
+    DO_FSERIALISE(friendly_id);
 
     if(ctx.serialisation && !ctx.encode)
     {

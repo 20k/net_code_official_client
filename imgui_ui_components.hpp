@@ -124,6 +124,9 @@ struct terminal_imgui : serialisable, cacheable, free_function
     //end main terminal only properties
 
     bool is_main_terminal = false;
+    bool new_terminal = true;
+
+    int friendly_id = 0;
 
     bool open = true;
 
@@ -155,10 +158,10 @@ struct terminal_imgui : serialisable, cacheable, free_function
 
 struct terminal_manager : serialisable, free_function
 {
-    size_t gid = 1;
-
     std::map<int, terminal_imgui> sub_terminals;
     terminal_imgui main_terminal;
+
+    size_t gid = 1;
 
     terminal_manager();
     void render(render_window& win, vec2f window_size, bool refocus);

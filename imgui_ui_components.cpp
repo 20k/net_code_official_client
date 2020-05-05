@@ -339,7 +339,13 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus,
     }
     else
     {
-        std::string extra = "TERM" + std::to_string(extra_id);
+        if(new_terminal)
+        {
+            ImGui::SetNextWindowSize({500, 300}, ImGuiCond_Always);
+            new_terminal = false;
+        }
+
+        std::string extra = "TERM" + std::to_string(friendly_id) + "##" + std::to_string(extra_id);
 
         ImGui::Begin(extra.c_str(), &open, ImGuiWindowFlags_NoScrollbar);
 
@@ -588,9 +594,20 @@ terminal_manager::terminal_manager()
 
 void terminal_manager::render(render_window& win, vec2f window_size, bool refocus)
 {
-    for(auto& i : sub_terminals)
+    //for(auto& i : sub_terminals)
+
+    for(auto it = sub_terminals.begin(); it != sub_terminals.end();)
     {
-        i.second.render(win, window_size, refocus, i.first);
+        it->second.render(win, window_size, refocus, it->first);
+
+        if(!it->second.open)
+        {
+            it = sub_terminals.erase(it);
+        }
+        else
+        {
+            it++;
+        }
     }
 
     main_terminal.render(win, window_size, refocus, -1);
@@ -648,7 +665,15 @@ int terminal_manager::get_focused_terminal_id()
 
 void terminal_manager::make_new_terminal()
 {
+    int max_id = 0;
+
+    for(auto& i : sub_terminals)
+    {
+        max_id = std::max(i.second.friendly_id, max_id);
+    }
+
     terminal_imgui& term = sub_terminals[gid++];
+    term.friendly_id = max_id+1;
 }
 
 void process_text_from_server(terminal_manager& terminals, auth_manager& auth_manage, std::string& in_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts, realtime_script_manager& realtime_scripts)
