@@ -145,7 +145,7 @@ struct terminal_imgui : serialisable, cacheable, free_function
     void clear_terminal();
 
     terminal_imgui();
-    void render(render_window& win, vec2f window_size, bool refocus);
+    void render(render_window& win, vec2f window_size, bool refocus, int extra_id);
     void bump_command_to_history();
 
     void add_text(const std::string& str);
@@ -166,6 +166,8 @@ struct terminal_manager : serialisable, free_function
     void invalidate_visual_cache();
 
     terminal_imgui* get_focused_terminal();
+
+    void make_new_terminal();
 };
 
 void process_text_from_server(terminal_imgui& term, auth_manager& auth_manage, std::string& current_user, const nlohmann::json& data, chat_window& chat_win, font_selector& fonts, realtime_script_manager& realtime_scripts);

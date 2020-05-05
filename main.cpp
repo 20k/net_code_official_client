@@ -1354,6 +1354,11 @@ int main(int argc, char* argv[])
 
                 ImGui::Checkbox("Show chat in terminal", &chat_win.show_chat_in_main_window);
 
+                if(ImGui::Button("New terminal"))
+                {
+                    terminals.make_new_terminal();
+                }
+
                 ImGui::End();
             }
 

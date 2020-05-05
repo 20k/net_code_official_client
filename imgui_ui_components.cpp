@@ -230,7 +230,7 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
     scroll_hack.do_hack(flines, true, cache, dim);
 }
 
-void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
+void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus, int extra_id)
 {
     if(is_main_terminal)
     {
@@ -340,7 +340,9 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
     }
     else
     {
-        ImGui::Begin("TTERM", &open, ImGuiWindowFlags_NoScrollbar);
+        std::string extra = "TERM" + std::to_string(extra_id);
+
+        ImGui::Begin(extra.c_str(), &open, ImGuiWindowFlags_NoScrollbar);
 
         focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
         hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
@@ -589,10 +591,10 @@ void terminal_manager::render(render_window& win, vec2f window_size, bool refocu
 {
     for(auto& i : sub_terminals)
     {
-        i.second.render(win, window_size, refocus);
+        i.second.render(win, window_size, refocus, i.first);
     }
 
-    main_terminal.render(win, window_size, refocus);
+    main_terminal.render(win, window_size, refocus, -1);
 }
 
 bool terminal_manager::all_cache_valid()
@@ -630,6 +632,11 @@ terminal_imgui* terminal_manager::get_focused_terminal()
     }
 
     return &main_terminal;
+}
+
+void terminal_manager::make_new_terminal()
+{
+    terminal_imgui& term = sub_terminals[gid++];
 }
 
 void process_text_from_server(terminal_imgui& term, auth_manager& auth_manage, std::string& in_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts, realtime_script_manager& realtime_scripts)
