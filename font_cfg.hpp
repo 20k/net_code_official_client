@@ -12,6 +12,7 @@ struct font_selector : serialisable
 {
     bool wants_rebuild = true;
     float fonts_multiply = 1.f;
+    std::string current_font_name = "";
 
     ///reset in constructor
     //unsigned int fonts_flags = ImGuiFreeType::ForceAutoHint | ImGuiFreeType::MonoHinting;
@@ -38,6 +39,8 @@ struct font_selector : serialisable
 
     float current_base_font_size = 14;
 
+    void find_saved_font();
+
     void reset_default_fonts(float editor_font_size = 14.f);
     // Call _BEFORE_ NewFrame()
     bool update_rebuild(float editor_font_size = 14.f);
@@ -47,9 +50,9 @@ struct font_selector : serialisable
     SERIALISE_SIGNATURE(font_selector)
     {
         DO_SERIALISE(current_base_font_size);
-        DO_SERIALISE(current_base_font);
         DO_SERIALISE(fonts_flags);
         DO_SERIALISE(subpixel_flags);
+        DO_SERIALISE(current_font_name);
     }
 };
 

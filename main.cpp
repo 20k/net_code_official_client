@@ -401,6 +401,7 @@ int main(int argc, char* argv[])
         {
             nlohmann::json dat = nlohmann::json::parse(file::read(font_file, file::mode::TEXT));
             deserialise(dat, font_select, serialise_mode::DISK);
+            font_select.find_saved_font();
         }
     }
     catch(...){}

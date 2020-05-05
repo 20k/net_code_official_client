@@ -37,6 +37,22 @@ ImFont* font_selector::get_editor_font()
     return io.Fonts->Fonts[(int)font_cfg::TEXT_EDITOR];
 }
 
+void font_selector::find_saved_font()
+{
+    ImGuiIO& io = ImGui::GetIO();
+
+    for(int n = 0; n < io.Fonts->Fonts.Size; n++)
+    {
+        std::string str = io.Fonts->Fonts[n]->GetDebugName();
+
+        if(str == current_font_name)
+        {
+            wants_rebuild = true;
+            current_base_font = n;
+        }
+    }
+}
+
 struct tinydir_autoclose
 {
     tinydir_dir dir;
@@ -216,6 +232,7 @@ void font_selector::render(render_window& window)
                 //io.FontDefault = io.Fonts->Fonts[n];
                 wants_rebuild = true;
                 current_base_font = n;
+                current_font_name = io.Fonts->Fonts[n]->GetDebugName();
             }
         }
         ImGui::EndCombo();
