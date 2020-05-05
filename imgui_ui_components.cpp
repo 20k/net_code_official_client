@@ -592,8 +592,6 @@ void process_text_from_server(terminal_imgui& term, auth_manager& auth_manage, s
             printf("YAY!\n");
         }
 
-        std::cout << "INDUMP " << in.dump() << std::endl;
-
         push = true;
     }
     else if(type == "command_realtime")

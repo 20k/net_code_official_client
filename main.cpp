@@ -1306,8 +1306,6 @@ int main(int argc, char* argv[])
                 pretty_atomic_write_all(window_file, serialise(save_sett, serialise_mode::DISK));
 
                 write_clock.restart();
-
-                std::cout << "Writing " << term.cache.valid() << " two " << chat_win.any_cache_invalid() << std::endl;
             }
 
             ///hmm
