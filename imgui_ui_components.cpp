@@ -3,7 +3,6 @@
 #include "string_helpers.hpp"
 #include <libncclient/nc_util.hpp>
 #include "copy_handler.hpp"
-#include "tag_manager.hpp"
 #include "font_cfg.hpp"
 #include <GL/gl.h>
 #include <GL/glext.h>
@@ -634,15 +633,30 @@ terminal_imgui* terminal_manager::get_focused_terminal()
     return &main_terminal;
 }
 
+int terminal_manager::get_focused_terminal_id()
+{
+    for(auto& i : sub_terminals)
+    {
+        if(i.second.focused)
+        {
+            return i.first;
+        }
+    }
+
+    return -1;
+}
+
 void terminal_manager::make_new_terminal()
 {
     terminal_imgui& term = sub_terminals[gid++];
 }
 
-void process_text_from_server(terminal_imgui& term, auth_manager& auth_manage, std::string& in_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts, realtime_script_manager& realtime_scripts)
+void process_text_from_server(terminal_manager& terminals, auth_manager& auth_manage, std::string& in_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts, realtime_script_manager& realtime_scripts)
 {
     if(in == "")
         return;
+
+    terminal_imgui* term = &terminals.main_terminal;
 
     std::string str;
 
@@ -662,11 +676,19 @@ void process_text_from_server(terminal_imgui& term, auth_manager& auth_manage, s
 
         if(in.count("tag") > 0)
         {
-            std::string tag = in["tag"];
+            printf("Tag?\n");
 
-            tag_manager& tag_manage = get_global_tag_manager();
+            try
+            {
+                int tag = in["tag"];
 
-            tag_manage.add_tagged(tag, str);
+                if(auto it = terminals.sub_terminals.find(tag); it != terminals.sub_terminals.end())
+                {
+                    term = &it->second;
+                }
+
+            }
+            catch(...){}
         }
 
         if(in.count("pad") == 0 || in["pad"] == 0)
@@ -791,22 +813,22 @@ void process_text_from_server(terminal_imgui& term, auth_manager& auth_manage, s
         {
             fix_tabs(i);
 
-            term.raw_history.push_back(i + "\n");
-            term.history.push_back(string_to_interop_no_autos(i + "\n", false));
+            term->raw_history.push_back(i + "\n");
+            term->history.push_back(string_to_interop_no_autos(i + "\n", false));
         }
 
         if(notifs.size() > 0)
-            term.cache.invalidate();
+            term->cache.invalidate();
 
         if(tell_msgs.size() > 0)
-            term.cache.invalidate();
+            term->cache.invalidate();
 
         std::string next_user = in["user"];
 
-        if(next_user != term.current_user)
+        if(next_user != term->current_user)
         {
-            term.cache.invalidate();
-            term.current_user = next_user;
+            term->cache.invalidate();
+            term->current_user = next_user;
         }
 
         std::string root_user = in["root_user"];
@@ -821,10 +843,10 @@ void process_text_from_server(terminal_imgui& term, auth_manager& auth_manage, s
 
             if(chat_win.show_chat_in_main_window)
             {
-                term.raw_history.push_back(msgs[i]);
-                term.history.push_back(string_to_interop(msgs[i] + "\n", false, chat_win.auto_handle));
+                term->raw_history.push_back(msgs[i]);
+                term->history.push_back(string_to_interop(msgs[i] + "\n", false, chat_win.auto_handle));
 
-                term.cache.invalidate();
+                term->cache.invalidate();
             }
 
             chat_win.chat_threads[chnls[i]].raw_history.push_back(msgs[i]);
@@ -845,13 +867,13 @@ void process_text_from_server(terminal_imgui& term, auth_manager& auth_manage, s
 
             fix_tabs(text);
 
-            term.raw_history.push_back(text + "\n");
-            term.history.push_back(string_to_interop_no_autos(text + "\n", false));
+            term->raw_history.push_back(text + "\n");
+            term->history.push_back(string_to_interop_no_autos(text + "\n", false));
         }
 
-        limit_size(term.raw_history, MAX_TEXT_HISTORY);
-        limit_size(term.history, MAX_TEXT_HISTORY);
-        de_newline(term.history);
+        limit_size(term->raw_history, MAX_TEXT_HISTORY);
+        limit_size(term->history, MAX_TEXT_HISTORY);
+        de_newline(term->history);
     }
     else if(in["type"] == "script_args")
     {
@@ -871,8 +893,8 @@ void process_text_from_server(terminal_imgui& term, auth_manager& auth_manage, s
                 auto_args.push_back({key, val});
             }
 
-            term.auto_handle.found_args[scriptname] = auto_args;
-            term.auto_handle.is_valid[scriptname] = true;
+            term->auto_handle.found_args[scriptname] = auto_args;
+            term->auto_handle.is_valid[scriptname] = true;
         }
     }
     else if(in["type"] == "script_args_invalid")
@@ -883,7 +905,7 @@ void process_text_from_server(terminal_imgui& term, auth_manager& auth_manage, s
 
         if(scriptname.size() > 0)
         {
-            term.auto_handle.is_valid[scriptname] = false;
+            term->auto_handle.is_valid[scriptname] = false;
         }
     }
     else if(in["type"] == "script_args_ratelimit")
@@ -894,7 +916,7 @@ void process_text_from_server(terminal_imgui& term, auth_manager& auth_manage, s
 
         if(name.size() > 0)
         {
-            term.auto_handle.found_unprocessed_autocompletes.push_back(name);
+            term->auto_handle.found_unprocessed_autocompletes.push_back(name);
         }
     }
     else if(in["type"] == "server_ping")
@@ -935,11 +957,11 @@ void process_text_from_server(terminal_imgui& term, auth_manager& auth_manage, s
         {
             file::write(key_file, key, file::mode::BINARY);
 
-            term.add_text(make_success_col("Success! Try user lowercase_name to get started, and then #scripts.core()"));
+            term->add_text(make_success_col("Success! Try user lowercase_name to get started, and then #scripts.core()"));
         }
         else
         {
-            term.add_text(make_error_col("Did not overwrite existing key file, you are already registered"));
+            term->add_text(make_error_col("Did not overwrite existing key file, you are already registered"));
         }
     }
     else
@@ -951,16 +973,16 @@ void process_text_from_server(terminal_imgui& term, auth_manager& auth_manage, s
     {
         fix_tabs(str);
 
-        term.raw_history.push_back(str);
-        term.history.push_back(string_to_interop(str, false, term.auto_handle));
+        term->raw_history.push_back(str);
+        term->history.push_back(string_to_interop(str, false, terminals.main_terminal.auto_handle));
 
-        limit_size(term.raw_history, MAX_TEXT_HISTORY);
-        limit_size(term.history, MAX_TEXT_HISTORY);
-        term.consider_resetting_scrollbar = true;
+        limit_size(term->raw_history, MAX_TEXT_HISTORY);
+        limit_size(term->history, MAX_TEXT_HISTORY);
+        term->consider_resetting_scrollbar = true;
 
-        de_newline(term.history);
+        de_newline(term->history);
 
-        term.cache.invalidate();
+        term->cache.invalidate();
     }
 }
 

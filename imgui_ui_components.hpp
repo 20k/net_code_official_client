@@ -166,11 +166,12 @@ struct terminal_manager : serialisable, free_function
     void invalidate_visual_cache();
 
     terminal_imgui* get_focused_terminal();
+    int get_focused_terminal_id();
 
     void make_new_terminal();
 };
 
-void process_text_from_server(terminal_imgui& term, auth_manager& auth_manage, std::string& current_user, const nlohmann::json& data, chat_window& chat_win, font_selector& fonts, realtime_script_manager& realtime_scripts);
+void process_text_from_server(terminal_manager& terminals, auth_manager& auth_manage, std::string& current_user, const nlohmann::json& data, chat_window& chat_win, font_selector& fonts, realtime_script_manager& realtime_scripts);
 
 void clear_everything(terminal_manager& term, chat_window& chat);
 void invalidate_everything(terminal_manager& term, chat_window& chat);

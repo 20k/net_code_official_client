@@ -1109,6 +1109,11 @@ int main(int argc, char* argv[])
                         data["type"] = "generic_server_command";
                         data["data"] = up_data;
 
+                        if(terminals.get_focused_terminal_id() > 0)
+                        {
+                            data["tag"] = terminals.get_focused_terminal_id();
+                        }
+
                         conn.write(data.dump());
                     }
                 }
@@ -1300,7 +1305,7 @@ int main(int argc, char* argv[])
                 ///this is temporary before the other end of the api gets changed
                 nlohmann::json data = nlohmann::json::parse(fdata);
 
-                process_text_from_server(terminals.main_terminal, auth_manage, current_user, data, chat_win, font_select, realtime_scripts);
+                process_text_from_server(terminals, auth_manage, current_user, data, chat_win, font_select, realtime_scripts);
                 //term.add_text_from_server(auth_manage, current_user, data, chat_win, font_select);
             }
 
