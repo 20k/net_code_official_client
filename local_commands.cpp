@@ -111,7 +111,7 @@ void ipc_open(const std::string& fname)
     system(("start " + fname).c_str());
 }
 
-std::string handle_local_command(const std::string& username, const std::string& command, auto_handler& auto_handle, bool& should_shutdown, terminal_imgui& term, chat_window& chat)
+std::string handle_local_command(const std::string& username, const std::string& command, auto_handler& auto_handle, bool& should_shutdown, terminal_manager& terminals, chat_window& chat)
 {
     if(starts_with(command, "#clear_autos") || starts_with(command, "#autos_clear"))
     {
@@ -125,10 +125,10 @@ std::string handle_local_command(const std::string& username, const std::string&
     }
 
     if(starts_with(command, "#cls"))
-        clear_everything(term, chat);
+        clear_everything(terminals, chat);
 
     if(starts_with(command, "#clear_term"))
-        term.clear_terminal();
+        terminals.get_focused_terminal()->clear_terminal();
 
     if(starts_with(command, "#clear_chat"))
         chat.clear_chat();

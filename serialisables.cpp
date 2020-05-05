@@ -72,3 +72,12 @@ DEFINE_SERIALISE_FUNCTION(chat_window)
     DO_FSERIALISE(side_buttons);
     DO_FSERIALISE(show_chat_in_main_window);
 }
+
+DEFINE_SERIALISE_FUNCTION(terminal_manager)
+{
+    SERIALISE_SETUP();
+
+    DO_FSERIALISE(sub_terminals);
+    DO_FSERIALISE(main_terminal);
+    DO_FSERIALISE(gid);
+}

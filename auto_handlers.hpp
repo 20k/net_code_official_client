@@ -41,8 +41,6 @@ struct auto_handler : serialisable, owned
     bool use_autocomplete = false;
     bool use_autocolour = false;
 
-    bool window_in_focus = false;
-
     std::vector<std::string> found_unprocessed_autocompletes;
     std::map<std::string, std::vector<autocomplete_args>> found_args;
     std::map<std::string, int> is_valid;

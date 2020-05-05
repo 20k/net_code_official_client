@@ -7,5 +7,6 @@ struct terminal_imgui;
 
 DECLARE_SERIALISE_FUNCTION(terminal_imgui);
 DECLARE_SERIALISE_FUNCTION(chat_window);
+DECLARE_SERIALISE_FUNCTION(terminal_manager);
 
 #endif // SERIALISABLES_HPP_INCLUDED

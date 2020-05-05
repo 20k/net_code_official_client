@@ -114,11 +114,16 @@ struct render_window;
 struct terminal_imgui : serialisable, cacheable, free_function
 {
     scrollbar_hack scroll_hack;
+
+    //begin main terminal only properties
     bool title_dragging = false;
     ImVec2 title_start_pos = ImVec2(0,0);
 
     bool resize_dragging = false;
     ImVec2 resize_start_pos = ImVec2(0,0);
+    //end main terminal only properties
+
+    bool is_main_terminal = false;
 
     bool open = true;
 
@@ -148,10 +153,25 @@ struct terminal_imgui : serialisable, cacheable, free_function
     //void add_text_from_server(auth_manager& auth_manage, std::string& current_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts);
 };
 
+struct terminal_manager : serialisable, free_function
+{
+    size_t gid = 1;
+
+    std::map<int, terminal_imgui> sub_terminals;
+    terminal_imgui main_terminal;
+
+    terminal_manager();
+    void render(render_window& win, vec2f window_size, bool refocus);
+    bool all_cache_valid();
+    void invalidate_visual_cache();
+
+    terminal_imgui* get_focused_terminal();
+};
+
 void process_text_from_server(terminal_imgui& term, auth_manager& auth_manage, std::string& current_user, const nlohmann::json& data, chat_window& chat_win, font_selector& fonts, realtime_script_manager& realtime_scripts);
 
-void clear_everything(terminal_imgui& term, chat_window& chat);
-void invalidate_everything(terminal_imgui& term, chat_window& chat);
-void last_line_invalidate_everything(terminal_imgui& term, chat_window& chat); ///cheap
+void clear_everything(terminal_manager& term, chat_window& chat);
+void invalidate_everything(terminal_manager& term, chat_window& chat);
+void last_line_invalidate_everything(terminal_manager& term, chat_window& chat); ///cheap
 
 #endif // IMGUI_UI_COMPONENTS_HPP_INCLUDED

@@ -258,7 +258,8 @@ int main(int argc, char* argv[])
     font_selector font_select;
     font_select.reset_default_fonts();
 
-    terminal_imgui term;
+    terminal_manager terminals;
+
     chat_window chat_win;
     realtime_script_manager realtime_scripts;
 
@@ -369,7 +370,7 @@ int main(int argc, char* argv[])
 
     printf("Specials\n");
 
-    std::string terminal_file = "terminal_v6.txt";
+    std::string terminal_file = "terminal_v7.txt";
     std::string chat_file = "chat_v6.txt";
     //std::string settings_file = "text_sett_v1.txt";
     std::string font_file = "font_sett_v1.txt";
@@ -380,7 +381,7 @@ int main(int argc, char* argv[])
         if(file::exists(terminal_file))
         {
             nlohmann::json dat = nlohmann::json::parse(file::read(terminal_file, file::mode::BINARY));
-            deserialise(dat, term, serialise_mode::DISK);
+            deserialise(dat, terminals, serialise_mode::DISK);
         }
     }
     catch(...){printf("Invalid terminal file\n");}
@@ -436,7 +437,7 @@ int main(int argc, char* argv[])
 
     double script_mousewheel_delta = 0.;
 
-    invalidate_everything(term, chat_win);
+    invalidate_everything(terminals, chat_win);
 
     std::string current_user = "";
 
@@ -476,7 +477,7 @@ int main(int argc, char* argv[])
 
     //while(running)
     #ifndef __EMSCRIPTEN__
-    while(!window.should_close() && term.open)
+    while(!window.should_close() && terminals.main_terminal.open)
     #else
     hptr = [&]()
     #endif
@@ -498,9 +499,9 @@ int main(int argc, char* argv[])
             auth_manage.check(s_api, conn, current_user);
 
             if(!printed_connecting)
-                term.add_text("Connecting...");
+                terminals.main_terminal.add_text("Connecting...");
             else
-                term.extend_text(".");
+                terminals.main_terminal.extend_text(".");
 
             printed_connecting = true;
         }
@@ -518,8 +519,8 @@ int main(int argc, char* argv[])
         editable_string no_string;
         editable_string* to_edit = &no_string;
 
-        if(term.focused)
-            to_edit = &term.command;
+        if(terminals.get_focused_terminal()->focused)
+            to_edit = &terminals.get_focused_terminal()->command;
 
         bool has_chat_window = chat_win.focused;
 
@@ -622,7 +623,7 @@ int main(int argc, char* argv[])
         last_mouse_pos = io.MousePos;
         //last_can_suppress_inputs = can_suppress_inputs;
 
-        if(!term.cache.valid())
+        if(!terminals.all_cache_valid())
             visual_events = true;
 
         for(auto& i : chat_win.chat_threads)
@@ -647,7 +648,7 @@ int main(int argc, char* argv[])
 
             if(visual_events)
             {
-                term.cache.invalidate_visual_cache();
+                terminals.invalidate_visual_cache();
 
                 for(auto& i : chat_win.chat_threads)
                 {
@@ -662,7 +663,7 @@ int main(int argc, char* argv[])
 
             if(font_select.update_rebuild())
             {
-                invalidate_everything(term, chat_win);
+                invalidate_everything(terminals, chat_win);
 
                 ImGui_ImplOpenGL3_DestroyDeviceObjects();
                 ImGui_ImplOpenGL3_CreateDeviceObjects();
@@ -806,7 +807,7 @@ int main(int argc, char* argv[])
 
                     to_edit->add_to_command(i);
 
-                    last_line_invalidate_everything(term, chat_win);
+                    last_line_invalidate_everything(terminals, chat_win);
 
                     std::string str = utf8;
 
@@ -825,7 +826,7 @@ int main(int argc, char* argv[])
                 if(key_map.find(i) != key_map.end())
                     on_pressed.push_back(key_map[i]);
 
-                last_line_invalidate_everything(term, chat_win);
+                last_line_invalidate_everything(terminals, chat_win);
 
                 if(i == GLFW_KEY_BACKSPACE)
                 {
@@ -949,12 +950,12 @@ int main(int argc, char* argv[])
                         to_edit->add_to_command(i);
                     }
 
-                    last_line_invalidate_everything(term, chat_win);
+                    last_line_invalidate_everything(terminals, chat_win);
                 }
 
                 if(i == 0)
                 {
-                    last_line_invalidate_everything(term, chat_win);
+                    last_line_invalidate_everything(terminals, chat_win);
 
                     get_global_copy_handler()->on_lclick(cursor_pos);
                 }
@@ -967,7 +968,7 @@ int main(int argc, char* argv[])
 
                 if(i == 0)
                 {
-                    last_line_invalidate_everything(term, chat_win);
+                    last_line_invalidate_everything(terminals, chat_win);
 
                     get_global_copy_handler()->on_lclick_release(cursor_pos);
                 }
@@ -1026,7 +1027,12 @@ int main(int argc, char* argv[])
             if(realtime_scripts.get_id_of_focused_realtime_window() == -1)
                 script_mousewheel_delta = 0;
 
-            term.scroll_hack.scrolled_this_frame = mouse_delta;
+            terminals.main_terminal.scroll_hack.scrolled_this_frame = mouse_delta;
+
+            for(auto& i : terminals.sub_terminals)
+            {
+                i.second.scroll_hack.scrolled_this_frame = mouse_delta;
+            }
 
             for(auto& i : chat_win.chat_threads)
             {
@@ -1040,7 +1046,7 @@ int main(int argc, char* argv[])
 
             ImGui::PushFont(font_select.get_base_font());
 
-            auth_manage.display(term, s_api, conn, current_user);
+            auth_manage.display(terminals.main_terminal, s_api, conn, current_user);
 
             font_select.render(window);
 
@@ -1049,9 +1055,9 @@ int main(int argc, char* argv[])
                 ImGui::SetStyleLinearColor(window_ctx.is_srgb);
             }*/
 
-            term.check_insert_user_command();
+            terminals.main_terminal.check_insert_user_command();
 
-            if(starts_with(to_edit->command, "user user ") && term.focused)
+            if(starts_with(to_edit->command, "user user ") && terminals.get_focused_terminal()->focused)
             {
                 if((int)to_edit->command.size() > (int)strlen("user "))
                 {
@@ -1065,6 +1071,8 @@ int main(int argc, char* argv[])
 
             if(enter && to_edit->command.size() > 0)
             {
+                terminal_imgui& term = *terminals.get_focused_terminal();
+
                 if(term.focused)
                 {
                     term.consider_resetting_scrollbar = true;
@@ -1254,7 +1262,7 @@ int main(int argc, char* argv[])
                 {
                     bool should_shutdown = false;
 
-                    std::string data = handle_local_command(current_user, cmd, term.auto_handle, should_shutdown, term, chat_win);
+                    std::string data = handle_local_command(current_user, cmd, terminals.main_terminal.auto_handle, should_shutdown, terminals, chat_win);
 
                     term.add_text(data);
 
@@ -1264,12 +1272,12 @@ int main(int argc, char* argv[])
                     }
                 }
 
-                pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
+                pretty_atomic_write_all(terminal_file, serialise(terminals, serialise_mode::DISK));
                 pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
             }
             else if(enter && to_edit->command.size() == 0)
             {
-                term.add_text(" ");
+                terminals.get_focused_terminal()->add_text(" ");
             }
 
             if(ImGui::IsMouseDown(0))
@@ -1292,13 +1300,13 @@ int main(int argc, char* argv[])
                 ///this is temporary before the other end of the api gets changed
                 nlohmann::json data = nlohmann::json::parse(fdata);
 
-                process_text_from_server(term, auth_manage, current_user, data, chat_win, font_select, realtime_scripts);
+                process_text_from_server(terminals.main_terminal, auth_manage, current_user, data, chat_win, font_select, realtime_scripts);
                 //term.add_text_from_server(auth_manage, current_user, data, chat_win, font_select);
             }
 
-            if(write_clock.get_elapsed_time_s() > 5 && (!term.cache.valid() || chat_win.any_cache_invalid()))
+            if(write_clock.get_elapsed_time_s() > 5 && (!terminals.all_cache_valid() || chat_win.any_cache_invalid()))
             {
-                pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
+                pretty_atomic_write_all(terminal_file, serialise(terminals, serialise_mode::DISK));
                 pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
 
                 auto save_sett = window.get_render_settings();
@@ -1312,11 +1320,11 @@ int main(int argc, char* argv[])
             ///this is inadequate
             ///we need to be able to request multiple scripts at once
             ///and receive multiple as well
-            if(term.auto_handle.found_unprocessed_autocompletes.size() > 0 && request_clock.get_elapsed_time_s() > 0.3)
+            if(terminals.main_terminal.auto_handle.found_unprocessed_autocompletes.size() > 0 && request_clock.get_elapsed_time_s() > 0.3)
             {
                 request_clock.restart();
 
-                for(const std::string& str : term.auto_handle.found_unprocessed_autocompletes)
+                for(const std::string& str : terminals.main_terminal.auto_handle.found_unprocessed_autocompletes)
                 {
                     nlohmann::json data;
                     data["type"] = "autocomplete_request";
@@ -1327,11 +1335,11 @@ int main(int argc, char* argv[])
                     break;
                 }
 
-                if(term.auto_handle.found_unprocessed_autocompletes.size() > 0)
-                    term.auto_handle.found_unprocessed_autocompletes.erase(term.auto_handle.found_unprocessed_autocompletes.begin());
+                if(terminals.main_terminal.auto_handle.found_unprocessed_autocompletes.size() > 0)
+                    terminals.main_terminal.auto_handle.found_unprocessed_autocompletes.erase(terminals.main_terminal.auto_handle.found_unprocessed_autocompletes.begin());
             }
 
-            if((term.focused || realtime_scripts.get_id_of_focused_realtime_window() != 1) && ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) && just_pressed(GLFW_KEY_C))
+            if((terminals.get_focused_terminal()->focused || realtime_scripts.get_id_of_focused_realtime_window() != 1) && ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) && just_pressed(GLFW_KEY_C))
             {
                 nlohmann::json data;
                 data["type"] = "client_terminate_scripts";
@@ -1367,17 +1375,14 @@ int main(int argc, char* argv[])
 
             //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
 
-            term.auto_handle.window_in_focus = true;
-            chat_win.auto_handle.window_in_focus = true;
-
             int was_closed_id = -1;
 
             vec2i window_dim = window.get_window_size();
 
             //test_imgui_term.render(window);
-            realtime_scripts.render_realtime_windows(conn, was_closed_id, font_select, term.auto_handle);
+            realtime_scripts.render_realtime_windows(conn, was_closed_id, font_select, terminals.main_terminal.auto_handle);
             chat_win.render(should_coordinate_focus);
-            term.render(window, {window_dim.x(), window_dim.y()}, should_coordinate_focus);
+            terminals.render(window, {window_dim.x(), window_dim.y()}, should_coordinate_focus);
 
             should_coordinate_focus = false;
 
@@ -1390,17 +1395,28 @@ int main(int argc, char* argv[])
                 conn.write(data.dump());
             }
 
-            if(term.auto_handle.tab_pressed)
+            auto tab_check = [&](terminal_imgui& term)
             {
-                last_line_invalidate_everything(term, chat_win);
+                if(term.auto_handle.tab_pressed)
+                {
+                    last_line_invalidate_everything(terminals, chat_win);
+                }
+
+                term.auto_handle.tab_pressed = ImGui::IsKeyPressed(GLFW_KEY_TAB);
+
+                if(term.auto_handle.tab_pressed)
+                {
+                    last_line_invalidate_everything(terminals, chat_win);
+                }
+            };
+
+            tab_check(terminals.main_terminal);
+
+            for(auto& i : terminals.sub_terminals)
+            {
+                tab_check(i.second);
             }
 
-            term.auto_handle.tab_pressed = ImGui::IsKeyPressed(GLFW_KEY_TAB);
-
-            if(term.auto_handle.tab_pressed)
-            {
-                last_line_invalidate_everything(term, chat_win);
-            }
 
             ///this is a hack to fix the fact that sometimes
             ///click input doesn't make clean click/release pairs
@@ -1418,7 +1434,7 @@ int main(int argc, char* argv[])
 
             if(char_inf::cwidth != lcwidth || char_inf::cheight != lcheight)
             {
-                invalidate_everything(term, chat_win);
+                invalidate_everything(terminals, chat_win);
             }
 
             ImGui::PopFont();
@@ -1468,7 +1484,7 @@ int main(int argc, char* argv[])
     #endif // __EMSCRIPTEN__*/
 
     file::write(notepad_file, notepad, file::mode::BINARY);
-    pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
+    pretty_atomic_write_all(terminal_file, serialise(terminals, serialise_mode::DISK));
     pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
 
     auto save_sett = window.get_render_settings();

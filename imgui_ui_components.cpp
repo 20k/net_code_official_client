@@ -105,9 +105,15 @@ bool chat_window::any_cache_invalid()
     return false;
 }
 
-void clear_everything(terminal_imgui& term, chat_window& chat)
+void clear_everything(terminal_manager& term, chat_window& chat)
 {
-    term.clear_terminal();
+    term.main_terminal.clear_terminal();
+
+    for(auto& i : term.sub_terminals)
+    {
+        i.second.clear_terminal();
+    }
+
     chat.clear_chat();
 }
 
@@ -226,109 +232,123 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
 void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus)
 {
-    glfw_backend* bck = (glfw_backend*)win.backend;
-    copy_handler* handle = get_global_copy_handler();
-
-    vec2f window_pos = xy_to_vec(ImGui::GetMainViewport()->Pos);
-
-    ImGui::SetNextWindowSize(ImVec2(window_size.x(), window_size.y()));
-    ImGui::SetNextWindowPos({window_pos.x(), window_pos.y()});
-    ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
-
-    if(refocus)
-        ImGui::SetNextWindowFocus();
-
-    ImVec4 style_col = ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive);
-
-    ImGui::PushStyleColor(ImGuiCol_TitleBg, style_col);
-    ImGui::PushStyleColor(ImGuiCol_TitleBgCollapsed, style_col);
-
-    ImVec4 resize_col = ImGui::GetStyleColorVec4(ImGuiCol_ResizeGrip);
-    ImU32 resize_colu32 = ImGui::ColorConvertFloat4ToU32(resize_col);
-
-    ImGui::Begin(" NET_CODE_", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
-
-    if(ImGui::IsItemHovered() &&
-       ImGui::IsMouseDragging(0) && !title_dragging && !resize_dragging)
+    if(is_main_terminal)
     {
-        if(!title_dragging)
+        glfw_backend* bck = (glfw_backend*)win.backend;
+        copy_handler* handle = get_global_copy_handler();
+
+        vec2f window_pos = xy_to_vec(ImGui::GetMainViewport()->Pos);
+
+        ImGui::SetNextWindowSize(ImVec2(window_size.x(), window_size.y()));
+        ImGui::SetNextWindowPos({window_pos.x(), window_pos.y()});
+        ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
+
+        if(refocus)
+            ImGui::SetNextWindowFocus();
+
+        ImVec4 style_col = ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive);
+
+        ImGui::PushStyleColor(ImGuiCol_TitleBg, style_col);
+        ImGui::PushStyleColor(ImGuiCol_TitleBgCollapsed, style_col);
+
+        ImVec4 resize_col = ImGui::GetStyleColorVec4(ImGuiCol_ResizeGrip);
+        ImU32 resize_colu32 = ImGui::ColorConvertFloat4ToU32(resize_col);
+
+        ImGui::Begin(" NET_CODE_", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
+
+        if(ImGui::IsItemHovered() &&
+           ImGui::IsMouseDragging(0) && !title_dragging && !resize_dragging)
         {
-            title_dragging = true;
-            title_start_pos = ImGui::GetMainViewport()->Pos;
-        }
-    }
-
-    if(ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
-    {
-        int maximised = glfwGetWindowAttrib(bck->ctx.window, GLFW_MAXIMIZED);
-
-        if(!maximised)
-            glfwMaximizeWindow(bck->ctx.window);
-        else
-            glfwRestoreWindow(bck->ctx.window);
-    }
-
-    vec2f window_br = window_pos + window_size;
-    vec2f window_tl = window_br - (vec2f){30, 30};
-
-    bool hovering_label = ImGui::IsMouseHoveringRect({window_tl.x(), window_tl.y()}, {window_br.x(), window_br.y()}, true);
-
-    if(hovering_label || resize_dragging)
-        resize_colu32 = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_ResizeGripActive));
-
-    if(hovering_label && !scroll_hack.scrolling)
-    {
-        if(ImGui::IsMouseDragging(0) && !title_dragging && !resize_dragging)
-        {
-            if(!resize_dragging)
+            if(!title_dragging)
             {
-                resize_dragging = true;
-                resize_start_pos = {window_size.x(), window_size.y()};
+                title_dragging = true;
+                title_start_pos = ImGui::GetMainViewport()->Pos;
             }
         }
-    }
 
-    if(title_dragging)
+        if(ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+        {
+            int maximised = glfwGetWindowAttrib(bck->ctx.window, GLFW_MAXIMIZED);
+
+            if(!maximised)
+                glfwMaximizeWindow(bck->ctx.window);
+            else
+                glfwRestoreWindow(bck->ctx.window);
+        }
+
+        vec2f window_br = window_pos + window_size;
+        vec2f window_tl = window_br - (vec2f){30, 30};
+
+        bool hovering_label = ImGui::IsMouseHoveringRect({window_tl.x(), window_tl.y()}, {window_br.x(), window_br.y()}, true);
+
+        if(hovering_label || resize_dragging)
+            resize_colu32 = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_ResizeGripActive));
+
+        if(hovering_label && !scroll_hack.scrolling)
+        {
+            if(ImGui::IsMouseDragging(0) && !title_dragging && !resize_dragging)
+            {
+                if(!resize_dragging)
+                {
+                    resize_dragging = true;
+                    resize_start_pos = {window_size.x(), window_size.y()};
+                }
+            }
+        }
+
+        if(title_dragging)
+        {
+            ImVec2 delta = ImGui::GetMouseDragDelta();
+
+            ImVec2 real_pos;
+            real_pos.x = delta.x + title_start_pos.x;
+            real_pos.y = delta.y + title_start_pos.y;
+
+            glfwSetWindowPos(bck->ctx.window, real_pos.x, real_pos.y);
+        }
+
+        if(resize_dragging)
+        {
+            ImVec2 delta = ImGui::GetMouseDragDelta();
+
+            int width = delta.x + resize_start_pos.x;
+            int height = delta.y + resize_start_pos.y;
+
+            if(width >= 50 && height >= 50)
+                glfwSetWindowSize(bck->ctx.window, width, height);
+        }
+
+        if(!ImGui::IsMouseDown(0))
+        {
+            title_dragging = false;
+            resize_dragging = false;
+        }
+
+        focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+        hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
+
+        if(refocus)
+            ImGui::SetNextWindowFocus();
+
+        render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, colour_string(current_user) + "> ");
+
+        ImGui::GetWindowDrawList()->AddTriangleFilled({window_tl.x(), window_br.y()}, {window_br.x(), window_br.y()}, {window_br.x(), window_tl.y()}, resize_colu32);
+
+        ImGui::End();
+
+        ImGui::PopStyleColor(2);
+    }
+    else
     {
-        ImVec2 delta = ImGui::GetMouseDragDelta();
+        ImGui::Begin("TTERM", &open, ImGuiWindowFlags_NoScrollbar);
 
-        ImVec2 real_pos;
-        real_pos.x = delta.x + title_start_pos.x;
-        real_pos.y = delta.y + title_start_pos.y;
+        focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+        hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
 
-        glfwSetWindowPos(bck->ctx.window, real_pos.x, real_pos.y);
+        render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, colour_string(current_user) + "> ");
+
+        ImGui::End();
     }
-
-    if(resize_dragging)
-    {
-        ImVec2 delta = ImGui::GetMouseDragDelta();
-
-        int width = delta.x + resize_start_pos.x;
-        int height = delta.y + resize_start_pos.y;
-
-        if(width >= 50 && height >= 50)
-            glfwSetWindowSize(bck->ctx.window, width, height);
-    }
-
-    if(!ImGui::IsMouseDown(0))
-    {
-        title_dragging = false;
-        resize_dragging = false;
-    }
-
-    focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
-    hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
-
-    if(refocus)
-        ImGui::SetNextWindowFocus();
-
-    render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, colour_string(current_user) + "> ");
-
-    ImGui::GetWindowDrawList()->AddTriangleFilled({window_tl.x(), window_br.y()}, {window_br.x(), window_br.y()}, {window_br.x(), window_tl.y()}, resize_colu32);
-
-    ImGui::End();
-
-    ImGui::PopStyleColor(2);
 }
 
 void realtime_script_manager::render_realtime_windows(connection& conn, int& was_closed_id, font_selector& fonts, auto_handler& auto_handle)
@@ -454,9 +474,14 @@ int realtime_script_manager::get_id_of_focused_realtime_window()
     return -1;
 }
 
-void invalidate_everything(terminal_imgui& term, chat_window& chat)
+void invalidate_everything(terminal_manager& term, chat_window& chat)
 {
-    term.cache.invalidate();
+    term.main_terminal.cache.invalidate();
+
+    for(auto& i : term.sub_terminals)
+    {
+        i.second.cache.invalidate();
+    }
 
     for(auto& i : chat.chat_threads)
     {
@@ -464,9 +489,14 @@ void invalidate_everything(terminal_imgui& term, chat_window& chat)
     }
 }
 
-void last_line_invalidate_everything(terminal_imgui& term, chat_window& chat)
+void last_line_invalidate_everything(terminal_manager& term, chat_window& chat)
 {
-    term.cache.invalidate_last_line();
+    term.main_terminal.cache.invalidate_last_line();
+
+    for(auto& i : term.sub_terminals)
+    {
+        i.second.cache.invalidate_last_line();
+    }
 
     for(auto& i : chat.chat_threads)
     {
@@ -548,6 +578,58 @@ void terminal_imgui::extend_text(const std::string& str)
     history.pop_back();
 
     add_text(old + str);
+}
+
+terminal_manager::terminal_manager()
+{
+    main_terminal.is_main_terminal = true;
+}
+
+void terminal_manager::render(render_window& win, vec2f window_size, bool refocus)
+{
+    for(auto& i : sub_terminals)
+    {
+        i.second.render(win, window_size, refocus);
+    }
+
+    main_terminal.render(win, window_size, refocus);
+}
+
+bool terminal_manager::all_cache_valid()
+{
+    for(auto& i : sub_terminals)
+    {
+        if(!i.second.cache.valid())
+            return false;
+    }
+
+    if(!main_terminal.cache.valid())
+        return false;
+
+    return true;
+}
+
+void terminal_manager::invalidate_visual_cache()
+{
+    for(auto& i : sub_terminals)
+    {
+        i.second.cache.invalidate_visual_cache();
+    }
+
+    main_terminal.cache.invalidate_visual_cache();
+}
+
+terminal_imgui* terminal_manager::get_focused_terminal()
+{
+    for(auto& i : sub_terminals)
+    {
+        if(i.second.focused)
+        {
+            return &i.second;
+        }
+    }
+
+    return &main_terminal;
 }
 
 void process_text_from_server(terminal_imgui& term, auth_manager& auth_manage, std::string& in_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts, realtime_script_manager& realtime_scripts)
