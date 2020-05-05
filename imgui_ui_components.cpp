@@ -265,6 +265,7 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus,
             }
         }
 
+        #ifndef __EMSCRIPTEN__
         if(ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
         {
             int maximised = glfwGetWindowAttrib(bck->ctx.window, GLFW_MAXIMIZED);
@@ -274,6 +275,7 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus,
             else
                 glfwRestoreWindow(bck->ctx.window);
         }
+        #endif // __EMSCRIPTEN__
 
         vec2f window_br = window_pos + window_size;
         vec2f window_tl = window_br - (vec2f){30, 30};
