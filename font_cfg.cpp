@@ -169,8 +169,10 @@ bool font_selector::update_rebuild(float editor_font_size)
     if(!wants_rebuild)
         return false;
 
-    ImGuiFreeType::BuildFontAtlas(ImGui::GetIO().Fonts, fonts_flags, subpixel_flags);
+    /*ImGuiFreeType::BuildFontAtlas(ImGui::GetIO().Fonts, fonts_flags, subpixel_flags);
+    return true;*/
 
+    reset_default_fonts(current_base_font_size);
     wants_rebuild = false;
 
     return true;
