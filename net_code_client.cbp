@@ -460,6 +460,8 @@
 			<Option target="LinuxDeploy" />
 		</Unit>
 		<Unit filename="deps/imgui/imgui_demo.cpp">
+			<Option compile="0" />
+			<Option link="0" />
 			<Option target="Debug" />
 			<Option target="Release" />
 			<Option target="Profile" />
