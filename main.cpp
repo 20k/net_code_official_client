@@ -95,7 +95,7 @@ std::string make_lower(std::string in)
 
 void pretty_atomic_write_all(const std::string& file, const nlohmann::json& js)
 {
-    file::write(file, js.dump(1), file::mode::TEXT);
+    file::write(file, js.dump(1), file::mode::BINARY);
 }
 
 std::string default_up_handling(const std::string& user, const std::string& server_msg, const std::string& scripts_dir)
@@ -205,7 +205,7 @@ int main(int argc, char* argv[])
     {
         try
         {
-            nlohmann::json window_nlohmann = nlohmann::json::parse(file::read(window_file, file::mode::TEXT));
+            nlohmann::json window_nlohmann = nlohmann::json::parse(file::read(window_file, file::mode::BINARY));
 
             deserialise(window_nlohmann, sett, serialise_mode::DISK);
 
@@ -213,7 +213,7 @@ int main(int argc, char* argv[])
         }
         catch(...)
         {
-
+            printf("Invalid window settings\n");
         }
     }
 
@@ -379,38 +379,38 @@ int main(int argc, char* argv[])
     {
         if(file::exists(terminal_file))
         {
-            nlohmann::json dat = nlohmann::json::parse(file::read(terminal_file, file::mode::TEXT));
+            nlohmann::json dat = nlohmann::json::parse(file::read(terminal_file, file::mode::BINARY));
             deserialise(dat, term, serialise_mode::DISK);
         }
     }
-    catch(...){}
+    catch(...){printf("Invalid terminal file\n");}
 
     try
     {
         if(file::exists(chat_file))
         {
-            nlohmann::json dat = nlohmann::json::parse(file::read(chat_file, file::mode::TEXT));
+            nlohmann::json dat = nlohmann::json::parse(file::read(chat_file, file::mode::BINARY));
             deserialise(dat, chat_win, serialise_mode::DISK);
         }
     }
-    catch(...){}
+    catch(...){printf("Invalid chat file\n");}
 
     try
     {
         if(file::exists(font_file))
         {
-            nlohmann::json dat = nlohmann::json::parse(file::read(font_file, file::mode::TEXT));
+            nlohmann::json dat = nlohmann::json::parse(file::read(font_file, file::mode::BINARY));
             deserialise(dat, font_select, serialise_mode::DISK);
             font_select.find_saved_font();
         }
     }
-    catch(...){}
+    catch(...){printf("Invalid font file\n");}
 
     std::string notepad;
 
     if(file::exists(notepad_file))
     {
-        notepad = file::read(notepad_file, file::mode::TEXT);
+        notepad = file::read(notepad_file, file::mode::BINARY);
     }
 
     printf("Loaded files\n");
@@ -738,7 +738,7 @@ int main(int argc, char* argv[])
 
                     if(should_save)
                     {
-                        file::write("hex_key.key", drop.data, file::mode::BINARY);
+                        file::write_atomic("hex_key.key", drop.data, file::mode::BINARY);
                     }
 
                     window.pop_dropped_file();
@@ -1358,7 +1358,7 @@ int main(int argc, char* argv[])
 
                 if(changed)
                 {
-                    file::write(notepad_file, notepad, file::mode::TEXT);
+                    file::write(notepad_file, notepad, file::mode::BINARY);
                 }
 
                 ImGui::End();
@@ -1469,7 +1469,7 @@ int main(int argc, char* argv[])
     );
     #endif // __EMSCRIPTEN__*/
 
-    file::write(notepad_file, notepad, file::mode::TEXT);
+    file::write(notepad_file, notepad, file::mode::BINARY);
     pretty_atomic_write_all(terminal_file, serialise(term, serialise_mode::DISK));
     pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
 
