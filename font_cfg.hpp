@@ -48,6 +48,8 @@ struct font_selector : serialisable
     {
         DO_SERIALISE(current_base_font_size);
         DO_SERIALISE(current_base_font);
+        DO_SERIALISE(fonts_flags);
+        DO_SERIALISE(subpixel_flags);
     }
 };
 
