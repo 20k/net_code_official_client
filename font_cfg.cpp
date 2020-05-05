@@ -206,11 +206,11 @@ void font_selector::render(render_window& window)
     ImGuiIO& io = ImGui::GetIO();
     ImFont* font_current = ImGui::GetFont();
 
-    if (ImGui::BeginCombo("Fonts", font_current->GetDebugName()))
+    if(ImGui::BeginCombo("Fonts", font_current->GetDebugName()))
     {
-        for (int n = 0; n < io.Fonts->Fonts.Size; n++)
+        for(int n = 0; n < io.Fonts->Fonts.Size; n++)
         {
-            if (ImGui::Selectable(io.Fonts->Fonts[n]->GetDebugName(), io.Fonts->Fonts[n] == font_current))
+            if(ImGui::Selectable(io.Fonts->Fonts[n]->GetDebugName(), io.Fonts->Fonts[n] == font_current))
             {
                 //io.FontDefault = io.Fonts->Fonts[n];
                 wants_rebuild = true;
@@ -220,7 +220,7 @@ void font_selector::render(render_window& window)
         ImGui::EndCombo();
     }
 
-    wants_rebuild |= ImGui::DragFloat("Multiply", &fonts_multiply, 0.001f, 0.0f, 2.0f);
+    //wants_rebuild |= ImGui::DragFloat("Multiply", &fonts_multiply, 0.001f, 0.0f, 2.0f);
 
     wants_rebuild |= ImGui::CheckboxFlags("NoHinting",     &fonts_flags, ImGuiFreeType::NoHinting);
     wants_rebuild |= ImGui::CheckboxFlags("NoAutoHint",    &fonts_flags, ImGuiFreeType::NoAutoHint);
