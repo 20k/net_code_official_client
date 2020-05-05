@@ -1,0 +1,1 @@
+python2 C:\\Users\\James\\Desktop\\projects\\crapmud_client\\emmake\\serv_impl.p
