@@ -74,7 +74,6 @@ void for_each_file(const std::string& directory, const T& t)
     }
 }
 
-
 void font_selector::reset_default_fonts(float editor_font_size)
 {
     ImFontAtlas* atlas = ImGui::GetIO().Fonts;
