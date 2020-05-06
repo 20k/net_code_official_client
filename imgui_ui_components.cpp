@@ -229,7 +229,7 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
     scroll_hack.do_hack(flines, true, cache, dim);
 }
 
-void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus, int extra_id)
+void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec2f window_size, bool refocus, int extra_id)
 {
     if(is_main_terminal)
     {
@@ -253,7 +253,7 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus,
         ImVec4 resize_col = ImGui::GetStyleColorVec4(ImGuiCol_ResizeGrip);
         ImU32 resize_colu32 = ImGui::ColorConvertFloat4ToU32(resize_col);
 
-        ImGui::Begin(" NET_CODE_", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
+        ImGui::Begin(" NET_CODE_", &open, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
 
         if(ImGui::IsItemHovered() &&
            ImGui::IsMouseDragging(0) && !title_dragging && !resize_dragging)
@@ -276,6 +276,16 @@ void terminal_imgui::render(render_window& win, vec2f window_size, bool refocus,
                 glfwRestoreWindow(bck->ctx.window);
         }
         #endif // __EMSCRIPTEN__
+
+        if(ImGui::BeginMenuBar())
+        {
+            if(ImGui::MenuItem("[New Terminal]"))
+            {
+                terminals.make_new_terminal();
+            }
+
+            ImGui::EndMenuBar();
+        }
 
         vec2f window_br = window_pos + window_size;
         vec2f window_tl = window_br - (vec2f){30, 30};
@@ -600,7 +610,7 @@ void terminal_manager::render(render_window& win, vec2f window_size, bool refocu
 
     for(auto it = sub_terminals.begin(); it != sub_terminals.end();)
     {
-        it->second.render(win, window_size, refocus, it->first);
+        it->second.render(*this, win, window_size, refocus, it->first);
 
         if(!it->second.open)
         {
@@ -612,7 +622,7 @@ void terminal_manager::render(render_window& win, vec2f window_size, bool refocu
         }
     }
 
-    main_terminal.render(win, window_size, refocus, -1);
+    main_terminal.render(*this, win, window_size, refocus, -1);
 }
 
 bool terminal_manager::all_cache_valid()

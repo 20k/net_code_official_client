@@ -110,6 +110,7 @@ struct chat_window : serialisable, free_function
 };
 
 struct render_window;
+struct terminal_manager;;
 
 struct terminal_imgui : serialisable, cacheable, free_function
 {
@@ -148,7 +149,7 @@ struct terminal_imgui : serialisable, cacheable, free_function
     void clear_terminal();
 
     terminal_imgui();
-    void render(render_window& win, vec2f window_size, bool refocus, int extra_id);
+    void render(terminal_manager& terminals, render_window& win, vec2f window_size, bool refocus, int extra_id);
     void bump_command_to_history();
 
     void add_text(const std::string& str);
