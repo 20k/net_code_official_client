@@ -142,18 +142,15 @@ struct terminal_imgui : serialisable, cacheable, free_function
     bool reset_scrollbar = true;
     editable_string command;
 
-    auto_handler auto_handle;
-
     void check_insert_user_command();
 
     void clear_terminal();
 
-    terminal_imgui();
     void render(terminal_manager& terminals, render_window& win, vec2f window_size, bool refocus, int extra_id);
-    void bump_command_to_history();
+    void bump_command_to_history(auto_handler& auto_handle);
 
-    void add_text(const std::string& str);
-    void extend_text(const std::string& str);
+    void add_text(const std::string& str, auto_handler& auto_handle);
+    void extend_text(const std::string& str, auto_handler& auto_handle);
     //void add_text_from_server(auth_manager& auth_manage, std::string& current_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts);
 };
 
@@ -161,6 +158,7 @@ struct terminal_manager : serialisable, free_function
 {
     std::map<int, terminal_imgui> sub_terminals;
     terminal_imgui main_terminal;
+    auto_handler auto_handle;
 
     size_t gid = 1;
 

@@ -38,16 +38,8 @@ DEFINE_SERIALISE_FUNCTION(terminal_imgui)
 {
     SERIALISE_SETUP();
 
-    if(ctx.serialisation && !ctx.encode)
-    {
-        me->auto_handle.found_unprocessed_autocompletes.clear();
-        me->auto_handle.found_args.clear();
-        me->auto_handle.is_valid.clear();
-    }
-
     DO_FSERIALISE(raw_history);
     DO_FSERIALISE(command);
-    DO_FSERIALISE(auto_handle);
     DO_FSERIALISE(new_terminal);
     DO_FSERIALISE(friendly_id);
 
@@ -79,7 +71,15 @@ DEFINE_SERIALISE_FUNCTION(terminal_manager)
 {
     SERIALISE_SETUP();
 
+    if(ctx.serialisation && !ctx.encode)
+    {
+        me->auto_handle.found_unprocessed_autocompletes.clear();
+        me->auto_handle.found_args.clear();
+        me->auto_handle.is_valid.clear();
+    }
+
     DO_FSERIALISE(sub_terminals);
     DO_FSERIALISE(main_terminal);
     DO_FSERIALISE(gid);
+    DO_FSERIALISE(auto_handle);
 }

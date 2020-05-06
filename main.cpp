@@ -499,9 +499,9 @@ int main(int argc, char* argv[])
             auth_manage.check(s_api, conn, current_user);
 
             if(!printed_connecting)
-                terminals.main_terminal.add_text("Connecting...");
+                terminals.main_terminal.add_text("Connecting...", terminals.auto_handle);
             else
-                terminals.main_terminal.extend_text(".");
+                terminals.main_terminal.extend_text(".", terminals.auto_handle);
 
             printed_connecting = true;
         }
@@ -1046,7 +1046,7 @@ int main(int argc, char* argv[])
 
             ImGui::PushFont(font_select.get_base_font());
 
-            auth_manage.display(terminals.main_terminal, s_api, conn, current_user);
+            auth_manage.display(terminals, s_api, conn, current_user);
 
             font_select.render(window);
 
@@ -1133,17 +1133,17 @@ int main(int argc, char* argv[])
 
                     if(command == "/join")
                     {
-                        term.add_text("Syntax is /join channel password");
+                        term.add_text("Syntax is /join channel password", terminals.auto_handle);
                         bump = true;
                     }
                     else if(command == "/leave")
                     {
-                        term.add_text("Syntax is /leave channel");
+                        term.add_text("Syntax is /leave channel", terminals.auto_handle);
                         bump = true;
                     }
                     else if(command == "/create")
                     {
-                        term.add_text("Syntax is /create channel password");
+                        term.add_text("Syntax is /create channel password", terminals.auto_handle);
                         bump = true;
                     }
                     else if(starts_with(command, "/"))
@@ -1156,7 +1156,7 @@ int main(int argc, char* argv[])
 
                         if(idx + 1 >= (int)command.size())
                         {
-                            term.add_text("First argument must be a channel name, eg /join global");
+                            term.add_text("First argument must be a channel name, eg /join global", terminals.auto_handle);
                         }
                         else
                         {
@@ -1209,7 +1209,7 @@ int main(int argc, char* argv[])
                             }
                             else
                             {
-                                term.add_text("Not a valid command, try /join, /leave or /create");
+                                term.add_text("Not a valid command, try /join, /leave or /create", terminals.auto_handle);
                             }
 
                             if(final_command != "")
@@ -1256,7 +1256,7 @@ int main(int argc, char* argv[])
 
                 if(term.focused)
                 {
-                    term.bump_command_to_history();
+                    term.bump_command_to_history(terminals.auto_handle);
                 }
                 else if(auto opt = chat_win.get_focused_chat_thread(); opt.has_value())
                 {
@@ -1267,9 +1267,9 @@ int main(int argc, char* argv[])
                 {
                     bool should_shutdown = false;
 
-                    std::string data = handle_local_command(current_user, cmd, terminals.main_terminal.auto_handle, should_shutdown, terminals, chat_win);
+                    std::string data = handle_local_command(current_user, cmd, terminals.auto_handle, should_shutdown, terminals, chat_win);
 
-                    term.add_text(data);
+                    term.add_text(data, terminals.auto_handle);
 
                     if(should_shutdown)
                     {
@@ -1282,7 +1282,7 @@ int main(int argc, char* argv[])
             }
             else if(enter && to_edit->command.size() == 0)
             {
-                terminals.get_focused_terminal()->add_text(" ");
+                terminals.get_focused_terminal()->add_text(" ", terminals.auto_handle);
             }
 
             if(ImGui::IsMouseDown(0))
@@ -1325,11 +1325,11 @@ int main(int argc, char* argv[])
             ///this is inadequate
             ///we need to be able to request multiple scripts at once
             ///and receive multiple as well
-            if(terminals.main_terminal.auto_handle.found_unprocessed_autocompletes.size() > 0 && request_clock.get_elapsed_time_s() > 0.3)
+            if(terminals.auto_handle.found_unprocessed_autocompletes.size() > 0 && request_clock.get_elapsed_time_s() > 0.3)
             {
                 request_clock.restart();
 
-                for(const std::string& str : terminals.main_terminal.auto_handle.found_unprocessed_autocompletes)
+                for(const std::string& str : terminals.auto_handle.found_unprocessed_autocompletes)
                 {
                     nlohmann::json data;
                     data["type"] = "autocomplete_request";
@@ -1340,8 +1340,8 @@ int main(int argc, char* argv[])
                     break;
                 }
 
-                if(terminals.main_terminal.auto_handle.found_unprocessed_autocompletes.size() > 0)
-                    terminals.main_terminal.auto_handle.found_unprocessed_autocompletes.erase(terminals.main_terminal.auto_handle.found_unprocessed_autocompletes.begin());
+                if(terminals.auto_handle.found_unprocessed_autocompletes.size() > 0)
+                    terminals.auto_handle.found_unprocessed_autocompletes.erase(terminals.auto_handle.found_unprocessed_autocompletes.begin());
             }
 
             if((terminals.get_focused_terminal()->focused || realtime_scripts.get_id_of_focused_realtime_window() != 1) && ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) && just_pressed(GLFW_KEY_C))
@@ -1390,7 +1390,7 @@ int main(int argc, char* argv[])
             vec2i window_dim = window.get_window_size();
 
             //test_imgui_term.render(window);
-            realtime_scripts.render_realtime_windows(conn, was_closed_id, font_select, terminals.main_terminal.auto_handle);
+            realtime_scripts.render_realtime_windows(conn, was_closed_id, font_select, terminals.auto_handle);
             chat_win.render(should_coordinate_focus);
             terminals.render(window, {window_dim.x(), window_dim.y()}, should_coordinate_focus);
 
@@ -1405,28 +1405,17 @@ int main(int argc, char* argv[])
                 conn.write(data.dump());
             }
 
-            auto tab_check = [&](terminal_imgui& term)
+            if(terminals.auto_handle.tab_pressed)
             {
-                if(term.auto_handle.tab_pressed)
-                {
-                    last_line_invalidate_everything(terminals, chat_win);
-                }
-
-                term.auto_handle.tab_pressed = ImGui::IsKeyPressed(GLFW_KEY_TAB);
-
-                if(term.auto_handle.tab_pressed)
-                {
-                    last_line_invalidate_everything(terminals, chat_win);
-                }
-            };
-
-            tab_check(terminals.main_terminal);
-
-            for(auto& i : terminals.sub_terminals)
-            {
-                tab_check(i.second);
+                last_line_invalidate_everything(terminals, chat_win);
             }
 
+            terminals.auto_handle.tab_pressed = ImGui::IsKeyPressed(GLFW_KEY_TAB);
+
+            if(terminals.auto_handle.tab_pressed)
+            {
+                last_line_invalidate_everything(terminals, chat_win);
+            }
 
             ///this is a hack to fix the fact that sometimes
             ///click input doesn't make clean click/release pairs

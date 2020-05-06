@@ -116,11 +116,6 @@ void clear_everything(terminal_manager& term, chat_window& chat)
     chat.clear_chat();
 }
 
-terminal_imgui::terminal_imgui()
-{
-    auto_handle.use_autocomplete = true;
-    auto_handle.use_autocolour = true;
-}
 
 void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, format_cache_2& cache, std::string command_padding = "")
 {
@@ -341,7 +336,7 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
         if(refocus)
             ImGui::SetNextWindowFocus();
 
-        render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, colour_string(current_user) + "> ");
+        render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, terminals.auto_handle, cache, colour_string(current_user) + "> ");
 
         ImGui::GetWindowDrawList()->AddTriangleFilled({window_tl.x(), window_br.y()}, {window_br.x(), window_br.y()}, {window_br.x(), window_tl.y()}, resize_colu32);
 
@@ -364,7 +359,7 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
         focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
         hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
 
-        render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, auto_handle, cache, colour_string(current_user) + "> ");
+        render_handle_imgui(scroll_hack, command.command, command.cursor_pos_idx, history, terminals.auto_handle, cache, colour_string(current_user) + "> ");
 
         ImGui::End();
     }
@@ -523,7 +518,7 @@ void last_line_invalidate_everything(terminal_manager& term, chat_window& chat)
     }
 }
 
-void terminal_imgui::bump_command_to_history()
+void terminal_imgui::bump_command_to_history(auto_handler& auto_handle)
 {
     std::string ccommand = command.command;
 
@@ -570,7 +565,7 @@ void fix_tabs(std::string& str)
     }
 }
 
-void terminal_imgui::add_text(const std::string& str)
+void terminal_imgui::add_text(const std::string& str, auto_handler& auto_handle)
 {
     raw_history.push_back(str);
     history.push_back(string_to_interop(str, false, auto_handle));
@@ -584,10 +579,10 @@ void terminal_imgui::add_text(const std::string& str)
     cache.invalidate();
 }
 
-void terminal_imgui::extend_text(const std::string& str)
+void terminal_imgui::extend_text(const std::string& str, auto_handler& auto_handle)
 {
     if(raw_history.size() == 0)
-        return add_text(str);
+        return add_text(str, auto_handle);
 
     assert(history.size() > 0);
 
@@ -596,12 +591,15 @@ void terminal_imgui::extend_text(const std::string& str)
     raw_history.pop_back();
     history.pop_back();
 
-    add_text(old + str);
+    add_text(old + str, auto_handle);
 }
 
 terminal_manager::terminal_manager()
 {
     main_terminal.is_main_terminal = true;
+
+    auto_handle.use_autocomplete = true;
+    auto_handle.use_autocolour = true;
 }
 
 void terminal_manager::render(render_window& win, vec2f window_size, bool refocus)
@@ -930,8 +928,8 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
                 auto_args.push_back({key, val});
             }
 
-            term->auto_handle.found_args[scriptname] = auto_args;
-            term->auto_handle.is_valid[scriptname] = true;
+            terminals.auto_handle.found_args[scriptname] = auto_args;
+            terminals.auto_handle.is_valid[scriptname] = true;
         }
     }
     else if(in["type"] == "script_args_invalid")
@@ -942,7 +940,7 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
 
         if(scriptname.size() > 0)
         {
-            term->auto_handle.is_valid[scriptname] = false;
+            terminals.auto_handle.is_valid[scriptname] = false;
         }
     }
     else if(in["type"] == "script_args_ratelimit")
@@ -953,7 +951,7 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
 
         if(name.size() > 0)
         {
-            term->auto_handle.found_unprocessed_autocompletes.push_back(name);
+            terminals.auto_handle.found_unprocessed_autocompletes.push_back(name);
         }
     }
     else if(in["type"] == "server_ping")
@@ -994,11 +992,11 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
         {
             file::write(key_file, key, file::mode::BINARY);
 
-            term->add_text(make_success_col("Success! Try user lowercase_name to get started, and then #scripts.core()"));
+            term->add_text(make_success_col("Success! Try user lowercase_name to get started, and then #scripts.core()"), terminals.auto_handle);
         }
         else
         {
-            term->add_text(make_error_col("Did not overwrite existing key file, you are already registered"));
+            term->add_text(make_error_col("Did not overwrite existing key file, you are already registered"), terminals.auto_handle);
         }
     }
     else
@@ -1011,7 +1009,7 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
         fix_tabs(str);
 
         term->raw_history.push_back(str);
-        term->history.push_back(string_to_interop(str, false, terminals.main_terminal.auto_handle));
+        term->history.push_back(string_to_interop(str, false, terminals.auto_handle));
 
         limit_size(term->raw_history, MAX_TEXT_HISTORY);
         limit_size(term->history, MAX_TEXT_HISTORY);
