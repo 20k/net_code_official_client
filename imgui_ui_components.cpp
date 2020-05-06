@@ -279,7 +279,7 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
 
         if(ImGui::BeginMenuBar())
         {
-            if(ImGui::MenuItem("[New Terminal]"))
+            if(ImGui::MenuItem("> New Terminal"))
             {
                 terminals.make_new_terminal();
             }
