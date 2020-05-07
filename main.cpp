@@ -1368,6 +1368,8 @@ int main(int argc, char* argv[])
             }
 
             {
+                ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_FirstUseEver);
+
                 ImGui::Begin("notepad");
 
                 bool changed = ImGui::InputTextMultiline("Doot", &notepad, ImGui::GetContentRegionAvail(), ImGuiInputTextFlags_None);

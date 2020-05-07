@@ -237,6 +237,12 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
         ImGui::SetNextWindowPos({window_pos.x(), window_pos.y()});
         ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
 
+        if(new_terminal)
+        {
+            glfwSetWindowSize(bck->ctx.window, 1400, 900);
+            new_terminal = false;
+        }
+
         if(refocus)
             ImGui::SetNextWindowFocus();
 
