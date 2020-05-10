@@ -287,6 +287,9 @@
 			<Add option="-lopencl" />
 			<Add option="-lsteam_api64" />
 			<Add option="-lncurses" />
+			<Add option="-l:libbrotlidec-static.a" />
+			<Add option="-l:libbrotlienc-static.a" />
+			<Add option="-l:libbrotlicommon-static.a" />
 			<Add directory="deps/steamworks_sdk_142/sdk/redistributable_bin/win64" />
 		</Linker>
 		<Unit filename="auth_manager.cpp" />
