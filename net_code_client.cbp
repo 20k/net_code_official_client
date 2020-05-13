@@ -231,11 +231,11 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add option="-std=c++17" />
 			<Add option="-fexceptions" />
 			<Add option="-Wno-narrowing" />
 			<Add option="-Werror=return-type" />
 			<Add option="-Wno-strict-aliasing" />
-			<Add option="-std=c++2a" />
 			<Add option="-DNET_CLIENT" />
 			<Add option="-DNO_COMPRESSION" />
 			<Add option="-DIMGUI_IMPL_OPENGL_LOADER_GLEW" />
