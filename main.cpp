@@ -164,6 +164,9 @@ int main(int argc, char* argv[])
 
     bool no_viewports = false;
 
+    std::string connection_ip = HOST_IP;
+    uint64_t connection_port = HOST_PORT_SSL;
+
     if(argc > 1)
     {
         for(int i=1; i < argc; i++)
@@ -176,6 +179,23 @@ int main(int argc, char* argv[])
 
                 printf("Viewports are disabled\n");
             }
+
+            if(i != argc - 1)
+            {
+                if(sarg == "-serverip")
+                {
+                    connection_ip = argv[i + 1];
+                    i++;
+                    continue;
+                }
+
+                if(sarg == "-serverport")
+                {
+                    connection_port = std::stoi(argv[i + 1]);
+                    i++;
+                    continue;
+                }
+            }
         }
     }
 
@@ -185,9 +205,9 @@ int main(int argc, char* argv[])
 
     connection conn;
     #ifndef __EMSCRIPTEN__
-    conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
+    conn.connect(connection_ip, connection_port, connection_type::SSL);
     #else
-    conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::EMSCRIPTEN_AUTOMATIC);
+    conn.connect(connection_ip, connection_port, connection_type::EMSCRIPTEN_AUTOMATIC);
     #endif
 
     printf("Post Connect\n");
