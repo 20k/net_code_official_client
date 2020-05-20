@@ -1064,6 +1064,7 @@ void chat_window::render(bool refocus)
     {
         std::string full_str = side_buttons[i];
         chat_thread& thread = chat_threads[side_buttons[i]];
+        thread.was_rendered = false;
 
         if(thread.dirty && !thread.was_focused)
             full_str += "*";
@@ -1112,6 +1113,7 @@ void chat_window::render(bool refocus)
             }
 
             render_handle_imgui(thread.scroll_hack, thread.command.command, thread.command.cursor_pos_idx, thread.history, auto_handle, thread.cache);
+            thread.was_rendered = true;
         }
 
         ImGui::End();

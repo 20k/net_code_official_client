@@ -49,12 +49,6 @@
 #include <misc/cpp/imgui_stdlib.h>
 #include <toolkit/fs_helpers.hpp>
 
-///volvo
-struct SteamTVRegion_t;
-enum ESteamTVRegionBehavior{};
-
-#include <steamworks_sdk_148a/sdk/public/steam/steam_api_flat.h>
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #include <emscripten/html5.h>
@@ -493,7 +487,7 @@ int main(int argc, char* argv[])
     int iconn = conn.client_connected_to_server;
     printf("Am connected? %i\n", iconn);
 
-    int max_unprocessed_frames = 20;
+    int max_unprocessed_frames = 200;
     int unprocessed_frames = unprocessed_frames;
     bool last_item_active = false;
 
@@ -562,6 +556,8 @@ int main(int argc, char* argv[])
 
         bool skip_first_event = false;
 
+        bool last_is_open = s_api.is_overlay_open();
+
         s_api.pump_callbacks();
 
         std::vector<int> glfw_key_pressed_data;
@@ -582,11 +578,19 @@ int main(int argc, char* argv[])
         window.poll_events_only();
         #endif*/
 
+        ///can't just ramp up sleep... because glfw has no understanding of server events
+        double max_sleep = 1/33.;
+
+        if(s_api.is_overlay_open())
+        {
+            max_sleep = 1/33.;
+        }
+
         steady_timer poll_time;
 
         //#define NO_SLEEP
         #ifndef NO_SLEEP
-        window.poll_events_only(1/33.);
+        window.poll_events_only(max_sleep);
         #else
         window.poll_events_only(0);
         #endif // NO_SLEEP
@@ -638,8 +642,8 @@ int main(int argc, char* argv[])
         last_item_active = any_active;
         visual_events = visual_events || (last_item_active != any_active);
 
-        if(s_api.enabled)
-            visual_events = visual_events || (sleep_limiter.get_elapsed_time_s() > 1/30.f);
+        if(s_api.enabled && s_api.is_overlay_open())
+            visual_events = visual_events || (sleep_limiter.get_elapsed_time_s() > max_sleep);
 
         bool non_visual_events = has_mouse_delta;
 
@@ -654,8 +658,13 @@ int main(int argc, char* argv[])
 
         for(auto& i : chat_win.chat_threads)
         {
-            if(!i.second.cache.valid())
+            if(i.second.was_rendered && !i.second.cache.valid())
                 visual_events = true;
+        }
+
+        if(last_is_open != s_api.is_overlay_open())
+        {
+            visual_events = true;
         }
 
         #ifdef NO_SLEEP
@@ -1483,13 +1492,12 @@ int main(int argc, char* argv[])
         else
         {
             #ifndef __EMSCRIPTEN__
-            double max_sleep = 1/33.f;
-            double extra = max_sleep - slept_for;
+            /*double extra = max_sleep - slept_for;
 
             if(extra > 0)
             {
                 std::this_thread::sleep_for(std::chrono::milliseconds((int)round(extra * 1000)));
-            }
+            }*/
 
             #endif // __EMSCRIPTEN__
 

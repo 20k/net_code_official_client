@@ -71,6 +71,7 @@ struct chat_thread : serialisable, cacheable, free_function
     bool dirty = false;
     bool was_focused = false;
     bool was_hovered = false;
+    bool was_rendered = false;
     editable_string command;
     std::string name;
     scrollbar_hack scroll_hack;

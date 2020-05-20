@@ -4,6 +4,7 @@
 #include <mutex>
 #include <vector>
 #include <iostream>
+#include <toolkit/clock.hpp>
 
 #include <toolkit/config.hpp>
 
@@ -16,6 +17,7 @@ struct callback_environment
     std::mutex lock;
 
     STEAM_CALLBACK( callback_environment, OnGameOverlayActivated, GameOverlayActivated_t );
+    steady_timer timer;
 
     void OnRequestEncryptedAppTicket( EncryptedAppTicketResponse_t *pEncryptedAppTicketResponse, bool bIOFailure );
 	CCallResult< callback_environment, EncryptedAppTicketResponse_t > m_OnRequestEncryptedAppTicketCallResult;
@@ -33,6 +35,9 @@ void callback_environment::OnGameOverlayActivated( GameOverlayActivated_t* pCall
     std::lock_guard guard(lock);
 
     overlay_open = pCallback->m_bActive;
+
+    if(!overlay_open)
+        timer.restart();
 }
 
 void callback_environment::OnRequestEncryptedAppTicket( EncryptedAppTicketResponse_t *pEncryptedAppTicketResponse, bool bIOFailure )
@@ -161,7 +166,14 @@ bool steamapi::is_overlay_open()
     #ifndef NO_STEAM
     std::lock_guard guard(secret_environment->lock);
 
-    return secret_environment->overlay_open;
+    if(!secret_environment->overlay_open)
+    {
+        return secret_environment->timer.get_elapsed_time_s() < 2;
+    }
+    else
+    {
+        return true;
+    }
     #else
     return false; //unreachable
     #endif
