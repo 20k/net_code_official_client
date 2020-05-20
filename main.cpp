@@ -583,7 +583,7 @@ int main(int argc, char* argv[])
 
         if(s_api.is_overlay_open())
         {
-            max_sleep = 1/33.;
+            max_sleep = 1/64.;
         }
 
         steady_timer poll_time;
