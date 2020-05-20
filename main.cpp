@@ -49,6 +49,12 @@
 #include <misc/cpp/imgui_stdlib.h>
 #include <toolkit/fs_helpers.hpp>
 
+///volvo
+struct SteamTVRegion_t;
+enum ESteamTVRegionBehavior{};
+
+#include <steamworks_sdk_148a/sdk/public/steam/steam_api_flat.h>
+
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #include <emscripten/html5.h>

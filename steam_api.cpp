@@ -7,8 +7,8 @@
 
 #include <toolkit/config.hpp>
 
-#include <steamworks_sdk_142/sdk/public/steam/steam_api.h>
-#include <steamworks_sdk_142/sdk/public/steam/isteamuser.h>
+#include <steamworks_sdk_148a/sdk/public/steam/steam_api.h>
+#include <steamworks_sdk_148a/sdk/public/steam/isteamuser.h>
 
 #ifndef NO_STEAM
 struct callback_environment

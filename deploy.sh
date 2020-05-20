@@ -11,7 +11,7 @@ rm -rf ./Release/bin/*
 mkdir ./Release/bin/scripts
 mkdir ./Release/bin/example_scripts
 
-cp ./deps/steamworks_sdk_142/sdk/redistributable_bin/win64/steam_api64.dll ./build_root
+cp ./deps/steamworks_sdk_148a/sdk/redistributable_bin/win64/steam_api64.dll ./build_root
 cp ./bin/Deploy/crapmud_client.exe ./build_root
 
 cd build_root
