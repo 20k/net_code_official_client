@@ -579,11 +579,11 @@ int main(int argc, char* argv[])
         #endif*/
 
         ///can't just ramp up sleep... because glfw has no understanding of server events
-        double max_sleep = 1/33.;
+        double max_sleep = 1/128.;
 
         if(s_api.is_overlay_open())
         {
-            max_sleep = 1/64.;
+            max_sleep = 1/128.;
         }
 
         steady_timer poll_time;
