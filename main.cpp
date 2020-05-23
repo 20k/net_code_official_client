@@ -509,9 +509,9 @@ int main(int argc, char* argv[])
         if(connection_clock.get_elapsed_time_s() > 5 && !conn.client_connected_to_server && !conn.connection_pending())
         {
             #ifndef __EMSCRIPTEN__
-            conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::SSL);
+            conn.connect(connection_ip, connection_port, connection_type::SSL);
             #else
-            conn.connect(HOST_IP, HOST_PORT_SSL, connection_type::EMSCRIPTEN_AUTOMATIC);
+            conn.connect(connection_ip, connection_port, connection_type::EMSCRIPTEN_AUTOMATIC);
             #endif
 
             connection_clock.restart();
