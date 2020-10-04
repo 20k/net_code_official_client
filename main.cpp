@@ -8,6 +8,7 @@
 #include <GLFW/glfw3.h>
 //#include "window_context.hpp"
 #include <toolkit/render_window.hpp>
+#include <toolkit/render_window_sdl2.hpp>
 #include <toolkit/base_serialisables.hpp>
 #include <toolkit/clipboard.hpp>
 #include <functional>
@@ -249,7 +250,9 @@ int main(int argc, char* argv[])
         sett.vsync = true;
     }
 
-    render_window window(sett, "net_code");
+    sdl2_backend sdlbackend(sett, "net_code");
+
+    render_window window(sett, &sdlbackend);
     ImGui::GetIO().MouseDragThreshold = 0;
     //ImGui::GetIO().ConfigWindowsResizeFromEdges = false;
 

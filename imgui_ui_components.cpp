@@ -228,7 +228,6 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
 {
     if(is_main_terminal)
     {
-        glfw_backend* bck = (glfw_backend*)win.backend;
         copy_handler* handle = get_global_copy_handler();
 
         vec2f window_pos = xy_to_vec(ImGui::GetMainViewport()->Pos);
@@ -239,7 +238,7 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
 
         if(new_terminal)
         {
-            glfwSetWindowSize(bck->ctx.window, 1400, 900);
+            win.resize({1400, 900});
             new_terminal = false;
         }
 
@@ -266,7 +265,8 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
             }
         }
 
-        #ifndef __EMSCRIPTEN__
+        ///TODO: FIXME
+        /*#ifndef __EMSCRIPTEN__
         if(ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
         {
             int maximised = glfwGetWindowAttrib(bck->ctx.window, GLFW_MAXIMIZED);
@@ -276,7 +276,7 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
             else
                 glfwRestoreWindow(bck->ctx.window);
         }
-        #endif // __EMSCRIPTEN__
+        #endif // __EMSCRIPTEN__*/
 
         if(ImGui::BeginMenuBar())
         {
@@ -316,7 +316,7 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
             real_pos.x = delta.x + title_start_pos.x;
             real_pos.y = delta.y + title_start_pos.y;
 
-            glfwSetWindowPos(bck->ctx.window, real_pos.x, real_pos.y);
+            win.backend->set_window_position({real_pos.x, real_pos.y});
         }
 
         if(resize_dragging)
@@ -327,7 +327,7 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
             int height = delta.y + resize_start_pos.y;
 
             if(width >= 50 && height >= 50)
-                glfwSetWindowSize(bck->ctx.window, width, height);
+                win.resize({width, height});
         }
 
         if(!ImGui::IsMouseDown(0))

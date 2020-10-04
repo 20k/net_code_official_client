@@ -162,7 +162,7 @@
 				<Option working_dir="DebugDeploy" />
 				<Option object_output="obj/DeployTestZAPCC/" />
 				<Option type="1" />
-				<Option compiler="zapcc" />
+				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-DEXTERN_IP" />
@@ -252,6 +252,7 @@
 			<Add directory="deps/imtui/include" />
 			<Add directory="C:/msys64/mingw64/include/ncurses" />
 			<Add directory="deps/steamworks_sdk_148a/sdk/public/" />
+			<Add directory="C:/msys64/mingw64/include/SDL2" />
 		</Compiler>
 		<Linker>
 			<Add option="-static-libstdc++" />
@@ -259,6 +260,7 @@
 			<Add option="-static" />
 			<Add option="-lmingw32" />
 			<Add option="-l:libssl.a" />
+			<Add option="-l:libsdl2.a" />
 			<Add option="-l:libglfw3.a" />
 			<Add option="-l:libglew32.a" />
 			<Add option="-lsfml-audio-s" />
@@ -291,6 +293,10 @@
 			<Add option="-l:libbrotlidec-static.a" />
 			<Add option="-l:libbrotlienc-static.a" />
 			<Add option="-l:libbrotlicommon-static.a" />
+			<Add option="-limm32" />
+			<Add option="-lversion" />
+			<Add option="-loleaut32" />
+			<Add option="-lsetupapi" />
 			<Add directory="deps/steamworks_sdk_148a/sdk/redistributable_bin/win64" />
 		</Linker>
 		<Unit filename="auth_manager.cpp" />
@@ -421,6 +427,8 @@
 			<Option target="DeployTestZAPCC" />
 			<Option target="LinuxDeploy" />
 		</Unit>
+		<Unit filename="deps/imgui/examples/imgui_impl_sdl.cpp" />
+		<Unit filename="deps/imgui/examples/imgui_impl_sdl.h" />
 		<Unit filename="deps/imgui/imconfig.h">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -745,6 +753,10 @@
 			<Option target="DeployTestZAPCC" />
 			<Option target="LinuxDeploy" />
 		</Unit>
+		<Unit filename="deps/toolkit/render_window_glfw.cpp" />
+		<Unit filename="deps/toolkit/render_window_glfw.hpp" />
+		<Unit filename="deps/toolkit/render_window_sdl2.cpp" />
+		<Unit filename="deps/toolkit/render_window_sdl2.hpp" />
 		<Unit filename="deps/toolkit/stacktrace.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
