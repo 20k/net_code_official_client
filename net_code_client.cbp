@@ -243,7 +243,6 @@
 			<Add option="-DSFML_STATIC" />
 			<Add option="-DGLEW_STATIC" />
 			<Add option="-DGRAPHITE2_STATIC" />
-			<Add option="-DUSE_IMTUI" />
 			<Add option="-DNO_OPENCL" />
 			<Add directory="deps" />
 			<Add directory="deps/SFML/include" />
@@ -284,10 +283,11 @@
 			<Add option="-lbacktrace" />
 			<Add option="-lUsp10" />
 			<Add option="-lgdi32" />
+			<Add option="-l:libboost_fiber-mt.a" />
+			<Add option="-l:libboost_context-mt.a" />
 			<Add option="-lws2_32" />
-			<Add option="-lopencl" />
+			<Add option="-lmswsock" />
 			<Add option="-lsteam_api64" />
-			<Add option="-lncurses" />
 			<Add option="-l:libbrotlidec-static.a" />
 			<Add option="-l:libbrotlienc-static.a" />
 			<Add option="-l:libbrotlicommon-static.a" />
@@ -563,8 +563,14 @@
 			<Option target="DeployTestZAPCC" />
 			<Option target="LinuxDeploy" />
 		</Unit>
-		<Unit filename="deps/imtui/src/imtui-impl-ncurses.cpp" />
-		<Unit filename="deps/imtui/src/imtui-impl-text.cpp" />
+		<Unit filename="deps/imtui/src/imtui-impl-ncurses.cpp">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
+		<Unit filename="deps/imtui/src/imtui-impl-text.cpp">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
 		<Unit filename="deps/networking/beast_compilation_unit.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -1139,6 +1145,10 @@
 		</Unit>
 		<Extensions>
 			<lib_finder disable_auto="1" />
+			<code_completion />
+			<envvars />
+			<debugger />
+			<fortran_project />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>
