@@ -857,6 +857,8 @@ int main(int argc, char* argv[])
                 }
             }
 
+            ImGuiIO& io = ImGui::GetIO();
+
             for(int i : glfw_key_pressed_data)
             {
                 if(on_input_map.find(i) != on_input_map.end())
@@ -867,9 +869,9 @@ int main(int argc, char* argv[])
 
                 last_line_invalidate_everything(terminals, chat_win);
 
-                if(i == GLFW_KEY_BACKSPACE)
+                if(i == io.KeyMap[ImGuiKey_Backspace])
                 {
-                    if(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
+                    if(io.KeyCtrl)
                     {
                         for(int i=0; i < 5; i++)
                             to_edit->process_backspace();
@@ -880,9 +882,9 @@ int main(int argc, char* argv[])
                     }
                 }
 
-                if(i == GLFW_KEY_DELETE)
+                if(i == io.KeyMap[ImGuiKey_Delete])
                 {
-                    if(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
+                    if(io.KeyCtrl)
                     {
                         for(int i=0; i < 5; i++)
                             to_edit->process_delete();
@@ -893,50 +895,50 @@ int main(int argc, char* argv[])
                     }
                 }
 
-                if(i == GLFW_KEY_UP)
+                if(i == io.KeyMap[ImGuiKey_UpArrow])
                 {
                     to_edit->move_command_history_idx(-1);
                 }
 
-                if(i == GLFW_KEY_DOWN)
+                if(i == io.KeyMap[ImGuiKey_DownArrow])
                 {
                     to_edit->move_command_history_idx(1);
                 }
 
-                if(i == GLFW_KEY_LEFT)
+                if(i == io.KeyMap[ImGuiKey_LeftArrow])
                 {
-                    if(!ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
+                    if(!io.KeyCtrl)
                         to_edit->move_cursor(-1);
                     else
                         to_edit->move_cursor(-5);
                 }
 
-                if(i == GLFW_KEY_RIGHT)
+                if(i == io.KeyMap[ImGuiKey_RightArrow])
                 {
-                    if(!ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
+                    if(!io.KeyCtrl)
                         to_edit->move_cursor(1);
                     else
                         to_edit->move_cursor(5);
                 }
 
-                if(i == GLFW_KEY_HOME)
+                if(i == io.KeyMap[ImGuiKey_Home])
                 {
                     to_edit->move_cursor(-(int)to_edit->command.size());
                 }
 
-                if(i == GLFW_KEY_END)
+                if(i == io.KeyMap[ImGuiKey_End])
                 {
                     to_edit->move_cursor(to_edit->command.size());
                 }
 
-                if(i == GLFW_KEY_ESCAPE)
+                if(i == io.KeyMap[ImGuiKey_Escape])
                 {
                     to_edit->clear_command();
                 }
 
-                if(i == GLFW_KEY_V)
+                if(i == io.KeyMap[ImGuiKey_V])
                 {
-                    if(ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL))
+                    if(io.KeyCtrl)
                     {
                         std::string add_text = clipboard::get();
 
@@ -952,11 +954,11 @@ int main(int argc, char* argv[])
                     font_select.is_open = !font_select.is_open;
                 }
 
-                if(i == GLFW_KEY_ENTER || i == GLFW_KEY_KP_ENTER)
+                if(i == io.KeyMap[ImGuiKey_Enter] || i == io.KeyMap[ImGuiKey_KeyPadEnter])
                 {
                     if(to_edit != &realtime_shim && to_edit != &no_string)
                     {
-                        if(!ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) && !ImGui::IsKeyDown(GLFW_KEY_LEFT_SHIFT))
+                        if(!io.KeyCtrl && !io.KeyShift)
                             enter = true;
                         else
                             to_edit->add_to_command('\n');
@@ -1383,7 +1385,7 @@ int main(int argc, char* argv[])
                     terminals.auto_handle.found_unprocessed_autocompletes.erase(terminals.auto_handle.found_unprocessed_autocompletes.begin());
             }
 
-            if((terminals.get_focused_terminal()->focused || realtime_scripts.get_id_of_focused_realtime_window() != 1) && ImGui::IsKeyDown(GLFW_KEY_LEFT_CONTROL) && just_pressed(GLFW_KEY_C))
+            if((terminals.get_focused_terminal()->focused || realtime_scripts.get_id_of_focused_realtime_window() != 1) && io.KeyCtrl && just_pressed(io.KeyMap[ImGuiKey_C]))
             {
                 nlohmann::json data;
                 data["type"] = "client_terminate_scripts";
@@ -1451,7 +1453,7 @@ int main(int argc, char* argv[])
                 last_line_invalidate_everything(terminals, chat_win);
             }
 
-            terminals.auto_handle.tab_pressed = ImGui::IsKeyPressed(GLFW_KEY_TAB);
+            terminals.auto_handle.tab_pressed = ImGui::IsKeyPressed(io.KeyMap[ImGuiKey_Tab]);
 
             if(terminals.auto_handle.tab_pressed)
             {
