@@ -506,11 +506,7 @@ int main(int argc, char* argv[])
     hptr = [&]()
     #endif
     {
-        printf("Main 1\n");
-
         file::manual_fs_sync manual_sync;
-
-        printf("Main 2\n");
 
         bool visual_events = false;
 
@@ -533,8 +529,6 @@ int main(int argc, char* argv[])
 
             printed_connecting = true;
         }
-
-        printf("Main 3\n");
 
         if(conn.client_connected_to_server)
         {
@@ -570,8 +564,6 @@ int main(int argc, char* argv[])
 
         s_api.pump_callbacks();
 
-        printf("Main 4\n");
-
         std::vector<int> glfw_key_pressed_data;
         std::vector<int> glfw_key_released_data;
 
@@ -600,16 +592,12 @@ int main(int argc, char* argv[])
 
         steady_timer poll_time;
 
-        printf("Pre poll\n");
-
         //#define NO_SLEEP
         #ifndef NO_SLEEP
         window.poll_events_only(max_sleep);
         #else
         window.poll_events_only(0);
         #endif // NO_SLEEP
-
-        printf("Post poll\n");
 
         memcpy(curKeysDown, io.KeysDown, sizeof(curKeysDown));
         memcpy(curMouseDown, io.MouseDown, sizeof(curMouseDown));
