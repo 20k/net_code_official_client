@@ -285,50 +285,6 @@ int main(int argc, char* argv[])
 
     bool should_coordinate_focus = true;
 
-    std::map<int, std::string> key_map;
-
-    {
-        key_map[GLFW_KEY_ENTER] = "return";
-        key_map[GLFW_KEY_BACKSPACE] = "backspace";
-        key_map[GLFW_KEY_DELETE] = "delete";
-        key_map[GLFW_KEY_INSERT] = "insert";
-        key_map[GLFW_KEY_TAB] = "tab";
-
-        key_map[GLFW_KEY_UP] = "up";
-        key_map[GLFW_KEY_DOWN] = "down";
-        key_map[GLFW_KEY_LEFT] = "left";
-        key_map[GLFW_KEY_RIGHT] = "right";
-        key_map[GLFW_KEY_HOME] = "home";
-        key_map[GLFW_KEY_END] = "end";
-        key_map[GLFW_KEY_PAGE_UP] = "pageup";
-        key_map[GLFW_KEY_PAGE_DOWN] = "pagedown";
-        key_map[GLFW_KEY_LEFT_SHIFT] = "lshift";
-        key_map[GLFW_KEY_RIGHT_SHIFT] = "rshift";
-        key_map[GLFW_KEY_LEFT_CONTROL] = "lctrl";
-        key_map[GLFW_KEY_RIGHT_CONTROL] = "rctrl";
-        key_map[GLFW_KEY_LEFT_ALT] = "lalt";
-        key_map[GLFW_KEY_RIGHT_ALT] = "ralt";
-        key_map[GLFW_KEY_ESCAPE] = "escape";
-
-        for(int i=32; i <= GLFW_KEY_LAST; i++)
-        {
-            const char* name = glfwGetKeyName(i, 0);
-
-            if(name == nullptr)
-                continue;
-
-            std::string sname = name;
-
-            key_map[i] = sname;
-        }
-    }
-
-    for(auto& i : key_map)
-    {
-        if(i.second == " ")
-            i.second = "space";
-    }
-
     ///platform independent
     std::map<int, std::string> mouse_map;
     mouse_map[0] = "lmouse";
@@ -800,8 +756,8 @@ int main(int argc, char* argv[])
 
             for(int i : glfw_key_pressed_data)
             {
-                if(key_map.find(i) != key_map.end())
-                    on_pressed.push_back(key_map[i]);
+                if(auto val = backend->get_key_name(i); val != "")
+                    on_pressed.push_back(val);
 
                 last_line_invalidate_everything(terminals, chat_win);
 
@@ -906,8 +862,8 @@ int main(int argc, char* argv[])
 
             for(int i : glfw_key_released_data)
             {
-                if(key_map.find(i) != key_map.end())
-                    on_released.push_back(key_map[i]);
+                if(auto val = backend->get_key_name(i); val != "")
+                    on_released.push_back(val);
             }
 
             for(int i : mouse_pressed_data)
