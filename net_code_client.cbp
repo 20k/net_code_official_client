@@ -244,6 +244,7 @@
 			<Add option="-DGLEW_STATIC" />
 			<Add option="-DGRAPHITE2_STATIC" />
 			<Add option="-DNO_OPENCL" />
+			<Add option="-DSDL_MAIN_HANDLED" />
 			<Add directory="deps" />
 			<Add directory="deps/SFML/include" />
 			<Add directory="deps/freetype/include/freetype" />

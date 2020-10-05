@@ -9,6 +9,7 @@
 //#include "window_context.hpp"
 #include <toolkit/render_window.hpp>
 #include <toolkit/render_window_sdl2.hpp>
+#include <toolkit/render_window_glfw.hpp>
 #include <toolkit/base_serialisables.hpp>
 #include <toolkit/clipboard.hpp>
 #include <functional>
@@ -238,7 +239,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    sett.viewports = !no_viewports;
+    //sett.viewports = !no_viewports;
     sett.no_decoration = true;
 
     if(!has_file)
@@ -250,9 +251,9 @@ int main(int argc, char* argv[])
         sett.vsync = true;
     }
 
-    sdl2_backend sdlbackend(sett, "net_code");
+    generic_backend* backend = new sdl2_backend(sett, "net_code");
 
-    render_window window(sett, &sdlbackend);
+    render_window window(sett, backend);
     ImGui::GetIO().MouseDragThreshold = 0;
     //ImGui::GetIO().ConfigWindowsResizeFromEdges = false;
 
@@ -505,7 +506,11 @@ int main(int argc, char* argv[])
     hptr = [&]()
     #endif
     {
+        printf("Main 1\n");
+
         file::manual_fs_sync manual_sync;
+
+        printf("Main 2\n");
 
         bool visual_events = false;
 
@@ -528,6 +533,8 @@ int main(int argc, char* argv[])
 
             printed_connecting = true;
         }
+
+        printf("Main 3\n");
 
         if(conn.client_connected_to_server)
         {
@@ -563,6 +570,8 @@ int main(int argc, char* argv[])
 
         s_api.pump_callbacks();
 
+        printf("Main 4\n");
+
         std::vector<int> glfw_key_pressed_data;
         std::vector<int> glfw_key_released_data;
 
@@ -591,12 +600,16 @@ int main(int argc, char* argv[])
 
         steady_timer poll_time;
 
+        printf("Pre poll\n");
+
         //#define NO_SLEEP
         #ifndef NO_SLEEP
         window.poll_events_only(max_sleep);
         #else
         window.poll_events_only(0);
         #endif // NO_SLEEP
+
+        printf("Post poll\n");
 
         memcpy(curKeysDown, io.KeysDown, sizeof(curKeysDown));
         memcpy(curMouseDown, io.MouseDown, sizeof(curMouseDown));
