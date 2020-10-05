@@ -131,9 +131,11 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
         scroll_hack.scrolled_this_frame = 0.f;
     }
 
+    ImGuiIO& io = ImGui::GetIO();
+
     if(ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
     {
-        if(ImGui::IsKeyPressed(GLFW_KEY_PAGE_DOWN))
+        if(ImGui::IsKeyPressed(io.KeyMap[ImGuiKey_PageDown]))
         {
             scroll_hack.scrolled -= ImGui::GetWindowHeight() / char_inf::cheight;
 
@@ -141,7 +143,7 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
                 scroll_hack.scrolled = 0;
         }
 
-        if(ImGui::IsKeyPressed(GLFW_KEY_PAGE_UP))
+        if(ImGui::IsKeyPressed(io.KeyMap[ImGuiKey_PageUp]))
         {
             scroll_hack.scrolled += ImGui::GetWindowHeight() / char_inf::cheight;
         }
