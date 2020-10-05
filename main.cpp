@@ -286,7 +286,6 @@ int main(int argc, char* argv[])
     bool should_coordinate_focus = true;
 
     std::map<int, std::string> key_map;
-    std::map<int, std::string> on_input_map;
 
     {
         key_map[GLFW_KEY_ENTER] = "return";
@@ -310,8 +309,6 @@ int main(int argc, char* argv[])
         key_map[GLFW_KEY_LEFT_ALT] = "lalt";
         key_map[GLFW_KEY_RIGHT_ALT] = "ralt";
         key_map[GLFW_KEY_ESCAPE] = "escape";
-
-        std::map<int, std::string> on_input_map = key_map;
 
         for(int i=32; i <= GLFW_KEY_LAST; i++)
         {
@@ -782,8 +779,6 @@ int main(int argc, char* argv[])
             {
                 if(i <= 126 && i >= 32)
                 {
-                    std::cout << "I " << i << std::endl;
-
                     std::u32string utf32;
                     utf32.push_back(i);
 
@@ -797,12 +792,7 @@ int main(int argc, char* argv[])
 
                     last_line_invalidate_everything(terminals, chat_win);
 
-                    std::string str = utf8;
-
-                    if(str == " ")
-                        str = "space";
-
-                    realtime_str.push_back(str);
+                    realtime_str.push_back(utf8);
                 }
             }
 
@@ -810,9 +800,6 @@ int main(int argc, char* argv[])
 
             for(int i : glfw_key_pressed_data)
             {
-                if(on_input_map.find(i) != on_input_map.end())
-                    realtime_str.push_back(on_input_map[i]);
-
                 if(key_map.find(i) != key_map.end())
                     on_pressed.push_back(key_map[i]);
 
@@ -927,9 +914,6 @@ int main(int argc, char* argv[])
             {
                 if(mouse_map.find(i) != mouse_map.end())
                     on_pressed.push_back(mouse_map[i]);
-
-                if(mouse_map.find(i) != mouse_map.end())
-                    realtime_str.push_back(mouse_map[i]);
 
                 if(i == 1)
                 {
