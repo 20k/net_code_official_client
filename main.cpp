@@ -68,12 +68,6 @@ std::string make_lower(std::string in)
     return in;
 }
 
-#define DMAP(A) key_map[GLFW_KEY_##A] = make_lower((#A));
-#define SMAP(A, S) key_map[GLFW_KEY_##A] = ((#S));
-#define MMAP(A, S) mouse_map[A] = ((#S));
-
-#define SPECIAL_MAP(A, S) on_input_map[GLFW_KEY_##A] = ((#S));
-
 //#define HOST_IP "192.168.0.55"
 #ifdef EXTERN_IP
 //#define HOST_IP "77.96.132.101"
@@ -251,7 +245,7 @@ int main(int argc, char* argv[])
         sett.vsync = true;
     }
 
-    generic_backend* backend = new sdl2_backend(sett, "net_code");
+    generic_backend* backend = new glfw_backend(sett, "net_code");
 
     render_window window(sett, backend);
     ImGui::GetIO().MouseDragThreshold = 0;
@@ -293,104 +287,58 @@ int main(int argc, char* argv[])
 
     std::map<int, std::string> key_map;
     std::map<int, std::string> on_input_map;
+
+    {
+        key_map[GLFW_KEY_ENTER] = "return";
+        key_map[GLFW_KEY_BACKSPACE] = "backspace";
+        key_map[GLFW_KEY_DELETE] = "delete";
+        key_map[GLFW_KEY_INSERT] = "insert";
+        key_map[GLFW_KEY_TAB] = "tab";
+
+        key_map[GLFW_KEY_UP] = "up";
+        key_map[GLFW_KEY_DOWN] = "down";
+        key_map[GLFW_KEY_LEFT] = "left";
+        key_map[GLFW_KEY_RIGHT] = "right";
+        key_map[GLFW_KEY_HOME] = "home";
+        key_map[GLFW_KEY_END] = "end";
+        key_map[GLFW_KEY_PAGE_UP] = "pageup";
+        key_map[GLFW_KEY_PAGE_DOWN] = "pagedown";
+        key_map[GLFW_KEY_LEFT_SHIFT] = "lshift";
+        key_map[GLFW_KEY_RIGHT_SHIFT] = "rshift";
+        key_map[GLFW_KEY_LEFT_CONTROL] = "lctrl";
+        key_map[GLFW_KEY_RIGHT_CONTROL] = "rctrl";
+        key_map[GLFW_KEY_LEFT_ALT] = "lalt";
+        key_map[GLFW_KEY_RIGHT_ALT] = "ralt";
+        key_map[GLFW_KEY_ESCAPE] = "escape";
+
+        std::map<int, std::string> on_input_map = key_map;
+
+        for(int i=32; i <= GLFW_KEY_LAST; i++)
+        {
+            const char* name = glfwGetKeyName(i, 0);
+
+            if(name == nullptr)
+                continue;
+
+            std::string sname = name;
+
+            key_map[i] = sname;
+        }
+    }
+
+    for(auto& i : key_map)
+    {
+        if(i.second == " ")
+            i.second = "space";
+    }
+
+    ///platform independent
     std::map<int, std::string> mouse_map;
-
-    DMAP(A);DMAP(B);DMAP(C);
-    DMAP(D);DMAP(E);DMAP(F);
-    DMAP(G);DMAP(H);DMAP(I);
-    DMAP(J);DMAP(K);DMAP(L);
-    DMAP(M);DMAP(N);DMAP(O);
-    DMAP(P);DMAP(Q);DMAP(R);
-    DMAP(S);DMAP(T);DMAP(U);
-    DMAP(V);DMAP(W);DMAP(X);
-    DMAP(Y);DMAP(Z);
-
-    DMAP(0);DMAP(1);DMAP(2);
-    DMAP(3);DMAP(4);DMAP(5);
-    DMAP(6);DMAP(7);DMAP(8);
-    DMAP(9);DMAP(0);
-
-    SMAP(ENTER, return);
-    SMAP(BACKSPACE, backspace);
-    SMAP(DELETE, delete);
-
-    SMAP(INSERT,insert);
-    SMAP(TAB, tab);
-    SMAP(DELETE, delete);
-
-    SPECIAL_MAP(ENTER, return);
-    SPECIAL_MAP(BACKSPACE, backspace);
-    SPECIAL_MAP(DELETE, delete);
-
-    SPECIAL_MAP(INSERT,insert);
-    SPECIAL_MAP(TAB, tab);
-    SPECIAL_MAP(DELETE, delete);
-
-    SMAP(UP, up);
-    SMAP(DOWN, down);
-    SMAP(RIGHT, right);
-    SMAP(LEFT, left);
-    SMAP(HOME, home);
-    SMAP(END, end);
-    SMAP(PAGE_UP, pageup);
-    SMAP(PAGE_DOWN, pagedown);
-
-    SPECIAL_MAP(UP, up);
-    SPECIAL_MAP(DOWN, down);
-    SPECIAL_MAP(RIGHT, right);
-    SPECIAL_MAP(LEFT, left);
-    SPECIAL_MAP(HOME, home);
-    SPECIAL_MAP(END, end);
-    SPECIAL_MAP(PAGE_UP, pageup);
-    SPECIAL_MAP(PAGE_DOWN, pagedown);
-
-    SMAP(KP_1, 1);
-    SMAP(KP_2, 2);
-    SMAP(KP_3, 3);
-    SMAP(KP_4, 4);
-    SMAP(KP_5, 5);
-    SMAP(KP_6, 6);
-    SMAP(KP_7, 7);
-    SMAP(KP_8, 8);
-    SMAP(KP_9, 9);
-    SMAP(KP_0, 0);
-
-    SMAP(LEFT_SHIFT, lshift);
-    SMAP(RIGHT_SHIFT, rshift);
-    SMAP(LEFT_CONTROL, lctrl);
-    SMAP(RIGHT_CONTROL, rctrl);
-    SMAP(LEFT_ALT, lalt);
-    SMAP(RIGHT_ALT, ralt);
-
-    SPECIAL_MAP(LEFT_SHIFT, lshift);
-    SPECIAL_MAP(RIGHT_SHIFT, rshift);
-    SPECIAL_MAP(LEFT_CONTROL, lctrl);
-    SPECIAL_MAP(RIGHT_CONTROL, rctrl);
-    SPECIAL_MAP(LEFT_ALT, lalt);
-    SPECIAL_MAP(RIGHT_ALT, ralt);
-
-    SMAP(LEFT_BRACKET, [);
-    SMAP(RIGHT_BRACKET, ]);
-
-    key_map[GLFW_KEY_SEMICOLON] = ";";
-    key_map[GLFW_KEY_COMMA] = ",";
-    SMAP(PERIOD, .);
-    SMAP(GRAVE_ACCENT, ~);
-    SMAP(EQUAL, =);
-    SMAP(MINUS, -);
-
-    SMAP(SPACE, space);
-
-    SMAP(ESCAPE, escape);
-    SPECIAL_MAP(ESCAPE, escape);
-
-    key_map[GLFW_KEY_APOSTROPHE] = "\'";
-    SMAP(SLASH, /);
-    SMAP(BACKSLASH, \\);
-
-    MMAP(0, lmouse);
-    MMAP(1, rmouse);
-    MMAP(2, mmouse);
+    mouse_map[0] = "lmouse";
+    mouse_map[1] = "rmouse";
+    mouse_map[2] = "mmouse";
+    mouse_map[3] = "x1mouse";
+    mouse_map[4] = "x2mouse";
 
     printf("Specials\n");
 
@@ -570,12 +518,11 @@ int main(int argc, char* argv[])
         std::vector<int> mouse_pressed_data;
         std::vector<int> mouse_released_data;
 
-        memcpy(lastKeysDown, curKeysDown, sizeof(lastKeysDown));
-        memcpy(lastMouseDown, curMouseDown, sizeof(curMouseDown));
-
         static_assert(sizeof(lastKeysDown) == sizeof(curKeysDown));
         static_assert(sizeof(lastMouseDown) == sizeof(curMouseDown));
 
+        memcpy(lastKeysDown, curKeysDown, sizeof(lastKeysDown));
+        memcpy(lastMouseDown, curMouseDown, sizeof(curMouseDown));
         /*#ifndef __EMSCRIPTEN__
         window.poll(1/33.);
         #else
@@ -835,6 +782,8 @@ int main(int argc, char* argv[])
             {
                 if(i <= 126 && i >= 32)
                 {
+                    std::cout << "I " << i << std::endl;
+
                     std::u32string utf32;
                     utf32.push_back(i);
 
@@ -1018,6 +967,9 @@ int main(int argc, char* argv[])
             mouse_delta += scroll_y;
             script_mousewheel_delta += scroll_y;
 
+            ///todo: this isn't good enough. We need input *text*, and the stream of pressed keys to be presented to the script
+            ///https://love2d.org/wiki/love.textinput
+            ///https://love2d.org/wiki/love.keypressed
             if(realtime_scripts.get_id_of_focused_realtime_window() != -1 && (realtime_str.size() > 0 || on_pressed.size() > 0 || on_released.size() > 0))
             {
                 nlohmann::json data;
