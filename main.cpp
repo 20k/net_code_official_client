@@ -244,7 +244,7 @@ int main(int argc, char* argv[])
         sett.vsync = true;
     }
 
-    sdl2_backend* backend = new sdl2_backend(sett, "net_code");
+    generic_backend* backend = new sdl2_backend(sett, "net_code");
 
     render_window window(sett, backend);
     ImGui::GetIO().MouseDragThreshold = 0;

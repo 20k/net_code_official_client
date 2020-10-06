@@ -267,17 +267,12 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
         }
 
         ///TODO: FIXME
-        /*#ifndef __EMSCRIPTEN__
+        #ifndef __EMSCRIPTEN__
         if(ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
         {
-            int maximised = glfwGetWindowAttrib(bck->ctx.window, GLFW_MAXIMIZED);
-
-            if(!maximised)
-                glfwMaximizeWindow(bck->ctx.window);
-            else
-                glfwRestoreWindow(bck->ctx.window);
+            win.backend->set_is_maximised(!win.backend->is_maximised());
         }
-        #endif // __EMSCRIPTEN__*/
+        #endif // __EMSCRIPTEN__
 
         if(ImGui::BeginMenuBar())
         {
