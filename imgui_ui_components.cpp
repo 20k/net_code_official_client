@@ -552,7 +552,6 @@ void terminal_imgui::bump_command_to_history(auto_handler& auto_handle)
 
     limit_size(raw_history, MAX_TEXT_HISTORY);
     limit_size(history, MAX_TEXT_HISTORY);
-    de_newline(history);
 }
 
 void fix_tabs(std::string& str)
@@ -581,8 +580,6 @@ void terminal_imgui::add_text(const std::string& str, auto_handler& auto_handle)
     limit_size(raw_history, MAX_TEXT_HISTORY);
     limit_size(history, MAX_TEXT_HISTORY);
     consider_resetting_scrollbar = true;
-
-    de_newline(history);
 
     cache.invalidate();
 }
@@ -899,7 +896,6 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
 
             limit_size(chat_win.chat_threads[chnls[i]].raw_history, MAX_TEXT_HISTORY);
             limit_size(chat_win.chat_threads[chnls[i]].history, MAX_TEXT_HISTORY);
-            de_newline(chat_win.chat_threads[chnls[i]].history);
         }
 
         for(int kk=0; kk < (int)tell_msgs.size(); kk++)
@@ -916,7 +912,6 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
 
         limit_size(term->raw_history, MAX_TEXT_HISTORY);
         limit_size(term->history, MAX_TEXT_HISTORY);
-        de_newline(term->history);
     }
     else if(in["type"] == "script_args")
     {
@@ -1022,8 +1017,6 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
         limit_size(term->raw_history, MAX_TEXT_HISTORY);
         limit_size(term->history, MAX_TEXT_HISTORY);
         term->consider_resetting_scrollbar = true;
-
-        de_newline(term->history);
 
         term->cache.invalidate();
     }
