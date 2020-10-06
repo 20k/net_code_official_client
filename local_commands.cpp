@@ -189,7 +189,7 @@ std::string handle_local_command(const std::string& username, const std::string&
         return build;
     }
 
-    if(starts_with(command, "#edit ") || starts_with(command, "#edit_es6 ") || starts_with(command, "#edit_es5 "))
+    if(starts_with(command, "#edit "))
     {
         std::vector<std::string> fname = no_ss_split(command, " ");
 
@@ -198,38 +198,7 @@ std::string handle_local_command(const std::string& username, const std::string&
 
         std::string name = fname[1];
 
-        std::string es5_file_name = "scripts/" + username + "." + name + ".es5.js";
-        std::string es6_file_name = "scripts/" + username + "." + name + ".js";
-
-        std::string file_name = es6_file_name;
-
-        ///#edit defaults to opening an es6 file
-        ///but defaults to creating an es5 file
-        if(file::exists(es6_file_name) && !file::exists(file_name))
-            file_name = es6_file_name;
-
-        bool requested_es6 = starts_with(command, "#edit_es6 ");
-        bool requested_es5 = starts_with(command, "#edit_es5 ");
-
-        if(requested_es6)
-        {
-            file_name = es6_file_name;
-
-            if(file::exists(es5_file_name) && !file::exists(es6_file_name))
-            {
-                file::rename(es5_file_name.c_str(), es6_file_name.c_str());
-            }
-        }
-
-        if(requested_es5)
-        {
-            file_name = es5_file_name;
-
-            if(file::exists(es6_file_name) && !file::exists(es5_file_name))
-            {
-                file::rename(es6_file_name.c_str(), es5_file_name.c_str());
-            }
-        }
+        std::string file_name = "scripts/" + username + "." + name + ".js";
 
         if(!file::exists(file_name))
         {
@@ -250,13 +219,7 @@ std::string handle_local_command(const std::string& username, const std::string&
 
         std::string name = fname[1];
 
-        std::string es5_file_name = "scripts/" + username + "." + name + ".es5.js";
-        std::string es6_file_name = "scripts/" + username + "." + name + ".js";
-
-        std::string file_name = es5_file_name;
-
-        if(file::exists(es6_file_name))
-            file_name = es6_file_name;
+        std::string file_name = "scripts/" + username + "." + name + ".js";
 
         if(!file::exists(file_name))
             return "No such file";
@@ -279,12 +242,6 @@ bool is_local_command(const std::string& command)
         return true;
 
     if(starts_with(command, "#edit "))
-        return true;
-
-    if(starts_with(command, "#edit_es6 "))
-        return true;
-
-    if(starts_with(command, "#edit_es5 "))
         return true;
 
     if(starts_with(command, "#open "))
