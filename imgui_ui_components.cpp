@@ -7,7 +7,6 @@
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include "local_commands.hpp"
-#include "imguix.hpp"
 #include <networking/networking.hpp>
 #include <imgui/imgui_internal.h>
 #include <GLFW/glfw3.h>

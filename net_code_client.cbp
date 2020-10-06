@@ -946,34 +946,6 @@
 			<Option target="DeployTestZAPCC" />
 			<Option target="LinuxDeploy" />
 		</Unit>
-		<Unit filename="imguix.cpp">
-			<Option target="Debug" />
-			<Option target="Release" />
-			<Option target="Profile" />
-			<Option target="Deploy" />
-			<Option target="DeployProfile" />
-			<Option target="DeployToSteam" />
-			<Option target="DeployTestDebug" />
-			<Option target="DeployTest" />
-			<Option target="DeployTestSubmodules" />
-			<Option target="ReleaseSubmodules" />
-			<Option target="DeployTestZAPCC" />
-			<Option target="LinuxDeploy" />
-		</Unit>
-		<Unit filename="imguix.hpp">
-			<Option target="Debug" />
-			<Option target="Release" />
-			<Option target="Profile" />
-			<Option target="Deploy" />
-			<Option target="DeployProfile" />
-			<Option target="DeployToSteam" />
-			<Option target="DeployTestDebug" />
-			<Option target="DeployTest" />
-			<Option target="DeployTestSubmodules" />
-			<Option target="ReleaseSubmodules" />
-			<Option target="DeployTestZAPCC" />
-			<Option target="LinuxDeploy" />
-		</Unit>
 		<Unit filename="local_commands.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -1158,10 +1130,6 @@
 		</Unit>
 		<Extensions>
 			<lib_finder disable_auto="1" />
-			<code_completion />
-			<envvars />
-			<debugger />
-			<fortran_project />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>

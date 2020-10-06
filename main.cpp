@@ -47,7 +47,6 @@
 #include <stdio.h>
 #include "font_cfg.hpp"
 #include <iomanip>
-#include "imguix.hpp"
 #include <misc/cpp/imgui_stdlib.h>
 #include <toolkit/fs_helpers.hpp>
 
@@ -254,7 +253,9 @@ int main(int argc, char* argv[])
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     //io.ConfigViewportsNoTaskBarIcon = true;
 
-    ImGui::PushSrgbStyleColor(ImGuiCol_WindowBg, ImGuiX::GetBgCol());
+    ImVec4 background_col(30/255.f, 30/255.f, 30/255.f, 1.f);
+
+    ImGui::PushSrgbStyleColor(ImGuiCol_WindowBg, background_col);
 
     ImGuiStyle& style = ImGui::GetStyle();
 
