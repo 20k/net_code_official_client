@@ -446,7 +446,7 @@ void realtime_script_manager::render_realtime_windows(connection& conn, int& was
 
         run.set_size = false;
 
-        bool should_render = ImGui::Begin((title_str + "###" + str).c_str(), &run.open);
+        bool should_render = ImGui::Begin((title_str + "###" + str).c_str(), &run.open, ImGuiWindowFlags_NoScrollbar);
 
         if(should_render)
         {
