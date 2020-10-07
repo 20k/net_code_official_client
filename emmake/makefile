@@ -47,7 +47,7 @@ EMS += -s ASYNCIFY=1
 
 CPPFLAGS = -I../deps -I../deps/imgui -I../deps/imtui/include
 #CPPFLAGS += -g
-CPPFLAGS += -Wall -Wformat -Oz -std=c++17
+CPPFLAGS += -Wall -Wformat -Oz -std=c++20
 CPPFLAGS += -DLOCAL_IP
 CPPFLAGS += -DSDL_MAIN_HANDLED
 CPPFLAGS += $(EMS)
