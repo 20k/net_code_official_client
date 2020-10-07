@@ -64,7 +64,7 @@ std::vector<formatted_char> format_characters(const std::vector<interop_char>& i
     std::vector<formatted_char> ret;
 
     vec2f pos = cpos;
-    pos.x() = start.x() + char_inf::cwbuf;
+    pos.x() = start.x();
     pos.y() += cdim.y();
 
     for(int i=0; i < (int)interop.size(); i++)

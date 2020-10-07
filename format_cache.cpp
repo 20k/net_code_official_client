@@ -9,7 +9,7 @@ void format_cache_2::ensure_built(vec2f window_dimensions, const std::vector<int
 {
     vec2f cdim = xy_to_vec(ImGui::CalcTextSize("A"));
 
-    vec2f start = {char_inf::cwbuf, 0};
+    vec2f start = {0, 0};
 
     if(valid_cache && !valid_last_line)
     {
@@ -47,7 +47,7 @@ void format_cache_2::ensure_built(vec2f window_dimensions, const std::vector<int
     height_cache.clear();
     int last_line = 0;
 
-    vec2f current = {char_inf::cwbuf, 0};
+    vec2f current = {0, 0};
 
     for(int i=0; i < (int)all_chars.size(); i++)
     {
