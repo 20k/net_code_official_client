@@ -1030,7 +1030,6 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
             str = make_success_col("Downloaded and saved script to " + get_scripts_directory(post_split[0]) + "\\" + post_split[1] + ".down.js") + "\n";
             push = true;
         }
-
     }
     else if(in["type"] == "chat_api_response")
     {
