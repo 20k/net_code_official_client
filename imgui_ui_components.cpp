@@ -369,7 +369,7 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
 
 void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, int id)
 {
-    for(const ui_element& e : stk.elements)
+    for(ui_element& e : stk.elements)
     {
         if(e.type == "text")
         {
@@ -380,27 +380,31 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
         {
             ImGui::Button(e.value.c_str());
 
-            if(ImGui::IsItemHovered())
+            std::vector<std::string> states;
+
+            bool is_hovered = ImGui::IsItemHovered();
+            bool was_hovered = e.was_hovered;
+
+            bool is_clicked = ImGui::IsItemClicked();
+
+            if(is_hovered)
+                states.push_back("hovered");
+
+            if(is_clicked)
+                states.push_back("clicked");
+
+            if(is_hovered != was_hovered || is_clicked)
             {
                 nlohmann::json j;
                 j["type"] = "client_ui_element";
                 j["id"] = id;
                 j["ui_id"] = e.value;
-                j["state"] = "hovered";
+                j["state"] = states;
 
                 conn.write(j.dump());
             }
 
-            if(ImGui::IsItemClicked(0))
-            {
-                nlohmann::json j;
-                j["type"] = "client_ui_element";
-                j["id"] = id;
-                j["ui_id"] = e.value;
-                j["state"] = "clicked";
-
-                conn.write(j.dump());
-            }
+            e.was_hovered = is_hovered;
         }
 
         if(e.type == "sameline")
@@ -879,12 +883,26 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
 
         nlohmann::json data = in["msg"];
 
+        std::map<std::string, ui_element> existing_elements;
+
+        for(const ui_element& e : run.stk.elements)
+        {
+            existing_elements[e.value] = e;
+        }
+
         run.stk = ui_stack();
 
-        ///array of {type, value} objects
         for(auto& e : data)
         {
             ui_element elem;
+
+            std::string cvalue = e["value"];
+
+            if(auto it = existing_elements.find(cvalue); it != existing_elements.end())
+            {
+                elem = it->second;
+            }
+
             elem.type = e["type"];
             elem.value = e["value"];
 

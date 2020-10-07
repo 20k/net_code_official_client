@@ -31,6 +31,8 @@ struct ui_element
 {
     std::string type;
     std::string value;
+
+    bool was_hovered = false;
 };
 
 struct ui_stack
