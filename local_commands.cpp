@@ -9,101 +9,19 @@
 #include "imgui_ui_components.hpp"
 
 #include <iostream>
+#include <string_view>
 
-std::string get_scripts_directory()
+std::string get_scripts_directory(const std::string& username)
 {
+    #ifndef __EMSCRIPTEN__
+    #ifdef __WIN32__
+    return "scripts\\" + username;
+    #else
+    return "scripts/" + username;
+    #endif // __WIN32__
+    #else
     return "scripts";
-}
-
-std::vector<std::string> get_all_scripts_list()
-{
-    std::vector<std::string> ret;
-
-    tinydir_dir dir;
-    #ifndef __EMSCRIPTEN__
-    tinydir_open(&dir, get_scripts_directory().c_str());
-    #else
-    tinydir_open(&dir, ("web/" + get_scripts_directory()).c_str());
     #endif
-
-    while (dir.has_next)
-    {
-        tinydir_file file;
-        tinydir_readfile(&dir, &file);
-
-        if(!file.is_dir)
-        {
-            std::string name = file.name;
-
-            if(no_ss_split(name, ".").size() >= 2)
-                ret.push_back(name);
-        }
-
-        tinydir_next(&dir);
-    }
-
-    tinydir_close(&dir);
-
-    return ret;
-}
-
-std::vector<std::string> get_scripts_list(const std::string& username)
-{
-    std::vector<std::string> ret;
-
-    tinydir_dir dir;
-    #ifndef __EMSCRIPTEN__
-    tinydir_open(&dir, get_scripts_directory().c_str());
-    #else
-    tinydir_open(&dir, ("web/" + get_scripts_directory()).c_str());
-    #endif
-
-    while (dir.has_next)
-    {
-        tinydir_file file;
-        tinydir_readfile(&dir, &file);
-
-        if(username != "")
-        {
-            if(starts_with(std::string(file.name), username + "."))
-            {
-                ret.push_back(file.name);
-            }
-        }
-        else
-        {
-            if(!file.is_dir)
-            {
-                ret.push_back(file.name);
-            }
-        }
-
-        tinydir_next(&dir);
-    }
-
-    tinydir_close(&dir);
-
-    return ret;
-}
-
-std::string format_raw_script_name(const std::string& file_name)
-{
-    auto names = no_ss_split(file_name, ".");
-
-    if(names.size() == 2)
-    {
-        return names[1];
-    }
-
-    if(names.size() > 2)
-    {
-        if(names[2].size() > 0 && names[2] != "js")
-            return names[1] + " [" + names[2] + "]";
-        else
-            return names[1];
-    }
-
-    return file_name;
 }
 
 void ipc_open(const std::string& fname)
@@ -113,6 +31,11 @@ void ipc_open(const std::string& fname)
 
 std::string handle_local_command(const std::string& username, const std::string& command, auto_handler& auto_handle, bool& should_shutdown, terminal_manager& terminals, chat_window& chat)
 {
+    #ifndef __EMSCRIPTEN__
+    mkdir("scripts");
+    mkdir(get_scripts_directory(username).c_str());
+    #endif // __EMSCRIPTEN__
+
     if(starts_with(command, "#clear_autos") || starts_with(command, "#autos_clear"))
     {
         auto_handle.found_args.clear();
@@ -142,9 +65,9 @@ std::string handle_local_command(const std::string& username, const std::string&
 
         tinydir_dir dir;
         #ifndef __EMSCRIPTEN__
-        tinydir_open(&dir, get_scripts_directory().c_str());
+        tinydir_open(&dir, get_scripts_directory(username).c_str());
         #else
-        tinydir_open(&dir, ("web/" + get_scripts_directory()).c_str());
+        tinydir_open(&dir, ("web/" + get_scripts_directory(username)).c_str());
         #endif
 
         while (dir.has_next)
@@ -152,21 +75,12 @@ std::string handle_local_command(const std::string& username, const std::string&
             tinydir_file file;
             tinydir_readfile(&dir, &file);
 
-            if(starts_with(std::string(file.name), username + "."))
+            if(!file.is_dir)
             {
-                auto names = no_ss_split(file.name, ".");
+                auto post_split = no_ss_split(file.name, ".");
 
-                if(names.size() == 2)
-                {
-                    fname.push_back(names[1]);
-                }
-                if(names.size() > 2)
-                {
-                    if(names[2].size() > 0 && names[2] != "js")
-                        fname.push_back(names[1] + " [" + names[2] + "]");
-                    else
-                        fname.push_back(names[1]);
-                }
+                if(post_split.size() == 2 && post_split[1] == "js")
+                    fname.push_back(post_split[0]);
             }
 
             tinydir_next(&dir);
@@ -198,7 +112,7 @@ std::string handle_local_command(const std::string& username, const std::string&
 
         std::string name = fname[1];
 
-        std::string file_name = "scripts/" + username + "." + name + ".js";
+        std::string file_name = get_scripts_directory(username) + "/" + name + ".js";
 
         if(!file::exists(file_name))
         {
@@ -219,7 +133,7 @@ std::string handle_local_command(const std::string& username, const std::string&
 
         std::string name = fname[1];
 
-        std::string file_name = "scripts/" + username + "." + name + ".js";
+        std::string file_name = get_scripts_directory(username) + "/" + name + ".js";
 
         if(!file::exists(file_name))
             return "No such file";
@@ -229,7 +143,7 @@ std::string handle_local_command(const std::string& username, const std::string&
 
     if(starts_with(command, "#dir"))
     {
-        system("start scripts");
+        system(("start " + get_scripts_directory(username)).c_str());
         //ShellExecute(NULL, "open", "scripts", NULL, NULL, SW_SHOWDEFAULT);
     }
 

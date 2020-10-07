@@ -1014,17 +1014,23 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
         std::string name = in["name"];
         std::string data = in["data"];
 
-        std::string save_name = get_scripts_directory() + "/" + name + ".down.js";
+        auto post_split = no_ss_split(name, ".");
 
-        file::write(save_name, data, file::mode::TEXT);
+        if(post_split.size() >= 2)
+        {
+            std::string save_name = get_scripts_directory(post_split[0]) + "\\" + post_split[1] + ".down.js";
 
-        #ifdef __EMSCRIPTEN__
-        std::string webdlname = name + ".down.js";
-        file::download(webdlname, data);
-        #endif // __EMSCRIPTEN__
+            file::write(save_name, data, file::mode::TEXT);
 
-        str = make_success_col("Downloaded and saved script to " + name + ".down.js") + "\n";
-        push = true;
+            #ifdef __EMSCRIPTEN__
+            std::string webdlname = name + ".down.js";
+            file::download(webdlname, data);
+            #endif // __EMSCRIPTEN__
+
+            str = make_success_col("Downloaded and saved script to " + get_scripts_directory(post_split[0]) + "\\" + post_split[1] + ".down.js") + "\n";
+            push = true;
+        }
+
     }
     else if(in["type"] == "chat_api_response")
     {

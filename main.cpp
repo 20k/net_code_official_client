@@ -96,19 +96,15 @@ void pretty_atomic_write_all(const std::string& file, const nlohmann::json& js)
 std::string default_up_handling(const std::string& user, const std::string& server_msg, const std::string& scripts_dir)
 {
     std::string up = "#up ";
-    std::string up_es6 = "#up_es6 ";
     std::string dry = "#dry ";
-    std::string up_es5 = "#up_es5 ";
 
     std::vector<std::string> strings = no_ss_split(server_msg, " ");
 
-    if((starts_with(server_msg, up) || starts_with(server_msg, dry) || starts_with(server_msg, up_es5)) && strings.size() == 2)
+    if((starts_with(server_msg, up) || starts_with(server_msg, dry)) && strings.size() == 2)
     {
         std::string name = strings[1];
 
-        std::string diskname = scripts_dir + user + "." + name + ".es5.js";
-        std::string diskname_es6 = scripts_dir + user + "." + name + ".js";
-        std::string diskname_ts = scripts_dir + user + "." + name + ".ts";
+        std::string diskname = scripts_dir + name + ".js";
 
         std::string comm = up;
 
@@ -119,23 +115,6 @@ std::string default_up_handling(const std::string& user, const std::string& serv
 
         if(file::exists(diskname))
             data = file::read(diskname, file::mode::TEXT);
-
-        if(file::exists(diskname_es6))
-        {
-            data = file::read(diskname_es6, file::mode::TEXT);
-            comm = up_es6;
-        }
-
-        if(file::exists(diskname_ts))
-        {
-            data = file::read(diskname_ts, file::mode::TEXT);
-            comm = up_es6;
-        }
-
-        if(starts_with(server_msg, up_es5))
-        {
-            comm = up;
-        }
 
         return comm + name + " " + data;
     }
@@ -1037,7 +1016,7 @@ int main(int argc, char* argv[])
 
                     if(!is_local_command(term.command.command))
                     {
-                        std::string up_data = default_up_handling(current_user, term.command.command, "scripts/");
+                        std::string up_data = default_up_handling(current_user, term.command.command, get_scripts_directory(current_user) + "/");
 
                         nlohmann::json data;
                         data["type"] = "generic_server_command";
