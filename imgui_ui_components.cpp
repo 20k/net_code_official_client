@@ -380,6 +380,17 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
         {
             ImGui::Button(e.value.c_str());
 
+            if(ImGui::IsItemHovered())
+            {
+                nlohmann::json j;
+                j["type"] = "client_ui_element";
+                j["id"] = id;
+                j["ui_id"] = e.value;
+                j["state"] = "hovered";
+
+                conn.write(j.dump());
+            }
+
             if(ImGui::IsItemClicked(0))
             {
                 nlohmann::json j;
