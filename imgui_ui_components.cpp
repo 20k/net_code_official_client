@@ -367,7 +367,7 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
     }
 }
 
-void render_ui_stack(realtime_script_run& run, ui_stack& stk)
+void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, int id)
 {
     for(const ui_element& e : stk.elements)
     {
@@ -379,6 +379,17 @@ void render_ui_stack(realtime_script_run& run, ui_stack& stk)
         if(e.type == "button")
         {
             ImGui::Button(e.value.c_str());
+
+            if(ImGui::IsItemClicked(0))
+            {
+                nlohmann::json j;
+                j["type"] = "client_ui_element";
+                j["id"] = id;
+                j["ui_id"] = e.value;
+                j["state"] = "clicked";
+
+                conn.write(j.dump());
+            }
         }
 
         if(e.type == "sameline")
@@ -452,7 +463,7 @@ void realtime_script_manager::render_realtime_windows(connection& conn, int& was
             if(run.is_square_font)
                 ImGui::PushFont(fonts.get_square_font());
 
-            render_ui_stack(run, run.stk);
+            render_ui_stack(conn, run, run.stk, i.first);
 
             render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, run.cache);
 
