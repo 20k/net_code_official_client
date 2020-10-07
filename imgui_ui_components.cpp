@@ -367,6 +367,27 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
     }
 }
 
+void render_ui_stack(realtime_script_run& run, ui_stack& stk)
+{
+    for(const ui_element& e : stk.elements)
+    {
+        if(e.type == "text")
+        {
+            ImGui::TextUnformatted(e.value.c_str(), e.value.c_str() + e.value.size());
+        }
+
+        if(e.type == "button")
+        {
+            ImGui::Button(e.value.c_str());
+        }
+
+        if(e.type == "sameline")
+        {
+            ImGui::SameLine();
+        }
+    }
+}
+
 void realtime_script_manager::render_realtime_windows(connection& conn, int& was_closed_id, font_selector& fonts, auto_handler& auto_handle)
 {
     was_closed_id = -1;
@@ -430,6 +451,8 @@ void realtime_script_manager::render_realtime_windows(connection& conn, int& was
 
             if(run.is_square_font)
                 ImGui::PushFont(fonts.get_square_font());
+
+            render_ui_stack(run, run.stk);
 
             render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, run.cache);
 
@@ -824,6 +847,26 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
         if(in.count("name") > 0)
         {
             run.script_name = in["name"];
+        }
+    }
+    else if(in["type"] == "command_realtime_ui")
+    {
+        int id = in["id"];
+
+        realtime_script_run& run = realtime_scripts.windows[id];
+
+        nlohmann::json data = in["msg"];
+
+        run.stk = ui_stack();
+
+        ///array of {type, value} objects
+        for(auto& e : data)
+        {
+            ui_element elem;
+            elem.type = e["type"];
+            elem.value = e["value"];
+
+            run.stk.elements.push_back(elem);
         }
     }
     else if(in["type"] == "chat_api")

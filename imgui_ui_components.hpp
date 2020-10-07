@@ -27,6 +27,17 @@ struct scrollbar_hack
     void do_hack(int approx_num, bool set_scrollbar, format_cache_2& cache, vec2f dim);
 };
 
+struct ui_element
+{
+    std::string type;
+    std::string value;
+};
+
+struct ui_stack
+{
+    std::vector<ui_element> elements;
+};
+
 struct realtime_script_run
 {
     steady_timer last_message;
@@ -39,6 +50,8 @@ struct realtime_script_run
     bool was_open = true;
     bool is_square_font = false;
     bool was_square_font = false;
+
+    ui_stack stk;
 
     std::string script_name;
     vec2f dim = {300, 300};
