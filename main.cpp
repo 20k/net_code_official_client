@@ -232,7 +232,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    //sett.viewports = !no_viewports;
+    sett.viewports = !no_viewports;
     sett.no_decoration = true;
 
     if(!has_file)
