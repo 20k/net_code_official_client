@@ -73,7 +73,7 @@ std::vector<formatted_char> format_characters(const std::vector<interop_char>& i
         if((pos.x() >= wrap_dim.x() - char_inf::cwbuf || ioc.c == '\n') && !ioc.is_cursor)
         {
             pos.y() += cdim.y();
-            pos.x() = start.x() + char_inf::cwbuf;
+            pos.x() = start.x();
         }
 
         if(ioc.c == '\n')
