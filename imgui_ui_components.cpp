@@ -367,8 +367,10 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
     }
 }
 
-void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, int id)
+void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, int id, bool is_linear_colour)
 {
+    ImGui::BeginGroup();
+
     int group_unbalanced_stack = 0;
 
     for(ui_element& e : stk.elements)
@@ -381,6 +383,30 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             std::string val = e.arguments[0];
 
             ImGui::TextUnformatted(val.c_str(), val.c_str() + val.size());
+        }
+
+        if(e.type == "textcolored")
+        {
+            ///r, g, b, a, text
+            if(e.arguments.size() < 5)
+                continue;
+
+            float r = e.arguments[0];
+            float g = e.arguments[1];
+            float b = e.arguments[2];
+            float a = e.arguments[3];
+
+            if(is_linear_colour)
+            {
+                r = srgb_to_lin_approx((vec1f)r).x();
+                g = srgb_to_lin_approx((vec1f)g).x();
+                b = srgb_to_lin_approx((vec1f)b).x();
+                a = srgb_to_lin_approx((vec1f)a).x();
+            }
+
+            std::string val = e.arguments[4];
+
+            ImGui::TextColored(ImVec4(r, g, b, a), "%s", val.c_str());
         }
 
         if(e.type == "textdisabled")
@@ -482,9 +508,11 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
     {
         ImGui::EndGroup();
     }
+
+    ImGui::EndGroup();
 }
 
-void realtime_script_manager::render_realtime_windows(connection& conn, int& was_closed_id, font_selector& fonts, auto_handler& auto_handle)
+void realtime_script_manager::render_realtime_windows(connection& conn, int& was_closed_id, font_selector& fonts, auto_handler& auto_handle, bool is_linear_colour)
 {
     was_closed_id = -1;
 
@@ -548,7 +576,7 @@ void realtime_script_manager::render_realtime_windows(connection& conn, int& was
             if(run.is_square_font)
                 ImGui::PushFont(fonts.get_square_font());
 
-            render_ui_stack(conn, run, run.stk, i.first);
+            render_ui_stack(conn, run, run.stk, i.first, is_linear_colour);
 
             render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, run.cache);
 

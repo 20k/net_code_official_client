@@ -1305,7 +1305,7 @@ int main(int argc, char* argv[])
             vec2i window_dim = window.get_window_size();
 
             //test_imgui_term.render(window);
-            realtime_scripts.render_realtime_windows(conn, was_closed_id, font_select, terminals.auto_handle);
+            realtime_scripts.render_realtime_windows(conn, was_closed_id, font_select, terminals.auto_handle, window.get_render_settings().is_srgb);
             chat_win.render(should_coordinate_focus);
             terminals.render(window, {window_dim.x(), window_dim.y()}, should_coordinate_focus);
 
