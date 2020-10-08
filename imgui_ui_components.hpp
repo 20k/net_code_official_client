@@ -30,7 +30,8 @@ struct scrollbar_hack
 struct ui_element
 {
     std::string type;
-    std::string value;
+    std::string element_id;
+    std::vector<nlohmann::json> arguments;
 
     bool was_hovered = false;
 };

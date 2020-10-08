@@ -375,26 +375,46 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
     {
         if(e.type == "text")
         {
-            ImGui::TextUnformatted(e.value.c_str(), e.value.c_str() + e.value.size());
+            if(e.arguments.size() < 1)
+                continue;
+
+            std::string val = e.arguments[0];
+
+            ImGui::TextUnformatted(val.c_str(), val.c_str() + val.size());
         }
 
         if(e.type == "textdisabled")
         {
-            ImGui::TextDisabled("%s", e.value.c_str());
+            if(e.arguments.size() < 1)
+                continue;
+
+            std::string val = e.arguments[0];
+
+            ImGui::TextDisabled("%s", val.c_str());
         }
 
         if(e.type == "bullettext")
         {
-            ImGui::BulletText("%s", e.value.c_str());
+            if(e.arguments.size() < 1)
+                continue;
+
+            std::string val = e.arguments[0];
+
+            ImGui::BulletText("%s", val.c_str());
         }
 
         if(e.type == "button" || e.type == "smallbutton")
         {
+            if(e.arguments.size() < 1)
+                continue;
+
+            std::string val = e.arguments[0];
+
             if(e.type == "button")
-                ImGui::Button(e.value.c_str());
+                ImGui::Button(val.c_str());
 
             if(e.type == "smallbutton")
-                ImGui::SmallButton(e.value.c_str());
+                ImGui::SmallButton(val.c_str());
 
             std::vector<std::string> states;
 
@@ -414,7 +434,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 nlohmann::json j;
                 j["type"] = "client_ui_element";
                 j["id"] = id;
-                j["ui_id"] = e.value;
+                j["ui_id"] = e.element_id;
                 j["state"] = states;
 
                 conn.write(j.dump());
@@ -937,7 +957,7 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
 
         for(const ui_element& e : run.stk.elements)
         {
-            existing_elements[e.value] = e;
+            existing_elements[e.element_id] = e;
         }
 
         run.stk = ui_stack();
@@ -946,15 +966,16 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
         {
             ui_element elem;
 
-            std::string cvalue = e["value"];
+            std::string element_id = e["element_id"];
 
-            if(auto it = existing_elements.find(cvalue); it != existing_elements.end())
+            if(auto it = existing_elements.find(element_id); it != existing_elements.end())
             {
                 elem = it->second;
             }
 
             elem.type = e["type"];
-            elem.value = e["value"];
+            elem.arguments = (std::vector<nlohmann::json>)e["arguments"];
+            elem.element_id = element_id;
 
             run.stk.elements.push_back(elem);
         }
