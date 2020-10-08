@@ -367,12 +367,19 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
     }
 }
 
+///all values from the server are sanitised in some way unless explicitly noted otherwise
+///that is: randomised salted hashes in the strings to prevent collisions
+///strings have a capped length
+///doubles are not nan, not that json supports that anyway
+///all values are clamped to sensible ranges so they can be piped directly into imgui
+///colours are clamped to [0, 1]
 void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, int id, bool is_linear_colour)
 {
     ImGui::BeginGroup();
 
     int group_unbalanced_stack = 0;
     int push_colour_stack = 0;
+    int item_width_stack = 0;
 
     for(ui_element& e : stk.elements)
     {
@@ -430,7 +437,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             ImGui::BulletText("%s", val.c_str());
         }
 
-        if(e.type == "button" || e.type == "smallbutton")
+        if(e.type == "button" || e.type == "smallbutton" || e.type == "invisiblebutton" || e.type == "arrowbutton")
         {
             if(e.arguments.size() < 1)
                 continue;
@@ -442,6 +449,27 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
             if(e.type == "smallbutton")
                 ImGui::SmallButton(val.c_str());
+
+            if(e.type == "invisiblebutton")
+            {
+                if(e.arguments.size() < 3)
+                    continue;
+
+                double w = e.arguments[1];
+                double h = e.arguments[2];
+
+                ImGui::InvisibleButton(val.c_str(), ImVec2(w, h));
+            }
+
+            if(e.type == "arrowbutton")
+            {
+                if(e.arguments.size() < 2)
+                    continue;
+
+                int dir = e.arguments[1];
+
+                ImGui::ArrowButton(val.c_str(), dir);
+            }
 
             std::vector<std::string> states;
 
@@ -478,8 +506,9 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
         if(e.type == "pushstylecolor")
         {
             if(e.arguments.size() < 5)
-                return;
+                continue;
 
+            ///IDX IS NOT SANITISED
             int idx = e.arguments[0];
             double r = e.arguments[1];
             double g = e.arguments[2];
@@ -494,6 +523,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 a = srgb_to_lin_approx((vec1f)a).x();
             }
 
+            ///PANIC AND BREAK THINGS
             if(idx >= 0 && idx < ImGuiCol_COUNT)
             {
                 push_colour_stack++;
@@ -505,7 +535,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
         if(e.type == "popstylecolor")
         {
             if(e.arguments.size() < 1)
-                return;
+                continue;
 
             int idx = e.arguments[0];
 
@@ -515,6 +545,41 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 idx--;
                 ImGui::PopStyleColor(1);
             }
+        }
+
+        if(e.type == "pushitemwidth")
+        {
+            if(e.arguments.size() < 1)
+                continue;
+
+            double width = e.arguments[0];
+
+            item_width_stack++;
+            ImGui::PushItemWidth(width);
+        }
+
+        if(e.type == "popitemwidth")
+        {
+            if(item_width_stack > 0)
+            {
+                item_width_stack--;
+                ImGui::PopItemWidth();
+            }
+        }
+
+        if(e.type == "setnextitemwidth")
+        {
+            if(e.arguments.size() < 1)
+                continue;
+
+            double width = e.arguments[0];
+
+            ImGui::SetNextItemWidth(width);
+        }
+
+        if(e.type == "separator")
+        {
+            ImGui::Separator();
         }
 
         if(e.type == "sameline")
@@ -530,6 +595,37 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
         if(e.type == "spacing")
         {
             ImGui::Spacing();
+        }
+
+        if(e.type == "dummy")
+        {
+            if(e.arguments.size() < 2)
+                continue;
+
+            double w = e.arguments[0];
+            double h = e.arguments[1];
+
+            ImGui::Dummy(ImVec2(w, h));
+        }
+
+        if(e.type == "indent")
+        {
+            if(e.arguments.size() < 1)
+                continue;
+
+            double amount = e.arguments[0];
+
+            ImGui::Indent(amount);
+        }
+
+        if(e.type == "unindent")
+        {
+            if(e.arguments.size() < 1)
+                continue;
+
+            double amount = e.arguments[0];
+
+            ImGui::Unindent(amount);
         }
 
         if(e.type == "begingroup")
@@ -556,6 +652,12 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
     {
         push_colour_stack--;
         ImGui::PopStyleColor(1);
+    }
+
+    while(item_width_stack > 0)
+    {
+        item_width_stack--;
+        ImGui::PopItemWidth();
     }
 
     ImGui::EndGroup();
