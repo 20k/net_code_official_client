@@ -390,7 +390,11 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "button" || e.type == "smallbutton")
         {
-            ImGui::Button(e.value.c_str());
+            if(e.type == "button")
+                ImGui::Button(e.value.c_str());
+
+            if(e.type == "smallbutton")
+                ImGui::SmallButton(e.value.c_str());
 
             std::vector<std::string> states;
 
