@@ -372,6 +372,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
     ImGui::BeginGroup();
 
     int group_unbalanced_stack = 0;
+    int push_colour_stack = 0;
 
     for(ui_element& e : stk.elements)
     {
@@ -474,6 +475,48 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             ImGui::Bullet();
         }
 
+        if(e.type == "pushstylecolor")
+        {
+            if(e.arguments.size() < 5)
+                return;
+
+            int idx = e.arguments[0];
+            double r = e.arguments[1];
+            double g = e.arguments[2];
+            double b = e.arguments[3];
+            double a = e.arguments[4];
+
+            if(is_linear_colour)
+            {
+                r = srgb_to_lin_approx((vec1f)r).x();
+                g = srgb_to_lin_approx((vec1f)g).x();
+                b = srgb_to_lin_approx((vec1f)b).x();
+                a = srgb_to_lin_approx((vec1f)a).x();
+            }
+
+            if(idx >= 0 && idx < ImGuiCol_COUNT)
+            {
+                push_colour_stack++;
+
+                ImGui::PushStyleColor(idx, ImVec4(r, g, b, a));
+            }
+        }
+
+        if(e.type == "popstylecolor")
+        {
+            if(e.arguments.size() < 1)
+                return;
+
+            int idx = e.arguments[0];
+
+            while(push_colour_stack > 0 && idx > 0)
+            {
+                push_colour_stack--;
+                idx--;
+                ImGui::PopStyleColor(1);
+            }
+        }
+
         if(e.type == "sameline")
         {
             ImGui::SameLine();
@@ -507,6 +550,12 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
     for(int i=0; i < group_unbalanced_stack; i++)
     {
         ImGui::EndGroup();
+    }
+
+    while(push_colour_stack > 0)
+    {
+        push_colour_stack--;
+        ImGui::PopStyleColor(1);
     }
 
     ImGui::EndGroup();
@@ -985,6 +1034,9 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
 
         for(const ui_element& e : run.stk.elements)
         {
+            if(e.element_id == "")
+                continue;
+
             existing_elements[e.element_id] = e;
         }
 
