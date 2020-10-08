@@ -369,6 +369,8 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
 
 void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, int id)
 {
+    int group_unbalanced_stack = 0;
+
     for(ui_element& e : stk.elements)
     {
         if(e.type == "text")
@@ -376,7 +378,17 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             ImGui::TextUnformatted(e.value.c_str(), e.value.c_str() + e.value.size());
         }
 
-        if(e.type == "button")
+        if(e.type == "textdisabled")
+        {
+            ImGui::TextDisabled("%s", e.value.c_str());
+        }
+
+        if(e.type == "bullettext")
+        {
+            ImGui::BulletText("%s", e.value.c_str());
+        }
+
+        if(e.type == "button" || e.type == "smallbutton")
         {
             ImGui::Button(e.value.c_str());
 
@@ -407,10 +419,44 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             e.was_hovered = is_hovered;
         }
 
+        if(e.type == "bullet")
+        {
+            ImGui::Bullet();
+        }
+
         if(e.type == "sameline")
         {
             ImGui::SameLine();
         }
+
+        if(e.type == "newline")
+        {
+            ImGui::NewLine();
+        }
+
+        if(e.type == "spacing")
+        {
+            ImGui::Spacing();
+        }
+
+        if(e.type == "begingroup")
+        {
+            group_unbalanced_stack++;
+
+            ImGui::BeginGroup();
+        }
+
+        if(e.type == "endgroup")
+        {
+            group_unbalanced_stack--;
+
+            ImGui::EndGroup();
+        }
+    }
+
+    for(int i=0; i < group_unbalanced_stack; i++)
+    {
+        ImGui::EndGroup();
     }
 }
 
