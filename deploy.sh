@@ -21,5 +21,5 @@ sh ../deploy_gather_dlls.sh ./crapmud_client.exe .
 cp -r * ../Release/bin
 
 cd ..
-cd ./deps/steamworks_sdk_142/sdk/tools/ContentBuilder
+cd ./deps/steamworks_sdk_148a/sdk/tools/ContentBuilder
 ./run_build.bat
