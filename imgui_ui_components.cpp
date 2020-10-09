@@ -997,7 +997,7 @@ void terminal_manager::make_new_terminal()
     term.friendly_id = max_id+1;
 }
 
-void process_text_from_server(terminal_manager& terminals, auth_manager& auth_manage, std::string& in_user, const nlohmann::json& in, chat_window& chat_win, font_selector& fonts, realtime_script_manager& realtime_scripts)
+void process_text_from_server(terminal_manager& terminals, auth_manager& auth_manage, std::string& in_user, nlohmann::json& in, chat_window& chat_win, font_selector& fonts, realtime_script_manager& realtime_scripts)
 {
     if(in == "")
         return;
@@ -1162,16 +1162,20 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
         {
             ui_element elem;
 
-            std::string element_id = e["element_id"];
-
-            if(auto it = existing_elements.find(element_id); it != existing_elements.end())
+            if(e.count("element_id") > 0)
             {
-                elem = it->second;
+                std::string element_id = e["element_id"];
+
+                if(auto it = existing_elements.find(element_id); it != existing_elements.end())
+                {
+                    elem = it->second;
+                }
+
+                elem.element_id = element_id;
             }
 
             elem.type = e["type"];
             elem.arguments = (std::vector<nlohmann::json>)e["arguments"];
-            elem.element_id = element_id;
 
             run.stk.elements.push_back(elem);
         }

@@ -39,6 +39,7 @@ struct ui_element
 struct ui_stack
 {
     std::vector<ui_element> elements;
+    std::vector<std::string> typelist;
 };
 
 struct realtime_script_run
@@ -190,7 +191,7 @@ struct terminal_manager : serialisable, free_function
     void make_new_terminal();
 };
 
-void process_text_from_server(terminal_manager& terminals, auth_manager& auth_manage, std::string& current_user, const nlohmann::json& data, chat_window& chat_win, font_selector& fonts, realtime_script_manager& realtime_scripts);
+void process_text_from_server(terminal_manager& terminals, auth_manager& auth_manage, std::string& current_user, nlohmann::json& data, chat_window& chat_win, font_selector& fonts, realtime_script_manager& realtime_scripts);
 
 void clear_everything(terminal_manager& term, chat_window& chat);
 void invalidate_everything(terminal_manager& term, chat_window& chat);
