@@ -445,7 +445,15 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             std::string val = e.arguments[0];
 
             if(e.type == "button")
-                ImGui::Button(val.c_str());
+            {
+                if(e.arguments.size() < 3)
+                    continue;
+
+                double w = e.arguments[1];
+                double h = e.arguments[2];
+
+                ImGui::Button(val.c_str(), ImVec2(w, h));
+            }
 
             if(e.type == "smallbutton")
                 ImGui::SmallButton(val.c_str());
