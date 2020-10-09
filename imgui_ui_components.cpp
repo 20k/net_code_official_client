@@ -584,7 +584,13 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "sameline")
         {
-            ImGui::SameLine();
+            if(e.arguments.size() < 2)
+                continue;
+
+            double offset_from_start = e.arguments[0];
+            double spacing = e.arguments[1];
+
+            ImGui::SameLine(offset_from_start, spacing);
         }
 
         if(e.type == "newline")
