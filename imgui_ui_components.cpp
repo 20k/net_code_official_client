@@ -115,7 +115,6 @@ void clear_everything(terminal_manager& term, chat_window& chat)
     chat.clear_chat();
 }
 
-
 void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int& cursor_pos_idx, const std::vector<interop_vec_t>& text_history, auto_handler& auto_handle, format_cache_2& cache, std::string command_padding = "")
 {
     float overall_width = ImGui::GetWindowWidth();
@@ -266,7 +265,6 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
             }
         }
 
-        ///TODO: FIXME
         #ifndef __EMSCRIPTEN__
         if(ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
         {
