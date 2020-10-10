@@ -253,7 +253,8 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
         ImVec4 resize_col = ImGui::GetStyleColorVec4(ImGuiCol_ResizeGrip);
         ImU32 resize_colu32 = ImGui::ColorConvertFloat4ToU32(resize_col);
 
-        ImGui::Begin(" NET_CODE_", &open, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
+        ///TODO: https://stackoverflow.com/questions/58209628/function-to-move-a-sdl2-window-while-mouse-down-flickers-the-window-and-doesnt
+        ImGui::Begin(" NET_CODE_", &open, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
         if(ImGui::IsItemHovered() &&
            ImGui::IsMouseDragging(0) && !title_dragging && !resize_dragging)
