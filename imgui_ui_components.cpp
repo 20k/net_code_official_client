@@ -366,6 +366,26 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
     }
 }
 
+std::string get_element_id(const std::string& type, const std::vector<nlohmann::json>& data)
+{
+    if(type == "text")
+        return data.at(0);
+
+    if(type == "textcolored")
+        return data.at(4);
+
+    if(type == "textdisabled")
+        return data.at(0);
+
+    if(type == "bullettext")
+        return data.at(0);
+
+    if(type == "button" || type == "smallbutton" || type == "invisiblebutton" || type == "arrowbutton")
+        return data.at(0);
+
+    return "";
+}
+
 ///all values from the server are sanitised in some way unless explicitly noted otherwise
 ///that is: randomised salted hashes in the strings to prevent collisions
 ///strings have a capped length
@@ -1143,8 +1163,6 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
 
         realtime_script_run& run = realtime_scripts.windows[id];
 
-        nlohmann::json data = in["msg"];
-
         std::map<std::string, ui_element> existing_elements;
 
         for(const ui_element& e : run.stk.elements)
@@ -1157,24 +1175,29 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
 
         run.stk = ui_stack();
 
-        for(auto& e : data)
+        std::vector<std::string> typelist = in["typeidx"];
+
+        int num = in["types"].size();
+
+        for(int i=0; i < num; i++)
         {
+            int idx = in["types"][i];
+            std::vector<nlohmann::json> arguments = (std::vector<nlohmann::json>)(in["argument"][i]);
+            std::string val = typelist.at(idx);
+
+            std::string element_id = get_element_id(val, arguments);
+
             ui_element elem;
 
-            if(e.count("element_id") > 0)
+            if(auto it = existing_elements.find(element_id); it != existing_elements.end())
             {
-                std::string element_id = e["element_id"];
-
-                if(auto it = existing_elements.find(element_id); it != existing_elements.end())
-                {
-                    elem = it->second;
-                }
-
-                elem.element_id = element_id;
+                elem = it->second;
             }
 
-            elem.type = e["type"];
-            elem.arguments = (std::vector<nlohmann::json>)e["arguments"];
+            elem.element_id = element_id;
+
+            elem.type = val;
+            elem.arguments = arguments;
 
             run.stk.elements.push_back(elem);
         }
