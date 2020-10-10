@@ -1414,9 +1414,6 @@ void chat_window::render(bool refocus)
         chat_thread& thread = chat_threads[side_buttons[i]];
         thread.was_rendered = false;
 
-        if(full_str == "$$local")
-            full_str = "local";
-
         if(thread.dirty && !thread.was_focused)
             full_str += "*";
         else
