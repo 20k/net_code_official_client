@@ -157,20 +157,6 @@
 					<Mode after="always" />
 				</ExtraCommands>
 			</Target>
-			<Target title="DeployTestZAPCC">
-				<Option output="bin/DeployTestZAPCC/crapmud_client" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="DebugDeploy" />
-				<Option object_output="obj/DeployTestZAPCC/" />
-				<Option type="1" />
-				<Option compiler="gcc" />
-				<Compiler>
-					<Add option="-g" />
-					<Add option="-DEXTERN_IP" />
-				</Compiler>
-				<Linker>
-					<Add option="-O2" />
-				</Linker>
-			</Target>
 			<Target title="LinuxDeploy">
 				<Option output="bin/LinuxDeploy/crapmud_client" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/LinuxDeploy/" />
@@ -362,7 +348,6 @@
 			<Option target="Deploy" />
 			<Option target="DeployTest" />
 			<Option target="DeployTestSubmodules" />
-			<Option target="DeployTestZAPCC" />
 		</Unit>
 		<Unit filename="imgui_ui_components.cpp" />
 		<Unit filename="imgui_ui_components.hpp" />
