@@ -1215,7 +1215,16 @@ int main(int argc, char* argv[])
                 #endif // TESTING
 
                 ///this is temporary before the other end of the api gets changed
-                nlohmann::json data = nlohmann::json::parse(fdata);
+                nlohmann::json data;
+
+                try
+                {
+                    data = nlohmann::json::parse(fdata);
+                }
+                catch(...)
+                {
+                    std::cout << "Error Data Str " << fdata << std::endl;
+                }
 
                 process_text_from_server(terminals, auth_manage, current_user, data, chat_win, font_select, realtime_scripts);
                 //term.add_text_from_server(auth_manage, current_user, data, chat_win, font_select);
