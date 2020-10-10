@@ -14,8 +14,8 @@ WINDRES = windres
 INC = -Ideps -Ideps/SFML/include -Ideps/freetype/include/freetype -Ideps/imgui -IC:/Users/James/Desktop/projects/crapmud_client/deps/freetype/include -Ideps/imtui/include -IC:/msys64/mingw64/include/ncurses -Ideps/steamworks_sdk_148a/sdk/public/ -IC:/msys64/mingw64/include/SDL2
 CFLAGS = -Wall -std=c++17 -fexceptions -Wno-narrowing -Werror=return-type -Wno-strict-aliasing -DNET_CLIENT -DNO_COMPRESSION -DIMGUI_IMPL_OPENGL_LOADER_GLEW -DSUBPIXEL_FONT_RENDERING -DSFML_STATIC -DGLEW_STATIC -DGRAPHITE2_STATIC -DNO_OPENCL -DSDL_MAIN_HANDLED
 RESINC = 
-LIBDIR = -Ldeps/steamworks_sdk_148a/sdk/redistributable_bin/win64
-LIB = 
+LIBDIR = -Ldeps/steamworks_sdk_150/sdk/redistributable_bin/win64
+LIB = deps/steamworks_sdk_148a/sdk/redistributable_bin/linux64/libsteam_api.so
 LDFLAGS = -static-libstdc++ -static-libgcc -static -lmingw32 -l:libssl.a -l:libsdl2.a -l:libglfw3.a -l:libglew32.a -lsfml-audio-s -lsfml-system-s -Wl,--start-group -l:libharfbuzz.a -l:libfreetype.a -Wl,--end-group -l:libgraphite2.a -lopengl32 -l:libflac.a -l:libpng.a -l:libz.a -l:libbz2.a -l:librpcrt4.a -l:libopenal.a -logg -lole32 -ldbgeng -lwinmm -l:libcrypto.a -lbacktrace -lUsp10 -lgdi32 -l:libboost_fiber-mt.a -l:libboost_context-mt.a -lws2_32 -lmswsock -lsteam_api64 -l:libbrotlidec-static.a -l:libbrotlienc-static.a -l:libbrotlicommon-static.a -limm32 -lversion -loleaut32 -lsetupapi
 
 INC_DEBUG = $(INC)
@@ -143,9 +143,9 @@ INC_LINUXDEPLOY = $(INC) -I/usr/include/freetype2 -I/usr/include/SDL2
 CFLAGS_LINUXDEPLOY = $(CFLAGS) -O2 -std=c++17 -Wl,-rpath=./ -DEXTERN_IP
 RESINC_LINUXDEPLOY = $(RESINC)
 RCFLAGS_LINUXDEPLOY = $(RCFLAGS)
-LIBDIR_LINUXDEPLOY = $(LIBDIR) -Ldeps/steamworks_sdk_142/sdk/redistributable_bin/linux64
+LIBDIR_LINUXDEPLOY = -Ldeps/steamworks_sdk_150/sdk/redistributable_bin/linux64
 LIB_LINUXDEPLOY = $(LIB)
-LDFLAGS_LINUXDEPLOY = $(LDFLAGS) -O2 -l:libssl.a -l:libglfw3.a -l:libGLEW.a -lsfml-audio-s -lsfml-system-s -l:libharfbuzz.a -l:libfreetype.a -l:libgraphite2.a -lGL -l:libFLAC.a -l:libpng.a -l:libz.a -l:libbz2.a -lopenal -logg -l:libcrypto.a -lbacktrace -lOpenCL -lpthread -ldl -lX11 -lsteam_api -lncurses -g
+LDFLAGS_LINUXDEPLOY =  -O2 -l:libssl.a -l:libglfw3.a -l:libGLEW.a -lsfml-audio-s -lsfml-system-s -l:libharfbuzz.a -l:libfreetype.a -l:libgraphite2.a -lGL -l:libFLAC.a -l:libpng.a -l:libz.a -l:libbz2.a -lopenal -logg -l:libcrypto.a -lbacktrace -lOpenCL -lpthread -ldl -lX11 -lsteam_api -lboost_fiber -lboost_context -g `pkg-config --cflags --libs --static sdl2`
 OBJDIR_LINUXDEPLOY = obj/LinuxDeploy
 DEP_LINUXDEPLOY = 
 OUT_LINUXDEPLOY = bin/LinuxDeploy/crapmud_client

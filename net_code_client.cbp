@@ -176,7 +176,9 @@
 				<Option object_output="obj/LinuxDeploy/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option projectLinkerOptionsRelation="1" />
 				<Option projectResourceIncludeDirsRelation="0" />
+				<Option projectLibDirsRelation="1" />
 				<Compiler>
 					<Add option="-O2" />
 					<Add option="-std=c++17" />
@@ -209,9 +211,11 @@
 					<Add option="-ldl" />
 					<Add option="-lX11" />
 					<Add option="-lsteam_api" />
-					<Add option="-lncurses" />
+					<Add option="-lboost_fiber" />
+					<Add option="-lboost_context" />
 					<Add option="-g" />
-					<Add directory="deps/steamworks_sdk_142/sdk/redistributable_bin/linux64" />
+					<Add option="`pkg-config --cflags --libs --static sdl2`" />
+					<Add directory="deps/steamworks_sdk_150/sdk/redistributable_bin/linux64" />
 				</Linker>
 			</Target>
 		</Build>
@@ -284,7 +288,8 @@
 			<Add option="-lversion" />
 			<Add option="-loleaut32" />
 			<Add option="-lsetupapi" />
-			<Add directory="deps/steamworks_sdk_148a/sdk/redistributable_bin/win64" />
+			<Add library="deps/steamworks_sdk_148a/sdk/redistributable_bin/linux64/libsteam_api.so" />
+			<Add directory="deps/steamworks_sdk_150/sdk/redistributable_bin/win64" />
 		</Linker>
 		<Unit filename="auth_manager.cpp" />
 		<Unit filename="auth_manager.hpp" />
