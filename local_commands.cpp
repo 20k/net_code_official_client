@@ -32,8 +32,8 @@ void ipc_open(const std::string& fname)
 std::string handle_local_command(const std::string& username, const std::string& command, auto_handler& auto_handle, bool& should_shutdown, terminal_manager& terminals, chat_window& chat)
 {
     #ifndef __EMSCRIPTEN__
-    mkdir("scripts");
-    mkdir(get_scripts_directory(username).c_str());
+    file::mkdir("scripts");
+    file::mkdir(get_scripts_directory(username).c_str());
     #endif // __EMSCRIPTEN__
 
     if(starts_with(command, "#clear_autos") || starts_with(command, "#autos_clear"))
