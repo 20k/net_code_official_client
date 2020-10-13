@@ -70,7 +70,7 @@ std::string make_lower(std::string in)
 #ifdef EXTERN_IP
 //#define HOST_IP "77.96.132.101"
 //#define HOST_IP "netcodegame.com"
-#define HOST_IP "77.97.17.179"
+#define HOST_IP "77.96.182.212"
 #endif // EXTERN_IP
 
 #ifdef LOCAL_IP
