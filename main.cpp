@@ -69,8 +69,7 @@ std::string make_lower(std::string in)
 //#define HOST_IP "192.168.0.55"
 #ifdef EXTERN_IP
 //#define HOST_IP "77.96.132.101"
-//#define HOST_IP "netcodegame.com"
-#define HOST_IP "77.96.182.212"
+#define HOST_IP "netcodegame.com"
 #endif // EXTERN_IP
 
 #ifdef LOCAL_IP
@@ -79,7 +78,8 @@ std::string make_lower(std::string in)
 
 #ifdef EXTERN_IP
 #define HOST_PORT 6760
-#define HOST_PORT_SSL 6780
+#define HOST_PORT_SSL 2096
+//#define HOST_PORT_SSL 6780
 #endif // EXTERN_IP
 
 #ifdef LOCAL_IP
@@ -178,7 +178,7 @@ int main(int argc, char* argv[])
 
     connection conn;
     #ifndef __EMSCRIPTEN__
-    conn.connect(connection_ip, connection_port, connection_type::SSL);
+    conn.connect(connection_ip, connection_port, connection_type::SSL, "netcodegame.com");
     #else
     conn.connect(connection_ip, connection_port, connection_type::EMSCRIPTEN_AUTOMATIC);
     #endif
@@ -393,7 +393,7 @@ int main(int argc, char* argv[])
         if(connection_clock.get_elapsed_time_s() > 5 && !conn.client_connected_to_server && !conn.connection_pending())
         {
             #ifndef __EMSCRIPTEN__
-            conn.connect(connection_ip, connection_port, connection_type::SSL);
+            conn.connect(connection_ip, connection_port, connection_type::SSL, "netcodegame.com");
             #else
             conn.connect(connection_ip, connection_port, connection_type::EMSCRIPTEN_AUTOMATIC);
             #endif
