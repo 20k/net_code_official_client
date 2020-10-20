@@ -386,6 +386,80 @@ std::string get_element_id(const std::string& type, const std::vector<nlohmann::
     return "";
 }
 
+int get_argument_count(const std::string& type)
+{
+    if(type == "text")
+        return 1;
+
+    if(type == "textcolored")
+        return 5;
+
+    if(type == "textdisabled")
+        return 1;
+
+    if(type == "bullettext")
+        return 1;
+
+    if(type == "button")
+        return 3;
+
+    if(type == "smallbutton")
+        return 1;
+
+    if(type == "invisiblebutton")
+        return 3;
+
+    if(type == "arrowbutton")
+        return 2;
+
+    if(type == "bullet")
+        return 0;
+
+    if(type == "pushstylecolor")
+        return 5;
+
+    if(type == "popstylecolor")
+        return 1;
+
+    if(type == "pushitemwidth")
+        return 1;
+
+    if(type == "popitemwidth")
+        return 0;
+
+    if(type == "setnextitemwidth")
+        return 1;
+
+    if(type == "separator")
+        return 0;
+
+    if(type == "sameline")
+        return 2;
+
+    if(type == "newline")
+        return 0;
+
+    if(type == "spacing")
+        return 0;
+
+    if(type == "dummy")
+        return 2;
+
+    if(type == "indent")
+        return 1;
+
+    if(type == "unindent")
+        return 1;
+
+    if(type == "begingroup")
+        return 0;
+
+    if(type == "endgroup")
+        return 0;
+
+    return 0;
+}
+
 ///all values from the server are sanitised in some way unless explicitly noted otherwise
 ///that is: randomised salted hashes in the strings to prevent collisions
 ///strings have a capped length
@@ -1178,12 +1252,26 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
         std::vector<std::string> typelist = in["typeidx"];
 
         int num = in["types"].size();
+        int current_argument_idx = 0;
 
         for(int i=0; i < num; i++)
         {
             int idx = in["types"][i];
-            std::vector<nlohmann::json> arguments = (std::vector<nlohmann::json>)(in["argument"][i]);
+
+            std::vector<nlohmann::json> arguments;
+
             std::string val = typelist.at(idx);
+
+            int argument_count = get_argument_count(val);
+
+            for(int kk=0; kk < argument_count; kk++)
+            {
+                arguments.push_back(in["argument"][kk + current_argument_idx]);
+            }
+
+            current_argument_idx += argument_count;
+
+            //std::vector<nlohmann::json> arguments = (std::vector<nlohmann::json>)(in["argument"][i]);
 
             std::string element_id = get_element_id(val, arguments);
 
