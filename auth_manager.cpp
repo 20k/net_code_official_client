@@ -40,8 +40,9 @@ void auth_manager::check(steamapi& s_api, connection& conn, const std::string& c
 
         if(!s_api.auth_success())
         {
-            printf("Failed to get encrypted token");
-            throw std::runtime_error("Could not fetch steam token");
+            printf("Failed to get steam token");
+            return;
+            //throw std::runtime_error("Could not fetch steam token");
         }
 
         auto res = s_api.get_encrypted_token();
