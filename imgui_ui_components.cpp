@@ -588,6 +588,8 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
                 ImGui::Checkbox(val.c_str(), &as_bool);
 
+                e.arguments[1] = as_bool;
+
                 if(as_bool != prev)
                 {
                     any_dirty_arguments = true;
