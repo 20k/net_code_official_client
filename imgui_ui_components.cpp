@@ -610,7 +610,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             if(is_clicked)
                 states.push_back("clicked");
 
-            if(is_hovered != was_hovered || is_clicked)
+            if(is_hovered != was_hovered || is_clicked || any_dirty_arguments)
             {
                 nlohmann::json j;
                 j["type"] = "client_ui_element";
