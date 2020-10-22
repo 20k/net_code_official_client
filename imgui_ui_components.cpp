@@ -539,6 +539,8 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 continue;
 
             std::string val = e.arguments[0];
+            bool any_dirty_arguments = false;
+            nlohmann::json dirty_arguments;
 
             if(e.type == "button")
             {
@@ -580,10 +582,17 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 if(e.arguments.size() < 2)
                     continue;
 
-                int arg_as_int = e.arguments[0];
+                int arg_as_int = e.arguments[1];
                 bool as_bool = arg_as_int;
+                bool prev = as_bool;
 
                 ImGui::Checkbox(val.c_str(), &as_bool);
+
+                if(as_bool != prev)
+                {
+                    any_dirty_arguments = true;
+                    dirty_arguments = nlohmann::json::array({as_bool});
+                }
             }
 
             std::vector<std::string> states;
@@ -608,7 +617,12 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 j["state"] = states;
                 j["sequence_id"] = run.current_sequence_id;
 
-                if(is_clicked && e.type == "checkbox")
+                if(any_dirty_arguments)
+                {
+                    j["arguments"] = dirty_arguments;
+                }
+
+                if((is_clicked || any_dirty_arguments) && e.type == "checkbox")
                     e.authoritative_until_sequence_id = run.current_sequence_id;
 
                 conn.write(j.dump());
