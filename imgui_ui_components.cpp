@@ -1300,12 +1300,12 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
 
             for(int kk=0; kk < argument_count; kk++)
             {
-                arguments.push_back(in["argument"][kk + current_argument_idx]);
+                arguments.push_back(in["arguments"][kk + current_argument_idx]);
             }
 
             current_argument_idx += argument_count;
 
-            //std::vector<nlohmann::json> arguments = (std::vector<nlohmann::json>)(in["argument"][i]);
+            //std::vector<nlohmann::json> arguments = (std::vector<nlohmann::json>)(in["arguments"][i]);
 
             std::string element_id = get_element_id(val, arguments);
 
