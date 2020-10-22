@@ -380,7 +380,7 @@ std::string get_element_id(const std::string& type, const std::vector<nlohmann::
     if(type == "bullettext")
         return data.at(0);
 
-    if(type == "button" || type == "smallbutton" || type == "invisiblebutton" || type == "arrowbutton")
+    if(type == "button" || type == "smallbutton" || type == "invisiblebutton" || type == "arrowbutton" || type == "checkbox")
         return data.at(0);
 
     return "";
@@ -410,6 +410,9 @@ int get_argument_count(const std::string& type)
         return 3;
 
     if(type == "arrowbutton")
+        return 2;
+
+    if(type == "checkbox")
         return 2;
 
     if(type == "bullet")
@@ -530,7 +533,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             ImGui::BulletText("%s", val.c_str());
         }
 
-        if(e.type == "button" || e.type == "smallbutton" || e.type == "invisiblebutton" || e.type == "arrowbutton")
+        if(e.type == "button" || e.type == "smallbutton" || e.type == "invisiblebutton" || e.type == "arrowbutton" || e.type == "checkbox")
         {
             if(e.arguments.size() < 1)
                 continue;
@@ -572,6 +575,17 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 ImGui::ArrowButton(val.c_str(), dir);
             }
 
+            if(e.type == "checkbox")
+            {
+                if(e.arguments.size() < 2)
+                    continue;
+
+                int arg_as_int = e.arguments[0];
+                bool as_bool = arg_as_int;
+
+                ImGui::Checkbox(val.c_str(), &as_bool);
+            }
+
             std::vector<std::string> states;
 
             bool is_hovered = ImGui::IsItemHovered();
@@ -592,6 +606,10 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 j["id"] = id;
                 j["ui_id"] = e.element_id;
                 j["state"] = states;
+                j["sequence_id"] = run.current_sequence_id;
+
+                if(is_clicked && e.type == "checkbox")
+                    e.authoritative_until_sequence_id = run.current_sequence_id;
 
                 conn.write(j.dump());
             }
@@ -768,6 +786,8 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
     }
 
     ImGui::EndGroup();
+
+    run.current_sequence_id++;
 }
 
 void realtime_script_manager::render_realtime_windows(connection& conn, int& was_closed_id, font_selector& fonts, auto_handler& auto_handle, bool is_linear_colour)
@@ -1285,9 +1305,15 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
             elem.element_id = element_id;
 
             elem.type = val;
-            elem.arguments = arguments;
+
+            ///if the sequence id of us is > than the current acked id, it means we're client authoritative for a bit
+            if(elem.arguments.size() == argument_count && elem.authoritative_until_sequence_id <= run.acked_sequence_id)
+                elem.arguments = arguments;
 
             run.stk.elements.push_back(elem);
+
+            if(in.count("client_seq_ack") > 0)
+                run.acked_sequence_id = in["client_seq_ack"];
         }
     }
     else if(in["type"] == "chat_api")

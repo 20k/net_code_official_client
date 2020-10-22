@@ -32,6 +32,7 @@ struct ui_element
     std::string type;
     std::string element_id;
     std::vector<nlohmann::json> arguments;
+    uint64_t authoritative_until_sequence_id = 0;
 
     bool was_hovered = false;
 };
@@ -66,6 +67,9 @@ struct realtime_script_run
     vec2i current_dim = {0,0};
     bool should_send_new_size = false;
     steady_timer last_resize;
+
+    uint64_t current_sequence_id = 0;
+    uint64_t acked_sequence_id = 0;
 
     format_cache_2 cache;
 };
