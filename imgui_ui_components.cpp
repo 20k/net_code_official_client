@@ -524,7 +524,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "textdisabled")
         {
-
             std::string val = e.arguments[0];
 
             ImGui::TextDisabled("%s", val.c_str());
@@ -650,6 +649,8 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
                 conn.write(j.dump());
             }
+
+            e.arguments[1] = my_val;
         }
 
         if(e.type == "progressbar")
