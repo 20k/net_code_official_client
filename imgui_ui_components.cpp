@@ -415,6 +415,12 @@ int get_argument_count(const std::string& type)
     if(type == "checkbox")
         return 2;
 
+    if(type == "radiobutton")
+        return 2;
+
+    if(type == "progressbar")
+        return 4;
+
     if(type == "bullet")
         return 0;
 
@@ -533,7 +539,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             ImGui::BulletText("%s", val.c_str());
         }
 
-        if(e.type == "button" || e.type == "smallbutton" || e.type == "invisiblebutton" || e.type == "arrowbutton" || e.type == "checkbox")
+        if(e.type == "button" || e.type == "smallbutton" || e.type == "invisiblebutton" || e.type == "arrowbutton" || e.type == "checkbox" || e.type == "radiobutton")
         {
             if(e.arguments.size() < 1)
                 continue;
@@ -597,6 +603,14 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 }
             }
 
+            if(e.type == "radiobutton")
+            {
+                if(e.arguments.size() < 2)
+                    continue;
+
+                ImGui::RadioButton(val.c_str(), (int)e.arguments[1]);
+            }
+
             std::vector<std::string> states;
 
             bool is_hovered = ImGui::IsItemHovered();
@@ -631,6 +645,16 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             }
 
             e.was_hovered = is_hovered;
+        }
+
+        if(e.type == "progressbar")
+        {
+            if(e.arguments.size() < 4)
+                continue;
+
+            std::string str = e.arguments[3];
+
+            ImGui::ProgressBar((float)e.arguments[0], ImVec2(e.arguments[1], e.arguments[2]), str.c_str());
         }
 
         if(e.type == "bullet")
