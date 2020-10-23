@@ -383,6 +383,9 @@ std::string get_element_id(const std::string& type, const std::vector<nlohmann::
     if(type == "button" || type == "smallbutton" || type == "invisiblebutton" || type == "arrowbutton" || type == "checkbox")
         return data.at(0);
 
+    if(type == "dragfloat")
+        return data.at(0);
+
     return "";
 }
 
@@ -466,6 +469,9 @@ int get_argument_count(const std::string& type)
     if(type == "endgroup")
         return 0;
 
+    if(type == "dragfloat")
+        return 5;
+
     return 0;
 }
 
@@ -485,11 +491,11 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
     for(ui_element& e : stk.elements)
     {
+        if(e.arguments.size() < get_argument_count(e.type))
+            continue;
+
         if(e.type == "text")
         {
-            if(e.arguments.size() < 1)
-                continue;
-
             std::string val = e.arguments[0];
 
             ImGui::TextUnformatted(val.c_str(), val.c_str() + val.size());
@@ -498,9 +504,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
         if(e.type == "textcolored")
         {
             ///r, g, b, a, text
-            if(e.arguments.size() < 5)
-                continue;
-
             float r = e.arguments[0];
             float g = e.arguments[1];
             float b = e.arguments[2];
@@ -521,8 +524,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "textdisabled")
         {
-            if(e.arguments.size() < 1)
-                continue;
 
             std::string val = e.arguments[0];
 
@@ -531,9 +532,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "bullettext")
         {
-            if(e.arguments.size() < 1)
-                continue;
-
             std::string val = e.arguments[0];
 
             ImGui::BulletText("%s", val.c_str());
@@ -541,18 +539,12 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "button" || e.type == "smallbutton" || e.type == "invisiblebutton" || e.type == "arrowbutton" || e.type == "checkbox" || e.type == "radiobutton")
         {
-            if(e.arguments.size() < 1)
-                continue;
-
             std::string val = e.arguments[0];
             bool any_dirty_arguments = false;
             nlohmann::json dirty_arguments;
 
             if(e.type == "button")
             {
-                if(e.arguments.size() < 3)
-                    continue;
-
                 double w = e.arguments[1];
                 double h = e.arguments[2];
 
@@ -564,9 +556,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
             if(e.type == "invisiblebutton")
             {
-                if(e.arguments.size() < 3)
-                    continue;
-
                 double w = e.arguments[1];
                 double h = e.arguments[2];
 
@@ -575,9 +564,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
             if(e.type == "arrowbutton")
             {
-                if(e.arguments.size() < 2)
-                    continue;
-
                 int dir = e.arguments[1];
 
                 ImGui::ArrowButton(val.c_str(), dir);
@@ -585,9 +571,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
             if(e.type == "checkbox")
             {
-                if(e.arguments.size() < 2)
-                    continue;
-
                 int arg_as_int = e.arguments[1];
                 bool as_bool = arg_as_int;
                 bool prev = as_bool;
@@ -605,9 +588,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
             if(e.type == "radiobutton")
             {
-                if(e.arguments.size() < 2)
-                    continue;
-
                 ImGui::RadioButton(val.c_str(), (int)e.arguments[1]);
             }
 
@@ -647,11 +627,33 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             e.was_hovered = is_hovered;
         }
 
+        if(e.type == "dragfloat")
+        {
+            std::string ui_id = e.arguments[0];
+
+            float my_val = e.arguments[1];
+            float last_my_val = my_val;
+
+            ImGui::DragFloat(ui_id.c_str(), &my_val, e.arguments[2], e.arguments[3], e.arguments[4]);
+
+            if(my_val != last_my_val)
+            {
+                nlohmann::json j;
+                j["type"] = "client_ui_element";
+                j["id"] = id;
+                j["ui_id"] = e.element_id;
+                j["state"] = std::vector<std::string>();
+                j["sequence_id"] = run.current_sequence_id;
+                j["arguments"] = nlohmann::json::array({my_val});
+
+                e.authoritative_until_sequence_id = run.current_sequence_id;
+
+                conn.write(j.dump());
+            }
+        }
+
         if(e.type == "progressbar")
         {
-            if(e.arguments.size() < 4)
-                continue;
-
             std::string str = e.arguments[3];
 
             ImGui::ProgressBar((float)e.arguments[0], ImVec2(e.arguments[1], e.arguments[2]), str.c_str());
@@ -664,9 +666,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "pushstylecolor")
         {
-            if(e.arguments.size() < 5)
-                continue;
-
             ///IDX IS NOT SANITISED
             int idx = e.arguments[0];
             double r = e.arguments[1];
@@ -693,9 +692,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "popstylecolor")
         {
-            if(e.arguments.size() < 1)
-                continue;
-
             int idx = e.arguments[0];
 
             while(push_colour_stack > 0 && idx > 0)
@@ -708,9 +704,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "pushitemwidth")
         {
-            if(e.arguments.size() < 1)
-                continue;
-
             double width = e.arguments[0];
 
             item_width_stack++;
@@ -728,9 +721,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "setnextitemwidth")
         {
-            if(e.arguments.size() < 1)
-                continue;
-
             double width = e.arguments[0];
 
             ImGui::SetNextItemWidth(width);
@@ -743,9 +733,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "sameline")
         {
-            if(e.arguments.size() < 2)
-                continue;
-
             double offset_from_start = e.arguments[0];
             double spacing = e.arguments[1];
 
@@ -764,9 +751,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "dummy")
         {
-            if(e.arguments.size() < 2)
-                continue;
-
             double w = e.arguments[0];
             double h = e.arguments[1];
 
@@ -775,9 +759,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "indent")
         {
-            if(e.arguments.size() < 1)
-                continue;
-
             double amount = e.arguments[0];
 
             ImGui::Indent(amount);
@@ -785,9 +766,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "unindent")
         {
-            if(e.arguments.size() < 1)
-                continue;
-
             double amount = e.arguments[0];
 
             ImGui::Unindent(amount);
