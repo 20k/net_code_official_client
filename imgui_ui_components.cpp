@@ -383,7 +383,7 @@ std::string get_element_id(const std::string& type, const std::vector<nlohmann::
     if(type == "button" || type == "smallbutton" || type == "invisiblebutton" || type == "arrowbutton" || type == "checkbox")
         return data.at(0);
 
-    if(type == "dragfloat")
+    if(type == "dragfloat" || type == "sliderfloat")
         return data.at(0);
 
     return "";
@@ -471,6 +471,9 @@ int get_argument_count(const std::string& type)
 
     if(type == "dragfloat")
         return 5;
+
+    if(type == "sliderfloat")
+        return 4;
 
     return 0;
 }
@@ -626,16 +629,46 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             e.was_hovered = is_hovered;
         }
 
-        if(e.type == "dragfloat")
+        if(e.type == "dragfloat" || e.type == "sliderfloat")
         {
             std::string ui_id = e.arguments[0];
 
-            float my_val = e.arguments[1];
-            float last_my_val = my_val;
+            bool any_dirty_arguments = false;
+            nlohmann::json dirty_arguments;
 
-            ImGui::DragFloat(ui_id.c_str(), &my_val, e.arguments[2], e.arguments[3], e.arguments[4]);
+            if(e.type == "dragfloat")
+            {
+                float my_val = e.arguments[1];
+                float last_my_val = my_val;
 
-            if(my_val != last_my_val)
+                ImGui::DragFloat(ui_id.c_str(), &my_val, e.arguments[2], e.arguments[3], e.arguments[4]);
+
+                if(my_val != last_my_val)
+                {
+                    any_dirty_arguments = true;
+                    dirty_arguments = nlohmann::json::array({my_val});
+                }
+
+                e.arguments[1] = my_val;
+            }
+
+            if(e.type == "sliderfloat")
+            {
+                float my_val = e.arguments[1];
+                float last_my_val = my_val;
+
+                ImGui::SliderFloat(ui_id.c_str(), &my_val, e.arguments[2], e.arguments[3]);
+
+                if(my_val != last_my_val)
+                {
+                    any_dirty_arguments = true;
+                    dirty_arguments = nlohmann::json::array({my_val});
+                }
+
+                e.arguments[1] = my_val;
+            }
+
+            if(any_dirty_arguments)
             {
                 nlohmann::json j;
                 j["type"] = "client_ui_element";
@@ -643,14 +676,12 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 j["ui_id"] = e.element_id;
                 j["state"] = std::vector<std::string>();
                 j["sequence_id"] = run.current_sequence_id;
-                j["arguments"] = nlohmann::json::array({my_val});
+                j["arguments"] = dirty_arguments;
 
                 e.authoritative_until_sequence_id = run.current_sequence_id;
 
                 conn.write(j.dump());
             }
-
-            e.arguments[1] = my_val;
         }
 
         if(e.type == "progressbar")
