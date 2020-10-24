@@ -554,7 +554,7 @@ std::optional<nlohmann::json> dragTN(ui_element& e)
 
 struct angle_tag{};
 
-template<typename T, int N, typename tag>
+template<typename T, int N, typename tag = T>
 std::optional<nlohmann::json> sliderTN(ui_element& e)
 {
     std::array<T, N> my_vals;
@@ -776,7 +776,9 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "dragfloat" || e.type == "dragfloat2" || e.type == "dragfloat3" || e.type == "dragfloat4"
            || e.type == "dragint" || e.type == "dragint2" || e.type == "dragint3" || e.type == "dragint4"
-           || e.type == "sliderfloat")
+           || e.type == "sliderfloat" || e.type == "sliderfloat2" || e.type == "sliderfloat3" || e.type == "sliderfloat4"
+           || e.type == "sliderangle"
+           || e.type == "sliderint" || e.type == "sliderint2" || e.type == "sliderint3" || e.type == "sliderint4")
         {
             std::string ui_id = e.arguments[0];
 
@@ -824,17 +826,47 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
             if(e.type == "sliderfloat")
             {
-                float my_val = e.arguments[1];
-                float last_my_val = my_val;
+                dirty_arguments_opt = sliderTN<double, 1>(e);
+            }
 
-                ImGui::SliderFloat(ui_id.c_str(), &my_val, e.arguments[2], e.arguments[3]);
+            if(e.type == "sliderfloat2")
+            {
+                dirty_arguments_opt = sliderTN<double, 2>(e);
+            }
 
-                if(my_val != last_my_val)
-                {
-                    dirty_arguments_opt = nlohmann::json::array({my_val});
-                }
+            if(e.type == "sliderfloat3")
+            {
+                dirty_arguments_opt = sliderTN<double, 3>(e);
+            }
 
-                e.arguments[1] = my_val;
+            if(e.type == "sliderfloat4")
+            {
+                dirty_arguments_opt = sliderTN<double, 4>(e);
+            }
+
+            if(e.type == "sliderangle")
+            {
+                dirty_arguments_opt = sliderTN<double, 1, angle_tag>(e);
+            }
+
+            if(e.type == "sliderint")
+            {
+                dirty_arguments_opt = sliderTN<int, 1>(e);
+            }
+
+            if(e.type == "sliderint2")
+            {
+                dirty_arguments_opt = sliderTN<int, 2>(e);
+            }
+
+            if(e.type == "sliderint3")
+            {
+                dirty_arguments_opt = sliderTN<int, 3>(e);
+            }
+
+            if(e.type == "sliderint4")
+            {
+                dirty_arguments_opt = sliderTN<int, 4>(e);
             }
 
             if(dirty_arguments_opt.has_value())
