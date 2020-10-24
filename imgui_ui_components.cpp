@@ -826,27 +826,27 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
             if(e.type == "sliderfloat")
             {
-                dirty_arguments_opt = sliderTN<double, 1>(e);
+                dirty_arguments_opt = sliderTN<float, 1>(e);
             }
 
             if(e.type == "sliderfloat2")
             {
-                dirty_arguments_opt = sliderTN<double, 2>(e);
+                dirty_arguments_opt = sliderTN<float, 2>(e);
             }
 
             if(e.type == "sliderfloat3")
             {
-                dirty_arguments_opt = sliderTN<double, 3>(e);
+                dirty_arguments_opt = sliderTN<float, 3>(e);
             }
 
             if(e.type == "sliderfloat4")
             {
-                dirty_arguments_opt = sliderTN<double, 4>(e);
+                dirty_arguments_opt = sliderTN<float, 4>(e);
             }
 
             if(e.type == "sliderangle")
             {
-                dirty_arguments_opt = sliderTN<double, 1, angle_tag>(e);
+                dirty_arguments_opt = sliderTN<float, 1, angle_tag>(e);
             }
 
             if(e.type == "sliderint")
