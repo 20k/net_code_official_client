@@ -383,7 +383,9 @@ std::string get_element_id(const std::string& type, const std::vector<nlohmann::
     if(type == "button" || type == "smallbutton" || type == "invisiblebutton" || type == "arrowbutton" || type == "checkbox")
         return data.at(0);
 
-    if(type == "dragfloat" || type == "sliderfloat")
+    if(type == "dragfloat" || type == "dragfloat2" || type == "dragfloat3" || type == "dragfloat4"
+       || type == "sliderfloat"
+       || type == "dragint" || type == "dragint2" || type == "dragint3" || type == "dragint4")
         return data.at(0);
 
     return "";
@@ -469,13 +471,85 @@ int get_argument_count(const std::string& type)
     if(type == "endgroup")
         return 0;
 
-    if(type == "dragfloat")
+    if(type == "dragfloat" || type == "dragint")
         return 5;
+
+    if(type == "dragfloat2" || type == "dragint2")
+        return 6;
+
+    if(type == "dragfloat3" || type == "dragint3")
+        return 7;
+
+    if(type == "dragfloat4" || type == "dragint4")
+        return 8;
 
     if(type == "sliderfloat")
         return 4;
 
     return 0;
+}
+
+template<typename T, int N>
+std::optional<nlohmann::json> dragTN(ui_element& e)
+{
+    std::array<T, N> my_vals;
+
+    static_assert(std::is_same_v<T, float> || std::is_same_v<T, int>);
+
+    std::string id = e.arguments[0];
+
+    for(int i=0; i < N; i++)
+    {
+        my_vals[i] = e.arguments[i + 1];
+    }
+
+    std::array prev_vals = my_vals;
+
+    float v_speed = e.arguments[N + 1];
+    float v_min = e.arguments[N + 2];
+    float v_max = e.arguments[N + 3];
+
+    if constexpr(std::is_same_v<T, float>)
+    {
+        if(N == 1)
+            ImGui::DragFloat(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
+
+        if(N == 2)
+            ImGui::DragFloat2(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
+
+        if(N == 3)
+            ImGui::DragFloat3(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
+
+        if(N == 4)
+            ImGui::DragFloat4(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
+    }
+
+    if constexpr(std::is_same_v<T, int>)
+    {
+        if(N == 1)
+            ImGui::DragInt(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
+
+        if(N == 2)
+            ImGui::DragInt2(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
+
+        if(N == 3)
+            ImGui::DragInt3(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
+
+        if(N == 4)
+            ImGui::DragInt4(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
+    }
+
+    for(int i=0; i < N; i++)
+    {
+        e.arguments[i + 1] = my_vals[i];
+    }
+
+    if(my_vals != prev_vals)
+    {
+        return my_vals;
+    }
+
+    return std::nullopt;
 }
 
 ///all values from the server are sanitised in some way unless explicitly noted otherwise
@@ -629,27 +703,52 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             e.was_hovered = is_hovered;
         }
 
-        if(e.type == "dragfloat" || e.type == "sliderfloat")
+        if(e.type == "dragfloat" || e.type == "dragfloat2" || e.type == "dragfloat3" || e.type == "dragfloat4"
+           || e.type == "dragint" || e.type == "dragint2" || e.type == "dragint3" || e.type == "dragint4"
+           || e.type == "sliderfloat")
         {
             std::string ui_id = e.arguments[0];
 
-            bool any_dirty_arguments = false;
-            nlohmann::json dirty_arguments;
+            std::optional<nlohmann::json> dirty_arguments_opt;
 
             if(e.type == "dragfloat")
             {
-                float my_val = e.arguments[1];
-                float last_my_val = my_val;
+                dirty_arguments_opt = dragTN<float, 1>(e);
+            }
 
-                ImGui::DragFloat(ui_id.c_str(), &my_val, e.arguments[2], e.arguments[3], e.arguments[4]);
+            if(e.type == "dragfloat2")
+            {
+                dirty_arguments_opt = dragTN<float, 2>(e);
+            }
 
-                if(my_val != last_my_val)
-                {
-                    any_dirty_arguments = true;
-                    dirty_arguments = nlohmann::json::array({my_val});
-                }
+            if(e.type == "dragfloat3")
+            {
+                dirty_arguments_opt = dragTN<float, 3>(e);
+            }
 
-                e.arguments[1] = my_val;
+            if(e.type == "dragfloat4")
+            {
+                dirty_arguments_opt = dragTN<float, 4>(e);
+            }
+
+            if(e.type == "dragint")
+            {
+                dirty_arguments_opt = dragTN<int, 1>(e);
+            }
+
+            if(e.type == "dragint2")
+            {
+                dirty_arguments_opt = dragTN<int, 2>(e);
+            }
+
+            if(e.type == "dragint3")
+            {
+                dirty_arguments_opt = dragTN<int, 3>(e);
+            }
+
+            if(e.type == "dragint4")
+            {
+                dirty_arguments_opt = dragTN<int, 4>(e);
             }
 
             if(e.type == "sliderfloat")
@@ -661,14 +760,13 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
                 if(my_val != last_my_val)
                 {
-                    any_dirty_arguments = true;
-                    dirty_arguments = nlohmann::json::array({my_val});
+                    dirty_arguments_opt = nlohmann::json::array({my_val});
                 }
 
                 e.arguments[1] = my_val;
             }
 
-            if(any_dirty_arguments)
+            if(dirty_arguments_opt.has_value())
             {
                 nlohmann::json j;
                 j["type"] = "client_ui_element";
@@ -676,7 +774,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 j["ui_id"] = e.element_id;
                 j["state"] = std::vector<std::string>();
                 j["sequence_id"] = run.current_sequence_id;
-                j["arguments"] = dirty_arguments;
+                j["arguments"] = dirty_arguments_opt.value();
 
                 e.authoritative_until_sequence_id = run.current_sequence_id;
 
