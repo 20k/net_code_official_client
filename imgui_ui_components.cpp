@@ -552,6 +552,77 @@ std::optional<nlohmann::json> dragTN(ui_element& e)
     return std::nullopt;
 }
 
+struct angle_tag{};
+
+template<typename T, int N, typename tag>
+std::optional<nlohmann::json> sliderTN(ui_element& e)
+{
+    std::array<T, N> my_vals;
+
+    static_assert(std::is_same_v<T, float> || std::is_same_v<T, int>);
+    static_assert(std::is_same_v<tag, float> || std::is_same_v<tag, int> || std::is_same_v<tag, angle_tag>);
+
+    std::string id = e.arguments[0];
+
+    for(int i=0; i < N; i++)
+    {
+        my_vals[i] = e.arguments[i + 1];
+    }
+
+    std::array prev_vals = my_vals;
+
+    float v_min = e.arguments[N + 1];
+    float v_max = e.arguments[N + 2];
+
+    if constexpr(std::is_same_v<tag, float>)
+    {
+        if(N == 1)
+            ImGui::SliderFloat(id.c_str(), &my_vals[0], v_min, v_max);
+
+        if(N == 2)
+            ImGui::SliderFloat2(id.c_str(), &my_vals[0], v_min, v_max);
+
+        if(N == 3)
+            ImGui::SliderFloat3(id.c_str(), &my_vals[0], v_min, v_max);
+
+        if(N == 4)
+            ImGui::SliderFloat4(id.c_str(), &my_vals[0], v_min, v_max);
+    }
+
+    if constexpr(std::is_same_v<tag, int>)
+    {
+        if(N == 1)
+            ImGui::SliderInt(id.c_str(), &my_vals[0], v_min, v_max);
+
+        if(N == 2)
+            ImGui::SliderInt2(id.c_str(), &my_vals[0], v_min, v_max);
+
+        if(N == 3)
+            ImGui::SliderInt3(id.c_str(), &my_vals[0], v_min, v_max);
+
+        if(N == 4)
+            ImGui::SliderInt4(id.c_str(), &my_vals[0], v_min, v_max);
+    }
+
+    if constexpr(std::is_same_v<tag, angle_tag>)
+    {
+        if(N == 1)
+            ImGui::SliderAngle(id.c_str(), &my_vals[0], v_min, v_max);
+    }
+
+    for(int i=0; i < N; i++)
+    {
+        e.arguments[i + 1] = my_vals[i];
+    }
+
+    if(my_vals != prev_vals)
+    {
+        return my_vals;
+    }
+
+    return std::nullopt;
+}
+
 ///all values from the server are sanitised in some way unless explicitly noted otherwise
 ///that is: randomised salted hashes in the strings to prevent collisions
 ///strings have a capped length
