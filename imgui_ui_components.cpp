@@ -1419,6 +1419,9 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
 
         std::vector<std::string> typelist = in["typeidx"];
 
+        if(in.count("client_seq_ack") > 0)
+            run.acked_sequence_id = in["client_seq_ack"];
+
         int num = in["types"].size();
         int current_argument_idx = 0;
 
@@ -1455,13 +1458,10 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
             elem.type = val;
 
             ///if the sequence id of us is > than the current acked id, it means we're client authoritative for a bit
-            if(elem.arguments.size() != argument_count || elem.authoritative_until_sequence_id <= run.acked_sequence_id)
+            if(elem.arguments.size() != argument_count || run.acked_sequence_id >= elem.authoritative_until_sequence_id)
                 elem.arguments = arguments;
 
             run.stk.elements.push_back(elem);
-
-            if(in.count("client_seq_ack") > 0)
-                run.acked_sequence_id = in["client_seq_ack"];
         }
     }
     else if(in["type"] == "chat_api")
