@@ -1146,7 +1146,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             buttonbehaviour = true;
         }
 
-        if(buttonbehaviour)
+        if(buttonbehaviour && e.element_id != "")
         {
             std::vector<std::string> states;
 
