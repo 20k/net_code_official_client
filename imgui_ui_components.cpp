@@ -397,7 +397,7 @@ std::string get_element_id(const std::string& type, const std::vector<nlohmann::
     || type == "inputdouble")
         return data.at(0);
 
-    if(type == "begingroup")
+    if(type == "endgroup")
         return data.at(0);
 
     return "";
@@ -478,10 +478,10 @@ int get_argument_count(const std::string& type)
         return 1;
 
     if(type == "begingroup")
-        return 1;
+        return 0;
 
     if(type == "endgroup")
-        return 0;
+        return 1;
 
     if(type == "dragfloat" || type == "dragint")
         return 5;
@@ -732,7 +732,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 {
     ImGui::BeginGroup();
 
-    std::vector<std::string> group_id_stack;
     int group_unbalanced_stack = 0;
     int push_colour_stack = 0;
     int item_width_stack = 0;
@@ -741,8 +740,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
     {
         if(e.arguments.size() < get_argument_count(e.type))
             continue;
-
-        std::string element_id = e.element_id;
 
         bool buttonbehaviour = false;
         std::optional<nlohmann::json> button_behaviour_dirty_arguments_opt;
@@ -1003,7 +1000,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 nlohmann::json j;
                 j["type"] = "client_ui_element";
                 j["id"] = id;
-                j["ui_id"] = element_id;
+                j["ui_id"] = e.element_id;
                 j["state"] = std::vector<std::string>();
                 j["sequence_id"] = run.current_sequence_id;
                 j["arguments"] = dirty_arguments_opt.value();
@@ -1138,28 +1135,18 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             group_unbalanced_stack++;
 
             ImGui::BeginGroup();
-
-            group_id_stack.push_back(e.arguments[0]);
         }
 
         if(e.type == "endgroup")
         {
-            if(group_unbalanced_stack > 0)
-            {
-                group_unbalanced_stack--;
+            group_unbalanced_stack--;
 
-                ImGui::EndGroup();
+            ImGui::EndGroup();
 
-                buttonbehaviour = true;
-
-                assert(group_id_stack.size() > 0);
-
-                element_id = group_id_stack.back();
-                group_id_stack.pop_back();
-            }
+            buttonbehaviour = true;
         }
 
-        if(buttonbehaviour && element_id != "")
+        if(buttonbehaviour && e.element_id != "")
         {
             std::vector<std::string> states;
 
@@ -1179,7 +1166,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 nlohmann::json j;
                 j["type"] = "client_ui_element";
                 j["id"] = id;
-                j["ui_id"] = element_id;
+                j["ui_id"] = e.element_id;
                 j["state"] = states;
                 j["sequence_id"] = run.current_sequence_id;
 
