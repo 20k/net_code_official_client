@@ -1139,11 +1139,14 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "endgroup")
         {
-            group_unbalanced_stack--;
+            if(group_unbalanced_stack > 0)
+            {
+                group_unbalanced_stack--;
 
-            ImGui::EndGroup();
+                ImGui::EndGroup();
 
-            buttonbehaviour = true;
+                buttonbehaviour = true;
+            }
         }
 
         if(buttonbehaviour && e.element_id != "")
