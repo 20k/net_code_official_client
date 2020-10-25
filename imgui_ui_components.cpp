@@ -542,12 +542,32 @@ std::optional<nlohmann::json> dragTN(ui_element& e)
 
     if constexpr(std::is_same_v<T, float>)
     {
-        ImGui::DragScalarN(id.c_str(), ImGuiDataType_Float, &my_vals[0], N, v_speed, &v_min, &v_max, "%.3f");
+        if(N == 1)
+            ImGui::DragFloat(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
+
+        if(N == 2)
+            ImGui::DragFloat2(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
+
+        if(N == 3)
+            ImGui::DragFloat3(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
+
+        if(N == 4)
+            ImGui::DragFloat4(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
     }
 
     if constexpr(std::is_same_v<T, int>)
     {
-        ImGui::DragScalarN(id.c_str(), ImGuiDataType_S32, &my_vals[0], N, v_speed, &v_min, &v_max, "%d");
+        if(N == 1)
+            ImGui::DragInt(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
+
+        if(N == 2)
+            ImGui::DragInt2(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
+
+        if(N == 3)
+            ImGui::DragInt3(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
+
+        if(N == 4)
+            ImGui::DragInt4(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
     }
 
     for(int i=0; i < N; i++)
@@ -587,12 +607,32 @@ std::optional<nlohmann::json> sliderTN(ui_element& e)
 
     if constexpr(std::is_same_v<tag, float>)
     {
-        ImGui::SliderScalarN(id.c_str(), ImGuiDataType_Float, &my_vals[0], N, &v_min, &v_max, "%.3f");
+        if(N == 1)
+            ImGui::SliderFloat(id.c_str(), &my_vals[0], v_min, v_max);
+
+        if(N == 2)
+            ImGui::SliderFloat2(id.c_str(), &my_vals[0], v_min, v_max);
+
+        if(N == 3)
+            ImGui::SliderFloat3(id.c_str(), &my_vals[0], v_min, v_max);
+
+        if(N == 4)
+            ImGui::SliderFloat4(id.c_str(), &my_vals[0], v_min, v_max);
     }
 
     if constexpr(std::is_same_v<tag, int>)
     {
-        ImGui::SliderScalarN(id.c_str(), ImGuiDataType_S32, &my_vals[0], N, &v_min, &v_max, "%d");
+        if(N == 1)
+            ImGui::SliderInt(id.c_str(), &my_vals[0], v_min, v_max);
+
+        if(N == 2)
+            ImGui::SliderInt2(id.c_str(), &my_vals[0], v_min, v_max);
+
+        if(N == 3)
+            ImGui::SliderInt3(id.c_str(), &my_vals[0], v_min, v_max);
+
+        if(N == 4)
+            ImGui::SliderInt4(id.c_str(), &my_vals[0], v_min, v_max);
     }
 
     if constexpr(std::is_same_v<tag, angle_tag>)
