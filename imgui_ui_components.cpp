@@ -397,6 +397,9 @@ std::string get_element_id(const std::string& type, const std::vector<nlohmann::
     || type == "inputdouble")
         return data.at(0);
 
+    if(type == "endgroup")
+        return data.at(0);
+
     return "";
 }
 
@@ -478,7 +481,7 @@ int get_argument_count(const std::string& type)
         return 0;
 
     if(type == "endgroup")
-        return 0;
+        return 1;
 
     if(type == "dragfloat" || type == "dragint")
         return 5;
@@ -738,6 +741,9 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
         if(e.arguments.size() < get_argument_count(e.type))
             continue;
 
+        bool buttonbehaviour = false;
+        std::optional<nlohmann::json> button_behaviour_dirty_arguments_opt;
+
         if(e.type == "text")
         {
             std::string val = e.arguments[0];
@@ -783,8 +789,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
         if(e.type == "button" || e.type == "smallbutton" || e.type == "invisiblebutton" || e.type == "arrowbutton" || e.type == "checkbox" || e.type == "radiobutton")
         {
             std::string val = e.arguments[0];
-            bool any_dirty_arguments = false;
-            nlohmann::json dirty_arguments;
 
             if(e.type == "button")
             {
@@ -824,8 +828,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
                 if(as_bool != prev)
                 {
-                    any_dirty_arguments = true;
-                    dirty_arguments = nlohmann::json::array({as_bool});
+                    button_behaviour_dirty_arguments_opt = nlohmann::json::array({as_bool});
                 }
             }
 
@@ -834,40 +837,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 ImGui::RadioButton(val.c_str(), (int)e.arguments[1]);
             }
 
-            std::vector<std::string> states;
-
-            bool is_hovered = ImGui::IsItemHovered();
-            bool was_hovered = e.was_hovered;
-
-            bool is_clicked = ImGui::IsItemClicked();
-
-            if(is_hovered)
-                states.push_back("hovered");
-
-            if(is_clicked)
-                states.push_back("clicked");
-
-            if(is_hovered != was_hovered || is_clicked || any_dirty_arguments)
-            {
-                nlohmann::json j;
-                j["type"] = "client_ui_element";
-                j["id"] = id;
-                j["ui_id"] = e.element_id;
-                j["state"] = states;
-                j["sequence_id"] = run.current_sequence_id;
-
-                if(any_dirty_arguments)
-                {
-                    j["arguments"] = dirty_arguments;
-                }
-
-                if((is_clicked || any_dirty_arguments) && e.type == "checkbox")
-                    e.authoritative_until_sequence_id = run.current_sequence_id;
-
-                conn.write(j.dump());
-            }
-
-            e.was_hovered = is_hovered;
+            buttonbehaviour = true;
         }
 
         if(e.type == "dragfloat" || e.type == "dragfloat2" || e.type == "dragfloat3" || e.type == "dragfloat4"
@@ -1172,6 +1142,46 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             group_unbalanced_stack--;
 
             ImGui::EndGroup();
+
+            buttonbehaviour = true;
+        }
+
+        if(buttonbehaviour)
+        {
+            std::vector<std::string> states;
+
+            bool is_hovered = ImGui::IsItemHovered();
+            bool was_hovered = e.was_hovered;
+
+            bool is_clicked = ImGui::IsItemClicked();
+
+            if(is_hovered)
+                states.push_back("hovered");
+
+            if(is_clicked)
+                states.push_back("clicked");
+
+            if(is_hovered != was_hovered || is_clicked || button_behaviour_dirty_arguments_opt.has_value())
+            {
+                nlohmann::json j;
+                j["type"] = "client_ui_element";
+                j["id"] = id;
+                j["ui_id"] = e.element_id;
+                j["state"] = states;
+                j["sequence_id"] = run.current_sequence_id;
+
+                if(button_behaviour_dirty_arguments_opt.has_value())
+                {
+                    j["arguments"] = button_behaviour_dirty_arguments_opt.value();
+                }
+
+                if(is_clicked || button_behaviour_dirty_arguments_opt.has_value())
+                    e.authoritative_until_sequence_id = run.current_sequence_id;
+
+                conn.write(j.dump());
+            }
+
+            e.was_hovered = is_hovered;
         }
     }
 
