@@ -14,6 +14,7 @@
 #include <toolkit/fs_helpers.hpp>
 #include "auth_manager.hpp"
 #include <toolkit/render_window.hpp>
+#include <imgui/misc/cpp/imgui_stdlib.h>
 
 void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar, format_cache_2& cache, vec2f dim)
 {
@@ -384,8 +385,16 @@ std::string get_element_id(const std::string& type, const std::vector<nlohmann::
         return data.at(0);
 
     if(type == "dragfloat" || type == "dragfloat2" || type == "dragfloat3" || type == "dragfloat4"
-       || type == "sliderfloat"
+       || type == "sliderfloat" || type == "sliderfloat2" || type == "sliderfloat3" || type == "sliderfloat4"
+       || type == "sliderangle"
+       || type == "sliderint" || type == "sliderint2" || type == "sliderint3" || type == "sliderint4"
        || type == "dragint" || type == "dragint2" || type == "dragint3" || type == "dragint4")
+        return data.at(0);
+
+    if(type == "inputtext" || type == "inputtextmultiline"
+    || type == "inputint" || type == "inputint2" || type == "inputint3" || type == "inputint4"
+    || type == "inputfloat" || type == "inputfloat2" || type == "inputfloat3" || type == "inputfloat4"
+    || type == "inputdouble")
         return data.at(0);
 
     return "";
@@ -483,8 +492,30 @@ int get_argument_count(const std::string& type)
     if(type == "dragfloat4" || type == "dragint4")
         return 8;
 
-    if(type == "sliderfloat")
+    if(type == "sliderfloat" || type == "sliderint" || type == "sliderangle")
         return 4;
+
+    if(type == "sliderfloat2" || type == "sliderint2")
+        return 5;
+
+    if(type == "sliderfloat3" || type == "sliderint3")
+        return 6;
+
+    if(type == "sliderfloat4" || type == "sliderint4")
+        return 7;
+
+    if(type == "inputtext")
+        return 2;
+    if(type == "inputtextmultiline")
+        return 2;
+    if(type == "inputfloat" || type == "inputint" || type == "inputdouble")
+        return 2;
+    if(type == "inputfloat2" || type == "inputint2")
+        return 3;
+    if(type == "inputfloat3" || type == "inputint3")
+        return 4;
+    if(type == "inputfloat4" || type == "inputint4")
+        return 5;
 
     return 0;
 }
@@ -511,32 +542,12 @@ std::optional<nlohmann::json> dragTN(ui_element& e)
 
     if constexpr(std::is_same_v<T, float>)
     {
-        if(N == 1)
-            ImGui::DragFloat(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
-
-        if(N == 2)
-            ImGui::DragFloat2(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
-
-        if(N == 3)
-            ImGui::DragFloat3(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
-
-        if(N == 4)
-            ImGui::DragFloat4(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
+        ImGui::DragScalarN(id.c_str(), ImGuiDataType_Float, &my_vals[0], N, v_speed, &v_min, &v_max, "%.3f");
     }
 
     if constexpr(std::is_same_v<T, int>)
     {
-        if(N == 1)
-            ImGui::DragInt(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
-
-        if(N == 2)
-            ImGui::DragInt2(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
-
-        if(N == 3)
-            ImGui::DragInt3(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
-
-        if(N == 4)
-            ImGui::DragInt4(id.c_str(), &my_vals[0], v_speed, v_min, v_max);
+        ImGui::DragScalarN(id.c_str(), ImGuiDataType_S32, &my_vals[0], N, v_speed, &v_min, &v_max, "%d");
     }
 
     for(int i=0; i < N; i++)
@@ -576,32 +587,12 @@ std::optional<nlohmann::json> sliderTN(ui_element& e)
 
     if constexpr(std::is_same_v<tag, float>)
     {
-        if(N == 1)
-            ImGui::SliderFloat(id.c_str(), &my_vals[0], v_min, v_max);
-
-        if(N == 2)
-            ImGui::SliderFloat2(id.c_str(), &my_vals[0], v_min, v_max);
-
-        if(N == 3)
-            ImGui::SliderFloat3(id.c_str(), &my_vals[0], v_min, v_max);
-
-        if(N == 4)
-            ImGui::SliderFloat4(id.c_str(), &my_vals[0], v_min, v_max);
+        ImGui::SliderScalarN(id.c_str(), ImGuiDataType_Float, &my_vals[0], N, &v_min, &v_max, "%.3f");
     }
 
     if constexpr(std::is_same_v<tag, int>)
     {
-        if(N == 1)
-            ImGui::SliderInt(id.c_str(), &my_vals[0], v_min, v_max);
-
-        if(N == 2)
-            ImGui::SliderInt2(id.c_str(), &my_vals[0], v_min, v_max);
-
-        if(N == 3)
-            ImGui::SliderInt3(id.c_str(), &my_vals[0], v_min, v_max);
-
-        if(N == 4)
-            ImGui::SliderInt4(id.c_str(), &my_vals[0], v_min, v_max);
+        ImGui::SliderScalarN(id.c_str(), ImGuiDataType_S32, &my_vals[0], N, &v_min, &v_max, "%d");
     }
 
     if constexpr(std::is_same_v<tag, angle_tag>)
@@ -622,6 +613,71 @@ std::optional<nlohmann::json> sliderTN(ui_element& e)
 
     return std::nullopt;
 }
+
+struct rawtext_tag{};
+struct multiline_tag{};
+
+template<typename T, int N, typename tag = T>
+std::optional<nlohmann::json> inputTN(ui_element& e)
+{
+    std::array<T, N> my_vals;
+
+    static_assert(std::is_same_v<T, float> || std::is_same_v<T, int> || std::is_same_v<tag, double> || std::is_same_v<T, std::string>);
+    static_assert(std::is_same_v<tag, float> || std::is_same_v<tag, int> || std::is_same_v<tag, double> || std::is_same_v<tag, rawtext_tag> || std::is_same_v<tag, multiline_tag>);
+
+    std::string id = e.arguments[0];
+
+    for(int i=0; i < N; i++)
+    {
+        my_vals[i] = e.arguments[i + 1];
+    }
+
+    std::array prev_vals = my_vals;
+
+    if constexpr(std::is_same_v<tag, rawtext_tag>)
+    {
+        if(N == 1)
+        {
+            ImGui::InputText(id.c_str(), &my_vals[0]);
+        }
+    }
+
+    if constexpr(std::is_same_v<tag, multiline_tag>)
+    {
+        if(N == 1)
+        {
+            ImGui::InputTextMultiline(id.c_str(), &my_vals[0]);
+        }
+    }
+
+    if constexpr(std::is_same_v<tag, float>)
+    {
+        ImGui::InputScalarN(id.c_str(), ImGuiDataType_Float, &my_vals[0], N, nullptr, nullptr, "%.3f");
+    }
+
+    if constexpr(std::is_same_v<tag, int>)
+    {
+        ImGui::InputScalarN(id.c_str(), ImGuiDataType_S32, &my_vals[0], N, nullptr, nullptr, "%d");
+    }
+
+    if constexpr(std::is_same_v<tag, double>)
+    {
+        ImGui::InputDouble(id.c_str(), &my_vals[0]);
+    }
+
+    for(int i=0; i < N; i++)
+    {
+        e.arguments[i + 1] = my_vals[i];
+    }
+
+    if(my_vals != prev_vals)
+    {
+        return my_vals;
+    }
+
+    return std::nullopt;
+}
+
 
 ///all values from the server are sanitised in some way unless explicitly noted otherwise
 ///that is: randomised salted hashes in the strings to prevent collisions
@@ -778,7 +834,12 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
            || e.type == "dragint" || e.type == "dragint2" || e.type == "dragint3" || e.type == "dragint4"
            || e.type == "sliderfloat" || e.type == "sliderfloat2" || e.type == "sliderfloat3" || e.type == "sliderfloat4"
            || e.type == "sliderangle"
-           || e.type == "sliderint" || e.type == "sliderint2" || e.type == "sliderint3" || e.type == "sliderint4")
+           || e.type == "sliderint" || e.type == "sliderint2" || e.type == "sliderint3" || e.type == "sliderint4"
+           || e.type == "inputtext" || e.type == "inputtextmultiline"
+           || e.type == "inputfloat" || e.type == "inputint" || e.type == "inputdouble"
+           || e.type == "inputfloat2" || e.type == "inputint2"
+           || e.type == "inputfloat3" || e.type == "inputint3"
+           || e.type == "inputfloat4" || e.type == "inputfloat4")
         {
             std::string ui_id = e.arguments[0];
 
@@ -867,6 +928,61 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             if(e.type == "sliderint4")
             {
                 dirty_arguments_opt = sliderTN<int, 4>(e);
+            }
+
+            if(e.type == "inputtext")
+            {
+                dirty_arguments_opt = inputTN<std::string, 1, rawtext_tag>(e);
+            }
+
+            if(e.type == "inputtextmultiline")
+            {
+                dirty_arguments_opt = inputTN<std::string, 1, multiline_tag>(e);
+            }
+
+            if(e.type == "inputfloat")
+            {
+                dirty_arguments_opt = inputTN<float, 1>(e);
+            }
+
+            if(e.type == "inputint")
+            {
+                dirty_arguments_opt = inputTN<int, 1>(e);
+            }
+
+            if(e.type == "inputdouble")
+            {
+                dirty_arguments_opt = inputTN<double, 1>(e);
+            }
+
+            if(e.type == "inputfloat2")
+            {
+                dirty_arguments_opt = inputTN<float, 2>(e);
+            }
+
+            if(e.type == "inputint2")
+            {
+                dirty_arguments_opt = inputTN<int, 2>(e);
+            }
+
+            if(e.type == "inputfloat3")
+            {
+                dirty_arguments_opt = inputTN<float, 3>(e);
+            }
+
+            if(e.type == "inputint3")
+            {
+                dirty_arguments_opt = inputTN<int, 3>(e);
+            }
+
+            if(e.type == "inputfloat4")
+            {
+                dirty_arguments_opt = inputTN<float, 4>(e);
+            }
+
+            if(e.type == "inputint4")
+            {
+                dirty_arguments_opt = inputTN<int, 4>(e);
             }
 
             if(dirty_arguments_opt.has_value())
@@ -1561,7 +1677,7 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
             elem.type = val;
 
             ///if the sequence id of us is > than the current acked id, it means we're client authoritative for a bit
-            if(elem.arguments.size() != argument_count || run.acked_sequence_id >= elem.authoritative_until_sequence_id)
+            if((int)elem.arguments.size() != argument_count || run.acked_sequence_id >= elem.authoritative_until_sequence_id)
                 elem.arguments = arguments;
 
             run.stk.elements.push_back(elem);
