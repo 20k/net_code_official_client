@@ -770,11 +770,6 @@ std::optional<nlohmann::json> colorTN(ui_element& e)
         ImGui::ColorPicker4(id.c_str(), &my_vals[0], 0);
     }
 
-    if(e.type == "colorbutton")
-    {
-        ImGui::ColorButton(id.c_str(), ImVec4(e.arguments[1], e.arguments[2], e.arguments[3], e.arguments[4]), 0, ImVec2(e.arguments[6], e.arguments[7]));
-    }
-
     for(int i=0; i < N; i++)
     {
         e.arguments[i + 1] = my_vals[i];
@@ -852,7 +847,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             ImGui::BulletText("%s", val.c_str());
         }
 
-        if(e.type == "button" || e.type == "smallbutton" || e.type == "invisiblebutton" || e.type == "arrowbutton" || e.type == "checkbox" || e.type == "radiobutton")
+        if(e.type == "button" || e.type == "smallbutton" || e.type == "invisiblebutton" || e.type == "arrowbutton" || e.type == "checkbox" || e.type == "radiobutton" || e.type == "colorbutton")
         {
             std::string val = e.arguments[0];
 
@@ -903,6 +898,11 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 ImGui::RadioButton(val.c_str(), (int)e.arguments[1]);
             }
 
+            if(e.type == "colorbutton")
+            {
+                ImGui::ColorButton(val.c_str(), ImVec4(e.arguments[1], e.arguments[2], e.arguments[3], e.arguments[4]), 0, ImVec2(e.arguments[6], e.arguments[7]));
+            }
+
             buttonbehaviour = true;
         }
 
@@ -917,8 +917,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
            || e.type == "inputfloat3" || e.type == "inputint3"
            || e.type == "inputfloat4" || e.type == "inputfloat4"
            || e.type == "coloredit3" || e.type == "coloredit4"
-           || e.type == "colorpicker3" || e.type == "colorpicker4"
-           || e.type == "colorbutton")
+           || e.type == "colorpicker3" || e.type == "colorpicker4")
         {
             std::string ui_id = e.arguments[0];
 
@@ -1080,11 +1079,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             }
 
             if(e.type == "colorpicker4")
-            {
-                dirty_arguments_opt = colorTN<4>(e);
-            }
-
-            if(e.type == "colorbutton")
             {
                 dirty_arguments_opt = colorTN<4>(e);
             }
