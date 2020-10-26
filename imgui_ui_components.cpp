@@ -400,6 +400,11 @@ std::string get_element_id(const std::string& type, const std::vector<nlohmann::
     if(type == "endgroup")
         return data.at(0);
 
+    if(type == "coloredit3" || type == "coloredit4"
+    || type == "colorpicker3" || type == "colorpicker4"
+    || type == "colorbutton")
+        return data.at(0);
+
     return "";
 }
 
@@ -519,6 +524,17 @@ int get_argument_count(const std::string& type)
         return 4;
     if(type == "inputfloat4" || type == "inputint4")
         return 5;
+
+    if(type == "coloredit3")
+        return 4;
+    if(type == "coloredit4")
+        return 5;
+    if(type == "colorpicker3")
+        return 4;
+    if(type == "colorpicker4")
+        return 5;
+    if(type == "colorbutton")
+        return 8;
 
     return 0;
 }
@@ -721,6 +737,56 @@ std::optional<nlohmann::json> inputTN(ui_element& e)
     return std::nullopt;
 }
 
+template<int N>
+std::optional<nlohmann::json> colorTN(ui_element& e)
+{
+    std::array<float, N> my_vals = {};
+    std::string id = e.arguments[0];
+
+    for(int i=0; i < N; i++)
+    {
+        my_vals[i] = e.arguments[i + 1];
+    }
+
+    std::array prev_vals = my_vals;
+
+    if(e.type == "coloredit3")
+    {
+        ImGui::ColorEdit3(id.c_str(), &my_vals[0], 0);
+    }
+
+    if(e.type == "coloredit4")
+    {
+        ImGui::ColorEdit4(id.c_str(), &my_vals[0], 0);
+    }
+
+    if(e.type == "colorpicker3")
+    {
+        ImGui::ColorPicker3(id.c_str(), &my_vals[0], 0);
+    }
+
+    if(e.type == "colorpicker4")
+    {
+        ImGui::ColorPicker4(id.c_str(), &my_vals[0], 0);
+    }
+
+    if(e.type == "colorbutton")
+    {
+        ImGui::ColorButton(id.c_str(), ImVec4(e.arguments[1], e.arguments[2], e.arguments[3], e.arguments[4]), 0, ImVec2(e.arguments[6], e.arguments[7]));
+    }
+
+    for(int i=0; i < N; i++)
+    {
+        e.arguments[i + 1] = my_vals[i];
+    }
+
+    if(my_vals != prev_vals)
+    {
+        return my_vals;
+    }
+
+    return std::nullopt;
+}
 
 ///all values from the server are sanitised in some way unless explicitly noted otherwise
 ///that is: randomised salted hashes in the strings to prevent collisions
@@ -849,7 +915,10 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
            || e.type == "inputfloat" || e.type == "inputint" || e.type == "inputdouble"
            || e.type == "inputfloat2" || e.type == "inputint2"
            || e.type == "inputfloat3" || e.type == "inputint3"
-           || e.type == "inputfloat4" || e.type == "inputfloat4")
+           || e.type == "inputfloat4" || e.type == "inputfloat4"
+           || e.type == "coloredit3" || e.type == "coloredit4"
+           || e.type == "colorpicker3" || e.type == "colorpicker4"
+           || e.type == "colorbutton")
         {
             std::string ui_id = e.arguments[0];
 
@@ -993,6 +1062,31 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             if(e.type == "inputint4")
             {
                 dirty_arguments_opt = inputTN<int, 4>(e);
+            }
+
+            if(e.type == "coloredit3")
+            {
+                dirty_arguments_opt = colorTN<3>(e);
+            }
+
+            if(e.type == "coloredit4")
+            {
+                dirty_arguments_opt = colorTN<4>(e);
+            }
+
+            if(e.type == "colorpicker3")
+            {
+                dirty_arguments_opt = colorTN<3>(e);
+            }
+
+            if(e.type == "colorpicker4")
+            {
+                dirty_arguments_opt = colorTN<4>(e);
+            }
+
+            if(e.type == "colorbutton")
+            {
+                dirty_arguments_opt = colorTN<4>(e);
             }
 
             if(dirty_arguments_opt.has_value())
