@@ -1011,7 +1011,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             ImGui::SetNextItemOpen((int)e.arguments[0]);
         }
 
-        if(e.type == "treenode" || e.type == "treepush")
+        if(e.type == "treenode" || e.type == "treepush" || e.type == "collapsingheader")
         {
             /**
             so the problem is... can't use actual treenode, because it requires calling treepop on true
