@@ -408,137 +408,6 @@ std::string get_element_id(const std::string& type, const std::vector<nlohmann::
     return "";
 }
 
-int get_argument_count(const std::string& type)
-{
-    if(type == "text")
-        return 1;
-
-    if(type == "textcolored")
-        return 5;
-
-    if(type == "textdisabled")
-        return 1;
-
-    if(type == "bullettext")
-        return 1;
-
-    if(type == "button")
-        return 3;
-
-    if(type == "smallbutton")
-        return 1;
-
-    if(type == "invisiblebutton")
-        return 3;
-
-    if(type == "arrowbutton")
-        return 2;
-
-    if(type == "checkbox")
-        return 2;
-
-    if(type == "radiobutton")
-        return 2;
-
-    if(type == "progressbar")
-        return 4;
-
-    if(type == "bullet")
-        return 0;
-
-    if(type == "pushstylecolor")
-        return 5;
-
-    if(type == "popstylecolor")
-        return 1;
-
-    if(type == "pushitemwidth")
-        return 1;
-
-    if(type == "popitemwidth")
-        return 0;
-
-    if(type == "setnextitemwidth")
-        return 1;
-
-    if(type == "separator")
-        return 0;
-
-    if(type == "sameline")
-        return 2;
-
-    if(type == "newline")
-        return 0;
-
-    if(type == "spacing")
-        return 0;
-
-    if(type == "dummy")
-        return 2;
-
-    if(type == "indent")
-        return 1;
-
-    if(type == "unindent")
-        return 1;
-
-    if(type == "begingroup")
-        return 0;
-
-    if(type == "endgroup")
-        return 1;
-
-    if(type == "dragfloat" || type == "dragint")
-        return 5;
-
-    if(type == "dragfloat2" || type == "dragint2")
-        return 6;
-
-    if(type == "dragfloat3" || type == "dragint3")
-        return 7;
-
-    if(type == "dragfloat4" || type == "dragint4")
-        return 8;
-
-    if(type == "sliderfloat" || type == "sliderint" || type == "sliderangle")
-        return 4;
-
-    if(type == "sliderfloat2" || type == "sliderint2")
-        return 5;
-
-    if(type == "sliderfloat3" || type == "sliderint3")
-        return 6;
-
-    if(type == "sliderfloat4" || type == "sliderint4")
-        return 7;
-
-    if(type == "inputtext")
-        return 2;
-    if(type == "inputtextmultiline")
-        return 2;
-    if(type == "inputfloat" || type == "inputint" || type == "inputdouble")
-        return 2;
-    if(type == "inputfloat2" || type == "inputint2")
-        return 3;
-    if(type == "inputfloat3" || type == "inputint3")
-        return 4;
-    if(type == "inputfloat4" || type == "inputint4")
-        return 5;
-
-    if(type == "coloredit3")
-        return 4;
-    if(type == "coloredit4")
-        return 5;
-    if(type == "colorpicker3")
-        return 4;
-    if(type == "colorpicker4")
-        return 5;
-    if(type == "colorbutton")
-        return 8;
-
-    return 0;
-}
-
 template<typename T, int N>
 std::optional<nlohmann::json> dragTN(ui_element& e)
 {
@@ -799,8 +668,8 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
     for(ui_element& e : stk.elements)
     {
-        if(e.arguments.size() < get_argument_count(e.type))
-            continue;
+        //if(e.arguments.size() < get_argument_count(e.type))
+        //    continue;
 
         bool buttonbehaviour = false;
         std::optional<nlohmann::json> button_behaviour_dirty_arguments_opt;
@@ -1778,6 +1647,7 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
         run.stk = ui_stack();
 
         std::vector<std::string> typelist = in["typeidx"];
+        std::vector<int> typeargc = in["typeargc"];
 
         if(in.count("client_seq_ack") > 0)
             run.acked_sequence_id = in["client_seq_ack"];
@@ -1792,8 +1662,7 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
             std::vector<nlohmann::json> arguments;
 
             std::string val = typelist.at(idx);
-
-            int argument_count = get_argument_count(val);
+            int argument_count = typeargc.at(idx);
 
             for(int kk=0; kk < argument_count; kk++)
             {
@@ -1820,6 +1689,9 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
             ///if the sequence id of us is > than the current acked id, it means we're client authoritative for a bit
             if((int)elem.arguments.size() != argument_count || run.acked_sequence_id >= elem.authoritative_until_sequence_id)
                 elem.arguments = arguments;
+
+            if((int)elem.arguments.size() != argument_count)
+                throw std::runtime_error("Bad argument count somehow");
 
             run.stk.elements.push_back(elem);
         }
