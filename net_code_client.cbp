@@ -206,13 +206,13 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-Wshadow" />
 			<Add option="-Wall" />
 			<Add option="-std=c++20" />
 			<Add option="-fexceptions" />
 			<Add option="-Wno-narrowing" />
 			<Add option="-Werror=return-type" />
 			<Add option="-Wno-strict-aliasing" />
-			<Add option="-Wshadow" />
 			<Add option="-DNET_CLIENT" />
 			<Add option="-DNO_COMPRESSION" />
 			<Add option="-DIMGUI_IMPL_OPENGL_LOADER_GLEW" />
@@ -263,8 +263,6 @@
 			<Add option="-lbacktrace" />
 			<Add option="-lUsp10" />
 			<Add option="-lgdi32" />
-			<Add option="-l:libboost_fiber-mt.a" />
-			<Add option="-l:libboost_context-mt.a" />
 			<Add option="-lws2_32" />
 			<Add option="-lmswsock" />
 			<Add option="-lsteam_api64" />
