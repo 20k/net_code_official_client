@@ -212,6 +212,7 @@
 			<Add option="-Wno-narrowing" />
 			<Add option="-Werror=return-type" />
 			<Add option="-Wno-strict-aliasing" />
+			<Add option="-Wshadow" />
 			<Add option="-DNET_CLIENT" />
 			<Add option="-DNO_COMPRESSION" />
 			<Add option="-DIMGUI_IMPL_OPENGL_LOADER_GLEW" />

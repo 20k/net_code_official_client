@@ -353,12 +353,9 @@ int main(int argc, char* argv[])
     bool curMouseDown[5] = {};
     ImVec2 last_mouse_pos = ImVec2(0,0);
     ImVec2 last_display_size = ImVec2(0,0);
-    bool last_can_suppress_inputs = false;
 
     auto just_pressed = [&](int key)
     {
-        ImGuiIO& io = ImGui::GetIO();
-
         return curKeysDown[key] && !lastKeysDown[key];
     };
 
@@ -372,7 +369,7 @@ int main(int argc, char* argv[])
     printf("Am connected? %i\n", iconn);
 
     int max_unprocessed_frames = 200;
-    int unprocessed_frames = unprocessed_frames;
+    int unprocessed_frames = max_unprocessed_frames;
     bool last_item_active = false;
 
     steady_timer sleep_limiter;
@@ -438,8 +435,6 @@ int main(int argc, char* argv[])
 
         float mouse_delta = 0.f;
 
-        bool skip_first_event = false;
-
         bool last_is_open = s_api.is_overlay_open();
 
         s_api.pump_callbacks();
@@ -469,8 +464,6 @@ int main(int argc, char* argv[])
             max_sleep = 1/128.;
         }
 
-        steady_timer poll_time;
-
         //#define NO_SLEEP
         #ifndef NO_SLEEP
         window.poll_events_only(max_sleep);
@@ -492,8 +485,6 @@ int main(int argc, char* argv[])
             if(curMouseDown[i] || (lastMouseDown[i] != curMouseDown[i]) || ImGui::IsMouseClicked(i) || ImGui::IsMouseReleased(i))
                 visual_events = true;
         }
-
-        double slept_for = poll_time.get_elapsed_time_s();
 
         //bool can_suppress_inputs = false;
 
@@ -673,7 +664,7 @@ int main(int argc, char* argv[])
 
             vec2f cursor_pos = {io.MousePos.x, io.MousePos.y};
 
-            for(int i=0; i < sizeof(curKeysDown) / sizeof(curKeysDown[0]); i++)
+            for(int i=0; i < (int)(sizeof(curKeysDown) / sizeof(curKeysDown[0])); i++)
             {
                 ///this isn't working correctly on emscripten, probably due to the callback issue
                 if((curKeysDown[i] && !lastKeysDown[i]) || ImGui::IsKeyPressed(i))
@@ -687,7 +678,7 @@ int main(int argc, char* argv[])
                 }
             }
 
-            for(int i=0; i < sizeof(curMouseDown) / sizeof(curMouseDown[0]); i++)
+            for(int i=0; i < (int)(sizeof(curMouseDown) / sizeof(curMouseDown[0])); i++)
             {
                 if(curMouseDown[i] && !lastMouseDown[i])
                 {
@@ -701,7 +692,7 @@ int main(int argc, char* argv[])
             }
 
             float scroll_y = io.MouseWheel;
-            float scroll_x = io.MouseWheelH;
+            //float scroll_x = io.MouseWheelH;
 
             std::vector<uint32_t> input_utf32;
 
@@ -731,8 +722,6 @@ int main(int argc, char* argv[])
                 }
             }
 
-            ImGuiIO& io = ImGui::GetIO();
-
             for(int i : glfw_key_pressed_data)
             {
                 if(auto val = backend->get_key_name(i); val != "")
@@ -744,7 +733,7 @@ int main(int argc, char* argv[])
                 {
                     if(io.KeyCtrl)
                     {
-                        for(int i=0; i < 5; i++)
+                        for(int kk=0; kk < 5; kk++)
                             to_edit->process_backspace();
                     }
                     else
@@ -757,7 +746,7 @@ int main(int argc, char* argv[])
                 {
                     if(io.KeyCtrl)
                     {
-                        for(int i=0; i < 5; i++)
+                        for(int kk=0; kk < 5; kk++)
                             to_edit->process_delete();
                     }
                     else
@@ -813,9 +802,9 @@ int main(int argc, char* argv[])
                     {
                         std::string add_text = clipboard::get();
 
-                        for(auto& i : add_text)
+                        for(auto& c : add_text)
                         {
-                            to_edit->add_to_command(i);
+                            to_edit->add_to_command(c);
                         }
                     }
                 }
@@ -854,9 +843,9 @@ int main(int argc, char* argv[])
                 {
                     std::string add_text = clipboard::get();
 
-                    for(auto& i : add_text)
+                    for(auto& c : add_text)
                     {
-                        to_edit->add_to_command(i);
+                        to_edit->add_to_command(c);
                     }
 
                     last_line_invalidate_everything(terminals, chat_win);
@@ -1137,15 +1126,15 @@ int main(int argc, char* argv[])
                     }
                     else if(has_chat_window)
                     {
-                        std::optional<chat_thread*> thrd = chat_win.get_focused_chat_thread();
+                        std::optional<chat_thread*> focused_thread = chat_win.get_focused_chat_thread();
 
-                        if(thrd.has_value())
+                        if(focused_thread.has_value())
                         {
-                            std::string escaped_string = escape_str(thrd.value()->command.command);
+                            std::string escaped_string = escape_str(focused_thread.value()->command.command);
 
                             nlohmann::json data;
                             data["type"] = "client_chat";
-                            data["data"] = "#hs.msg.send({channel:\"" + thrd.value()->name + "\", msg:\"" + escaped_string + "\"})";
+                            data["data"] = "#hs.msg.send({channel:\"" + focused_thread.value()->name + "\", msg:\"" + escaped_string + "\"})";
 
                             conn.write(data.dump());
                         }
@@ -1155,11 +1144,11 @@ int main(int argc, char* argv[])
                     {
                         chat_win.add_text_to_focused(command);
 
-                        std::optional<chat_thread*> thrd = chat_win.get_focused_chat_thread();
+                        std::optional<chat_thread*> focused_thread = chat_win.get_focused_chat_thread();
 
-                        if(thrd)
+                        if(focused_thread)
                         {
-                            thrd.value()->cache.invalidate();
+                            focused_thread.value()->cache.invalidate();
                         }
                     }
                 }

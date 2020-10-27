@@ -128,7 +128,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
 
         char next = 0;
         char next_2 = 0;
-        char prev = 0;
+        //char prev = 0;
 
         if(i < length - 1)
             next = in[i + 1];
@@ -136,8 +136,8 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
         if(i < length - 2)
             next_2 = in[i + 2];
 
-        if(i > 0)
-            prev = in[i - 1];
+        //if(i > 0)
+        //    prev = in[i - 1];
 
         term = false;
 

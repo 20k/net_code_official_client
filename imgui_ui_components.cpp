@@ -215,9 +215,6 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
 
     ImGui::SameLine(0.f, 0.f);
 
-    vec2f cdim = xy_to_vec(ImGui::CalcTextSize("A"));
-
-    //float flines = cache.get_lines() - (dim.y() / cdim.y());
     float flines = cache.get_lines();
 
     ///rough
@@ -229,8 +226,6 @@ void terminal_imgui::render(terminal_manager& terminals, render_window& win, vec
 {
     if(is_main_terminal)
     {
-        copy_handler* handle = get_global_copy_handler();
-
         vec2f window_pos = xy_to_vec(ImGui::GetMainViewport()->Pos);
 
         ImGui::SetNextWindowSize(ImVec2(window_size.x(), window_size.y()));
@@ -1008,6 +1003,11 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             }
         }
 
+        if(e.type == "setnextitemopen")
+        {
+            ImGui::SetNextItemOpen((int)e.arguments[0]);
+        }
+
         if(e.type == "treenode" || e.type == "treepush")
         {
             /**
@@ -1038,11 +1038,11 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
             For network bandwidth reasons at the expense of latency*/
 
-            std::string id = e.arguments[0];
+            std::string str_id = e.arguments[0];
 
             bool last_state = e.last_treenode_state;
 
-            e.last_treenode_state = ImGui::CollapsingHeader(id.c_str());
+            e.last_treenode_state = ImGui::CollapsingHeader(str_id.c_str());
 
             if(!e.last_treenode_state)
             {
@@ -1064,7 +1064,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 j["ui_id"] = e.element_id;
                 j["state"] = states;
                 j["sequence_id"] = run.current_sequence_id;
-                j["arguments"] = nlohmann::json::array({});
+                //j["arguments"] = nlohmann::json::array({});
 
                 ///???
                 e.authoritative_until_sequence_id = run.current_sequence_id;
@@ -1259,8 +1259,6 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 void realtime_script_manager::render_realtime_windows(connection& conn, int& was_closed_id, font_selector& fonts, auto_handler& auto_handle, bool is_linear_colour)
 {
     was_closed_id = -1;
-
-    copy_handler* handle = get_global_copy_handler();
 
     for(auto& i : windows)
     {
@@ -1668,11 +1666,11 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
             for(auto& i : realtime_scripts.windows)
             {
                 int fid = i.first;
-                realtime_script_run& run = i.second;
+                realtime_script_run& other_run = i.second;
 
                 if(id == fid)
                 {
-                    run.open = false;
+                    other_run.open = false;
                 }
             }
         }
@@ -1982,8 +1980,6 @@ void process_text_from_server(terminal_manager& terminals, auth_manager& auth_ma
 
 void chat_window::render(bool refocus)
 {
-    copy_handler* handle = get_global_copy_handler();
-
     if(refocus && side_buttons.size() > 0)
         ImGui::SetNextWindowFocus();
 

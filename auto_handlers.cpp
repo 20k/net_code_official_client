@@ -86,7 +86,7 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
     vec3f key_col = {243, 166, 3};
     //vec3f key_col = srgb_to_lin({243, 166, 3});
 
-    for(int i=0; i < (int)in.size(); i++)
+    for(int idx=0; idx < (int)in.size(); idx++)
     {
         std::vector<token_info> tokens = tokenise_general(in);
 
@@ -140,7 +140,7 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
 
         for(auto& kk : tokens)
         {
-            i += kk.str.size();
+            idx += kk.str.size();
         }
     }
 }
