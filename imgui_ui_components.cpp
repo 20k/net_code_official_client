@@ -405,6 +405,9 @@ std::string get_element_id(const std::string& type, const std::vector<nlohmann::
     || type == "colorbutton")
         return data.at(0);
 
+    if(type == "treenode" || type == "treepush")
+        return data.at(0);
+
     return "";
 }
 
@@ -652,6 +655,35 @@ std::optional<nlohmann::json> colorTN(ui_element& e)
     return std::nullopt;
 }
 
+template<auto Popfunc>
+struct safe_item_stack
+{
+    int stack_size = 0;
+
+    void push()
+    {
+        stack_size++;
+    }
+
+    void pop()
+    {
+        if(stack_size == 0)
+            return;
+
+        stack_size--;
+        Popfunc();
+    }
+
+    void pop_all()
+    {
+        while(stack_size > 0)
+        {
+            stack_size--;
+            Popfunc();
+        }
+    }
+};
+
 ///all values from the server are sanitised in some way unless explicitly noted otherwise
 ///that is: randomised salted hashes in the strings to prevent collisions
 ///strings have a capped length
@@ -662,12 +694,20 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 {
     ImGui::BeginGroup();
 
-    int group_unbalanced_stack = 0;
-    int push_colour_stack = 0;
-    int item_width_stack = 0;
+    safe_item_stack<ImGui::EndGroup> group_stack;
+    safe_item_stack<[](){ImGui::PopStyleColor(1);}> colour_stack;
+    safe_item_stack<ImGui::PopItemWidth> item_width_stack;
+    //safe_item_stack<ImGui::TreePop> tree_stack;
+    bool skipping_ui_elements = false;
 
     for(ui_element& e : stk.elements)
     {
+        if(skipping_ui_elements)
+        {
+            if(e.type != "treeend")
+                continue;
+        }
+
         //if(e.arguments.size() < get_argument_count(e.type))
         //    continue;
 
@@ -968,6 +1008,76 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             }
         }
 
+        if(e.type == "treenode" || e.type == "treepush")
+        {
+            /**
+            so the problem is... can't use actual treenode, because it requires calling treepop on true
+            the server is the one that makes that decision though
+            also don't want to mimic the
+            if(ImGui::TreeNode(id))
+            {
+                ImGui::TreePop();
+            }
+
+            structure, because otherwise there'll be a server roundtrip to get new elements in
+
+            A more desirable API is
+
+            ImGui::TreeNode(id)
+            ImGui::whatever();
+            ImGui::TreeEnd();
+
+            which can additionally be used like
+
+            if(ImGui::TreeNode(id))
+            {
+                ImGui::whatever();
+            }
+
+            ImGui::TreeEnd();
+
+            For network bandwidth reasons at the expense of latency*/
+
+            std::string id = e.arguments[0];
+
+            bool last_state = e.last_treenode_state;
+
+            e.last_treenode_state = ImGui::CollapsingHeader(id.c_str());
+
+            if(!e.last_treenode_state)
+            {
+                skipping_ui_elements = true;
+            }
+
+            if(e.last_treenode_state != last_state)
+            {
+                std::vector<std::string> states;
+
+                if(e.last_treenode_state)
+                {
+                    states.push_back("treenodeactive");
+                }
+
+                nlohmann::json j;
+                j["type"] = "client_ui_element";
+                j["id"] = id;
+                j["ui_id"] = e.element_id;
+                j["state"] = states;
+                j["sequence_id"] = run.current_sequence_id;
+                j["arguments"] = nlohmann::json::array({});
+
+                ///???
+                e.authoritative_until_sequence_id = run.current_sequence_id;
+
+                conn.write(j.dump());
+            }
+        }
+
+        if(e.type == "treeend")
+        {
+            skipping_ui_elements = false;
+        }
+
         if(e.type == "progressbar")
         {
             std::string str = e.arguments[3];
@@ -1000,8 +1110,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             ///PANIC AND BREAK THINGS
             if(idx >= 0 && idx < ImGuiCol_COUNT)
             {
-                push_colour_stack++;
-
+                colour_stack.push();
                 ImGui::PushStyleColor(idx, ImVec4(r, g, b, a));
             }
         }
@@ -1010,11 +1119,9 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
         {
             int idx = e.arguments[0];
 
-            while(push_colour_stack > 0 && idx > 0)
+            for(int i=0; i < idx; i++)
             {
-                push_colour_stack--;
-                idx--;
-                ImGui::PopStyleColor(1);
+                colour_stack.pop();
             }
         }
 
@@ -1022,17 +1129,13 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
         {
             double width = e.arguments[0];
 
-            item_width_stack++;
             ImGui::PushItemWidth(width);
+            item_width_stack.push();
         }
 
         if(e.type == "popitemwidth")
         {
-            if(item_width_stack > 0)
-            {
-                item_width_stack--;
-                ImGui::PopItemWidth();
-            }
+            item_width_stack.pop();
         }
 
         if(e.type == "setnextitemwidth")
@@ -1089,18 +1192,15 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "begingroup")
         {
-            group_unbalanced_stack++;
-
+            group_stack.push();
             ImGui::BeginGroup();
         }
 
         if(e.type == "endgroup")
         {
-            if(group_unbalanced_stack > 0)
+            if(group_stack.stack_size > 0)
             {
-                group_unbalanced_stack--;
-
-                ImGui::EndGroup();
+                group_stack.pop();
 
                 buttonbehaviour = true;
             }
@@ -1145,22 +1245,11 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
         }
     }
 
-    for(int i=0; i < group_unbalanced_stack; i++)
-    {
-        ImGui::EndGroup();
-    }
+    group_stack.pop_all();
 
-    while(push_colour_stack > 0)
-    {
-        push_colour_stack--;
-        ImGui::PopStyleColor(1);
-    }
+    colour_stack.pop_all();
 
-    while(item_width_stack > 0)
-    {
-        item_width_stack--;
-        ImGui::PopItemWidth();
-    }
+    item_width_stack.pop_all();
 
     ImGui::EndGroup();
 

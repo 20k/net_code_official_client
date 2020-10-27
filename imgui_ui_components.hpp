@@ -35,6 +35,7 @@ struct ui_element
     uint64_t authoritative_until_sequence_id = 0;
 
     bool was_hovered = false;
+    bool last_treenode_state = false;
 };
 
 struct ui_stack
