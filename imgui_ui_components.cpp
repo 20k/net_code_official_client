@@ -400,7 +400,7 @@ std::string get_element_id(const std::string& type, const std::vector<nlohmann::
     || type == "colorbutton")
         return data.at(0);
 
-    if(type == "treenode" || type == "treepush")
+    if(type == "treenode" || type == "treepush" || type == "collapsingheader")
         return data.at(0);
 
     return "";
@@ -694,6 +694,9 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
     safe_item_stack<ImGui::PopItemWidth> item_width_stack;
     //safe_item_stack<ImGui::TreePop> tree_stack;
     bool skipping_ui_elements = false;
+
+    ///would sure love to use std::vector<bool> here
+    std::vector<int> tree_indent_stack;
 
     for(ui_element& e : stk.elements)
     {
@@ -1044,7 +1047,22 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
             e.last_treenode_state = ImGui::CollapsingHeader(str_id.c_str());
 
-            if(!e.last_treenode_state)
+            ///collapsingheader never indents, and does not require treeend. treepush always indents. treenode sometimes indents
+            if(e.type != "collapsingheader")
+            {
+                if(e.last_treenode_state || e.type == "treepush")
+                {
+                    ImGui::Indent();
+                    tree_indent_stack.push_back(1);
+                }
+                else
+                {
+                    tree_indent_stack.push_back(0);
+                }
+            }
+
+            ///collapsingheader does not skip elements until treeend is hit
+            if(!e.last_treenode_state && e.type != "collapsingheader")
             {
                 skipping_ui_elements = true;
             }
@@ -1076,6 +1094,16 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
         if(e.type == "treeend")
         {
             skipping_ui_elements = false;
+
+            if(tree_indent_stack.size() > 0)
+            {
+                if(tree_indent_stack.back() == 1)
+                {
+                    ImGui::Unindent();
+                }
+
+                tree_indent_stack.pop_back();
+            }
         }
 
         if(e.type == "progressbar")
