@@ -403,6 +403,9 @@ std::string get_element_id(const std::string& type, const std::vector<nlohmann::
     if(type == "treenode" || type == "treepush" || type == "collapsingheader")
         return data.at(0);
 
+    if(type == "selectable")
+        return data.at(0);
+
     return "";
 }
 
@@ -1073,7 +1076,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
                 if(e.last_treenode_state)
                 {
-                    states.push_back("treenodeactive");
+                    states.push_back("returnstrue");
                 }
 
                 nlohmann::json j;
@@ -1104,6 +1107,25 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
                 tree_indent_stack.pop_back();
             }
+        }
+
+        if(e.type == "selectable")
+        {
+            std::string str = e.arguments[0];
+
+            bool is_selected = (int)e.arguments[1];
+            bool was_selected = is_selected;
+
+            ImGui::Selectable(str.c_str(), &is_selected, 0, ImVec2(e.arguments[3], e.arguments[4]));
+
+            if(is_selected != was_selected)
+            {
+                button_behaviour_dirty_arguments_opt = nlohmann::json::array({(int)is_selected});
+            }
+
+            e.arguments[1] = (int)is_selected;
+
+            buttonbehaviour = true;
         }
 
         if(e.type == "progressbar")
