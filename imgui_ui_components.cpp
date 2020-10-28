@@ -715,6 +715,9 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 continue;
         }
 
+        bool returns_true = false;
+        bool returns_true_dirty = false;
+
         //if(e.arguments.size() < get_argument_count(e.type))
         //    continue;
 
@@ -999,20 +1002,8 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 dirty_arguments_opt = colorTN<4>(e);
             }
 
-            if(dirty_arguments_opt.has_value())
-            {
-                nlohmann::json j;
-                j["type"] = "client_ui_element";
-                j["id"] = id;
-                j["ui_id"] = e.element_id;
-                j["state"] = std::vector<std::string>();
-                j["sequence_id"] = run.current_sequence_id;
-                j["arguments"] = dirty_arguments_opt.value();
-
-                e.authoritative_until_sequence_id = run.current_sequence_id;
-
-                conn.write(j.dump());
-            }
+            button_behaviour_dirty_arguments_opt = dirty_arguments_opt;
+            buttonbehaviour = true;
         }
 
         if(e.type == "setnextitemopen")
@@ -1078,26 +1069,11 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
             if(e.last_treenode_state != last_state)
             {
-                std::vector<std::string> states;
-
-                if(e.last_treenode_state)
-                {
-                    states.push_back("returnstrue");
-                }
-
-                nlohmann::json j;
-                j["type"] = "client_ui_element";
-                j["id"] = id;
-                j["ui_id"] = e.element_id;
-                j["state"] = states;
-                j["sequence_id"] = run.current_sequence_id;
-                //j["arguments"] = nlohmann::json::array({});
-
-                ///???
-                e.authoritative_until_sequence_id = run.current_sequence_id;
-
-                conn.write(j.dump());
+                returns_true_dirty = true;
             }
+
+            returns_true = e.last_treenode_state;
+            buttonbehaviour = true;
         }
 
         if(e.type == "treeend")
@@ -1331,13 +1307,52 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
             bool is_clicked = ImGui::IsItemClicked();
 
+            bool is_active = ImGui::IsItemActive();
+            bool is_focused = ImGui::IsItemFocused();
+            bool is_visible = ImGui::IsItemVisible();
+            bool is_edited = ImGui::IsItemEdited();
+            bool is_activated = ImGui::IsItemActivated();
+            bool is_deactivated = ImGui::IsItemDeactivated();
+            bool is_deactivatedafteredit = ImGui::IsItemDeactivatedAfterEdit();
+            bool is_toggledopen = ImGui::IsItemToggledSelection(); ///changed to IsItemToggledOpen in later imguis
+
             if(is_hovered)
                 states.push_back("hovered");
 
             if(is_clicked)
                 states.push_back("clicked");
 
-            if(is_hovered != was_hovered || is_clicked || button_behaviour_dirty_arguments_opt.has_value())
+            if(returns_true)
+                states.push_back("returnstrue");
+
+            if(is_active)
+                states.push_back("active");
+
+            if(is_focused)
+                states.push_back("focused");
+
+            if(is_visible)
+                states.push_back("visible");
+
+            if(is_edited)
+                states.push_back("edited");
+
+            if(is_activated)
+                states.push_back("activated");
+
+            if(is_deactivated)
+                states.push_back("deactivated");
+
+            if(is_deactivatedafteredit)
+                states.push_back("deactivatedafteredit");
+
+            if(is_toggledopen)
+                states.push_back("toggledopen");
+
+            if(is_hovered != was_hovered || is_clicked || button_behaviour_dirty_arguments_opt.has_value() || returns_true_dirty ||
+               is_active != e.was_active || is_active != e.was_active || is_focused != e.was_focused || is_visible != e.was_visible ||
+               is_edited || is_activated || is_deactivated || is_deactivatedafteredit || is_toggledopen
+               )
             {
                 nlohmann::json j;
                 j["type"] = "client_ui_element";
@@ -1358,6 +1373,9 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             }
 
             e.was_hovered = is_hovered;
+            e.was_active = is_active;
+            e.was_focused = is_focused;
+            e.was_visible = is_visible;
         }
     }
 
