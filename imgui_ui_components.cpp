@@ -409,6 +409,9 @@ std::string get_element_id(const std::string& type, const std::vector<nlohmann::
     if(type == "listbox")
         return data.at(0);
 
+    if(type == "plotlines" || type == "plothistogram")
+        return data.at(0);
+
     return "";
 }
 
@@ -1163,6 +1166,32 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             e.arguments[1] = current_item;
 
             buttonbehaviour = true;
+        }
+
+        if(e.type == "plotlines" || e.type == "plothistogram")
+        {
+            std::string str = e.arguments[0];
+            std::vector<float> values = e.arguments[1];
+            int values_offset = e.arguments[2];
+            std::string overlay = e.arguments[3];
+            float scale_min = e.arguments[4];
+            float scale_max = e.arguments[5];
+            ImVec2 graph_size(e.arguments[6], e.arguments[7]);
+
+            float* fptr = nullptr;
+
+            if(values.size() > 0)
+                fptr = &values[0];
+
+            if(e.type == "plotlines")
+            {
+                ImGui::PlotLines(str.c_str(), fptr, values.size(), values_offset, overlay.c_str(), scale_min, scale_max, graph_size);
+            }
+
+            if(e.type == "plothistogram")
+            {
+                ImGui::PlotHistogram(str.c_str(), fptr, values.size(), values_offset, overlay.c_str(), scale_min, scale_max, graph_size);
+            }
         }
 
         if(e.type == "progressbar")
