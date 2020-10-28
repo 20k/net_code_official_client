@@ -406,6 +406,9 @@ std::string get_element_id(const std::string& type, const std::vector<nlohmann::
     if(type == "selectable")
         return data.at(0);
 
+    if(type == "listbox")
+        return data.at(0);
+
     return "";
 }
 
@@ -1124,6 +1127,40 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             }
 
             e.arguments[1] = (int)is_selected;
+
+            buttonbehaviour = true;
+        }
+
+        if(e.type == "listbox")
+        {
+            std::string str = e.arguments[0];
+
+            int current_item = e.arguments[1];
+            int last_current_item = current_item;
+
+            std::vector<std::string> items = e.arguments[2];
+
+            std::vector<const char*> citems;
+            citems.resize(items.size());
+
+            for(int i=0; i < (int)items.size(); i++)
+            {
+                citems[i] = items[i].c_str();
+            }
+
+            const char** citems_ptr = nullptr;
+
+            if(citems.size() > 0)
+                citems_ptr = &citems[0];
+
+            ImGui::ListBox(str.c_str(), &current_item, citems_ptr, citems.size(), e.arguments[3]);
+
+            if(current_item != last_current_item)
+            {
+                button_behaviour_dirty_arguments_opt = nlohmann::json::array({current_item});
+            }
+
+            e.arguments[1] = current_item;
 
             buttonbehaviour = true;
         }
