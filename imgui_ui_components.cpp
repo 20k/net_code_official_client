@@ -412,6 +412,9 @@ std::string get_element_id(const std::string& type, const std::vector<nlohmann::
     if(type == "plotlines" || type == "plothistogram")
         return data.at(0);
 
+    if(type == "acceptdragdroppayload")
+        return data.at(0);
+
     return "";
 }
 
@@ -1350,6 +1353,10 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                     {
                         str = std::string((char*)payload->Data, (char*)payload->Data + payload->DataSize);
                     }
+
+                    button_behaviour_dirty_arguments_opt = nlohmann::json::array({str});
+
+                    buttonbehaviour = true;
                 }
             }
         }
