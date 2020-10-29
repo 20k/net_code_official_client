@@ -1331,7 +1331,10 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             {
                 std::string payload = e.arguments[1];
 
-                ImGui::SetDragDropPayload("none", payload.c_str(), payload.size());
+                if(payload.size() > 0)
+                    ImGui::SetDragDropPayload("none", payload.c_str(), payload.size());
+                else
+                    ImGui::SetDragDropPayload("none", nullptr, 0);
             }
         }
 
