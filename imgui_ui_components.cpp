@@ -707,17 +707,23 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
     //safe_item_stack<ImGui::TreePop> tree_stack;
     bool skipping_ui_elements = false;
 
-    int in_drag_drop_stack = 0;
     int drag_drop_payload_stack = 0;
 
     ///would sure love to use std::vector<bool> here
     std::vector<int> tree_indent_stack;
+    std::vector<int> active_drag_drop_source_stack;
 
     for(ui_element& e : stk.elements)
     {
         if(skipping_ui_elements)
         {
             if(e.type != "treeend")
+                continue;
+        }
+
+        if(active_drag_drop_source_stack.size() > 0 && !active_drag_drop_source_stack.back())
+        {
+            if(e.type != "enddragdropsource")
                 continue;
         }
 
@@ -1308,10 +1314,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
         {
             bool begindrag = ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID);
 
-            if(begindrag)
-            {
-                in_drag_drop_stack++;
-            }
+            active_drag_drop_source_stack.push_back(begindrag);
 
             returns_true = begindrag;
 
@@ -1324,7 +1327,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "setdragdroppayload")
         {
-            if(in_drag_drop_stack > 0)
+            if(active_drag_drop_source_stack.size() > 0 && active_drag_drop_source_stack.back())
             {
                 std::string payload = e.arguments[1];
 
@@ -1334,10 +1337,17 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "enddragdropsource")
         {
-            if(in_drag_drop_stack > 0)
+            bool last = false;
+
+            if(active_drag_drop_source_stack.size() > 0)
+            {
+                last = active_drag_drop_source_stack.back();
+                active_drag_drop_source_stack.pop_back();
+            }
+
+            if(last)
             {
                 ImGui::EndDragDropSource();
-                in_drag_drop_stack--;
             }
         }
 
@@ -1472,10 +1482,18 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
         }
     }
 
-    while(in_drag_drop_stack > 0)
+    /*while(in_drag_drop_stack > 0)
     {
         ImGui::EndDragDropSource();
         in_drag_drop_stack--;
+    }*/
+
+    for(auto& i : active_drag_drop_source_stack)
+    {
+        if(i)
+        {
+            ImGui::EndDragDropSource();
+        }
     }
 
     while(drag_drop_payload_stack > 0)
