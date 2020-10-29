@@ -704,6 +704,9 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
     //safe_item_stack<ImGui::TreePop> tree_stack;
     bool skipping_ui_elements = false;
 
+    int in_drag_drop_stack = 0;
+    int drag_drop_payload_stack = 0;
+
     ///would sure love to use std::vector<bool> here
     std::vector<int> tree_indent_stack;
 
@@ -1295,6 +1298,69 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 group_stack.pop();
 
                 buttonbehaviour = true;
+            }
+        }
+
+        if(e.type == "begindragdropsource")
+        {
+            if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+            {
+                in_drag_drop_stack++;
+            }
+        }
+
+        if(e.type == "setdragdroppayload")
+        {
+            if(in_drag_drop_stack > 0)
+            {
+                std::string payload = e.arguments[1];
+
+                ImGui::SetDragDropPayload("none", payload.c_str(), payload.size());
+            }
+        }
+
+        if(e.type == "enddragdropsource")
+        {
+            if(in_drag_drop_stack > 0)
+            {
+                ImGui::EndDragDropSource();
+                in_drag_drop_stack--;
+            }
+        }
+
+        if(e.type == "begindragdroptarget")
+        {
+            if(ImGui::BeginDragDropTarget())
+            {
+                drag_drop_payload_stack++;
+            }
+        }
+
+        if(e.type == "acceptdragdroppayload")
+        {
+            if(drag_drop_payload_stack > 0)
+            {
+                const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("none");
+
+                if(payload)
+                {
+                    std::string str;
+
+                    if(payload->DataSize > 0)
+                    {
+                        str = std::string((char*)payload->Data, (char*)payload->Data + payload->DataSize);
+                    }
+                }
+            }
+        }
+
+        if(e.type == "enddragdroptarget")
+        {
+            if(drag_drop_payload_stack > 0)
+            {
+                ImGui::EndDragDropTarget();
+
+                drag_drop_payload_stack--;
             }
         }
 
