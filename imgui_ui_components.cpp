@@ -412,7 +412,7 @@ std::string get_element_id(const std::string& type, const std::vector<nlohmann::
     if(type == "plotlines" || type == "plothistogram")
         return data.at(0);
 
-    if(type == "acceptdragdroppayload")
+    if(type == "begindragdropsource" || type == "begindragdroptarget" || type == "acceptdragdroppayload")
         return data.at(0);
 
     return "";
@@ -1306,10 +1306,20 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "begindragdropsource")
         {
-            if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+            bool begindrag = ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID);
+
+            if(begindrag)
             {
                 in_drag_drop_stack++;
             }
+
+            returns_true = begindrag;
+
+            if(begindrag != e.was_return_true)
+                returns_true_dirty = true;
+
+            buttonbehaviour = true;
+            e.was_return_true = begindrag;
         }
 
         if(e.type == "setdragdroppayload")
@@ -1333,10 +1343,20 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
         if(e.type == "begindragdroptarget")
         {
-            if(ImGui::BeginDragDropTarget())
+            bool begindrag = ImGui::BeginDragDropTarget();
+
+            if(begindrag)
             {
                 drag_drop_payload_stack++;
             }
+
+            returns_true = begindrag;
+
+            if(begindrag != e.was_return_true)
+                returns_true_dirty = true;
+
+            buttonbehaviour = true;
+            e.was_return_true = begindrag;
         }
 
         if(e.type == "acceptdragdroppayload")

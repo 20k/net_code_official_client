@@ -38,6 +38,7 @@ struct ui_element
     bool was_active = false;
     bool was_focused = false;
     bool was_visible = false;
+    bool was_return_true = false;
 
     bool last_treenode_state = false;
 };
