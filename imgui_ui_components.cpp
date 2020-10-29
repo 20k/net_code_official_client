@@ -1472,6 +1472,18 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
         }
     }
 
+    while(in_drag_drop_stack > 0)
+    {
+        ImGui::EndDragDropSource();
+        in_drag_drop_stack--;
+    }
+
+    while(drag_drop_payload_stack > 0)
+    {
+        ImGui::EndDragDropTarget();
+        drag_drop_payload_stack--;
+    }
+
     group_stack.pop_all();
 
     colour_stack.pop_all();
