@@ -717,7 +717,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
     {
         if(skipping_ui_elements)
         {
-            if(e.type != "treeend")
+            if(e.type != "treepop")
                 continue;
         }
 
@@ -1040,7 +1040,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
             ImGui::TreeNode(id)
             ImGui::whatever();
-            ImGui::TreeEnd();
+            ImGui::TreePop();
 
             which can additionally be used like
 
@@ -1049,7 +1049,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 ImGui::whatever();
             }
 
-            ImGui::TreeEnd();
+            ImGui::TreePop();
 
             For network bandwidth reasons at the expense of latency*/
 
@@ -1059,7 +1059,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
 
             e.last_treenode_state = ImGui::CollapsingHeader(str_id.c_str());
 
-            ///collapsingheader never indents, and does not require treeend. treepush always indents. treenode sometimes indents
+            ///collapsingheader never indents, and does not require treepop. treepush always indents. treenode sometimes indents
             if(e.type != "collapsingheader")
             {
                 if(e.last_treenode_state || e.type == "treepush")
@@ -1073,7 +1073,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 }
             }
 
-            ///collapsingheader does not skip elements until treeend is hit
+            ///collapsingheader does not skip elements until treepop is hit
             if(!e.last_treenode_state && e.type != "collapsingheader")
             {
                 skipping_ui_elements = true;
@@ -1088,7 +1088,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
             buttonbehaviour = true;
         }
 
-        if(e.type == "treeend")
+        if(e.type == "treepop")
         {
             skipping_ui_elements = false;
 
