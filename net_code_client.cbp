@@ -13,8 +13,8 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-g" />
 					<Add option="-Og" />
+					<Add option="-g" />
 					<Add option="-DLOCAL_IP" />
 				</Compiler>
 			</Target>
