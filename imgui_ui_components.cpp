@@ -691,6 +691,11 @@ struct safe_item_stack
     }
 };
 
+static void imgui_pop_style_colour_1()
+{
+    ImGui::PopStyleColor(1);
+}
+
 ///all values from the server are sanitised in some way unless explicitly noted otherwise
 ///that is: randomised salted hashes in the strings to prevent collisions
 ///strings have a capped length
@@ -702,7 +707,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
     ImGui::BeginGroup();
 
     safe_item_stack<ImGui::EndGroup> group_stack;
-    safe_item_stack<[](){ImGui::PopStyleColor(1);}> colour_stack;
+    safe_item_stack<imgui_pop_style_colour_1> colour_stack;
     safe_item_stack<ImGui::PopItemWidth> item_width_stack;
     //safe_item_stack<ImGui::TreePop> tree_stack;
     bool skipping_ui_elements = false;
