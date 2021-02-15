@@ -16,7 +16,7 @@
 CC = emcc
 CXX = em++
 
-EXE = example_emscripten.html
+EXE = index.html
 SOURCES = ../main.cpp ../auto_handlers.cpp ../copy_handler.cpp ../editable_string.cpp ../font_cfg.cpp ../format_cache.cpp ../imgui_ui_components.cpp ../local_commands.cpp ../serialisables.cpp ../steam_api.cpp ../string_helpers.cpp ../tokeniser.cpp ../auth_manager.cpp
 SOURCES += ../deps/imgui.cpp ../deps/imgui_draw.cpp ../deps/imgui_widgets.cpp
 SOURCES += ../deps/examples/imgui_impl_opengl3.cpp ../deps/examples/imgui_impl_sdl.cpp ../deps/examples/imgui_impl_glfw.cpp
