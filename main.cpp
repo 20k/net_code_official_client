@@ -121,6 +121,18 @@ std::string default_up_handling(const std::string& user, const std::string& serv
     return server_msg;
 }
 
+#ifdef __EMSCRIPTEN__
+EM_JS(int, get_window_location_length, (),
+{
+    return window.location.hostname.length + window.location.pathname.length;
+});
+
+EM_JS(void, get_window_location, (char* out, int len),
+{
+    stringToUTF8(window.location.hostname + window.location.pathname, out, len);
+});
+#endif // __EMSCRIPTEN__
+
 std::function<void()> hptr;
 
 void main_loop_helper(void* ptr)
@@ -175,6 +187,22 @@ int main(int argc, char* argv[])
     steamapi s_api;
 
     printf("Pre connect\n");
+
+    #ifdef __EMSCRIPTEN__
+    {
+        int window_location_len = get_window_location_length();
+        std::string location_buf;
+        location_buf.resize(window_location_len + 1);
+        get_window_location(&location_buf[0], window_location_len + 1);
+
+        int cstrlen = strlen(location_buf.c_str());
+        location_buf = std::string(location_buf.begin(), location_buf.begin() + cstrlen);
+
+        connection_ip = location_buf;
+
+        printf("Redirected connection to %s\n", connection_ip.c_str());
+    }
+    #endif // __EMSCRIPTEN__
 
     connection conn;
     #ifndef __EMSCRIPTEN__
