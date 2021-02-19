@@ -702,7 +702,7 @@ static void imgui_pop_style_colour_1()
 ///doubles are not nan, not that json supports that anyway
 ///all values are clamped to sensible ranges so they can be piped directly into imgui
 ///colours are clamped to [0, 1]
-void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, int id, bool is_linear_colour)
+void render_ui_stack(connection_send_data& to_write, realtime_script_run& run, ui_stack& stk, int id, bool is_linear_colour)
 {
     ImGui::BeginGroup();
 
@@ -1480,7 +1480,11 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
                 if(is_clicked || button_behaviour_dirty_arguments_opt.has_value())
                     e.authoritative_until_sequence_id = run.current_sequence_id;
 
-                conn.write(j.dump());
+                write_data dat;
+                dat.id = -1;
+                dat.data = j.dump();
+
+                to_write.write_to_websocket(std::move(dat));
             }
 
             e.was_hovered = is_hovered;
@@ -1521,7 +1525,7 @@ void render_ui_stack(connection& conn, realtime_script_run& run, ui_stack& stk, 
     run.current_sequence_id++;
 }
 
-void realtime_script_manager::render_realtime_windows(connection& conn, int& was_closed_id, font_selector& fonts, auto_handler& auto_handle, bool is_linear_colour)
+void realtime_script_manager::render_realtime_windows(connection_send_data& to_write, int& was_closed_id, font_selector& fonts, auto_handler& auto_handle, bool is_linear_colour)
 {
     was_closed_id = -1;
 
@@ -1583,7 +1587,7 @@ void realtime_script_manager::render_realtime_windows(connection& conn, int& was
             if(run.is_square_font)
                 ImGui::PushFont(fonts.get_square_font());
 
-            render_ui_stack(conn, run, run.stk, i.first, is_linear_colour);
+            render_ui_stack(to_write, run, run.stk, i.first, is_linear_colour);
 
             render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, run.cache);
 
@@ -1615,7 +1619,11 @@ void realtime_script_manager::render_realtime_windows(connection& conn, int& was
                 data["width"] = (dim.x() / cdim.x()) - 5;
                 data["height"] = dim.y() / cdim.y();
 
-                conn.write(data.dump());
+                write_data dat;
+                dat.id = -1;
+                dat.data = data.dump();
+
+                to_write.write_to_websocket(std::move(dat));
 
                 run.last_resize.restart();
                 run.should_send_new_size = false;

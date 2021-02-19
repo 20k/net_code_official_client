@@ -3,7 +3,7 @@
 
 #include <string>
 
-struct connection;
+struct connection_send_data;
 struct steamapi;
 struct terminal_manager;
 
@@ -11,8 +11,8 @@ struct auth_manager
 {
     bool am_authenticated = false;
 
-    void check(steamapi& s_api, connection& conn, const std::string& current_user);
-    void display(terminal_manager& term, steamapi& s_api, connection& conn, const std::string& current_user);
+    void check(steamapi& s_api, connection_send_data& to_write, const std::string& current_user);
+    void display(terminal_manager& term, steamapi& s_api, connection_send_data& to_write, const std::string& current_user);
 
 private:
     bool should_display_dialogue = false;

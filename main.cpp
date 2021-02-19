@@ -211,12 +211,17 @@ int main(int argc, char* argv[])
     conn.connect(connection_ip, connection_port, connection_type::EMSCRIPTEN_AUTOMATIC);
     #endif
 
+    connection_send_data to_write(conn.get_settings());
+    connection_received_data to_read;
+
     printf("Post Connect\n");
 
     render_settings sett;
 
     auth_manager auth_manage;
-    auth_manage.check(s_api, conn, "");
+
+    auth_manage.check(s_api, to_write, "");
+    conn.send_bulk(to_write);
 
     bool has_file = false;
 
@@ -411,6 +416,8 @@ int main(int argc, char* argv[])
     hptr = [&]()
     #endif
     {
+        conn.receive_bulk(to_read);
+
         file::manual_fs_sync manual_sync;
 
         bool visual_events = false;
@@ -425,7 +432,7 @@ int main(int argc, char* argv[])
 
             connection_clock.restart();
 
-            auth_manage.check(s_api, conn, current_user);
+            auth_manage.check(s_api, to_write, current_user);
 
             if(!printed_connecting)
                 terminals.main_terminal.add_text("Connecting...", terminals.auto_handle);
@@ -529,7 +536,7 @@ int main(int argc, char* argv[])
         //any_events = any_events || has_mouse_delta;
         visual_events = visual_events || (io.MouseWheel != 0 || io.MouseWheelH != 0);
         visual_events = visual_events || (io.DisplaySize.x != last_display_size.x || io.DisplaySize.y != last_display_size.y);
-        visual_events = visual_events || conn.has_read();
+        visual_events = visual_events || to_read.websocket_read_queue[-1].size() > 0 || to_read.new_clients.size() > 0;
         //any_events = any_events || (last_can_suppress_inputs != can_suppress_inputs);
         //any_events = any_events || (ImGui::IsAnyItemActive() || ImGui::IsAnyItemHovered());
 
@@ -648,7 +655,11 @@ int main(int argc, char* argv[])
                                 data["type"] = "generic_server_command";
                                 data["data"] = fstr;
 
-                                conn.write(data.dump());
+                                write_data dat;
+                                dat.id = -1;
+                                dat.data = data.dump();
+
+                                to_write.write_to_websocket(std::move(dat));
                             }
                         }
 
@@ -670,7 +681,11 @@ int main(int argc, char* argv[])
                     data["type"] = "key_auth";
                     data["data"] = drop.data;
 
-                    conn.write(data.dump());
+                    write_data dat;
+                    dat.id = -1;
+                    dat.data = data.dump();
+
+                    to_write.write_to_websocket(std::move(dat));
 
                     bool should_save = !file::exists("hex_key.key");
 
@@ -915,7 +930,11 @@ int main(int argc, char* argv[])
                 data["pressed_keys"] = on_pressed;
                 data["released_keys"] = on_released;
 
-                conn.write(data.dump());
+                write_data dat;
+                dat.id = -1;
+                dat.data = data.dump();
+
+                to_write.write_to_websocket(std::move(dat));
             }
 
             if(realtime_scripts.get_id_of_focused_realtime_window() != -1 && mouse_clock.get_elapsed_time_s() * 1000 >= mouse_send_time_ms)
@@ -947,7 +966,11 @@ int main(int argc, char* argv[])
                     data["mousewheel_x"] = 0.f;
                     data["mousewheel_y"] = script_mousewheel_delta;
 
-                    conn.write(data.dump());
+                    write_data dat;
+                    dat.id = -1;
+                    dat.data = data.dump();
+
+                    to_write.write_to_websocket(std::move(dat));
                 }
 
                 script_mousewheel_delta = 0;
@@ -975,7 +998,7 @@ int main(int argc, char* argv[])
 
             ImGui::PushFont(font_select.get_base_font());
 
-            auth_manage.display(terminals, s_api, conn, current_user);
+            auth_manage.display(terminals, s_api, to_write, current_user);
 
             font_select.render(window);
 
@@ -1043,7 +1066,11 @@ int main(int argc, char* argv[])
                             data["tag"] = terminals.get_focused_terminal_id();
                         }
 
-                        conn.write(data.dump());
+                        write_data dat;
+                        dat.id = -1;
+                        dat.data = data.dump();
+
+                        to_write.write_to_websocket(std::move(dat));
                     }
                 }
                 else
@@ -1148,7 +1175,11 @@ int main(int argc, char* argv[])
                                 data["respond"] = 1;
                                 data["data"] = final_command;
 
-                                conn.write(data.dump());
+                                write_data dat;
+                                dat.id = -1;
+                                dat.data = data.dump();
+
+                                to_write.write_to_websocket(std::move(dat));
                             }
                         }
                     }
@@ -1164,7 +1195,11 @@ int main(int argc, char* argv[])
                             data["type"] = "client_chat";
                             data["data"] = "#hs.msg.send({channel:\"" + focused_thread.value()->name + "\", msg:\"" + escaped_string + "\"})";
 
-                            conn.write(data.dump());
+                            write_data dat;
+                            dat.id = -1;
+                            dat.data = data.dump();
+
+                            to_write.write_to_websocket(std::move(dat));
                         }
                     }
 
@@ -1219,32 +1254,24 @@ int main(int argc, char* argv[])
                 get_global_copy_handler()->on_hold_lclick(cursor_pos);
             }
 
-            while(conn.has_read())
+            for(write_data& dat : to_read.websocket_read_queue[-1])
             {
-                write_data dat = conn.read_from();
-
-                std::string fdata = dat.data;
-
-                conn.pop_read(dat.id);
-
                 #ifdef TESTING
-                api_calls.push_back(fdata);
+                api_calls.push_back(dat.data);
                 #endif // TESTING
 
-                ///this is temporary before the other end of the api gets changed
                 nlohmann::json data;
 
                 try
                 {
-                    data = nlohmann::json::parse(fdata);
+                    data = nlohmann::json::parse(dat.data);
                 }
                 catch(...)
                 {
-                    std::cout << "Error Data Str " << fdata << std::endl;
+                    std::cout << "Error Data Str " << dat.data << std::endl;
                 }
 
                 process_text_from_server(terminals, auth_manage, current_user, data, chat_win, font_select, realtime_scripts);
-                //term.add_text_from_server(auth_manage, current_user, data, chat_win, font_select);
             }
 
             if(write_clock.get_elapsed_time_s() > 5 && (!terminals.all_cache_valid() || chat_win.any_cache_invalid()))
@@ -1273,7 +1300,11 @@ int main(int argc, char* argv[])
                     data["type"] = "autocomplete_request";
                     data["data"] = str;
 
-                    conn.write(data.dump());
+                    write_data dat;
+                    dat.id = -1;
+                    dat.data = data.dump();
+
+                    to_write.write_to_websocket(std::move(dat));
 
                     break;
                 }
@@ -1288,7 +1319,11 @@ int main(int argc, char* argv[])
                 data["type"] = "client_terminate_scripts";
                 data["id"] = -1;
 
-                conn.write(data.dump());
+                write_data dat;
+                dat.id = -1;
+                dat.data = data.dump();
+
+                to_write.write_to_websocket(std::move(dat));
             }
 
             if(has_settings_window)
@@ -1330,7 +1365,7 @@ int main(int argc, char* argv[])
             vec2i window_dim = window.get_window_size();
 
             //test_imgui_term.render(window);
-            realtime_scripts.render_realtime_windows(conn, was_closed_id, font_select, terminals.auto_handle, window.get_render_settings().is_srgb);
+            realtime_scripts.render_realtime_windows(to_write, was_closed_id, font_select, terminals.auto_handle, window.get_render_settings().is_srgb);
             chat_win.render(should_coordinate_focus);
             terminals.render(window, {window_dim.x(), window_dim.y()}, should_coordinate_focus);
 
@@ -1342,7 +1377,11 @@ int main(int argc, char* argv[])
                 data["type"] = "client_terminate_scripts";
                 data["id"] = was_closed_id;
 
-                conn.write(data.dump());
+                write_data dat;
+                dat.id = -1;
+                dat.data = data.dump();
+
+                to_write.write_to_websocket(std::move(dat));
             }
 
             if(terminals.auto_handle.tab_pressed)
@@ -1408,6 +1447,8 @@ int main(int argc, char* argv[])
             //window.display_last_frame();
         }
         //#endif
+
+        conn.send_bulk(to_write);
     };
 
     #ifdef __EMSCRIPTEN__

@@ -80,14 +80,14 @@ struct realtime_script_run
     format_cache_2 cache;
 };
 
-struct connection;
+struct connection_send_data;
 struct font_selector;
 
 struct realtime_script_manager
 {
     std::map<int, realtime_script_run> windows;
 
-    void render_realtime_windows(connection& conn, int& was_closed_id, font_selector& fonts, auto_handler& auto_handle, bool is_linear_colour);
+    void render_realtime_windows(connection_send_data& to_write, int& was_closed_id, font_selector& fonts, auto_handler& auto_handle, bool is_linear_colour);
 
     ///returns -1 on none
     int get_id_of_focused_realtime_window();

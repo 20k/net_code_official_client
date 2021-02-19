@@ -8,8 +8,9 @@
 #include "string_helpers.hpp"
 #include <imgui/misc/cpp/imgui_stdlib.h>
 #include "imgui_ui_components.hpp"
+#include <networking/networking.hpp>
 
-void auth_manager::check(steamapi& s_api, connection& conn, const std::string& current_user)
+void auth_manager::check(steamapi& s_api, connection_send_data& to_write, const std::string& current_user)
 {
     if(am_authenticated)
     {
@@ -53,7 +54,11 @@ void auth_manager::check(steamapi& s_api, connection& conn, const std::string& c
         data["type"] = "steam_auth";
         data["data"] = binary_to_hex(etoken);
 
-        conn.write(data.dump());
+        write_data dat;
+        dat.id = -1;
+        dat.data = data.dump();
+
+        to_write.write_to_websocket(std::move(dat));
 
         printf("Postwrite\n");
     }
@@ -66,7 +71,11 @@ void auth_manager::check(steamapi& s_api, connection& conn, const std::string& c
         data["type"] = "key_auth";
         data["data"] = file::read("hex_key.key", file::mode::BINARY);
 
-        conn.write(data.dump());
+        write_data dat;
+        dat.id = -1;
+        dat.data = data.dump();
+
+        to_write.write_to_websocket(std::move(dat));
     }
     else
     {
@@ -79,11 +88,15 @@ void auth_manager::check(steamapi& s_api, connection& conn, const std::string& c
         data["type"] = "generic_server_command";
         data["data"] = "user " + current_user;
 
-        conn.write(data.dump());
+        write_data dat;
+        dat.id = -1;
+        dat.data = data.dump();
+
+        to_write.write_to_websocket(std::move(dat));
     }
 }
 
-void auth_manager::display(terminal_manager& terminals, steamapi& s_api, connection& conn, const std::string& current_user)
+void auth_manager::display(terminal_manager& terminals, steamapi& s_api, connection_send_data& to_write, const std::string& current_user)
 {
     if(am_authenticated)
         return;
@@ -111,7 +124,7 @@ void auth_manager::display(terminal_manager& terminals, steamapi& s_api, connect
         if(ImGui::Button("Enter"))
         {
             file::write("hex_key.key", auth_dialogue_text, file::mode::BINARY);
-            check(s_api, conn, current_user);
+            check(s_api, to_write, current_user);
 
             if(should_display_dialogue)
             {
