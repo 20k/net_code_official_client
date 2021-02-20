@@ -131,6 +131,16 @@ EM_JS(void, get_window_location, (char* out, int len),
 {
     stringToUTF8(window.location.hostname + window.location.pathname, out, len);
 });
+
+EM_JS(bool, is_window_visible, (),
+{
+    return !document.hidden;
+});
+#else
+bool is_window_visible()
+{
+    return true;
+}
 #endif // __EMSCRIPTEN__
 
 std::function<void()> hptr;
@@ -208,6 +218,7 @@ int main(int argc, char* argv[])
     #ifndef __EMSCRIPTEN__
     conn.connect(connection_ip, connection_port, connection_type::SSL, "netcodegame.com");
     #else
+    conn.set_client_sleep_interval(8);
     conn.connect(connection_ip, connection_port, connection_type::EMSCRIPTEN_AUTOMATIC);
     #endif
 
@@ -417,6 +428,11 @@ int main(int argc, char* argv[])
     #endif
     {
         conn.receive_bulk(to_read);
+
+        #ifdef __EMSCRIPTEN__
+        int sleep_time = is_window_visible() ? 8 : 1024;
+        conn.set_client_sleep_interval(sleep_time);
+        #endif // __EMSCRIPTEN__
 
         file::manual_fs_sync manual_sync;
 
