@@ -430,7 +430,7 @@ int main(int argc, char* argv[])
         conn.receive_bulk(to_read);
 
         #ifdef __EMSCRIPTEN__
-        int sleep_time = is_window_visible() ? 8 : 1024;
+        int sleep_time = is_window_visible() ? 8 : 64;
         conn.set_client_sleep_interval(sleep_time);
         #endif // __EMSCRIPTEN__
 
