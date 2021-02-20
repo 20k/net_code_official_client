@@ -101,39 +101,58 @@ void auth_manager::display(terminal_manager& terminals, steamapi& s_api, connect
     if(am_authenticated)
         return;
 
-    ImGui::Begin("No Auth Found", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
 
-    ImGui::Text("Input hex_key.key");
+    ImGui::SetNextWindowPos(ImVec2(viewport->Size.x * 0.5f + viewport->Pos.x, viewport->Size.y * 0.5f + viewport->Pos.y), ImGuiCond_Always, ImVec2(0.5f,0.5f));
+    ImGui::SetNextWindowFocus();
 
-    ImGui::SameLine();
-
-    ImGui::PushItemWidth(16 * char_inf::cwidth + char_inf::cwidth * 2);
-
-    ImGui::InputText(" ###inputtexto", &auth_dialogue_text);
-
-    ImGui::PopItemWidth();
-
-    //ImGui::SameLine();
-
-    if(auth_dialogue_text.size() != 256)
+    if(ImGui::Begin("No Auth Found", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse))
     {
+        ImGui::Text("Drag and drop a valid *.key file into the window");
 
-    }
-    else
-    {
-        if(ImGui::Button("Enter"))
+        ImGui::Text("Input hex_key.key");
+
+        ImGui::SameLine();
+
+        ImGui::PushItemWidth(16 * char_inf::cwidth + char_inf::cwidth * 2);
+
+        ImGui::InputText(" ###inputtexto", &auth_dialogue_text);
+
+        ImGui::PopItemWidth();
+
+        //ImGui::SameLine();
+
+        if(auth_dialogue_text.size() != 256)
         {
-            file::write("hex_key.key", auth_dialogue_text, file::mode::BINARY);
-            check(s_api, to_write, current_user);
 
-            if(should_display_dialogue)
+        }
+        else
+        {
+            if(ImGui::Button("Enter"))
             {
-                terminals.main_terminal.add_text("Something went wrong, try again", terminals.auto_handle);
+                file::write("hex_key.key", auth_dialogue_text, file::mode::BINARY);
+                check(s_api, to_write, current_user);
+
+                if(should_display_dialogue)
+                {
+                    terminals.main_terminal.add_text("Something went wrong, try again", terminals.auto_handle);
+                }
             }
         }
-    }
 
-    ImGui::Text("Or drag and drop a valid *.key file into the window");
+        if(ImGui::Button("Login as guest"))
+        {
+            nlohmann::json data;
+            data["type"] = "generic_server_command";
+            data["data"] = "#make_free_auth";
+
+            write_data dat;
+            dat.id = -1;
+            dat.data = data.dump();
+
+            to_write.write_to_websocket(std::move(dat));
+        }
+    }
 
     ImGui::End();
 }
