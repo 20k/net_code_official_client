@@ -3,6 +3,7 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
 #include <imgui/misc/freetype/imgui_freetype.h>
+#include <imgui/backends/imgui_impl_opengl3.h>
 
 #include "string_helpers.hpp"
 #include <tinydir/tinydir.h>
@@ -12,8 +13,7 @@
 
 font_selector::font_selector()
 {
-    fonts_flags = ImGuiFreeType::ForceAutoHint;
-    //fonts_flags = ImGuiFreeType::ForceAutoHint | ImGuiFreeType::MonoHinting;
+    fonts_flags = ImGuiFreeTypeBuilderFlags_ForceAutoHint | ImGuiFreeTypeBuilderFlags_LCD | ImGuiFreeTypeBuilderFlags_FILTER_DEFAULT | ImGuiFreeTypeBuilderFlags_LoadColor;
 }
 
 ImFont* font_selector::get_base_font()
@@ -97,6 +97,9 @@ void font_selector::reset_default_fonts(float editor_font_size)
     ImFontConfig font_cfg;
     font_cfg.GlyphExtraSpacing = ImVec2(char_inf::extra_glyph_spacing, 0);
 
+    atlas->FontBuilderFlags = fonts_flags;
+    font_cfg.FontBuilderFlags = fonts_flags;
+
     ImGuiIO& io = ImGui::GetIO();
 
     io.Fonts->Clear();
@@ -131,7 +134,10 @@ void font_selector::reset_default_fonts(float editor_font_size)
 
     wants_rebuild = true;
 
-    ImGuiFreeType::BuildFontAtlas(atlas, fonts_flags, subpixel_flags);
+    ImGui::GetIO().Fonts->Build();
+
+    unsigned char* out_pix = nullptr;
+    ImGui::GetIO().Fonts->GetTexDataAsRGBA32(&out_pix, nullptr, nullptr, nullptr);
 }
 
 // Call _BEFORE_ NewFrame()
@@ -184,32 +190,10 @@ bool font_selector::update_rebuild(float editor_font_size)
     if(!wants_rebuild)
         return false;
 
-    /*ImGuiFreeType::BuildFontAtlas(ImGui::GetIO().Fonts, fonts_flags, subpixel_flags);
-    return true;*/
-
     reset_default_fonts(current_base_font_size);
     wants_rebuild = false;
 
     return true;
-}
-
-bool handle_checkbox(const std::vector<std::string>& in, unsigned int& storage, const std::vector<int>& to_set)
-{
-    bool any = false;
-
-    for(int i=0; i < (int)in.size(); i++)
-    {
-        bool is_set = to_set[i] == (int)storage;
-
-        any |= ImGui::Checkbox(in[i].c_str(), &is_set);
-
-        if(is_set)
-        {
-            storage = to_set[i];
-        }
-    }
-
-    return any;
 }
 
 // Call to draw interface
@@ -240,25 +224,21 @@ void font_selector::render(render_window& window)
 
     //wants_rebuild |= ImGui::DragFloat("Multiply", &fonts_multiply, 0.001f, 0.0f, 2.0f);
 
-    wants_rebuild |= ImGui::CheckboxFlags("NoHinting",     &fonts_flags, ImGuiFreeType::NoHinting);
-    wants_rebuild |= ImGui::CheckboxFlags("NoAutoHint",    &fonts_flags, ImGuiFreeType::NoAutoHint);
-    wants_rebuild |= ImGui::CheckboxFlags("ForceAutoHint", &fonts_flags, ImGuiFreeType::ForceAutoHint);
-    wants_rebuild |= ImGui::CheckboxFlags("LightHinting",  &fonts_flags, ImGuiFreeType::LightHinting);
-    wants_rebuild |= ImGui::CheckboxFlags("MonoHinting",   &fonts_flags, ImGuiFreeType::MonoHinting);
-    wants_rebuild |= ImGui::CheckboxFlags("Bold",          &fonts_flags, ImGuiFreeType::Bold);
-    wants_rebuild |= ImGui::CheckboxFlags("Oblique",       &fonts_flags, ImGuiFreeType::Oblique);
+    wants_rebuild |= ImGui::CheckboxFlags("NoHinting",     &fonts_flags, ImGuiFreeTypeBuilderFlags_NoHinting);
+    wants_rebuild |= ImGui::CheckboxFlags("NoAutoHint",    &fonts_flags, ImGuiFreeTypeBuilderFlags_NoAutoHint);
+    wants_rebuild |= ImGui::CheckboxFlags("ForceAutoHint", &fonts_flags, ImGuiFreeTypeBuilderFlags_ForceAutoHint);
+    wants_rebuild |= ImGui::CheckboxFlags("LightHinting",  &fonts_flags, ImGuiFreeTypeBuilderFlags_LightHinting);
+    wants_rebuild |= ImGui::CheckboxFlags("MonoHinting",   &fonts_flags, ImGuiFreeTypeBuilderFlags_MonoHinting);
+    wants_rebuild |= ImGui::CheckboxFlags("Bold",          &fonts_flags, ImGuiFreeTypeBuilderFlags_Bold);
+    wants_rebuild |= ImGui::CheckboxFlags("Oblique",       &fonts_flags, ImGuiFreeTypeBuilderFlags_Oblique);
 
     ImGui::NewLine();
 
-    /*wants_rebuild |= ImGui::CheckboxFlags("Default Filtering", &subpixel_flags, ImGuiFreeType::DEFAULT);
-    wants_rebuild |= ImGui::CheckboxFlags("Legacy Filtering", &subpixel_flags, ImGuiFreeType::LEGACY);
-    wants_rebuild |= ImGui::CheckboxFlags("Light Filtering", &subpixel_flags, ImGuiFreeType::LIGHT);
-    wants_rebuild |= ImGui::CheckboxFlags("No Filtering", &subpixel_flags, ImGuiFreeType::NONE);
-    wants_rebuild |= ImGui::CheckboxFlags("Disable subpixel AA", &subpixel_flags, ImGuiFreeType::DISABLE_SUBPIXEL_AA);*/
-
-    wants_rebuild |= handle_checkbox({"Default Filtering", "Legacy Filtering", "Light Filtering", "No Filtering", "Disable subpixel AA"},
-                                    subpixel_flags,
-                                    {ImGuiFreeType::DEFAULT, ImGuiFreeType::LEGACY, ImGuiFreeType::LIGHT, ImGuiFreeType::NONE, ImGuiFreeType::DISABLE_SUBPIXEL_AA});
+    wants_rebuild |= ImGui::CheckboxFlags("Default Filtering", &fonts_flags, ImGuiFreeTypeBuilderFlags_FILTER_DEFAULT);
+    wants_rebuild |= ImGui::CheckboxFlags("Legacy Filtering", &fonts_flags, ImGuiFreeTypeBuilderFlags_FILTER_LEGACY);
+    wants_rebuild |= ImGui::CheckboxFlags("Light Filtering", &fonts_flags, ImGuiFreeTypeBuilderFlags_FILTER_LIGHT);
+    wants_rebuild |= ImGui::CheckboxFlags("No Filtering", &fonts_flags, ImGuiFreeTypeBuilderFlags_FILTER_NONE);
+    wants_rebuild |= ImGui::CheckboxFlags("Disable subpixel AA", &fonts_flags, ImGuiFreeTypeBuilderFlags_NO_SUBPIXEL_AA);
 
     ImGui::NewLine();
 

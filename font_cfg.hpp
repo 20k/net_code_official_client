@@ -18,7 +18,6 @@ struct font_selector : serialisable
     //unsigned int fonts_flags = ImGuiFreeType::ForceAutoHint | ImGuiFreeType::MonoHinting;
 
     unsigned int fonts_flags = 0;
-    unsigned int subpixel_flags = 1;
 
     font_selector();
 
@@ -51,7 +50,6 @@ struct font_selector : serialisable
     {
         DO_SERIALISE(current_base_font_size);
         DO_SERIALISE(fonts_flags);
-        DO_SERIALISE(subpixel_flags);
         DO_SERIALISE(current_font_name);
     }
 };

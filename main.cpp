@@ -2,7 +2,7 @@
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
-#include <imgui/examples/imgui_impl_opengl3.h>
+#include <imgui/backends/imgui_impl_opengl3.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 //#include "window_context.hpp"
@@ -321,7 +321,7 @@ int main(int argc, char* argv[])
     std::string terminal_file = "terminal_v7.txt";
     std::string chat_file = "chat_v6.txt";
     //std::string settings_file = "text_sett_v1.txt";
-    std::string font_file = "font_sett_v1.txt";
+    std::string font_file = "font_sett_v2.txt";
     std::string notepad_file = "notepad.txt";
 
     try
