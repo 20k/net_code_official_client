@@ -49,6 +49,10 @@
 #include <misc/cpp/imgui_stdlib.h>
 #include <toolkit/fs_helpers.hpp>
 
+#ifdef CUSTOM_PROFILING
+#include "custom_profile.hpp"
+#endif // CUSTOM_PROFILING
+
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #include <emscripten/html5.h>
@@ -221,6 +225,10 @@ int main(int argc, char* argv[])
     conn.set_client_sleep_interval(8);
     conn.connect(connection_ip, connection_port, connection_type::EMSCRIPTEN_AUTOMATIC);
     #endif
+
+    #ifdef CUSTOM_PROFILING
+    profiling::disable_thread(conn.thrd.back().get_id());
+    #endif // CUSTOM_PROFILING
 
     connection_send_data to_write(conn.get_settings());
     connection_received_data to_read;
@@ -445,6 +453,10 @@ int main(int argc, char* argv[])
             #else
             conn.connect(connection_ip, connection_port, connection_type::EMSCRIPTEN_AUTOMATIC);
             #endif
+
+            #ifdef CUSTOM_PROFILING
+            profiling::disable_thread(conn.thrd.back().get_id());
+            #endif // CUSTOM_PROFILING
 
             connection_clock.restart();
 
