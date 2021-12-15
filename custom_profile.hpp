@@ -1,7 +1,12 @@
 #ifndef CUSTOM_PROFILE_HPP_INCLUDED
 #define CUSTOM_PROFILE_HPP_INCLUDED
 
-//void __cyg_profile_func_enter (void *this_fn, void *call_site);
-//void __cyg_profile_func_exit  (void *this_fn, void *call_site);
+#include <thread>
+
+namespace profiling
+{
+    void disable_thread() __attribute__((no_instrument_function));
+    void disable_thread(std::thread::id id) __attribute__((no_instrument_function));
+}
 
 #endif // CUSTOM_PROFILE_HPP_INCLUDED
