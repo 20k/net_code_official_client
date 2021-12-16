@@ -87,13 +87,16 @@ struct profile_data
         longest_times[max_values] = in;
         std::sort(longest_times.begin(), longest_times.end(), std::greater<double>());
 
-        avg = (avg + in)/2.;
+        if(avg == 0)
+            avg = in;
+        else
+            avg = (avg + in)/2.;
     }
 };
 
 constexpr int max_stack_depth = 4096;
 
-thread_local std::map<std::pair<std::thread::id, void*>, profile_data> data;
+thread_local std::map<void*, profile_data> data;
 thread_local std::array<steady_timer, max_stack_depth> timers;
 
 extern "C"
@@ -147,7 +150,7 @@ extern "C"
 
         assert(stack_count >= 0 && stack_count < max_stack_depth);
 
-        std::pair<std::thread::id, void*> my_key = {std::this_thread::get_id(), this_fn};
+        void* my_key = this_fn;
 
         auto it = data.find(my_key);
 
@@ -171,4 +174,44 @@ extern "C"
 
         //std::cout << "ELAPSED " << frame.name  << " at " << frame.file << ":" << frame.line << " TIME " << elapsed.get_elapsed_time_s() << std::endl;
     }
+}
+
+std::string profiling::format_profiling_data()
+{
+    stack_stopper stop;
+
+    std::string val;
+
+    std::vector<profile_data> sorted_profile_data;
+
+    for(auto& [func, pdata] : data)
+    {
+        sorted_profile_data.push_back(pdata);
+    }
+
+    std::sort(sorted_profile_data.begin(), sorted_profile_data.end(), [](profile_data& d1, profile_data& d2)
+    {
+        return d1.avg > d2.avg;
+    });
+
+    for(profile_data& dat : sorted_profile_data)
+    {
+        val += "\n------\n";
+
+        val += dat.name + "\n";
+
+        val += "TOP 5:\n";
+
+        for(int i=0; i < dat.max_values; i++)
+        {
+            if(dat.longest_times[i] == 0)
+                continue;
+
+            val += std::to_string(dat.longest_times[i]) + "\n";
+        }
+
+        val += "AVG: " + std::to_string(dat.avg) + "\n------\n";
+    }
+
+    return val;
 }

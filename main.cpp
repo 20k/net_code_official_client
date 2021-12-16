@@ -1483,6 +1483,14 @@ int main(int argc, char* argv[])
     emscripten_set_main_loop_arg((em_arg_callback_func)main_loop_helper, nullptr, 0, 1);
     #endif
 
+    #ifdef CUSTOM_PROFILING
+    std::string str = profiling::format_profiling_data();
+
+    std::cout << str << std::endl;
+
+    file::write("prof.txt", str, file::mode::TEXT);
+    #endif // CUSTOM_PROFILING
+
     /*#ifdef __EMSCRIPTEN__
     emscripten::val::global("window").call<void>(
     "handle_download",
