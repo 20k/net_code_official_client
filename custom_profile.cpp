@@ -76,6 +76,7 @@ void profiling::disable_thread(std::thread::id id)
 struct profile_data
 {
     std::string name;
+    std::string display_name;
 
     static constexpr int max_values = 5;
 
@@ -160,7 +161,8 @@ extern "C"
 
             profile_data& dat = data[my_key];
 
-            dat.name = frame.name + " " + frame.file + ":" + std::to_string(frame.line);
+            dat.name = frame.name;
+            dat.display_name = frame.name + " " + frame.file + ":" + std::to_string(frame.line);
 
             it = data.find(my_key);
         }
@@ -174,6 +176,46 @@ extern "C"
 
         //std::cout << "ELAPSED " << frame.name  << " at " << frame.file << ":" << frame.line << " TIME " << elapsed.get_elapsed_time_s() << std::endl;
     }
+}
+
+std::string format_single(const profile_data& dat)
+{
+    std::string val;
+
+    val += "\n------\n";
+
+    val += dat.display_name + "\n";
+
+    val += "TOP 5:\n";
+
+    for(int i=0; i < dat.max_values; i++)
+    {
+        if(dat.longest_times[i] == 0)
+            continue;
+
+        val += std::to_string(dat.longest_times[i]) + "\n";
+    }
+
+    val += "AVG: " + std::to_string(dat.avg) + "\n------\n";
+
+    return val;
+}
+
+std::string profiling::format_profiling_data(const std::string& function_name)
+{
+    stack_stopper stop;
+
+    for(auto& [func, pdata] : data)
+    {
+        profile_data& dat = pdata;
+
+        if(dat.name != function_name)
+            continue;
+
+        return format_single(dat);
+    }
+
+    return "";
 }
 
 std::string profiling::format_profiling_data()
@@ -196,21 +238,7 @@ std::string profiling::format_profiling_data()
 
     for(profile_data& dat : sorted_profile_data)
     {
-        val += "\n------\n";
-
-        val += dat.name + "\n";
-
-        val += "TOP 5:\n";
-
-        for(int i=0; i < dat.max_values; i++)
-        {
-            if(dat.longest_times[i] == 0)
-                continue;
-
-            val += std::to_string(dat.longest_times[i]) + "\n";
-        }
-
-        val += "AVG: " + std::to_string(dat.avg) + "\n------\n";
+        val += format_single(dat);
     }
 
     return val;

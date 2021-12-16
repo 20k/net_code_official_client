@@ -86,61 +86,53 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
     vec3f key_col = {243, 166, 3};
     //vec3f key_col = srgb_to_lin({243, 166, 3});
 
-    for(int idx=0; idx < (int)in.size(); idx++)
+    std::vector<token_info> tokens = tokenise_general(in);
+
+    for(token_info& i : tokens)
     {
-        std::vector<token_info> tokens = tokenise_general(in);
-
-        for(token_info& i : tokens)
+        if(valid_colourings.find(i.type) != valid_colourings.end())
         {
-            if(valid_colourings.find(i.type) != valid_colourings.end())
-            {
-                colour_interop(in, i.start_pos, i.end_pos, cols[i.str]);
-            }
-            else if(i.type == token::VALUE && (i.subtype == token::STRING || i.subtype == token::NUMBER || i.subtype == token::BOOLEAN))
-            {
-                if(use_autocolour || i.subtype == token::NUMBER || i.subtype == token::BOOLEAN)
-                    colour_interop(in, i.start_pos, i.end_pos, value_col);
-            }
-            else if(use_autocolour && i.type == token::VALUE && i.subtype == token::GENERIC && use_autocolour)
-            {
-                for(auto& ss : generic_keywords)
-                {
-                    if(ss.first == i.str)
-                    {
-                        colour_interop(in, i.start_pos, i.end_pos, ss.second);
-                        break;
-                    }
-                }
-            }
-            else if(i.type == token::KEY)
-            {
-                colour_interop(in, i.start_pos, i.end_pos, key_col);
-            }
+            colour_interop(in, i.start_pos, i.end_pos, cols[i.str]);
         }
-
-        if(parse_for_autocompletes)
+        else if(i.type == token::VALUE && (i.subtype == token::STRING || i.subtype == token::NUMBER || i.subtype == token::BOOLEAN))
         {
-            for(int kk=0; kk < (int)tokens.size() - 3; kk++)
+            if(use_autocolour || i.subtype == token::NUMBER || i.subtype == token::BOOLEAN)
+                colour_interop(in, i.start_pos, i.end_pos, value_col);
+        }
+        else if(use_autocolour && i.type == token::VALUE && i.subtype == token::GENERIC && use_autocolour)
+        {
+            for(auto& ss : generic_keywords)
             {
-                if(tokens[kk].type == token::HOST_NAME && tokens[kk+1].type == token::DOT && tokens[kk+2].type == token::EXT_NAME)
+                if(ss.first == i.str)
                 {
-                    std::string str = tokens[kk].str + "." + tokens[kk+2].str;
-
-                    bool exists = found_args.find(str) != found_args.end();
-
-                    if(str.size() != 0 && !exists)
-                    {
-                        //std::cout << "fauto " << str << std::endl;
-
-                        found_unprocessed_autocompletes.push_back(str);
-                    }
+                    colour_interop(in, i.start_pos, i.end_pos, ss.second);
+                    break;
                 }
             }
         }
-
-        for(auto& kk : tokens)
+        else if(i.type == token::KEY)
         {
-            idx += kk.str.size();
+            colour_interop(in, i.start_pos, i.end_pos, key_col);
+        }
+    }
+
+    if(parse_for_autocompletes)
+    {
+        for(int kk=0; kk < (int)tokens.size() - 3; kk++)
+        {
+            if(tokens[kk].type == token::HOST_NAME && tokens[kk+1].type == token::DOT && tokens[kk+2].type == token::EXT_NAME)
+            {
+                std::string str = tokens[kk].str + "." + tokens[kk+2].str;
+
+                bool exists = found_args.find(str) != found_args.end();
+
+                if(str.size() != 0 && !exists)
+                {
+                    //std::cout << "fauto " << str << std::endl;
+
+                    found_unprocessed_autocompletes.push_back(str);
+                }
+            }
         }
     }
 }

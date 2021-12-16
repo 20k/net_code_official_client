@@ -1484,6 +1484,8 @@ int main(int argc, char* argv[])
     #endif
 
     #ifdef CUSTOM_PROFILING
+    std::cout << "TARGETED " << profiling::format_profiling_data("string_to_interop") << std::endl;
+
     std::string str = profiling::format_profiling_data();
 
     std::cout << str << std::endl;
