@@ -171,6 +171,7 @@
 					<Add option="-std=c++17" />
 					<Add option="-Wl,-rpath=./" />
 					<Add option="-DEXTERN_IP" />
+					<Add option="-DNO_SERIALISE_RATELIMIT" />
 					<Add directory="/usr/include/freetype2" />
 					<Add directory="/usr/include/SDL2" />
 				</Compiler>
@@ -233,6 +234,7 @@
 					<Add option="-DLOCAL_IP" />
 					<Add option="-DBOOST_ASIO_HAS_STD_INVOKE_RESULT" />
 					<Add option="-DCUSTOM_PROFILING" />
+					<Add option="-DNO_SERIALISE_RATELIMIT" />
 				</Compiler>
 				<Linker>
 					<Add option="-lmingw32" />
@@ -309,6 +311,7 @@
 			<Add option="-DNO_OPENCL" />
 			<Add option="-DSDL_MAIN_HANDLED" />
 			<Add option="-DIMGUI_ENABLE_FREETYPE" />
+			<Add option="-DNO_SERIALISE_RATELIMIT" />
 			<Add directory="deps" />
 			<Add directory="deps/SFML/include" />
 			<Add directory="deps/freetype/include/freetype" />
@@ -404,6 +407,7 @@
 		<Unit filename="deps/networking/serialisable.cpp" />
 		<Unit filename="deps/networking/serialisable.hpp" />
 		<Unit filename="deps/networking/serialisable_fwd.hpp" />
+		<Unit filename="deps/networking/serialisable_msgpack_fwd.hpp" />
 		<Unit filename="deps/toolkit/base_serialisables.cpp" />
 		<Unit filename="deps/toolkit/base_serialisables.hpp" />
 		<Unit filename="deps/toolkit/clipboard.cpp" />
