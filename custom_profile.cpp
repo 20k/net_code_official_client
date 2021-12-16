@@ -82,6 +82,7 @@ struct profile_data
 
     std::array<double, max_values + 1> longest_times;
     double avg = 0;
+    double total = 0;
 
     void add_value(const double& in)
     {
@@ -92,6 +93,8 @@ struct profile_data
             avg = in;
         else
             avg = (avg + in)/2.;
+
+        total += in;
     }
 };
 
@@ -196,7 +199,8 @@ std::string format_single(const profile_data& dat)
         val += std::to_string(dat.longest_times[i]) + "\n";
     }
 
-    val += "AVG: " + std::to_string(dat.avg) + "\n------\n";
+    val += "AVG: " + std::to_string(dat.avg) + "\n";
+    val += "TOTAL: " + std::to_string(dat.total) + "\n------\n";
 
     return val;
 }
@@ -233,7 +237,7 @@ std::string profiling::format_profiling_data()
 
     std::sort(sorted_profile_data.begin(), sorted_profile_data.end(), [](profile_data& d1, profile_data& d2)
     {
-        return d1.avg > d2.avg;
+        return d1.total > d2.total;
     });
 
     for(profile_data& dat : sorted_profile_data)

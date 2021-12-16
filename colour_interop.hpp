@@ -8,9 +8,9 @@
 #include <networking/serialisable.hpp>
 
 inline
-std::map<char, vec3f> get_cmap()
+std::array<vec3f, 256> get_cmap()
 {
-    std::map<char, vec3f> colour_map;
+    std::array<vec3f, 256> colour_map = {};
 
     ///sigh
     ///need to sample with bloom off
@@ -77,6 +77,19 @@ std::map<char, vec3f> get_cmap()
     return colour_map;
 }
 
+inline
+std::optional<vec3f> letter_to_colour(char in)
+{
+    static auto cmap = get_cmap();
+
+    vec3f col = cmap[in];
+
+    if(col.x() == 0 && col.y() == 0 && col.z() == 0)
+        return std::nullopt;
+
+    return col;
+}
+
 struct interop_char : serialisable, free_function
 {
     int c = 'A';
@@ -109,16 +122,16 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
     if(in.size() == 0)
         return ret;
 
+    ret.reserve(in.size());
+
     bool found_colour = false;
     bool set_colour = false;
 
-    char last_col = 'A';
+    vec3f last_colour = letter_to_colour('A').value();
 
     bool term = false;
 
     interop_vec_t current_color_buf;
-
-    static auto cmap = get_cmap();
 
     int length = in.size();
 
@@ -150,7 +163,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
 
                 if(found_colour)
                 {
-                    c.col = cmap[last_col];
+                    c.col = last_colour;
                     c.coloured = found_colour;
                 }
 
@@ -162,7 +175,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
 
             if(found_colour)
             {
-                c.col = cmap[last_col];
+                c.col = last_colour;
                 c.coloured = found_colour;
             }
 
@@ -181,7 +194,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
 
                 if(found_colour)
                 {
-                    c.col = cmap[last_col];
+                    c.col = last_colour;
                     c.coloured = found_colour;
                 }
 
@@ -193,7 +206,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
 
             if(found_colour)
             {
-                c.col = cmap[last_col];
+                c.col = last_colour;
                 c.coloured = found_colour;
             }
 
@@ -214,9 +227,9 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
             interop_char c;
             c.c = cur;
 
-            if(cmap.find(next) != cmap.end())
+            if(auto val = letter_to_colour(next); val.has_value())
             {
-                c.col = cmap[next];
+                c.col = *val;
                 c.coloured = true;
             }
 
@@ -242,19 +255,17 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
             set_colour = false;
             found_colour = true;
 
-            last_col = cur;
+            std::optional<vec3f> col = letter_to_colour(cur);
+
+            last_colour = col.value_or(letter_to_colour('A').value());
 
             interop_char c;
             c.c = cur;
 
-            if(cmap.find(last_col) != cmap.end())
+            if(col.has_value())
             {
-                c.col = cmap[last_col];
+                c.col = *col;
                 c.coloured = true;
-            }
-            else
-            {
-                last_col = 'A';
             }
 
             /*c.col = cmap[last_col];
@@ -269,7 +280,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
         {
             interop_char c;
             c.c = cur;
-            c.col = cmap[last_col];
+            c.col = last_colour;
             c.coloured = found_colour;
 
             current_color_buf.push_back(c);
@@ -281,7 +292,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
         {
             interop_char c;
             c.c = cur;
-            c.col = cmap[last_col];
+            c.col = last_colour;
             c.coloured = found_colour;
 
             current_color_buf.push_back(c);
@@ -294,7 +305,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
 
             found_colour = false;
             set_colour = false;
-            last_col = 'A';
+            last_colour = letter_to_colour('A').value();
             term = true;
 
             continue;

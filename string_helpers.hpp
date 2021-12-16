@@ -61,6 +61,7 @@ inline
 std::vector<formatted_char> format_characters(const std::vector<interop_char>& interop, vec2f cpos, vec2f start, vec2f wrap_dim, int lines, int last_lines, vec2f cdim)
 {
     std::vector<formatted_char> ret;
+    ret.reserve(interop.size() + 1);
 
     vec2f pos = cpos;
     pos.x() = start.x();
