@@ -213,6 +213,7 @@
 				<Option projectCompilerOptionsRelation="1" />
 				<Option projectLinkerOptionsRelation="1" />
 				<Compiler>
+					<Add option="-O2" />
 					<Add option="-std=c++20" />
 					<Add option="-fexceptions" />
 					<Add option="-Wno-strict-aliasing" />
@@ -231,6 +232,7 @@
 					<Add option="-DIMGUI_ENABLE_FREETYPE" />
 					<Add option="-DLOCAL_IP" />
 					<Add option="-DBOOST_ASIO_HAS_STD_INVOKE_RESULT" />
+					<Add option="-DCUSTOM_PROFILING" />
 				</Compiler>
 				<Linker>
 					<Add option="-lmingw32" />
@@ -272,9 +274,7 @@
 					<Add option="-lsetupapi" />
 				</Linker>
 				<ExtraCommands>
-					<Add after="cv2pdb.exe ./bin/profilecustom/crapmud_client.exe" />
-					<Add after="cp ./bin/profilecustom/crapmud_client.pdb ./" />
-					<Mode after="always" />
+					<Add after="update_profile.bat" />
 				</ExtraCommands>
 			</Target>
 			<Target title="ProfileCustomGCC">

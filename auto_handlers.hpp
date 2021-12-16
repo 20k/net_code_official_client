@@ -34,7 +34,7 @@ struct specials_status
     bool has_trailing_comma = false;
 };
 
-struct auto_handler : serialisable, owned
+struct auto_handler : serialisable
 {
     bool tab_pressed = false;
 
