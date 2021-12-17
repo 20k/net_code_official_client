@@ -64,7 +64,7 @@ std::vector<formatted_char> format_characters(const std::vector<interop_char>& i
     ret.reserve(interop.size() + 1);
 
     vec2f pos = cpos;
-    pos.x() = start.x();
+    pos.x() = start.x() + char_inf::cwbuf;
     pos.y() += cdim.y();
 
     for(int i=0; i < (int)interop.size(); i++)
@@ -74,7 +74,7 @@ std::vector<formatted_char> format_characters(const std::vector<interop_char>& i
         if((pos.x() >= wrap_dim.x() - char_inf::cwbuf || ioc.c == '\n') && !ioc.is_cursor)
         {
             pos.y() += cdim.y();
-            pos.x() = start.x();
+            pos.x() = start.x() + char_inf::cwbuf;
         }
 
         if(ioc.c == '\n')

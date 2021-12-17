@@ -17,6 +17,7 @@ cp ./bin/Deploy/crapmud_client.exe ./build_root
 cd build_root
 
 sh ../deploy_gather_dlls.sh ./crapmud_client.exe .
+cv2pdb ./crapmud_client.exe
 
 cp -r * ../Release/bin
 
