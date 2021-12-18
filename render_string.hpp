@@ -24,9 +24,9 @@ struct render_string
 
 struct screen_line
 {
-    screen_line(std::string_view str);
+    //screen_line(std::string_view str);
 
-    vec2f dim;
+    //vec2f dim;
     std::vector<render_string> strings;
 };
 

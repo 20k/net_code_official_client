@@ -1,6 +1,8 @@
 #include "render_string.hpp"
 #include "colour_interop.hpp"
 #include <iostream>
+#include <imgui.h>
+#include "string_helpers.hpp"
 
 ///this function should handle autocolouring
 std::vector<render_string> create_render_strings(std::string_view in, bool include_specials)
@@ -156,6 +158,77 @@ paragraph_string::paragraph_string(std::string_view in, bool include_specials)
     basic_render_strings = create_render_strings(in, include_specials);
 }
 
+std::vector<screen_line> create_screen_lines(const std::string& base_string, const std::vector<render_string>& basic_render_strings, float clipping_width)
+{
+    std::vector<screen_line> ret;
+
+    vec2f character_dim = {char_inf::cwidth, char_inf::cheight};
+
+    vec2f pos = {0,0};
+
+    screen_line next_line;
+
+    for(int i=0; i < (int)basic_render_strings.size(); i++)
+    {
+        const render_string& current_string = basic_render_strings[i];
+
+        render_string pending;
+        pending.start = current_string.start;
+        pending.colour = current_string.colour;
+
+        auto bump_next_screen_line = [&]()
+        {
+            if(pending.length > 0)
+            {
+                next_line.strings.push_back(pending);
+
+                int next_start = pending.start + pending.length;
+
+                pending.start = next_start;
+                pending.length = 0;
+
+                ret.push_back(next_line);
+
+                next_line = screen_line();
+            }
+        };
+
+        for(int kk=0; kk < current_string.length; kk++)
+        {
+            int idx = kk + current_string.start;
+
+            char c = base_string[idx];
+
+            pending.length++;
+
+            if(pos.x() >= clipping_width || c == '\n')
+            {
+                pos.y() += character_dim.y();
+                pos.x() = 0;
+
+                bump_next_screen_line();
+            }
+
+            if(c == '\n')
+                continue;
+
+            pos.x() += character_dim.x();
+        }
+
+        if(pending.length > 0)
+        {
+            next_line.strings.push_back(pending);
+        }
+    }
+
+    if(next_line.strings.size() > 0)
+    {
+        ret.push_back(next_line);
+    }
+
+    return ret;
+}
+
 void paragraph_string::build(vec2f clipping_width)
 {
 
@@ -172,5 +245,21 @@ void test_render_strings()
         std::string_view view(base.begin() + rstr.start, base.begin() + rstr.start + rstr.length);
 
         std::cout << view << "|";
+    }
+
+    std::cout << "----\n";
+
+    std::vector<screen_line> screen_lines = create_screen_lines(base, strs, 60);
+
+    for(screen_line& line : screen_lines)
+    {
+        for(render_string& rstr : line.strings)
+        {
+            std::string_view view(base.begin() + rstr.start, base.begin() + rstr.start + rstr.length);
+
+            std::cout << view << "|";
+        }
+
+        std::cout << "-\n";
     }
 }

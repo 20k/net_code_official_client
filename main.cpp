@@ -161,9 +161,9 @@ int main(int argc, char* argv[])
 {
     //token_tests();
 
-    file::init();
-
     test_render_strings();
+
+    file::init();
 
     bool no_viewports = false;
 
