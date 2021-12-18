@@ -279,6 +279,7 @@ void text_manager::render()
     }
 
     ImGui::SetNextWindowContentSize({clip_width, content_height});
+    ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_Appearing);
 
     ImGui::Begin("Test Terminal");
 
@@ -296,7 +297,7 @@ void text_manager::render()
     float visible_y_start = scroll_fraction * content_height;
     float visible_y_end = visible_y_start + window_size.y();
 
-    float current_line_y = 0;
+    float current_pixel_y = 0;
 
     float base_left_offset = char_inf::cwbuf + ImGui::GetWindowPos().x;
 
@@ -311,7 +312,7 @@ void text_manager::render()
 
             for(const render_string& rs : sl.strings)
             {
-                float top_offset = current_line_y - visible_y_start;
+                float top_offset = current_pixel_y - visible_y_start;
 
                 if(top_offset >= visible_y_start - char_inf::cheight && top_offset < visible_y_end + char_inf::cheight)
                 {
@@ -335,12 +336,15 @@ void text_manager::render()
                 left_offset += rs.length * char_inf::cwidth;
             }
 
-            current_line_y += 1;
+            current_pixel_y += char_inf::cheight;
         }
     }
 
+    vec2f found_window_size = {ImGui::GetWindowSize().x, ImGui::GetWindowSize().y};
 
     ImGui::End();
+
+    relayout(found_window_size);
 }
 
 void test_render_strings()

@@ -161,7 +161,7 @@ int main(int argc, char* argv[])
 {
     //token_tests();
 
-    test_render_strings();
+    //test_render_strings();
 
     file::init();
 
@@ -431,6 +431,13 @@ int main(int argc, char* argv[])
     steady_timer sleep_limiter;
 
     bool printed_connecting = false;
+
+    text_manager default_text;
+
+    for(int i=0; i < 1024; i++)
+    {
+        default_text.add_main_text("dfffffffffffffffffffsasdfsdfwerqaowiejrlkdv;lkzcxmvlzjaskdjfakej\n");
+    }
 
     //while(running)
     #ifndef __EMSCRIPTEN__
@@ -1396,6 +1403,7 @@ int main(int argc, char* argv[])
 
             vec2i window_dim = window.get_window_size();
 
+            default_text.render();
             //test_imgui_term.render(window);
             realtime_scripts.render_realtime_windows(to_write, was_closed_id, font_select, terminals.auto_handle, window.get_render_settings().is_srgb);
             chat_win.render(should_coordinate_focus);
