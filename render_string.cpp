@@ -334,11 +334,11 @@ void text_manager::render()
         {
             float left_offset = base_left_offset;
 
-            for(const render_string& rs : sl.strings)
-            {
-                float top_offset = current_pixel_y;
+            float top_offset = current_pixel_y;
 
-                if(top_offset >= visible_y_start - char_inf::cheight && top_offset < visible_y_end + char_inf::cheight)
+            if(top_offset >= visible_y_start - char_inf::cheight && top_offset < visible_y_end + char_inf::cheight)
+            {
+                for(const render_string& rs : sl.strings)
                 {
                     float from_top_of_window = top_offset - visible_y_start;
 
@@ -357,9 +357,9 @@ void text_manager::render()
                     ImDrawList* imlist = ImGui::GetWindowDrawList();
 
                     imlist->AddText(ImVec2(left_offset, from_top_of_window + base_top_offset + title_offset), IM_COL32(ir, ig, ib, 255), start, fin);
-                }
 
-                left_offset += rs.length * char_inf::cwidth;
+                    left_offset += rs.length * char_inf::cwidth;
+                }
             }
 
             current_pixel_y += char_inf::cheight;
