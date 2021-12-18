@@ -434,10 +434,14 @@ int main(int argc, char* argv[])
 
     text_manager default_text;
 
+    default_text.add_main_text("First line");
+
     for(int i=0; i < 1024; i++)
     {
         default_text.add_main_text("dfffffffffffffffffffsasdfsdfwerqaowiejrlkdv;lkzcxmvlzjaskdjfakej\n");
     }
+
+    default_text.add_main_text("lastline");
 
     //while(running)
     #ifndef __EMSCRIPTEN__

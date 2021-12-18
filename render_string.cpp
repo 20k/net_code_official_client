@@ -283,6 +283,8 @@ void text_manager::render()
 
     ImGui::Begin("Test Terminal");
 
+    float window_padding_y = ImGui::GetStyle().WindowPadding.y;
+
     float scroll_y = ImGui::GetScrollY();
     float max_scroll_y = ImGui::GetScrollMaxY();
 
@@ -293,8 +295,24 @@ void text_manager::render()
         scroll_fraction = scroll_y / max_scroll_y;
     }
 
+    float adjusted_scroll_fracton = scroll_fraction;
+
+    if(content_height > 0)
+    {
+        ///so, when scroll_fraction is 1, we want visible_y_end to be lines.size() * size + padding
+
+        float desired_visible_y_end = content_height + char_inf::cheight * 2 + window_padding_y;
+
+        ///vye = scroll_fraction * content_height + window_size.y()
+        ///(vye - window_size.y()) / content_height = scroll_fraction
+
+        float scroll_fraction_at_end = (desired_visible_y_end - window_size.y()) / content_height;
+
+        adjusted_scroll_fracton = mix(0, scroll_fraction_at_end, scroll_fraction);
+    }
+
     ///in pixels
-    float visible_y_start = scroll_fraction * content_height;
+    float visible_y_start = adjusted_scroll_fracton * content_height;
     float visible_y_end = visible_y_start + window_size.y();
 
     float current_pixel_y = 0;
@@ -304,7 +322,7 @@ void text_manager::render()
     //float title_offset = ImGui::GetCursorStartPos().y;
 
     float decoration_up_height = ImGui::GetCurrentWindow()->TitleBarHeight() + ImGui::GetCurrentWindow()->MenuBarHeight();
-    float title_offset = decoration_up_height + ImGui::GetStyle().WindowPadding.y;
+    float title_offset = decoration_up_height + window_padding_y;
 
     ///step 1: render everything
     ///step 2: render only stuff in visible region
