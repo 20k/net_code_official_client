@@ -156,7 +156,7 @@ paragraph_string::paragraph_string(){}
 paragraph_string::paragraph_string(std::string in, bool include_specials)
 {
     basic_render_strings = create_render_strings(in, include_specials);
-    str = in;
+    str = std::move(in);
 }
 
 std::vector<screen_line> create_screen_lines(const std::string& base_string, const std::vector<render_string>& basic_render_strings, float clipping_width)
@@ -248,6 +248,8 @@ void text_manager::relayout(vec2f new_window_size)
 {
     if(window_size == new_window_size)
         return;
+
+    window_size = new_window_size;
 
     for(paragraph_string& s : paragraphs)
     {
