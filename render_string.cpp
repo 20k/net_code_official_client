@@ -229,9 +229,13 @@ std::vector<screen_line> create_screen_lines(const std::string& base_string, con
     return ret;
 }
 
-void paragraph_string::build(vec2f clipping_width)
+void paragraph_string::build(float clip_width)
 {
+    dim.x() = clip_width;
 
+    lines = create_screen_lines(str, basic_render_strings, clip_width);
+
+    dim.y() = lines.size() * char_inf::cheight;
 }
 
 void test_render_strings()

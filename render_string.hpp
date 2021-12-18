@@ -37,7 +37,7 @@ struct paragraph_string
     paragraph_string();
     paragraph_string(std::string_view str, bool include_specials);
 
-    void build(vec2f clipping_width);
+    void build(float clip_width);
 
     std::string str;
 
