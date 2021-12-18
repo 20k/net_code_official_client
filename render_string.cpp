@@ -301,6 +301,10 @@ void text_manager::render()
 
     float base_left_offset = char_inf::cwbuf + ImGui::GetWindowPos().x;
     float base_top_offset = ImGui::GetWindowPos().y;
+    //float title_offset = ImGui::GetCursorStartPos().y;
+
+    float decoration_up_height = ImGui::GetCurrentWindow()->TitleBarHeight() + ImGui::GetCurrentWindow()->MenuBarHeight();
+    float title_offset = decoration_up_height + ImGui::GetStyle().WindowPadding.y;
 
     ///step 1: render everything
     ///step 2: render only stuff in visible region
@@ -313,10 +317,12 @@ void text_manager::render()
 
             for(const render_string& rs : sl.strings)
             {
-                float top_offset = current_pixel_y - visible_y_start;
+                float top_offset = current_pixel_y;
 
                 if(top_offset >= visible_y_start - char_inf::cheight && top_offset < visible_y_end + char_inf::cheight)
                 {
+                    float from_top_of_window = top_offset - visible_y_start;
+
                     vec3f colour = rs.colour;
 
                     int idx_start = rs.start;
@@ -331,7 +337,7 @@ void text_manager::render()
 
                     ImDrawList* imlist = ImGui::GetWindowDrawList();
 
-                    imlist->AddText(ImVec2(left_offset, top_offset + base_top_offset), IM_COL32(ir, ig, ib, 255), start, fin);
+                    imlist->AddText(ImVec2(left_offset, from_top_of_window + base_top_offset + title_offset), IM_COL32(ir, ig, ib, 255), start, fin);
                 }
 
                 left_offset += rs.length * char_inf::cwidth;
