@@ -282,6 +282,7 @@ int main(int argc, char* argv[])
 
     render_window window(sett, backend);
     ImGui::GetIO().MouseDragThreshold = 0;
+    ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
     //ImGui::GetIO().ConfigWindowsResizeFromEdges = false;
 
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;

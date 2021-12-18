@@ -4,6 +4,7 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include "string_helpers.hpp"
+#include "copy_handler.hpp"
 
 vec3f process_colour(vec3f in)
 {
@@ -320,10 +321,23 @@ void text_manager::render()
 
     float base_left_offset = char_inf::cwbuf + ImGui::GetWindowPos().x;
     float base_top_offset = ImGui::GetWindowPos().y;
-    //float title_offset = ImGui::GetCursorStartPos().y;
 
     float decoration_up_height = ImGui::GetCurrentWindow()->TitleBarHeight() + ImGui::GetCurrentWindow()->MenuBarHeight();
     float title_offset = decoration_up_height + window_padding_y;
+
+    copy_handler* handle = get_global_copy_handler();
+
+    bool focused = ImGui::IsWindowFocused();
+
+    vec2f cdim = {char_inf::cwidth, char_inf::cheight};
+
+    bool check_copy = false;
+
+    if(focused && handle->trigger_copy())
+    {
+        check_copy = true;
+        handle->copied.clear();
+    }
 
     ///step 1: render everything
     ///step 2: render only stuff in visible region
@@ -338,9 +352,31 @@ void text_manager::render()
 
             if(top_offset >= visible_y_start - char_inf::cheight && top_offset < visible_y_end + char_inf::cheight)
             {
+                float from_top_of_window = top_offset - visible_y_start;
+
+                float padded_y = from_top_of_window + base_top_offset + title_offset;
+
                 for(const render_string& rs : sl.strings)
                 {
-                    float from_top_of_window = top_offset - visible_y_start;
+                    if(check_copy)
+                    {
+                        for(int kk=rs.start; kk < rs.start + rs.length; kk++)
+                        {
+                            char c = s.str[kk];
+
+                            vec2f pos = {left_offset + (kk - rs.start) * char_inf::cwidth, padded_y};
+
+                            if(focused && handle->char_is_within_select_box(pos, cdim))
+                            {
+                                if(handle->copied.size() != 0 && handle->last_copy_y != pos.y())
+                                    handle->copied += "\n" + std::string(1, c);
+                                else
+                                    handle->copied += std::string(1, c);
+
+                                handle->last_copy_y = pos.y();
+                            }
+                        }
+                    }
 
                     vec3f colour = rs.colour;
 
@@ -356,7 +392,7 @@ void text_manager::render()
 
                     ImDrawList* imlist = ImGui::GetWindowDrawList();
 
-                    imlist->AddText(ImVec2(left_offset, from_top_of_window + base_top_offset + title_offset), IM_COL32(ir, ig, ib, 255), start, fin);
+                    imlist->AddText(ImVec2(left_offset, padded_y), IM_COL32(ir, ig, ib, 255), start, fin);
 
                     left_offset += rs.length * char_inf::cwidth;
                 }
@@ -364,6 +400,13 @@ void text_manager::render()
 
             current_pixel_y += char_inf::cheight;
         }
+    }
+
+    if(check_copy)
+    {
+        std::cout << "Copied2 " << handle->copied << std::endl;
+
+        handle->set_clipboard(handle->copied);
     }
 
     vec2f found_window_size = {ImGui::GetWindowSize().x, ImGui::GetWindowSize().y};
