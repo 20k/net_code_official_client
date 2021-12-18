@@ -48,6 +48,7 @@ struct paragraph_string
 struct text_manager
 {
     vec2f window_size;
+    vec2f cached_character_size;
 
     void relayout(vec2f new_window_size);
 

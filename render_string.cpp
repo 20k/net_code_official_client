@@ -257,10 +257,11 @@ void text_manager::add_main_text(std::string str)
 
 void text_manager::relayout(vec2f new_window_size)
 {
-    if(window_size == new_window_size)
+    if(window_size == new_window_size && cached_character_size == (vec2f){char_inf::cwidth, char_inf::cheight})
         return;
 
     window_size = new_window_size;
+    cached_character_size = {char_inf::cwidth, char_inf::cheight};
 
     for(paragraph_string& s : paragraphs)
     {
