@@ -154,6 +154,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
 
         term = false;
 
+        // \\`
         if(cur == '\\' && next == '\\' && next_2 == '`')
         {
             if(include_specials)
@@ -185,6 +186,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
             continue;
         }
 
+        // \`
         if(cur == '\\' && next == '`')
         {
             if(include_specials)
@@ -216,6 +218,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
             continue;
         }
 
+        // ` initial
         if(cur == '`' && !found_colour && !set_colour)
         {
             strip_interop(current_color_buf);
@@ -238,6 +241,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
             continue;
         }
 
+        // ``, the second `
         if(cur == '`' && set_colour)
         {
             set_colour = false;
@@ -250,6 +254,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
             current_color_buf.push_back(c);*/
         }
 
+        // `X, the X
         if(set_colour)
         {
             set_colour = false;
@@ -276,6 +281,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
             continue;
         }
 
+        //regular character
         if(cur != '`' && cur != '\n')
         {
             interop_char c;
@@ -288,6 +294,7 @@ interop_vec_t build_from_colour_string(const std::string& in, bool include_speci
             continue;
         }
 
+        // `ASDF`, second tick, or \n
         if((cur == '`' && found_colour) || cur == '\n')
         {
             interop_char c;

@@ -443,6 +443,8 @@
 		<Unit filename="local_commands.cpp" />
 		<Unit filename="local_commands.hpp" />
 		<Unit filename="main.cpp" />
+		<Unit filename="render_string.cpp" />
+		<Unit filename="render_string.hpp" />
 		<Unit filename="serialisables.cpp" />
 		<Unit filename="serialisables.hpp" />
 		<Unit filename="steam_api.cpp" />
