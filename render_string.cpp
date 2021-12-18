@@ -2,7 +2,18 @@
 #include "colour_interop.hpp"
 #include <iostream>
 #include <imgui.h>
+#include <imgui_internal.h>
 #include "string_helpers.hpp"
+
+vec3f process_colour(vec3f in)
+{
+    if(ImGui::IsStyleLinearColor())
+    {
+        return srgb_to_lin_approx(in);
+    }
+
+    return in;
+}
 
 ///this function should handle autocolouring
 std::vector<render_string> create_render_strings(std::string_view in, bool include_specials)
@@ -12,7 +23,7 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
     if(in.size() == 0)
         return ret;
 
-    vec3f default_colour = letter_to_colour('A').value();
+    vec3f default_colour = process_colour(letter_to_colour('A').value());
 
     render_string current_chunk;
     current_chunk.colour = default_colour;
@@ -102,7 +113,7 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
         {
             currently_colouring = true;
 
-            vec3f col = letter_to_colour(next).value_or(default_colour);
+            vec3f col = process_colour(letter_to_colour(next).value_or(default_colour));
 
             bump_colour();
             current_chunk.colour = col;
@@ -255,6 +266,81 @@ void text_manager::relayout(vec2f new_window_size)
     {
         s.build(new_window_size.x() - 2 * char_inf::cwbuf);
     }
+}
+
+void text_manager::render()
+{
+    float clip_width = window_size.x() - 2 * char_inf::cwbuf;
+    float content_height = 0;
+
+    for(const paragraph_string& s : paragraphs)
+    {
+        content_height += s.lines.size() * char_inf::cheight;
+    }
+
+    ImGui::SetNextWindowContentSize({clip_width, content_height});
+
+    ImGui::Begin("Test Terminal");
+
+    float scroll_y = ImGui::GetScrollY();
+    float max_scroll_y = ImGui::GetScrollMaxY();
+
+    float scroll_fraction = 1;
+
+    if(max_scroll_y != 0)
+    {
+        scroll_fraction = scroll_y / max_scroll_y;
+    }
+
+    ///in pixels
+    float visible_y_start = scroll_fraction * content_height;
+    float visible_y_end = visible_y_start + window_size.y();
+
+    float current_line_y = 0;
+
+    float base_left_offset = char_inf::cwbuf + ImGui::GetWindowPos().x;
+
+    ///step 1: render everything
+    ///step 2: render only stuff in visible region
+    ///step 3: remove the content height calculation above
+    for(const paragraph_string& s : paragraphs)
+    {
+        for(const screen_line& sl : s.lines)
+        {
+            float left_offset = base_left_offset;
+
+            for(const render_string& rs : sl.strings)
+            {
+                float top_offset = current_line_y - visible_y_start;
+
+                if(top_offset >= visible_y_start - char_inf::cheight && top_offset < visible_y_end + char_inf::cheight)
+                {
+                    vec3f colour = rs.colour;
+
+                    int idx_start = rs.start;
+                    int idx_len = rs.length;
+
+                    int ir = colour.x() * 255;
+                    int ig = colour.y() * 255;
+                    int ib = colour.z() * 255;
+
+                    const char* start = s.str.c_str() + idx_start;
+                    const char* fin = s.str.c_str() + idx_start + idx_len;
+
+                    ImDrawList* imlist = ImGui::GetWindowDrawList();
+
+                    imlist->AddText(ImVec2(left_offset, top_offset), IM_COL32(ir, ig, ib, 255), start, fin);
+                }
+
+                left_offset += rs.length * char_inf::cwidth;
+            }
+
+            current_line_y += 1;
+        }
+    }
+
+
+    ImGui::End();
 }
 
 void test_render_strings()

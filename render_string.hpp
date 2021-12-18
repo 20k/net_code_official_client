@@ -53,6 +53,8 @@ struct text_manager
 
     void add_main_text(std::string view);
 
+    void render();
+
     std::vector<paragraph_string> paragraphs;
 };
 
