@@ -9,7 +9,7 @@ vec3f process_colour(vec3f in)
 {
     if(ImGui::IsStyleLinearColor())
     {
-        return srgb_to_lin_approx(in);
+        return srgb_to_lin(in);
     }
 
     return in;
@@ -300,6 +300,7 @@ void text_manager::render()
     float current_pixel_y = 0;
 
     float base_left_offset = char_inf::cwbuf + ImGui::GetWindowPos().x;
+    float base_top_offset = ImGui::GetWindowPos().y;
 
     ///step 1: render everything
     ///step 2: render only stuff in visible region
@@ -330,7 +331,7 @@ void text_manager::render()
 
                     ImDrawList* imlist = ImGui::GetWindowDrawList();
 
-                    imlist->AddText(ImVec2(left_offset, top_offset), IM_COL32(ir, ig, ib, 255), start, fin);
+                    imlist->AddText(ImVec2(left_offset, top_offset + base_top_offset), IM_COL32(ir, ig, ib, 255), start, fin);
                 }
 
                 left_offset += rs.length * char_inf::cwidth;
