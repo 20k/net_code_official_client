@@ -153,9 +153,10 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
 
 paragraph_string::paragraph_string(){}
 
-paragraph_string::paragraph_string(std::string_view in, bool include_specials)
+paragraph_string::paragraph_string(std::string in, bool include_specials)
 {
     basic_render_strings = create_render_strings(in, include_specials);
+    str = in;
 }
 
 std::vector<screen_line> create_screen_lines(const std::string& base_string, const std::vector<render_string>& basic_render_strings, float clipping_width)
@@ -236,6 +237,22 @@ void paragraph_string::build(float clip_width)
     lines = create_screen_lines(str, basic_render_strings, clip_width);
 
     dim.y() = lines.size() * char_inf::cheight;
+}
+
+void text_manager::add_main_text(std::string str)
+{
+    paragraphs.emplace_back(std::move(str), false);
+}
+
+void text_manager::relayout(vec2f new_window_size)
+{
+    if(window_size == new_window_size)
+        return;
+
+    for(paragraph_string& s : paragraphs)
+    {
+        s.build(new_window_size.x() - 2 * char_inf::cwbuf);
+    }
 }
 
 void test_render_strings()

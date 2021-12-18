@@ -35,7 +35,7 @@ struct paragraph_string
     vec2f dim;
 
     paragraph_string();
-    paragraph_string(std::string_view str, bool include_specials);
+    paragraph_string(std::string in, bool include_specials);
 
     void build(float clip_width);
 
@@ -43,6 +43,17 @@ struct paragraph_string
 
     std::vector<screen_line> lines;
     std::vector<render_string> basic_render_strings;
+};
+
+struct text_manager
+{
+    vec2f window_size;
+
+    void relayout(vec2f new_window_size);
+
+    void add_main_text(std::string view);
+
+    std::vector<paragraph_string> paragraphs;
 };
 
 void test_render_strings();
