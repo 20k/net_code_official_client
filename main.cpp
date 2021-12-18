@@ -59,6 +59,8 @@
 #include <emscripten/bind.h>
 #endif // __EMSCRIPTEN__
 
+#include "render_string.hpp"
+
 std::string make_lower(std::string in)
 {
     for(auto& i : in)
@@ -160,6 +162,8 @@ int main(int argc, char* argv[])
     //token_tests();
 
     file::init();
+
+    test_render_strings();
 
     bool no_viewports = false;
 

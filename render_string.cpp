@@ -1,5 +1,6 @@
 #include "render_string.hpp"
 #include "colour_interop.hpp"
+#include <iostream>
 
 ///this function should handle autocolouring
 std::vector<render_string> create_render_strings(std::string_view in, bool include_specials)
@@ -47,6 +48,7 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
             bump_colour();
 
             current_chunk.colour = last_colour;
+            current_chunk.start = idx;
             current_chunk.length = 1;
         }
     };
@@ -109,7 +111,9 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
                 add_index(i+1);
             }
 
-            i++;
+            if(next != '`')
+                i++;
+
             continue;
         }
 
@@ -136,6 +140,7 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
             bump_colour();
             currently_colouring = false;
             current_chunk.colour = default_colour;
+            continue;
         }
     }
 
@@ -154,4 +159,18 @@ paragraph_string::paragraph_string(std::string_view in, bool include_specials)
 void paragraph_string::build(vec2f clipping_width)
 {
 
+}
+
+void test_render_strings()
+{
+    std::string base = "hello there []\" asdf `Xcatepillar`\n`B`uncoloured\n`Dhithere\n``uncoloured`Dcoloured1`randomtext`Bcoloured2\n";
+
+    std::vector<render_string> strs = create_render_strings(base, false);
+
+    for(render_string& rstr : strs)
+    {
+        std::string_view view(base.begin() + rstr.start, base.begin() + rstr.start + rstr.length);
+
+        std::cout << view << "|";
+    }
 }

@@ -45,4 +45,6 @@ struct paragraph_string
     std::vector<render_string> basic_render_strings;
 };
 
+void test_render_strings();
+
 #endif // RENDER_STRING_HPP_INCLUDED
