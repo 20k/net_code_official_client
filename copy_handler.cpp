@@ -22,6 +22,22 @@ bool copy_handler::char_is_within_select_box(vec2f pos, vec2f cdim)
     return rect_intersect(p1, p2, tl, br);
 }
 
+bool copy_handler::char_dragged_over(vec2f pos, vec2f cdim)
+{
+    if(!held)
+        return false;
+
+    if((copy_end - copy_start).squared_length() < (MIN_SELECT_DISTANCE * MIN_SELECT_DISTANCE))
+        return false;
+
+    vec2f p1 = pos;
+    vec2f p2 = pos + cdim;
+
+    auto [tl, br] = points_to_rect(copy_start, copy_end);
+
+    return rect_intersect(p1, p2, tl, br);
+}
+
 void copy_handler::on_lclick(vec2f pos)
 {
     copy_start = pos;

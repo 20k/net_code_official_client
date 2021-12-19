@@ -31,6 +31,7 @@ struct copy_handler
     void tick(vec2f pos);
 
     bool char_is_within_select_box(vec2f pos, vec2f cdim);
+    bool char_dragged_over(vec2f pos, vec2f cdim);
 };
 
 extern copy_handler global_copy_handler;

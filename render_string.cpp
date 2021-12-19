@@ -339,6 +339,18 @@ void text_manager::render()
         handle->copied.clear();
     }
 
+    vec3f srgb_selection_colour = {80, 80, 255};
+    vec3f selection_colour = srgb_to_lin(srgb_selection_colour / 255.f) * 255.f;
+    ImU32 selection_colour_u32 = IM_COL32((int)selection_colour.x(), (int)selection_colour.y(), (int)selection_colour.z(), 255);
+
+    vec3f srgb_selection_light = (vec3f){160, 160, 255};
+    vec3f selection_light = srgb_to_lin(srgb_selection_colour / 255.f) * 255.f;
+    ImU32 selection_light_u32 = IM_COL32((int)selection_light.x(), (int)selection_light.y(), (int)selection_light.z(), 128);
+
+    vec2f highlight_tl = {FLT_MAX, FLT_MAX};
+    vec2f highlight_br = {-FLT_MAX, -FLT_MAX};
+    bool any_highlighted = false;
+
     ///step 1: render everything
     ///step 2: render only stuff in visible region
     ///step 3: remove the content height calculation above
@@ -358,26 +370,6 @@ void text_manager::render()
 
                 for(const render_string& rs : sl.strings)
                 {
-                    if(check_copy)
-                    {
-                        for(int kk=rs.start; kk < rs.start + rs.length; kk++)
-                        {
-                            char c = s.str[kk];
-
-                            vec2f pos = {left_offset + (kk - rs.start) * char_inf::cwidth, padded_y};
-
-                            if(focused && handle->char_is_within_select_box(pos, cdim))
-                            {
-                                if(handle->copied.size() != 0 && handle->last_copy_y != pos.y())
-                                    handle->copied += "\n" + std::string(1, c);
-                                else
-                                    handle->copied += std::string(1, c);
-
-                                handle->last_copy_y = pos.y();
-                            }
-                        }
-                    }
-
                     vec3f colour = rs.colour;
 
                     int idx_start = rs.start;
@@ -394,12 +386,58 @@ void text_manager::render()
 
                     imlist->AddText(ImVec2(left_offset, padded_y), IM_COL32(ir, ig, ib, 255), start, fin);
 
+                    if(check_copy || handle->held)
+                    {
+                        for(int kk=rs.start; kk < rs.start + rs.length; kk++)
+                        {
+                            char c = s.str[kk];
+
+                            vec2f pos = {left_offset + (kk - rs.start) * char_inf::cwidth, padded_y};
+
+                            if(focused && handle->char_is_within_select_box(pos, cdim))
+                            {
+                                if(handle->copied.size() != 0 && handle->last_copy_y != pos.y())
+                                    handle->copied += "\n" + std::string(1, c);
+                                else
+                                    handle->copied += std::string(1, c);
+
+                                handle->last_copy_y = pos.y();
+                            }
+
+                            if(focused && handle->char_dragged_over(pos, cdim))
+                            {
+                                highlight_tl = min(highlight_tl, pos);
+                                highlight_br = max(highlight_br, pos + cdim);
+
+                                any_highlighted = true;
+                            }
+                        }
+                    }
+
+
                     left_offset += rs.length * char_inf::cwidth;
                 }
             }
 
             current_pixel_y += char_inf::cheight;
         }
+    }
+
+    if(any_highlighted)
+    {
+        ImDrawList* imlist = ImGui::GetWindowDrawList();
+
+        ImVec2 tl = {highlight_tl.x(), highlight_tl.y()};
+        ImVec2 br = {highlight_br.x(), highlight_br.y()};
+
+        int thick = 0;
+
+        ImVec2 ptl = {tl.x + thick, tl.y + thick};
+        ImVec2 pbr = {br.x - thick, br.y - thick};
+
+        //selection_light_u32
+        imlist->AddRectFilled(ptl, pbr, selection_light_u32, 0, 0);
+        imlist->AddRect(tl, br, selection_colour_u32, 1.f, 0, 2);
     }
 
     if(check_copy)
