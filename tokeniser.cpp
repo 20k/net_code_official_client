@@ -7,12 +7,24 @@
 using data_t = const std::vector<interop_char>&;
 using token_seq = std::vector<token_info>&;
 
-bool in_bound(int pos, data_t dat)
+template<typename Seq>
+bool in_bound(int pos, const Seq& dat)
 {
     return pos < (int)dat.size();
 }
 
-bool expect_seq(int pos, data_t dat, const std::string& str)
+char index(const std::vector<interop_char>& dat, int idx)
+{
+    return dat[idx].c;
+}
+
+char index(std::string_view view, int idx)
+{
+    return view[idx];
+}
+
+template<typename Seq>
+bool expect_seq(int pos, const Seq& dat, const std::string& str)
 {
     for(int i=0; i < (int)str.size(); i++)
     {
@@ -21,7 +33,7 @@ bool expect_seq(int pos, data_t dat, const std::string& str)
         if(!in_bound(offset, dat))
             return false;
 
-        if(dat[offset].c != str[i])
+        if(index(dat, offset) != str[i])
             return false;
     }
 
@@ -42,7 +54,8 @@ bool is_numeric_operator(char c)
     return c == '-' || c == '+';
 }
 
-std::optional<int> expect_until(int pos, data_t dat, const std::vector<char>& c, expect_until_modes mode = expect_until_do_none)
+template<typename Seq>
+std::optional<int> expect_until(int pos, const Seq& dat, const std::vector<char>& c, expect_until_modes mode = expect_until_do_none)
 {
     bool escaped = false;
 
@@ -50,7 +63,7 @@ std::optional<int> expect_until(int pos, data_t dat, const std::vector<char>& c,
     {
         if((mode & expect_until_do_escape) > 0)
         {
-            if(!escaped && dat[i].c == '\\')
+            if(!escaped && index(dat, i) == '\\')
                 escaped = true;
             else
                 escaped = false;
@@ -68,13 +81,13 @@ std::optional<int> expect_until(int pos, data_t dat, const std::vector<char>& c,
 
             if((mode & expect_until_allow_numeric_operators_in_name) > 0)
             {
-                valid_operator = is_numeric_operator(dat[i].c);
+                valid_operator = is_numeric_operator(index(dat, i));
             }
 
-            if(i == pos && (!is_valid_name_character(dat[i].c, true) && !valid_operator))
+            if(i == pos && (!is_valid_name_character(index(dat, i), true) && !valid_operator))
                 return std::nullopt;
 
-            if(i != pos && (!is_valid_name_character(dat[i].c, true) && !valid_operator))
+            if(i != pos && (!is_valid_name_character(index(dat, i), true) && !valid_operator))
             {
                 return i;
             }
@@ -82,11 +95,11 @@ std::optional<int> expect_until(int pos, data_t dat, const std::vector<char>& c,
 
         for(auto& kk : c)
         {
-            if(dat[i].c == kk)
+            if(index(dat, i) == kk)
                 return i;
         }
 
-        if(dat[i].c == '\n')
+        if(index(dat, i) == '\n')
             return std::nullopt;
     }
 
@@ -98,12 +111,14 @@ std::optional<int> expect_until(int pos, data_t dat, const std::vector<char>& c,
     return std::nullopt;
 }
 
-bool is_whitespace(int pos, data_t dat)
+template<typename Seq>
+bool is_whitespace(int pos, const Seq& dat)
 {
-    return isspace(dat[pos].c) && dat[pos].c != '\n';
+    return isspace(index(dat, pos)) && index(dat, pos) != '\n';
 }
 
-void discard_whitespace(int& pos, data_t dat, token_seq tok)
+template<typename Seq>
+void discard_whitespace(int& pos, const Seq& dat, token_seq tok)
 {
     while(in_bound(pos, dat) && is_whitespace(pos, dat))
     {
@@ -111,7 +126,8 @@ void discard_whitespace(int& pos, data_t dat, token_seq tok)
     }
 }
 
-token_info make_tokens(int start, int length, token::token type, data_t dat)
+template<typename Seq>
+token_info make_tokens(int start, int length, token::token type, const Seq& dat)
 {
     token_info ret;
     ret.type = type;
@@ -120,7 +136,7 @@ token_info make_tokens(int start, int length, token::token type, data_t dat)
 
     for(int i=start; i < start + length && i < (int)dat.size(); i++)
     {
-        ret.str.push_back(dat[i].c);
+        ret.str.push_back(index(dat, i));
     }
 
     return ret;
@@ -137,12 +153,13 @@ token_info make_ghost_token(int start, token::token type, const std::string& cha
     return ret;
 }
 
-bool expect_dot(int& pos, data_t dat, token_seq tok)
+template<typename Seq>
+bool expect_dot(int& pos, const Seq& dat, token_seq tok)
 {
     if(!in_bound(pos, dat))
         return false;
 
-    if(dat[pos].c == '.')
+    if(index(dat, pos) == '.')
     {
         tok.push_back(make_tokens(pos, 1, token::DOT, dat));
         pos++;
@@ -153,7 +170,8 @@ bool expect_dot(int& pos, data_t dat, token_seq tok)
     return false;
 }
 
-bool expect_single_char(int& pos, data_t dat, token_seq tok, char c, token::token type, bool insert_ghosts, int ghost_offset)
+template<typename Seq>
+bool expect_single_char(int& pos, const Seq& dat, token_seq tok, char c, token::token type, bool insert_ghosts, int ghost_offset)
 {
     if(!in_bound(pos, dat))
     {
@@ -163,7 +181,7 @@ bool expect_single_char(int& pos, data_t dat, token_seq tok, char c, token::toke
         return false;
     }
 
-    if(dat[pos].c == c)
+    if(index(dat, pos) == c)
     {
         tok.push_back(make_tokens(pos, 1, type, dat));
         pos++;
@@ -180,7 +198,8 @@ bool expect_single_char(int& pos, data_t dat, token_seq tok, char c, token::toke
 }
 
 ///don't expect keys which are strings
-bool expect_key(int& pos, data_t dat, token_seq tok)
+template<typename Seq>
+bool expect_key(int& pos, const Seq& dat, token_seq tok)
 {
     if(!in_bound(pos, dat))
         return false;
@@ -204,21 +223,22 @@ bool expect_key(int& pos, data_t dat, token_seq tok)
     return true;
 }
 
-bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int ghost_offset, bool lax_value_strictness, bool is_arrs = true)
+template<typename Seq>
+bool expect_value(int& pos, const Seq& dat, token_seq tok, bool insert_ghosts, int ghost_offset, bool lax_value_strictness, bool is_arrs = true)
 {
     if(!in_bound(pos, dat))
         return false;
 
     bool is_string = false;
 
-    if(dat[pos].c == '\"' || dat[pos].c == '\'')
+    if(index(dat, pos) == '\"' || index(dat, pos) == '\'')
     {
         is_string = true;
     }
 
     bool is_arr = false;
 
-    if(dat[pos].c == '[')
+    if(index(dat, pos) == '[')
         is_arr = true;
 
     std::optional<int> found;
@@ -229,7 +249,7 @@ bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int g
 
     if(is_string)
     {
-        char start_c = dat[pos].c;
+        char start_c = index(dat, pos);
 
         found = expect_until(pos+1, dat, {start_c}, expect_until_do_escape);
 
@@ -256,7 +276,7 @@ bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int g
                     int len = dat.size();
 
                     ///input ends with })
-                    if((dat[len-1].c == ')' && dat[len-2].c == '}') || (dat[len-1].c == ')' && dat[len-2].c == ']'))
+                    if((index(dat, len-1) == ')' && index(dat, len-2) == '}') || (index(dat, len-1) == ')' && index(dat, len-2) == ']'))
                     {
                         *test = len-2;
                     }
@@ -312,7 +332,9 @@ bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int g
 
             for(int i=pos; i < *found; i++)
             {
-                if(!isdigit(dat[i].c) && dat[i].c != '-' && dat[i].c != '+')
+                char c = index(dat, i);
+
+                if(!isdigit(c) && c != '-' && c != '+')
                 {
                     all_numeric = false;
                     break;
@@ -334,7 +356,7 @@ bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int g
 
             for(int i=pos; i < *found; i++)
             {
-                fstr += dat[i].c;
+                fstr += index(dat, i);
             }
 
             for(auto& i : booleans)
@@ -366,7 +388,8 @@ bool expect_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, int g
     return true;
 }
 
-bool expect_extname(int& pos, data_t dat, token_seq tok)
+template<typename Seq>
+bool expect_extname(int& pos, const Seq& dat, token_seq tok)
 {
     if(!in_bound(pos, dat))
         return false;
@@ -385,7 +408,8 @@ bool expect_extname(int& pos, data_t dat, token_seq tok)
     return true;
 }
 
-bool expect_hostname(int& pos, data_t dat, token_seq tok)
+template<typename Seq>
+bool expect_hostname(int& pos, const Seq& dat, token_seq tok)
 {
     std::optional<int> found = expect_until(pos, dat, {'.'});
 
@@ -401,7 +425,8 @@ bool expect_hostname(int& pos, data_t dat, token_seq tok)
     return true;
 }
 
-bool expect_hash(int& pos, data_t dat, token_seq tok)
+template<typename Seq>
+bool expect_hash(int& pos, const Seq& dat, token_seq tok)
 {
     if(!in_bound(pos, dat))
         return false;
@@ -419,7 +444,8 @@ bool expect_hash(int& pos, data_t dat, token_seq tok)
     return false;
 }
 
-bool expect_key_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, bool lax_value_strictness)
+template<typename Seq>
+bool expect_key_value(int& pos, const Seq& dat, token_seq tok, bool insert_ghosts, bool lax_value_strictness)
 {
     bool success = true;
 
@@ -437,7 +463,8 @@ bool expect_key_value(int& pos, data_t dat, token_seq tok, bool insert_ghosts, b
     return success;
 }
 
-bool expect_seclevel(int& pos, data_t dat, token_seq tok)
+template<typename Seq>
+bool expect_seclevel(int& pos, const Seq& dat, token_seq tok)
 {
     if(!in_bound(pos, dat))
         return false;
@@ -457,7 +484,7 @@ bool expect_seclevel(int& pos, data_t dat, token_seq tok)
         "#0s."
     };
 
-    if(dat[pos].c != '#')
+    if(index(dat, pos) != '#')
         return false;
 
     std::string found;
@@ -477,7 +504,7 @@ bool expect_seclevel(int& pos, data_t dat, token_seq tok)
                 break;
             }
 
-            if(sec[kk] != dat[offset].c)
+            if(sec[kk] != index(dat, offset))
             {
                 all = false;
                 break;
@@ -493,7 +520,7 @@ bool expect_seclevel(int& pos, data_t dat, token_seq tok)
         break;
     }
 
-    if(!any && dat[pos].c == '#')
+    if(!any && index(dat, pos) == '#')
     {
         found = "#";
         any = true;
@@ -519,7 +546,8 @@ bool expect_seclevel(int& pos, data_t dat, token_seq tok)
     return true;
 }
 
-void tokenise_function_internal(int& pos, data_t dat, token_seq tok, bool insert_ghosts, bool lax_value_strictness)
+template<typename Seq>
+void tokenise_function_internal(int& pos, const Seq& dat, token_seq tok, bool insert_ghosts, bool lax_value_strictness)
 {
     expect_hostname(pos, dat, tok);
     expect_dot(pos, dat, tok);
@@ -536,7 +564,7 @@ void tokenise_function_internal(int& pos, data_t dat, token_seq tok, bool insert
 
     if(pos < (int)dat.size())
     {
-        array_style = dat[pos].c == '[';
+        array_style = index(dat, pos) == '[';
     }
 
     bool success = true;
@@ -551,7 +579,7 @@ void tokenise_function_internal(int& pos, data_t dat, token_seq tok, bool insert
 
     if(pos < (int)dat.size())
     {
-        if(dat[pos].c == '[')
+        if(index(dat, pos) == '[')
             success = expect_value(pos, dat, tok, insert_ghosts, 0, lax_value_strictness);
         else
             success = expect_key_value(pos, dat, tok, insert_ghosts, lax_value_strictness);
@@ -562,7 +590,7 @@ void tokenise_function_internal(int& pos, data_t dat, token_seq tok, bool insert
 
             if(pos < (int)dat.size())
             {
-                if(dat[pos].c == '[')
+                if(index(dat, pos) == '[')
                     success = expect_value(pos, dat, tok, insert_ghosts, 0, lax_value_strictness);
                 else
                     success = expect_key_value(pos, dat, tok, insert_ghosts, lax_value_strictness);
@@ -594,7 +622,8 @@ void tokenise_function_internal(int& pos, data_t dat, token_seq tok, bool insert
     discard_whitespace(pos, dat, tok);
 }
 
-std::vector<token_info> tokenise_function(const std::vector<interop_char>& dat, bool insert_ghosts)
+template<typename Seq>
+std::vector<token_info> tokenise_function_impl(const Seq& dat, bool insert_ghosts)
 {
     std::vector<token_info> tok;
 
@@ -611,7 +640,8 @@ std::vector<token_info> tokenise_function(const std::vector<interop_char>& dat, 
     return tok;
 }
 
-std::vector<token_info> tokenise_general(const std::vector<interop_char>& dat)
+template<typename Seq>
+std::vector<token_info> tokenise_general_impl(const Seq& dat)
 {
     std::vector<token_info> tok;
     int pos = 0;
@@ -648,6 +678,26 @@ std::vector<token_info> tokenise_general(const std::vector<interop_char>& dat)
     }
 
     return tok;
+}
+
+std::vector<token_info> tokenise_function(const std::vector<interop_char>& dat, bool insert_ghosts)
+{
+    return tokenise_function_impl(dat, insert_ghosts);
+}
+
+std::vector<token_info> tokenise_general(const std::vector<interop_char>& dat)
+{
+    return tokenise_general_impl(dat);
+}
+
+std::vector<token_info> tokenise_function(std::string_view dat, bool insert_ghosts)
+{
+    return tokenise_function_impl(dat, insert_ghosts);
+}
+
+std::vector<token_info> tokenise_general(std::string_view dat)
+{
+    return tokenise_general_impl(dat);
 }
 
 bool has_token(token::token type, const std::vector<token_info>& tokens)

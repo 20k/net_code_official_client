@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <string_view>
 
 struct interop_char;
 
@@ -56,6 +57,10 @@ struct token_info
 
 std::vector<token_info> tokenise_function(const std::vector<interop_char>& ichars, bool insert_ghosts);
 std::vector<token_info> tokenise_general(const std::vector<interop_char>& ichars);
+
+std::vector<token_info> tokenise_function(std::string_view ichars, bool insert_ghosts);
+std::vector<token_info> tokenise_general(std::string_view ichars);
+
 std::string tokens_to_full_script(const std::vector<token_info>& tokens);
 
 token_info make_ghost_token(int start, token::token type, const std::string& chars);
