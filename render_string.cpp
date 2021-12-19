@@ -310,7 +310,7 @@ float get_window_title_offset()
     return title_offset;
 }
 
-void driven_scrollbar::render()
+void driven_scrollbar::render(int trailing_blank_lines)
 {
     float paddingx = ImGui::GetStyle().FramePadding.x;
     float paddingy = ImGui::GetStyle().FramePadding.y + 16;
@@ -323,12 +323,12 @@ void driven_scrollbar::render()
     {
         if(ImGui::IsKeyPressed(ImGui::GetIO().KeyMap[ImGuiKey_PageDown]))
         {
-            adjust_by_lines(floor(render_height / char_inf::cheight));
+            adjust_by_lines(floor(render_height / char_inf::cheight), trailing_blank_lines);
         }
 
         if(ImGui::IsKeyPressed(ImGui::GetIO().KeyMap[ImGuiKey_PageUp]))
         {
-            adjust_by_lines(-floor(render_height / char_inf::cheight));
+            adjust_by_lines(-floor(render_height / char_inf::cheight), trailing_blank_lines);
         }
     }
 
@@ -336,7 +336,7 @@ void driven_scrollbar::render()
     {
         if(ImGui::GetIO().MouseWheel != 0)
         {
-            adjust_by_lines(-ImGui::GetIO().MouseWheel);
+            adjust_by_lines(-ImGui::GetIO().MouseWheel, trailing_blank_lines);
         }
     }
 
@@ -416,9 +416,16 @@ void driven_scrollbar::adjust_by_px(float py)
     fraction = clamp(fraction, 0.f, 1.f);
 }
 
-void driven_scrollbar::adjust_by_lines(float lines)
+float get_desired_visible_y_end(float content_height, int trailing_blank_lines)
 {
-    float desired_visible_y_end = content_height + char_inf::cheight * 2 + ImGui::GetStyle().WindowPadding.y;
+    int additional = trailing_blank_lines;
+
+    return content_height + char_inf::cheight * (2 + additional) + ImGui::GetStyle().WindowPadding.y;
+}
+
+void driven_scrollbar::adjust_by_lines(float lines, int trailing_blank_lines)
+{
+    float desired_visible_y_end = get_desired_visible_y_end(content_height, trailing_blank_lines);
 
     float scroll_fraction_at_end = (desired_visible_y_end - window_size.y()) / content_height;
 
@@ -444,6 +451,8 @@ void driven_scrollbar::adjust_by_lines(float lines)
 
 void text_manager::render()
 {
+    int trailing_blank_lines = 1;
+
     float clip_width = window_size.x() - 2 * char_inf::cwbuf;
     float content_height = 0;
 
@@ -465,7 +474,7 @@ void text_manager::render()
     scrollbar.content_height = content_height;
     scrollbar.window_size = window_size;
 
-    scrollbar.render();
+    scrollbar.render(trailing_blank_lines);
 
     copy_handler2& handle = get_global_copy_handler2();
 
@@ -521,8 +530,6 @@ void text_manager::render()
         check_copy = false;
     }
 
-    float window_padding_y = ImGui::GetStyle().WindowPadding.y;
-
     float scroll_fraction = scrollbar.fraction;
 
     float adjusted_scroll_fraction = scroll_fraction;
@@ -530,7 +537,7 @@ void text_manager::render()
     if(content_height > 0)
     {
         ///so, when scroll_fraction is 1, we want visible_y_end to be lines.size() * size + padding
-        float desired_visible_y_end = content_height + char_inf::cheight * 2 + window_padding_y;
+        float desired_visible_y_end = get_desired_visible_y_end(content_height, trailing_blank_lines);
 
         ///vye = scroll_fraction * content_height + window_size.y()
         ///(vye - window_size.y()) / content_height = scroll_fraction
@@ -581,7 +588,7 @@ void text_manager::render()
 
             float top_offset = current_pixel_y;
 
-            if(top_offset >= visible_y_start - char_inf::cheight && top_offset < visible_y_end + char_inf::cheight)
+            if(top_offset >= visible_y_start - char_inf::cheight && top_offset < visible_y_end - (3 + trailing_blank_lines) * char_inf::cheight)
             {
                 float from_top_of_window = top_offset - visible_y_start;
 

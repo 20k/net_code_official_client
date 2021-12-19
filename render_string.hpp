@@ -53,9 +53,9 @@ struct driven_scrollbar
     float fraction = 1;
     float content_height = 0;
 
-    void render();
+    void render(int trailing_blank_lines);
     void adjust_by_px(float py);
-    void adjust_by_lines(float lines);
+    void adjust_by_lines(float lines, int trailing_blank_lines);
 };
 
 struct text_manager
