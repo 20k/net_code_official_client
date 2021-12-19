@@ -336,13 +336,8 @@ void driven_scrollbar::render()
 
     float adjusted_scroll_fraction = mix(0, scroll_fraction_at_end, fraction);
 
-    //float position_y_top = fraction * scroll_height - scrollbar_height;
-    //float position_y_bottom = position_y_top + scrollbar_height;
-
     float position_y_top = adjusted_scroll_fraction * scroll_height;
     float position_y_bottom = position_y_top + scrollbar_height;
-
-    //position_y += scrollbar_height/2.f;
 
     ImU32 col_bar = IM_COL32(15, 15, 15, 255);
 
