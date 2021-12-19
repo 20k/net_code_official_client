@@ -273,6 +273,11 @@ void text_manager::add_main_text(std::string str)
     paragraphs.emplace_back(std::move(str), false, auto_handle, true);
 }
 
+float get_formatting_clip_width(float new_window_width, float scrollbar_width)
+{
+    return new_window_width - 2 * char_inf::cwbuf - scrollbar_width - ImGui::GetStyle().FramePadding.x - 2 * char_inf::cwidth;
+}
+
 void text_manager::relayout(vec2f new_window_size)
 {
     vec2f old_window_size = window_size;
@@ -293,7 +298,7 @@ void text_manager::relayout(vec2f new_window_size)
 
     for(paragraph_string& s : paragraphs)
     {
-        s.build(new_window_size.x() - 2 * char_inf::cwbuf - scrollbar.width - ImGui::GetStyle().FramePadding.x - 2 * char_inf::cwidth);
+        s.build(get_formatting_clip_width(new_window_size.x(), scrollbar.width));
     }
 
     if(scrollbar_at_bottom)
@@ -451,8 +456,6 @@ void driven_scrollbar::adjust_by_lines(float lines, int trailing_blank_lines)
 
 void text_manager::render()
 {
-    int trailing_blank_lines = 1;
-
     float clip_width = window_size.x() - 2 * char_inf::cwbuf;
     float content_height = 0;
 
@@ -471,11 +474,22 @@ void text_manager::render()
 
     should_reset_scrollbar = false;
 
+    int trailing_blank_lines = 0;
+
+    paragraph_string command_line(command.command, true, auto_handle, false);
+    command_line.build(get_formatting_clip_width(window_size.x(), scrollbar.width));
+
+    int command_line_height = command_line.lines.size();
+
+    if(command_line_height == 0)
+        trailing_blank_lines = 1;
+
+    trailing_blank_lines += command_line_height;
+
     scrollbar.content_height = content_height;
     scrollbar.window_size = window_size;
 
     scrollbar.render(trailing_blank_lines);
-
     copy_handler2& handle = get_global_copy_handler2();
 
     std::string copy_string;

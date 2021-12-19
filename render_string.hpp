@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include "auto_handlers.hpp"
+#include "editable_string.hpp"
 
 ///so. Wants to be a single paragraph of text, prebroken up into render units
 ///wants to be split up into screen sized lines, each of a known length, so its easy to reformat if the screen resizes
@@ -61,6 +62,8 @@ struct driven_scrollbar
 struct text_manager
 {
     auto_handler auto_handle;
+
+    editable_string command;
 
     driven_scrollbar scrollbar;
 
