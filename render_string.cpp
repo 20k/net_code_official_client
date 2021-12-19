@@ -363,11 +363,24 @@ void driven_scrollbar::render()
 
         fraction = clamp(fraction, 0.f, 1.f);
     }
+
+    if(ImGui::IsWindowFocused())
+    {
+        if(ImGui::IsKeyPressed(ImGui::GetIO().KeyMap[ImGuiKey_PageDown]))
+        {
+            adjust_by_px(scroll_height);
+        }
+
+        if(ImGui::IsKeyPressed(ImGui::GetIO().KeyMap[ImGuiKey_PageUp]))
+        {
+            adjust_by_px(-scroll_height);
+        }
+    }
 }
 
-void driven_scrollbar::adjust_by_lines(float lines)
+void driven_scrollbar::adjust_by_px(float py)
 {
-    float adjust_pixels = lines * char_inf::cheight;
+    float adjust_pixels = py;
 
     float as_frac = adjust_pixels / content_height;
 
