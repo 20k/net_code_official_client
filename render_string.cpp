@@ -343,9 +343,6 @@ void driven_scrollbar::render()
 
     float sx = 2;
 
-    ImVec2 hover_tl = {tl.x - 5, tl.y};
-    ImVec2 hover_br = {br.x, br.y};
-
     if(ImGui::IsItemHovered())
     {
         col_bar = IM_COL32(50, 50, 50, 255);
