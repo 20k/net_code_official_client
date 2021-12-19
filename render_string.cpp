@@ -287,6 +287,52 @@ void text_manager::relayout(vec2f new_window_size)
     }
 }
 
+float get_window_title_offset()
+{
+    float decoration_up_height = ImGui::GetCurrentWindow()->TitleBarHeight() + ImGui::GetCurrentWindow()->MenuBarHeight();
+    float title_offset = decoration_up_height + ImGui::GetStyle().WindowPadding.y;
+
+    return title_offset;
+}
+
+void driven_scrollbar::render()
+{
+    float width = 10;
+
+    float paddingx = ImGui::GetStyle().FramePadding.x;
+    float paddingy = ImGui::GetStyle().FramePadding.y;
+
+    float height = ImGui::GetWindowSize().y;
+
+    float render_x = ImGui::GetWindowSize().x - width - paddingx;
+    float render_y = get_window_title_offset();
+
+    ImDrawList* imlist = ImGui::GetWindowDrawList();
+
+    ImVec2 window_pos = ImGui::GetWindowPos();
+
+    ImU32 col = IM_COL32(5, 5, 5, 255);
+    ImU32 col2 = IM_COL32(2, 2, 2, 255);
+
+    ImVec2 tl = {render_x, render_y};
+    ImVec2 br = {render_x + width, height - paddingy};
+
+    tl.x += window_pos.x;
+    tl.y += window_pos.y;
+
+    br.x += window_pos.x;
+    br.y += window_pos.y;
+
+    tl.x = round(tl.x);
+    tl.y = round(tl.y);
+
+    br.x = round(br.x);
+    br.y = round(br.y);
+
+    imlist->AddRectFilled(tl, br, col2, 0, 0);
+    imlist->AddRect(tl, br, col, 0, 0, 1);
+}
+
 void text_manager::render()
 {
     float clip_width = window_size.x() - 2 * char_inf::cwbuf;
@@ -300,7 +346,10 @@ void text_manager::render()
     ImGui::SetNextWindowContentSize({clip_width, content_height});
     ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_Appearing);
 
-    ImGui::Begin("Test Terminal");
+    ImGui::Begin("Test Terminal", nullptr, ImGuiWindowFlags_NoScrollbar);
+
+    scrollbar.fraction = 1;
+    scrollbar.content_height = content_height;
 
     copy_handler2& handle = get_global_copy_handler2();
 
@@ -409,8 +458,7 @@ void text_manager::render()
     float base_left_offset = char_inf::cwbuf + ImGui::GetWindowPos().x;
     float base_top_offset = ImGui::GetWindowPos().y;
 
-    float decoration_up_height = ImGui::GetCurrentWindow()->TitleBarHeight() + ImGui::GetCurrentWindow()->MenuBarHeight();
-    float title_offset = decoration_up_height + window_padding_y;
+    float title_offset = get_window_title_offset();
 
     vec2f cdim = {char_inf::cwidth, char_inf::cheight};
 
@@ -524,6 +572,8 @@ void text_manager::render()
 
         handle.reset_trigger();
     }
+
+    scrollbar.render();
 
     ImGui::End();
 

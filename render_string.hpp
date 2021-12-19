@@ -48,13 +48,15 @@ struct paragraph_string
 struct driven_scrollbar
 {
     float fraction = 1;
-    float content_height = 0
+    float content_height = 0;
 
     void render();
 };
 
 struct text_manager
 {
+    driven_scrollbar scrollbar;
+
     vec2f window_size;
     vec2f cached_character_size;
 
