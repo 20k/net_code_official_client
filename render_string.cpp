@@ -354,9 +354,10 @@ void driven_scrollbar::render()
     {
         float mouse_y = ImGui::GetMousePos().y;
 
-        float relative_mouse_y = mouse_y - tl.y;
+        float mouse_position_at_0 = tl.y + scrollbar_height/2.f;
+        float mouse_position_at_1 = tl.y + scroll_height - scrollbar_height/2.f;
 
-        float mouse_y_fraction = relative_mouse_y / scroll_height;
+        float mouse_y_fraction = (mouse_y - mouse_position_at_0) / (mouse_position_at_1 - mouse_position_at_0);
 
         fraction = mouse_y_fraction;
 
