@@ -300,6 +300,29 @@ void driven_scrollbar::render()
 
     float height = ImGui::GetWindowSize().y;
 
+    float render_height = (height - paddingy) - get_window_title_offset();
+
+    if(ImGui::IsWindowFocused())
+    {
+        if(ImGui::IsKeyPressed(ImGui::GetIO().KeyMap[ImGuiKey_PageDown]))
+        {
+            adjust_by_px(render_height);
+        }
+
+        if(ImGui::IsKeyPressed(ImGui::GetIO().KeyMap[ImGuiKey_PageUp]))
+        {
+            adjust_by_px(-render_height);
+        }
+    }
+
+    if(ImGui::IsWindowHovered())
+    {
+        if(ImGui::GetIO().MouseWheel != 0)
+        {
+            adjust_by_px(-ImGui::GetIO().MouseWheel * char_inf::cheight);
+        }
+    }
+
     float render_x = ImGui::GetWindowSize().x - width - paddingx;
     float render_y = get_window_title_offset();
 
@@ -363,19 +386,6 @@ void driven_scrollbar::render()
 
         fraction = clamp(fraction, 0.f, 1.f);
     }
-
-    if(ImGui::IsWindowFocused())
-    {
-        if(ImGui::IsKeyPressed(ImGui::GetIO().KeyMap[ImGuiKey_PageDown]))
-        {
-            adjust_by_px(scroll_height);
-        }
-
-        if(ImGui::IsKeyPressed(ImGui::GetIO().KeyMap[ImGuiKey_PageUp]))
-        {
-            adjust_by_px(-scroll_height);
-        }
-    }
 }
 
 void driven_scrollbar::adjust_by_px(float py)
@@ -410,6 +420,8 @@ void text_manager::render()
     should_reset_scrollbar = false;
 
     scrollbar.content_height = content_height;
+
+    scrollbar.render();
 
     copy_handler2& handle = get_global_copy_handler2();
 
@@ -613,8 +625,6 @@ void text_manager::render()
 
         handle.reset_trigger();
     }
-
-    scrollbar.render();
 
     ImGui::End();
 
