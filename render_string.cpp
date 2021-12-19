@@ -416,6 +416,21 @@ void text_manager::render()
         handle.cancelled = true;
     }
 
+    if(ImGui::IsWindowHovered() && !handle.is_dragging())
+    {
+        vec2f tl = {ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + get_window_title_offset()};
+        vec2f br = {ImGui::GetWindowPos().x + ImGui::GetWindowSize().x - scrollbar.width - char_inf::cwbuf - ImGui::GetStyle().FramePadding.x, ImGui::GetWindowPos().y + ImGui::GetWindowSize().y};
+
+        vec2f mouse_pos = {ImGui::GetMousePos().x, ImGui::GetMousePos().y};
+
+        bool point_in_rect = mouse_pos.x() >= tl.x() && mouse_pos.x() < br.x() && mouse_pos.y() >= tl.y() && mouse_pos.y() < br.y();
+
+        if(!point_in_rect)
+        {
+            handle.cancelled = true;
+        }
+    }
+
     vec2f found_window_size = {ImGui::GetWindowSize().x, ImGui::GetWindowSize().y};
 
     if(found_window_size != window_size)
@@ -446,8 +461,6 @@ void text_manager::render()
 
         adjusted_scroll_fraction = mix(0, scroll_fraction_at_end, scroll_fraction);
     }
-
-    printf("ASF %f\n", adjusted_scroll_fraction);
 
     if(scroll_fraction < 1)
         scrollbar_at_bottom = false;
