@@ -359,8 +359,6 @@ void driven_scrollbar::render()
     {
         float mouse_y = ImGui::GetMousePos().y;
 
-        printf("Mouse y %f\n", mouse_y);
-
         float relative_mouse_y = mouse_y - tl.y;
 
         float mouse_y_fraction = relative_mouse_y / scroll_height;
@@ -368,8 +366,6 @@ void driven_scrollbar::render()
         fraction = mouse_y_fraction;
 
         fraction = clamp(fraction, 0.f, 1.f);
-
-        printf("Fraction %f\n", fraction);
     }
 }
 
