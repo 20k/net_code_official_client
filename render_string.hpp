@@ -50,6 +50,10 @@ struct text_manager
     vec2f window_size;
     vec2f cached_character_size;
 
+    bool has_rendered_once = false;
+    bool should_reset_scrollbar = true;
+    bool scrollbar_at_bottom = false;
+
     void relayout(vec2f new_window_size);
 
     void add_main_text(std::string view);

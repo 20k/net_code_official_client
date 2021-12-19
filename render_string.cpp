@@ -258,15 +258,22 @@ void text_manager::add_main_text(std::string str)
 
 void text_manager::relayout(vec2f new_window_size)
 {
-    if(window_size == new_window_size && cached_character_size == (vec2f){char_inf::cwidth, char_inf::cheight})
+    vec2f old_window_size = window_size;
+    window_size = new_window_size;
+
+    if(old_window_size.x() == new_window_size.x() && cached_character_size == (vec2f){char_inf::cwidth, char_inf::cheight})
         return;
 
-    window_size = new_window_size;
     cached_character_size = {char_inf::cwidth, char_inf::cheight};
 
     for(paragraph_string& s : paragraphs)
     {
         s.build(new_window_size.x() - 2 * char_inf::cwbuf);
+    }
+
+    if(scrollbar_at_bottom)
+    {
+        should_reset_scrollbar = true;
     }
 }
 
@@ -350,6 +357,25 @@ void text_manager::render()
         float scroll_fraction_at_end = (desired_visible_y_end - window_size.y()) / content_height;
 
         adjusted_scroll_fraction = mix(0, scroll_fraction_at_end, scroll_fraction);
+    }
+
+    if(has_rendered_once)
+    {
+        if(should_reset_scrollbar)
+            scrollbar_at_bottom = true;
+
+        if(should_reset_scrollbar)
+            ImGui::SetScrollY(max_scroll_y);
+
+        should_reset_scrollbar = false;
+
+        if(scroll_fraction < 1)
+            scrollbar_at_bottom = false;
+
+        if(scroll_fraction == 1)
+            scrollbar_at_bottom = true;
+
+        printf("Scroll frac %f\n", scroll_fraction);
     }
 
     ///in pixels
@@ -478,6 +504,8 @@ void text_manager::render()
     }
 
     ImGui::End();
+
+    has_rendered_once = true;
 
     relayout(found_window_size);
 }
