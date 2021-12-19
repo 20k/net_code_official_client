@@ -210,8 +210,27 @@ std::vector<render_string> auto_colour(auto_handler& handle, std::string_view in
 
     std::vector<token_info> tokens = tokenise_general(in);
 
-    for(token_info& i : tokens)
+    //for(token_info& i : tokens)
+
+    for(int kk=0; kk < (int)tokens.size(); kk++)
     {
+        token_info& i = tokens[kk];
+
+        if(kk > 0)
+        {
+            token_info& last = tokens[kk - 1];
+
+            if(last.end_pos != i.start_pos)
+            {
+                render_string next;
+                next.start = last.end_pos;
+                next.length = i.start_pos - last.end_pos;
+                next.colour = srgb_to_lin(default_colour/255.f)*255.f;
+
+                strings.push_back(next);
+            }
+        }
+
         int old_string_size = strings.size();
 
         auto add_coloured_string = [&](vec3f srgb_colour)

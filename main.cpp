@@ -442,6 +442,8 @@ int main(int argc, char* argv[])
         default_text.add_main_text("dfffffffffffffffffff[] while function sasdfsdfwerqaowiejrlkdv;lkzcxmvlzjaskdjfakej\n");
     }
 
+    default_text.add_main_text("1234 3.4 {}");
+
     default_text.add_main_text("lastline");
 
     //while(running)
