@@ -295,8 +295,6 @@ void text_manager::render()
         check_copy = true;
         trigger_copy = true;
         handle->copied.clear();
-
-        printf("Trigger\n");
     }
 
     if(ImGui::IsWindowFocused() && handle->held)
@@ -304,7 +302,6 @@ void text_manager::render()
         check_copy = true;
     }
 
-    ///
     if(ImGui::IsItemHovered() && !handle->held)
     {
         handle->copy_suppressed = true;
