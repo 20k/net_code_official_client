@@ -591,75 +591,101 @@ void text_manager::render()
     vec2f highlight_br = {-FLT_MAX, -FLT_MAX};
     bool any_highlighted = false;
 
+    auto process_screen_line = [&](const paragraph_string& s, const screen_line& sl, float y_screen)
+    {
+        float left_offset = base_left_offset;
+
+        for(const render_string& rs : sl.strings)
+        {
+            vec3f colour = rs.colour;
+
+            int idx_start = rs.start;
+            int idx_len = rs.length;
+
+            int ir = colour.x();
+            int ig = colour.y();
+            int ib = colour.z();
+
+            const char* start = s.str.c_str() + idx_start;
+            const char* fin = s.str.c_str() + idx_start + idx_len;
+
+            ImDrawList* imlist = ImGui::GetWindowDrawList();
+
+            imlist->AddText(ImVec2(left_offset, y_screen), IM_COL32(ir, ig, ib, 255), start, fin);
+
+            if(check_copy || trigger_copy)
+            {
+                for(int kk=rs.start; kk < rs.start + rs.length; kk++)
+                {
+                    char c = s.str[kk];
+
+                    vec2f pos = {left_offset + (kk - rs.start) * char_inf::cwidth, y_screen};
+
+                    if(handle.char_within_region(pos, cdim))
+                    {
+                        if(trigger_copy)
+                        {
+                            if(copy_string.size() != 0 && handle.last_copy_y != pos.y())
+                                copy_string += "\n" + std::string(1, c);
+                            else
+                                copy_string += std::string(1, c);
+
+                            handle.last_copy_y = pos.y();
+                        }
+
+                        highlight_tl = min(highlight_tl, pos);
+                        highlight_br = max(highlight_br, pos + cdim);
+
+                        any_highlighted = true;
+                    }
+                }
+            }
+
+            left_offset += rs.length * char_inf::cwidth;
+        }
+    };
+
+    auto process_paragraph = [&](const paragraph_string& s)
+    {
+        for(const screen_line& sl : s.lines)
+        {
+            float top_offset = current_pixel_y;
+
+            float from_top_of_window = top_offset - visible_y_start;
+
+            float padded_y = from_top_of_window + base_top_offset + title_offset;
+
+            if(top_offset >= visible_y_start - char_inf::cheight && (top_offset < visible_y_end - (3 + trailing_blank_lines) * char_inf::cheight))
+            {
+                process_screen_line(s, sl, padded_y);
+            }
+
+            current_pixel_y += char_inf::cheight;
+        }
+    };
+
+    auto process_paragraph_with_y = [&](const paragraph_string& s, float screen_y)
+    {
+        for(const screen_line& sl : s.lines)
+        {
+            process_screen_line(s, sl, screen_y);
+
+            screen_y += char_inf::cheight;
+        }
+    };
+
     ///step 1: render everything
     ///step 2: render only stuff in visible region
     ///step 3: remove the content height calculation above
     for(const paragraph_string& s : paragraphs)
     {
-        for(const screen_line& sl : s.lines)
-        {
-            float left_offset = base_left_offset;
+        process_paragraph(s);
+    }
 
-            float top_offset = current_pixel_y;
+    {
+        float screen_y = base_top_offset + window_size.y() - ImGui::GetStyle().WindowPadding.y - char_inf::cheight * trailing_blank_lines;
 
-            if(top_offset >= visible_y_start - char_inf::cheight && top_offset < visible_y_end - (3 + trailing_blank_lines) * char_inf::cheight)
-            {
-                float from_top_of_window = top_offset - visible_y_start;
-
-                float padded_y = from_top_of_window + base_top_offset + title_offset;
-
-                for(const render_string& rs : sl.strings)
-                {
-                    vec3f colour = rs.colour;
-
-                    int idx_start = rs.start;
-                    int idx_len = rs.length;
-
-                    int ir = colour.x();
-                    int ig = colour.y();
-                    int ib = colour.z();
-
-                    const char* start = s.str.c_str() + idx_start;
-                    const char* fin = s.str.c_str() + idx_start + idx_len;
-
-                    ImDrawList* imlist = ImGui::GetWindowDrawList();
-
-                    imlist->AddText(ImVec2(left_offset, padded_y), IM_COL32(ir, ig, ib, 255), start, fin);
-
-                    if(check_copy || trigger_copy)
-                    {
-                        for(int kk=rs.start; kk < rs.start + rs.length; kk++)
-                        {
-                            char c = s.str[kk];
-
-                            vec2f pos = {left_offset + (kk - rs.start) * char_inf::cwidth, padded_y};
-
-                            if(handle.char_within_region(pos, cdim))
-                            {
-                                if(trigger_copy)
-                                {
-                                    if(copy_string.size() != 0 && handle.last_copy_y != pos.y())
-                                        copy_string += "\n" + std::string(1, c);
-                                    else
-                                        copy_string += std::string(1, c);
-
-                                    handle.last_copy_y = pos.y();
-                                }
-
-                                highlight_tl = min(highlight_tl, pos);
-                                highlight_br = max(highlight_br, pos + cdim);
-
-                                any_highlighted = true;
-                            }
-                        }
-                    }
-
-                    left_offset += rs.length * char_inf::cwidth;
-                }
-            }
-
-            current_pixel_y += char_inf::cheight;
-        }
+        process_paragraph_with_y(command_line, screen_y);
     }
 
     if(any_highlighted)
