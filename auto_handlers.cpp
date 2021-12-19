@@ -4,6 +4,7 @@
 #include "util.hpp"
 #include "tokeniser.hpp"
 #include "render_string.hpp"
+#include <iostream>
 
 inline
 void colour_interop(std::vector<interop_char>& in, int start, int fin, vec3f col)
@@ -218,7 +219,7 @@ std::vector<render_string> auto_colour(auto_handler& handle, std::string_view in
             render_string next;
             next.start = i.start_pos;
             next.length = i.end_pos - i.start_pos;
-            next.colour = srgb_to_lin(srgb_colour);
+            next.colour = srgb_to_lin(srgb_colour/255.f)*255.f;
 
             strings.push_back(next);
         };
@@ -250,7 +251,7 @@ std::vector<render_string> auto_colour(auto_handler& handle, std::string_view in
             add_coloured_string(key_col);
         }
 
-        if(old_string_size == strings.size())
+        if(old_string_size == (int)strings.size())
         {
             add_coloured_string(default_colour);
         }

@@ -5,19 +5,20 @@
 #include <imgui_internal.h>
 #include "string_helpers.hpp"
 #include "copy_handler.hpp"
+#include "auto_handlers.hpp"
 
 vec3f process_colour(vec3f in)
 {
     if(ImGui::IsStyleLinearColor())
     {
-        return srgb_to_lin(in);
+        return srgb_to_lin(in/255.f)*255.f;
     }
 
     return in;
 }
 
 ///this function should handle autocolouring
-std::vector<render_string> create_render_strings(std::string_view in, bool include_specials)
+std::vector<render_string> create_render_strings(std::string_view in, bool include_specials, auto_handler& handle, bool parse_for_autocompletes)
 {
     std::vector<render_string> ret;
 
@@ -38,7 +39,19 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
         ///the colour always gets overwritten
         if(current_chunk.length > 0)
         {
-            ret.push_back(current_chunk);
+            if(!currently_colouring)
+            {
+                std::string_view as_view = std::string_view(in.begin() + current_chunk.start, in.begin() + current_chunk.start + current_chunk.length);
+
+                std::vector<render_string> autocoloured = auto_colour(handle, as_view, false, parse_for_autocompletes);
+
+                ret.insert(ret.end(), autocoloured.begin(), autocoloured.end());
+            }
+            else
+            {
+                ret.push_back(current_chunk);
+            }
+
             render_string& last_chunk = ret.back();
 
             current_chunk = render_string();
@@ -61,7 +74,11 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
 
             bump_colour();
 
-            current_chunk.colour = last_colour;
+            if(currently_colouring)
+                current_chunk.colour = last_colour;
+            else
+                current_chunk.colour = default_colour;
+
             current_chunk.start = idx;
             current_chunk.length = 1;
         }
@@ -165,9 +182,9 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
 
 paragraph_string::paragraph_string(){}
 
-paragraph_string::paragraph_string(std::string in, bool include_specials)
+paragraph_string::paragraph_string(std::string in, bool include_specials, auto_handler& handle, bool parse_for_autocompletes)
 {
-    basic_render_strings = create_render_strings(in, include_specials);
+    basic_render_strings = create_render_strings(in, include_specials, handle, parse_for_autocompletes);
     str = std::move(in);
 }
 
@@ -253,7 +270,7 @@ void paragraph_string::build(float clip_width)
 
 void text_manager::add_main_text(std::string str)
 {
-    paragraphs.emplace_back(std::move(str), false);
+    paragraphs.emplace_back(std::move(str), false, auto_handle, true);
 }
 
 void text_manager::relayout(vec2f new_window_size)
@@ -577,9 +594,9 @@ void text_manager::render()
                     int idx_start = rs.start;
                     int idx_len = rs.length;
 
-                    int ir = colour.x() * 255;
-                    int ig = colour.y() * 255;
-                    int ib = colour.z() * 255;
+                    int ir = colour.x();
+                    int ig = colour.y();
+                    int ib = colour.z();
 
                     const char* start = s.str.c_str() + idx_start;
                     const char* fin = s.str.c_str() + idx_start + idx_len;
@@ -662,7 +679,9 @@ void test_render_strings()
 {
     std::string base = "hello there []\" asdf `Xcatepillar`\n`B`uncoloured\n`Dhithere\n``uncoloured`Dcoloured1`randomtext`Bcoloured2\n";
 
-    std::vector<render_string> strs = create_render_strings(base, false);
+    auto_handler handle;
+
+    std::vector<render_string> strs = create_render_strings(base, false, handle, true);
 
     for(render_string& rstr : strs)
     {

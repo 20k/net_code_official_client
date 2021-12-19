@@ -5,6 +5,7 @@
 #include <vec/vec.hpp>
 #include <vector>
 #include <string>
+#include "auto_handlers.hpp"
 
 ///so. Wants to be a single paragraph of text, prebroken up into render units
 ///wants to be split up into screen sized lines, each of a known length, so its easy to reformat if the screen resizes
@@ -35,7 +36,7 @@ struct paragraph_string
     vec2f dim;
 
     paragraph_string();
-    paragraph_string(std::string in, bool include_specials);
+    paragraph_string(std::string in, bool include_specials, auto_handler& handle, bool parse_for_autocompletes);
 
     void build(float clip_width);
 
@@ -59,6 +60,8 @@ struct driven_scrollbar
 
 struct text_manager
 {
+    auto_handler auto_handle;
+
     driven_scrollbar scrollbar;
 
     vec2f window_size;
