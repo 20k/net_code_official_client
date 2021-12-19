@@ -317,20 +317,38 @@ void driven_scrollbar::render()
     ImVec2 tl = {render_x, render_y};
     ImVec2 br = {render_x + width, height - paddingy};
 
+    float scroll_height = br.y - tl.y;
+
     tl.x += window_pos.x;
     tl.y += window_pos.y;
 
     br.x += window_pos.x;
     br.y += window_pos.y;
 
-    tl.x = round(tl.x);
-    tl.y = round(tl.y);
-
-    br.x = round(br.x);
-    br.y = round(br.y);
-
     imlist->AddRectFilled(tl, br, col2, 0, 0);
     imlist->AddRect(tl, br, col, 0, 0, 1);
+
+    float scrollbar_height = 10;
+
+    float desired_scrollbar_end = scroll_height - 4;
+
+    float scroll_fraction_at_end = (desired_scrollbar_end - scrollbar_height) / scroll_height;
+
+    float adjusted_scroll_fraction = mix(0, scroll_fraction_at_end, fraction);
+
+    //float position_y_top = fraction * scroll_height - scrollbar_height;
+    //float position_y_bottom = position_y_top + scrollbar_height;
+
+    float position_y_top = adjusted_scroll_fraction * scroll_height;
+    float position_y_bottom = position_y_top + scrollbar_height;
+
+    //position_y += scrollbar_height/2.f;
+
+    ImU32 col_bar = IM_COL32(15, 15, 15, 255);
+
+    float sx = 2;
+
+    imlist->AddRectFilled({tl.x + sx, position_y_top + render_y + window_pos.y}, {br.x - sx, position_y_bottom + render_y + window_pos.y}, col_bar, 6, 0);
 }
 
 void text_manager::render()
