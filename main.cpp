@@ -439,7 +439,7 @@ int main(int argc, char* argv[])
 
     for(int i=0; i < 1024; i++)
     {
-        default_text.add_main_text("dfffffffffffffffffffsasdfsdfwerqaowiejrlkdv;lkzcxmvlzjaskdjfakej\n");
+        default_text.add_main_text("dfffffffffffffffffff[] while function sasdfsdfwerqaowiejrlkdv;lkzcxmvlzjaskdjfakej\n");
     }
 
     default_text.add_main_text("lastline");
