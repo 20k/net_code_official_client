@@ -336,7 +336,7 @@ void text_manager::render()
         scroll_fraction = scroll_y / max_scroll_y;
     }
 
-    float adjusted_scroll_fracton = scroll_fraction;
+    float adjusted_scroll_fraction = scroll_fraction;
 
     if(content_height > 0)
     {
@@ -349,11 +349,11 @@ void text_manager::render()
 
         float scroll_fraction_at_end = (desired_visible_y_end - window_size.y()) / content_height;
 
-        adjusted_scroll_fracton = mix(0, scroll_fraction_at_end, scroll_fraction);
+        adjusted_scroll_fraction = mix(0, scroll_fraction_at_end, scroll_fraction);
     }
 
     ///in pixels
-    float visible_y_start = adjusted_scroll_fracton * content_height;
+    float visible_y_start = adjusted_scroll_fraction * content_height;
     float visible_y_end = visible_y_start + window_size.y();
 
     float current_pixel_y = 0;
