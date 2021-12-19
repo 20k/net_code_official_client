@@ -943,6 +943,7 @@ int main(int argc, char* argv[])
                     last_line_invalidate_everything(terminals, chat_win);
 
                     get_global_copy_handler()->on_lclick(cursor_pos);
+                    get_global_copy_handler2().on_lclick(cursor_pos);
                 }
             }
 
@@ -956,12 +957,14 @@ int main(int argc, char* argv[])
                     last_line_invalidate_everything(terminals, chat_win);
 
                     get_global_copy_handler()->on_lclick_release(cursor_pos);
+                    get_global_copy_handler2().on_lclick_release(cursor_pos);
                 }
             }
 
             if(!ImGui::IsMouseDown(0))
             {
                 get_global_copy_handler()->on_no_lclick();
+                get_global_copy_handler2().on_no_lclick();
             }
 
             mouse_delta += scroll_y;
@@ -1301,6 +1304,7 @@ int main(int argc, char* argv[])
             if(ImGui::IsMouseDown(0))
             {
                 get_global_copy_handler()->on_hold_lclick(cursor_pos);
+                get_global_copy_handler2().on_hold_lclick(cursor_pos);
             }
 
             for(write_data& dat : to_read.websocket_read_queue[-1])

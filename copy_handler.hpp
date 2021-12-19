@@ -24,9 +24,6 @@ struct copy_handler
     void on_hold_lclick(vec2f pos);
     void on_no_lclick();
 
-    void process_formatted(std::vector<std::vector<formatted_char>>& chars);
-    void process_formatted(const std::vector<formatted_char>& chars, vec2f chars_offset);
-
     bool trigger_copy();
     void set_clipboard(const std::string& str);
 
@@ -43,5 +40,33 @@ copy_handler* get_global_copy_handler()
 {
     return &global_copy_handler;
 }
+
+struct copy_handler2
+{
+    float last_copy_y = 0;
+
+    bool triggered = false;
+    bool held = false;
+    bool cancelled = false;
+
+    vec2f start;
+    vec2f finish;
+
+    void on_lclick(vec2f pos);
+    void on_lclick_release(vec2f pos);
+
+    void on_hold_lclick(vec2f pos);
+    void on_no_lclick();
+
+    void set_clipboard(const std::string& str);
+    void reset_trigger();
+
+    bool is_dragging();
+    bool should_initiate_copy();
+
+    bool char_within_region(vec2f pos, vec2f cdim);
+};
+
+copy_handler2& get_global_copy_handler2();
 
 #endif // COPY_HANDLER_HPP_INCLUDED

@@ -285,26 +285,43 @@ void text_manager::render()
 
     ImGui::Begin("Test Terminal");
 
-    copy_handler* handle = get_global_copy_handler();
+    copy_handler2& handle = get_global_copy_handler2();
+
+    std::string copy_string;
 
     bool check_copy = false;
     bool trigger_copy = false;
 
-    if(ImGui::IsWindowFocused() && handle->trigger_copy())
+    if(ImGui::IsWindowFocused())
     {
-        check_copy = true;
-        trigger_copy = true;
-        handle->copied.clear();
+        if(handle.should_initiate_copy())
+        {
+            check_copy = true;
+            trigger_copy = true;
+        }
+
+        if(handle.is_dragging())
+        {
+            check_copy = true;
+        }
     }
 
-    if(ImGui::IsWindowFocused() && handle->held)
+    ///cancel copying if the titlebar is hovered
+    if(ImGui::IsItemHovered() && !handle.is_dragging())
     {
-        check_copy = true;
+        handle.cancelled = true;
     }
 
-    if(ImGui::IsItemHovered() && !handle->held)
+    vec2f found_window_size = {ImGui::GetWindowSize().x, ImGui::GetWindowSize().y};
+
+    if(found_window_size != window_size)
     {
-        handle->copy_suppressed = true;
+        handle.cancelled = true;
+    }
+
+    if(handle.cancelled)
+    {
+        check_copy = false;
     }
 
     float window_padding_y = ImGui::GetStyle().WindowPadding.y;
@@ -406,20 +423,20 @@ void text_manager::render()
 
                             vec2f pos = {left_offset + (kk - rs.start) * char_inf::cwidth, padded_y};
 
-                            if(focused && handle->char_is_within_select_box(pos, cdim))
+                            if(handle.char_within_region(pos, cdim))
                             {
-                                if(handle->copied.size() != 0 && handle->last_copy_y != pos.y())
-                                    handle->copied += "\n" + std::string(1, c);
-                                else
-                                    handle->copied += std::string(1, c);
+                                if(trigger_copy)
+                                {
+                                    if(copy_string.size() != 0 && handle.last_copy_y != pos.y())
+                                        copy_string += "\n" + std::string(1, c);
+                                    else
+                                        copy_string += std::string(1, c);
 
-                                handle->last_copy_y = pos.y();
+                                    handle.last_copy_y = pos.y();
 
-                                any_copied = true;
-                            }
+                                    any_copied = true;
+                                }
 
-                            if(focused && handle->char_dragged_over(pos, cdim))
-                            {
                                 highlight_tl = min(highlight_tl, pos);
                                 highlight_br = max(highlight_br, pos + cdim);
 
@@ -453,21 +470,19 @@ void text_manager::render()
         imlist->AddRect(tl, br, selection_colour_u32, 1.f, 0, 2);
     }
 
-    if(handle->trigger_copy())
+    if(trigger_copy)
     {
-        std::cout << "Copied2 " << handle->copied << std::endl;
+        if(any_copied)
+        {
+            std::cout << "Copied2 " << copy_string << std::endl;
 
-        handle->set_clipboard(handle->copied);
+            handle.set_clipboard(copy_string);
+        }
+
+        handle.reset_trigger();
     }
-
-    vec2f found_window_size = {ImGui::GetWindowSize().x, ImGui::GetWindowSize().y};
 
     ImGui::End();
-
-    if(found_window_size != window_size)
-    {
-        handle->copy_suppressed = true;
-    }
 
     relayout(found_window_size);
 }
