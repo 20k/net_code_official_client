@@ -41,9 +41,16 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
         {
             if(!currently_colouring)
             {
+                int chunk_start = current_chunk.start;
+
                 std::string_view as_view = std::string_view(in.begin() + current_chunk.start, in.begin() + current_chunk.start + current_chunk.length);
 
                 std::vector<render_string> autocoloured = auto_colour(handle, as_view, false, parse_for_autocompletes);
+
+                for(render_string& strs : autocoloured)
+                {
+                    strs.start += chunk_start;
+                }
 
                 ret.insert(ret.end(), autocoloured.begin(), autocoloured.end());
             }

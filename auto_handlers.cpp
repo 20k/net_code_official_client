@@ -212,6 +212,21 @@ std::vector<render_string> auto_colour(auto_handler& handle, std::string_view in
 
     //for(token_info& i : tokens)
 
+    if(tokens.size() > 0)
+    {
+        token_info& first = tokens.front();
+
+        if(first.start_pos != 0)
+        {
+            render_string next;
+            next.start =  0;
+            next.length = first.start_pos;
+            next.colour = srgb_to_lin(default_colour/255.f)*255.f;
+
+            strings.push_back(next);
+        }
+    }
+
     for(int kk=0; kk < (int)tokens.size(); kk++)
     {
         token_info& i = tokens[kk];
@@ -273,6 +288,21 @@ std::vector<render_string> auto_colour(auto_handler& handle, std::string_view in
         if(old_string_size == (int)strings.size())
         {
             add_coloured_string(default_colour);
+        }
+    }
+
+    if(tokens.size() > 0)
+    {
+        token_info& last = tokens.back();
+
+        if(last.end_pos != in.size())
+        {
+            render_string next;
+            next.start = last.end_pos;
+            next.length = in.size() - last.end_pos;
+            next.colour = srgb_to_lin(default_colour/255.f)*255.f;
+
+            strings.push_back(next);
         }
     }
 

@@ -435,13 +435,13 @@ int main(int argc, char* argv[])
 
     text_manager default_text;
 
-    default_text.command.command = "Test Command";
+    default_text.command.command = "Test Command\nsecondline";
 
     default_text.add_main_text("First line");
 
     for(int i=0; i < 1024; i++)
     {
-        default_text.add_main_text("dfffffffffffffffffff[] while function sasdfsdfwerqaowiejrlkdv;lkzcxmvlzjaskdjfakej\n");
+        default_text.add_main_text("dfffffffffffffffffff[] while function sasdfs\ndfwerqaowiejrlkdv;lkzcxmvlzjaskdjfakej\n");
     }
 
     default_text.add_main_text("1234 3.4 {}");
