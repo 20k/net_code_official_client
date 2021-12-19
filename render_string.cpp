@@ -267,8 +267,6 @@ void text_manager::relayout(vec2f new_window_size)
         {
             should_reset_scrollbar = true;
         }
-
-        printf("Relay\n");
     }
 
     if(old_window_size.x() == new_window_size.x() && cached_character_size == (vec2f){char_inf::cwidth, char_inf::cheight})
@@ -278,7 +276,7 @@ void text_manager::relayout(vec2f new_window_size)
 
     for(paragraph_string& s : paragraphs)
     {
-        s.build(new_window_size.x() - 2 * char_inf::cwbuf);
+        s.build(new_window_size.x() - 2 * char_inf::cwbuf - scrollbar.width - ImGui::GetStyle().FramePadding.x - 2 * char_inf::cwidth);
     }
 
     if(scrollbar_at_bottom)
@@ -384,7 +382,11 @@ void text_manager::render()
 
     ImGui::Begin("Test Terminal", nullptr, ImGuiWindowFlags_NoScrollbar);
 
-    //scrollbar.fraction = 1;
+    if(should_reset_scrollbar)
+        scrollbar.fraction = 1;
+
+    should_reset_scrollbar = false;
+
     scrollbar.content_height = content_height;
 
     copy_handler2& handle = get_global_copy_handler2();
@@ -428,42 +430,13 @@ void text_manager::render()
 
     float window_padding_y = ImGui::GetStyle().WindowPadding.y;
 
-    if(has_rendered_once)
-    {
-        if(scrollbar_at_bottom && found_window_size != window_size)
-        {
-            printf("Window resized\n");
-            should_reset_scrollbar = true;
-        }
-
-        if(should_reset_scrollbar)
-            scrollbar_at_bottom = true;
-
-        if(should_reset_scrollbar)
-        {
-            ImGui::SetScrollY(ImGui::GetScrollMaxY());
-            printf("Vals %f %f\n", ImGui::GetScrollY(), ImGui::GetScrollMaxY());
-        }
-
-        should_reset_scrollbar = false;
-    }
-
-    float scroll_y = ImGui::GetScrollY();
-    float max_scroll_y = ImGui::GetScrollMaxY();
-
-    float scroll_fraction = 1;
-
-    if(max_scroll_y != 0)
-    {
-        scroll_fraction = scroll_y / max_scroll_y;
-    }
+    float scroll_fraction = scrollbar.fraction;
 
     float adjusted_scroll_fraction = scroll_fraction;
 
     if(content_height > 0)
     {
         ///so, when scroll_fraction is 1, we want visible_y_end to be lines.size() * size + padding
-
         float desired_visible_y_end = content_height + char_inf::cheight * 2 + window_padding_y;
 
         ///vye = scroll_fraction * content_height + window_size.y()
@@ -474,16 +447,13 @@ void text_manager::render()
         adjusted_scroll_fraction = mix(0, scroll_fraction_at_end, scroll_fraction);
     }
 
-    if(has_rendered_once)
-    {
-        if(scroll_fraction < 1)
-            scrollbar_at_bottom = false;
+    printf("ASF %f\n", adjusted_scroll_fraction);
 
-        if(scroll_fraction == 1)
-            scrollbar_at_bottom = true;
+    if(scroll_fraction < 1)
+        scrollbar_at_bottom = false;
 
-        //printf("Scroll frac %f\n", scroll_fraction);
-    }
+    if(scroll_fraction == 1)
+        scrollbar_at_bottom = true;
 
     ///in pixels
     float visible_y_start = adjusted_scroll_fraction * content_height;
@@ -612,8 +582,6 @@ void text_manager::render()
     scrollbar.render();
 
     ImGui::End();
-
-    has_rendered_once = true;
 
     relayout(found_window_size);
 }
