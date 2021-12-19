@@ -662,7 +662,7 @@ void text_manager::render()
 
             float padded_y = from_top_of_window + base_top_offset + title_offset;
 
-            if(top_offset >= visible_y_start - char_inf::cheight && (top_offset < visible_y_end - (3 + trailing_blank_lines) * char_inf::cheight))
+            if(top_offset >= visible_y_start - char_inf::cheight && (top_offset < visible_y_end - (3.5 + trailing_blank_lines) * char_inf::cheight))
             {
                 process_screen_line(s, sl, padded_y);
             }
