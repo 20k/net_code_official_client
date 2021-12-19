@@ -365,6 +365,17 @@ void driven_scrollbar::render()
     }
 }
 
+void driven_scrollbar::adjust_by_lines(float lines)
+{
+    float adjust_pixels = lines * char_inf::cheight;
+
+    float as_frac = adjust_pixels / content_height;
+
+    fraction += as_frac;
+
+    fraction = clamp(fraction, 0.f, 1.f);
+}
+
 void text_manager::render()
 {
     float clip_width = window_size.x() - 2 * char_inf::cwbuf;

@@ -52,6 +52,7 @@ struct driven_scrollbar
     float content_height = 0;
 
     void render();
+    void adjust_by_lines(float lines);
 };
 
 struct text_manager
