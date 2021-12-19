@@ -319,7 +319,7 @@ void driven_scrollbar::render()
     {
         if(ImGui::GetIO().MouseWheel != 0)
         {
-            adjust_by_px(-ImGui::GetIO().MouseWheel * char_inf::cheight);
+            adjust_by_lines(-ImGui::GetIO().MouseWheel);
         }
     }
 
@@ -399,6 +399,58 @@ void driven_scrollbar::adjust_by_px(float py)
     fraction = clamp(fraction, 0.f, 1.f);
 }
 
+void driven_scrollbar::adjust_by_lines(float lines)
+{
+    /*float adjusted_scroll_fraction = scroll_fraction;
+
+    if(content_height > 0)
+    {
+        ///so, when scroll_fraction is 1, we want visible_y_end to be lines.size() * size + padding
+        float desired_visible_y_end = content_height + char_inf::cheight * 2 + window_padding_y;
+
+        ///vye = scroll_fraction * content_height + window_size.y()
+        ///(vye - window_size.y()) / content_height = scroll_fraction
+
+        float scroll_fraction_at_end = (desired_visible_y_end - window_size.y()) / content_height;
+
+        adjusted_scroll_fraction = scroll_fraction_at_end * scroll_fraction;
+    }
+
+    if(scroll_fraction < 1)
+        scrollbar_at_bottom = false;
+
+    if(scroll_fraction == 1)
+        scrollbar_at_bottom = true;
+
+    ///in pixels
+    float visible_y_start = adjusted_scroll_fraction * content_height;
+    float visible_y_end = visible_y_start + window_size.y();
+    */
+
+    float desired_visible_y_end = content_height + char_inf::cheight * 2 + ImGui::GetStyle().WindowPadding.y;
+
+    float scroll_fraction_at_end = (desired_visible_y_end - window_size.y()) / content_height;
+
+    ///vys = asf * ch + x
+
+    ///dvye = ch + constant
+    ///sfae =
+
+    ///so asf = sfae * scroll_fraction
+    ///and vys = asf * ch
+
+    ///sfae * (scroll_fraction + x) * ch = vys
+    ///sfae * scroll_fraction + x * sfae * ch = vys
+
+    float adjust_pixels = lines * char_inf::cheight / scroll_fraction_at_end;
+
+    float as_frac = adjust_pixels / content_height;
+
+    fraction += as_frac;
+
+    fraction = clamp(fraction, 0.f, 1.f);
+}
+
 void text_manager::render()
 {
     float clip_width = window_size.x() - 2 * char_inf::cwbuf;
@@ -420,6 +472,7 @@ void text_manager::render()
     should_reset_scrollbar = false;
 
     scrollbar.content_height = content_height;
+    scrollbar.window_size = window_size;
 
     scrollbar.render();
 
@@ -493,7 +546,7 @@ void text_manager::render()
 
         float scroll_fraction_at_end = (desired_visible_y_end - window_size.y()) / content_height;
 
-        adjusted_scroll_fraction = mix(0, scroll_fraction_at_end, scroll_fraction);
+        adjusted_scroll_fraction = scroll_fraction_at_end * scroll_fraction;
     }
 
     if(scroll_fraction < 1)

@@ -47,12 +47,14 @@ struct paragraph_string
 
 struct driven_scrollbar
 {
+    vec2f window_size;
     float width = 14;
     float fraction = 1;
     float content_height = 0;
 
     void render();
     void adjust_by_px(float py);
+    void adjust_by_lines(float lines);
 };
 
 struct text_manager
