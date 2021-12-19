@@ -306,12 +306,12 @@ void driven_scrollbar::render()
     {
         if(ImGui::IsKeyPressed(ImGui::GetIO().KeyMap[ImGuiKey_PageDown]))
         {
-            adjust_by_px(render_height);
+            adjust_by_lines(floor(render_height / char_inf::cheight));
         }
 
         if(ImGui::IsKeyPressed(ImGui::GetIO().KeyMap[ImGuiKey_PageUp]))
         {
-            adjust_by_px(-render_height);
+            adjust_by_lines(-floor(render_height / char_inf::cheight));
         }
     }
 
@@ -401,32 +401,6 @@ void driven_scrollbar::adjust_by_px(float py)
 
 void driven_scrollbar::adjust_by_lines(float lines)
 {
-    /*float adjusted_scroll_fraction = scroll_fraction;
-
-    if(content_height > 0)
-    {
-        ///so, when scroll_fraction is 1, we want visible_y_end to be lines.size() * size + padding
-        float desired_visible_y_end = content_height + char_inf::cheight * 2 + window_padding_y;
-
-        ///vye = scroll_fraction * content_height + window_size.y()
-        ///(vye - window_size.y()) / content_height = scroll_fraction
-
-        float scroll_fraction_at_end = (desired_visible_y_end - window_size.y()) / content_height;
-
-        adjusted_scroll_fraction = scroll_fraction_at_end * scroll_fraction;
-    }
-
-    if(scroll_fraction < 1)
-        scrollbar_at_bottom = false;
-
-    if(scroll_fraction == 1)
-        scrollbar_at_bottom = true;
-
-    ///in pixels
-    float visible_y_start = adjusted_scroll_fraction * content_height;
-    float visible_y_end = visible_y_start + window_size.y();
-    */
-
     float desired_visible_y_end = content_height + char_inf::cheight * 2 + ImGui::GetStyle().WindowPadding.y;
 
     float scroll_fraction_at_end = (desired_visible_y_end - window_size.y()) / content_height;
