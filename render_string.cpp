@@ -261,6 +261,16 @@ void text_manager::relayout(vec2f new_window_size)
     vec2f old_window_size = window_size;
     window_size = new_window_size;
 
+    if(old_window_size != new_window_size)
+    {
+        if(scrollbar_at_bottom)
+        {
+            should_reset_scrollbar = true;
+        }
+
+        printf("Relay\n");
+    }
+
     if(old_window_size.x() == new_window_size.x() && cached_character_size == (vec2f){char_inf::cwidth, char_inf::cheight})
         return;
 
@@ -333,6 +343,26 @@ void text_manager::render()
 
     float window_padding_y = ImGui::GetStyle().WindowPadding.y;
 
+    if(has_rendered_once)
+    {
+        if(scrollbar_at_bottom && found_window_size != window_size)
+        {
+            printf("Window resized\n");
+            should_reset_scrollbar = true;
+        }
+
+        if(should_reset_scrollbar)
+            scrollbar_at_bottom = true;
+
+        if(should_reset_scrollbar)
+        {
+            ImGui::SetScrollY(ImGui::GetScrollMaxY());
+            printf("Vals %f %f\n", ImGui::GetScrollY(), ImGui::GetScrollMaxY());
+        }
+
+        should_reset_scrollbar = false;
+    }
+
     float scroll_y = ImGui::GetScrollY();
     float max_scroll_y = ImGui::GetScrollMaxY();
 
@@ -361,14 +391,6 @@ void text_manager::render()
 
     if(has_rendered_once)
     {
-        if(should_reset_scrollbar)
-            scrollbar_at_bottom = true;
-
-        if(should_reset_scrollbar)
-            ImGui::SetScrollY(max_scroll_y);
-
-        should_reset_scrollbar = false;
-
         if(scroll_fraction < 1)
             scrollbar_at_bottom = false;
 

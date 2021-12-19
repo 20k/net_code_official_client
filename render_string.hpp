@@ -45,6 +45,14 @@ struct paragraph_string
     std::vector<render_string> basic_render_strings;
 };
 
+struct driven_scrollbar
+{
+    float fraction = 1;
+    float content_height = 0
+
+    void render();
+};
+
 struct text_manager
 {
     vec2f window_size;
