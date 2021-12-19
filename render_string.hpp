@@ -47,6 +47,7 @@ struct paragraph_string
 
 struct driven_scrollbar
 {
+    float width = 14;
     float fraction = 1;
     float content_height = 0;
 

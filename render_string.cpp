@@ -297,10 +297,8 @@ float get_window_title_offset()
 
 void driven_scrollbar::render()
 {
-    float width = 10;
-
     float paddingx = ImGui::GetStyle().FramePadding.x;
-    float paddingy = ImGui::GetStyle().FramePadding.y;
+    float paddingy = ImGui::GetStyle().FramePadding.y + 16;
 
     float height = ImGui::GetWindowSize().y;
 
@@ -328,9 +326,13 @@ void driven_scrollbar::render()
     imlist->AddRectFilled(tl, br, col2, 0, 0);
     imlist->AddRect(tl, br, col, 0, 0, 1);
 
-    float scrollbar_height = 10;
+    ImGui::SetCursorScreenPos(tl);
 
-    float desired_scrollbar_end = scroll_height - 4;
+    ImGui::InvisibleButton("InvisiB", ImVec2(br.x - tl.x, br.y - tl.y), 0);
+
+    float scrollbar_height = 14;
+
+    float desired_scrollbar_end = scroll_height;
 
     float scroll_fraction_at_end = (desired_scrollbar_end - scrollbar_height) / scroll_height;
 
@@ -343,7 +345,32 @@ void driven_scrollbar::render()
 
     float sx = 2;
 
-    imlist->AddRectFilled({tl.x + sx, position_y_top + render_y + window_pos.y}, {br.x - sx, position_y_bottom + render_y + window_pos.y}, col_bar, 6, 0);
+    ImVec2 hover_tl = {tl.x - 5, tl.y};
+    ImVec2 hover_br = {br.x, br.y};
+
+    if(ImGui::IsItemHovered())
+    {
+        col_bar = IM_COL32(50, 50, 50, 255);
+    }
+
+    imlist->AddRectFilled({tl.x + sx, position_y_top + 2 + render_y + window_pos.y}, {br.x - sx, position_y_bottom + render_y + window_pos.y - 2}, col_bar, 6, 0);
+
+    if(ImGui::IsItemClicked() || ImGui::IsItemActive())
+    {
+        float mouse_y = ImGui::GetMousePos().y;
+
+        printf("Mouse y %f\n", mouse_y);
+
+        float relative_mouse_y = mouse_y - tl.y;
+
+        float mouse_y_fraction = relative_mouse_y / scroll_height;
+
+        fraction = mouse_y_fraction;
+
+        fraction = clamp(fraction, 0.f, 1.f);
+
+        printf("Fraction %f\n", fraction);
+    }
 }
 
 void text_manager::render()
@@ -361,7 +388,7 @@ void text_manager::render()
 
     ImGui::Begin("Test Terminal", nullptr, ImGuiWindowFlags_NoScrollbar);
 
-    scrollbar.fraction = 1;
+    //scrollbar.fraction = 1;
     scrollbar.content_height = content_height;
 
     copy_handler2& handle = get_global_copy_handler2();
@@ -459,7 +486,7 @@ void text_manager::render()
         if(scroll_fraction == 1)
             scrollbar_at_bottom = true;
 
-        printf("Scroll frac %f\n", scroll_fraction);
+        //printf("Scroll frac %f\n", scroll_fraction);
     }
 
     ///in pixels
