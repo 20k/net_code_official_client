@@ -5,8 +5,10 @@
 #include <map>
 #include <set>
 #include <string>
+#include <string_view>
 #include <networking/serialisable.hpp>
 
+struct render_string;
 struct interop_char;
 
 struct autocomplete_args : serialisable
@@ -47,6 +49,7 @@ struct auto_handler : serialisable
 
     ///returns autocomplete
     void auto_colour(std::vector<interop_char>& in, bool colour_special = false, bool parse_for_autocompletes = true);
+    //void auto_colour(std::string_view in, bool colour_special = false, bool parse_for_autocompletes = true);
 
     void handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx, int& cursor_offset, std::string& command_str);
 
@@ -63,5 +66,7 @@ struct auto_handler : serialisable
         DO_SERIALISE(is_valid);
     }
 };
+
+std::vector<render_string> auto_colour(auto_handler& handle, std::string_view view, bool colour_special = false, bool parse_for_autocompletes = true);
 
 #endif // AUTO_HANDLERS_HPP_INCLUDED

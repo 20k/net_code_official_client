@@ -3,6 +3,7 @@
 #include <libncclient/nc_util.hpp>
 #include "util.hpp"
 #include "tokeniser.hpp"
+#include "render_string.hpp"
 
 inline
 void colour_interop(std::vector<interop_char>& in, int start, int fin, vec3f col)
@@ -135,6 +136,147 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
             }
         }
     }
+}
+
+std::vector<render_string> auto_colour(auto_handler& handle, std::string_view in, bool colour_special, bool parse_for_autocompletes)
+{
+    std::map<std::string, vec3f> cols
+    {
+        {"fs.", {60, 255, 60}},
+        {"hs.", {255, 255, 40}},
+        {"ms.", {255, 140, 40}},
+        {"ls.", {255, 20, 20}},
+        {"ns.", {255, 20, 255}},
+        {"4s.", {60, 255, 60}},
+        {"3s.", {255, 255, 40}},
+        {"2s.", {255, 140, 40}},
+        {"1s.", {255, 20, 20}},
+        {"0s.", {255, 20, 255}},
+        {"s.", {255, 20, 255}},
+        {"", {255, 20, 255}},
+    };
+
+    vec3f default_colour = letter_to_colour('A').value();
+
+    vec3f pale_blue = {120, 120, 255};
+    vec3f pale_red = {255, 60, 60};
+
+    cols["{"] = pale_red;
+    cols["}"] = pale_red;
+    cols["["] = pale_red;
+    cols["]"] = pale_red;
+
+    /*for(auto& i : cols)
+    {
+        i.second = srgb_to_lin(i.second);
+    }*/
+
+    std::map<std::string, vec3f> generic_keywords;
+
+    if(handle.use_autocolour)
+    {
+        generic_keywords["function"] = pale_blue;
+        generic_keywords["while"] = pale_blue;
+        generic_keywords["for"] = pale_blue;
+        generic_keywords["if"] = pale_blue;
+        generic_keywords["return"] = pale_blue;
+        generic_keywords[";"] = pale_red;
+    }
+
+    /*for(auto& i : generic_keywords)
+    {
+        i.second = srgb_to_lin(i.second);
+    }*/
+
+    std::set<token::token> valid_colourings
+    {
+        token::SECLEVEL,
+        //token::OPEN_PAREN,
+        token::OPEN_CURLEY,
+        //token::CLOSE_PAREN,
+        token::CLOSE_CURLEY,
+        token::OPEN_SQUARE,
+        token::CLOSE_SQUARE,
+    };
+
+    vec3f value_col = {8, 143, 242};
+    //vec3f value_col = srgb_to_lin({8, 143, 242});
+    //vec3f value_col = {100, 206, 209};
+    vec3f key_col = {243, 166, 3};
+    //vec3f key_col = srgb_to_lin({243, 166, 3});
+
+    std::vector<render_string> strings;
+
+    std::vector<token_info> tokens = tokenise_general(in);
+
+    for(token_info& i : tokens)
+    {
+        int old_string_size = strings.size();
+
+        auto add_coloured_string = [&](vec3f srgb_colour)
+        {
+            render_string next;
+            next.start = i.start_pos;
+            next.length = i.end_pos - i.start_pos;
+            next.colour = srgb_to_lin(srgb_colour);
+
+            strings.push_back(next);
+        };
+
+        if(valid_colourings.find(i.type) != valid_colourings.end())
+        {
+            add_coloured_string(cols[i.str]);
+        }
+        else if(i.type == token::VALUE && (i.subtype == token::STRING || i.subtype == token::NUMBER || i.subtype == token::BOOLEAN))
+        {
+            if(handle.use_autocolour || i.subtype == token::NUMBER || i.subtype == token::BOOLEAN)
+            {
+                add_coloured_string(value_col);
+            }
+        }
+        else if(handle.use_autocolour && i.type == token::VALUE && i.subtype == token::GENERIC)
+        {
+            for(auto& ss : generic_keywords)
+            {
+                if(ss.first == i.str)
+                {
+                    add_coloured_string(ss.second);
+                    break;
+                }
+            }
+        }
+        else if(i.type == token::KEY)
+        {
+            add_coloured_string(key_col);
+        }
+
+        if(old_string_size == strings.size())
+        {
+            add_coloured_string(default_colour);
+        }
+    }
+
+    if(parse_for_autocompletes)
+    {
+        for(int kk=0; kk < (int)tokens.size() - 3; kk++)
+        {
+            if(tokens[kk].type == token::HOST_NAME && tokens[kk+1].type == token::DOT && tokens[kk+2].type == token::EXT_NAME)
+            {
+                std::string str = tokens[kk].str + "." + tokens[kk+2].str;
+
+                bool exists = handle.found_args.find(str) != handle.found_args.end();
+
+                if(str.size() != 0 && !exists)
+                {
+                    //std::cout << "fauto " << str << std::endl;
+
+                    handle.found_unprocessed_autocompletes.push_back(str);
+                }
+            }
+        }
+    }
+
+    return strings;
 }
 
 int insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<std::string>& vals, int pos, std::vector<token_info>& tokens, std::vector<interop_char>& in, int num_concrete_args)
