@@ -364,8 +364,6 @@ void text_manager::render()
     float decoration_up_height = ImGui::GetCurrentWindow()->TitleBarHeight() + ImGui::GetCurrentWindow()->MenuBarHeight();
     float title_offset = decoration_up_height + window_padding_y;
 
-    bool focused = ImGui::IsWindowFocused();
-
     vec2f cdim = {char_inf::cwidth, char_inf::cheight};
 
     vec3f srgb_selection_colour = {80, 80, 255};
@@ -378,7 +376,6 @@ void text_manager::render()
     vec2f highlight_tl = {FLT_MAX, FLT_MAX};
     vec2f highlight_br = {-FLT_MAX, -FLT_MAX};
     bool any_highlighted = false;
-    bool any_copied = false;
 
     ///step 1: render everything
     ///step 2: render only stuff in visible region
@@ -433,8 +430,6 @@ void text_manager::render()
                                         copy_string += std::string(1, c);
 
                                     handle.last_copy_y = pos.y();
-
-                                    any_copied = true;
                                 }
 
                                 highlight_tl = min(highlight_tl, pos);
@@ -472,7 +467,7 @@ void text_manager::render()
 
     if(trigger_copy)
     {
-        if(any_copied)
+        if(copy_string.size() > 0)
         {
             std::cout << "Copied2 " << copy_string << std::endl;
 
