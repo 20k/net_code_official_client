@@ -959,6 +959,11 @@ int main(int argc, char* argv[])
                 }
             }
 
+            if(!ImGui::IsMouseDown(0))
+            {
+                get_global_copy_handler()->on_no_lclick();
+            }
+
             mouse_delta += scroll_y;
             script_mousewheel_delta += scroll_y;
 

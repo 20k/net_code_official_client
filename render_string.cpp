@@ -285,6 +285,31 @@ void text_manager::render()
 
     ImGui::Begin("Test Terminal");
 
+    copy_handler* handle = get_global_copy_handler();
+
+    bool check_copy = false;
+    bool trigger_copy = false;
+
+    if(ImGui::IsWindowFocused() && handle->trigger_copy())
+    {
+        check_copy = true;
+        trigger_copy = true;
+        handle->copied.clear();
+
+        printf("Trigger\n");
+    }
+
+    if(ImGui::IsWindowFocused() && handle->held)
+    {
+        check_copy = true;
+    }
+
+    ///
+    if(ImGui::IsItemHovered() && !handle->held)
+    {
+        handle->copy_suppressed = true;
+    }
+
     float window_padding_y = ImGui::GetStyle().WindowPadding.y;
 
     float scroll_y = ImGui::GetScrollY();
@@ -325,31 +350,21 @@ void text_manager::render()
     float decoration_up_height = ImGui::GetCurrentWindow()->TitleBarHeight() + ImGui::GetCurrentWindow()->MenuBarHeight();
     float title_offset = decoration_up_height + window_padding_y;
 
-    copy_handler* handle = get_global_copy_handler();
-
     bool focused = ImGui::IsWindowFocused();
 
     vec2f cdim = {char_inf::cwidth, char_inf::cheight};
-
-    bool check_copy = false;
-
-    if(focused && handle->trigger_copy())
-    {
-        check_copy = true;
-        handle->copied.clear();
-    }
 
     vec3f srgb_selection_colour = {80, 80, 255};
     vec3f selection_colour = srgb_to_lin(srgb_selection_colour / 255.f) * 255.f;
     ImU32 selection_colour_u32 = IM_COL32((int)selection_colour.x(), (int)selection_colour.y(), (int)selection_colour.z(), 255);
 
-    vec3f srgb_selection_light = (vec3f){160, 160, 255};
     vec3f selection_light = srgb_to_lin(srgb_selection_colour / 255.f) * 255.f;
     ImU32 selection_light_u32 = IM_COL32((int)selection_light.x(), (int)selection_light.y(), (int)selection_light.z(), 128);
 
     vec2f highlight_tl = {FLT_MAX, FLT_MAX};
     vec2f highlight_br = {-FLT_MAX, -FLT_MAX};
     bool any_highlighted = false;
+    bool any_copied = false;
 
     ///step 1: render everything
     ///step 2: render only stuff in visible region
@@ -386,7 +401,7 @@ void text_manager::render()
 
                     imlist->AddText(ImVec2(left_offset, padded_y), IM_COL32(ir, ig, ib, 255), start, fin);
 
-                    if(check_copy || handle->held)
+                    if(check_copy || trigger_copy)
                     {
                         for(int kk=rs.start; kk < rs.start + rs.length; kk++)
                         {
@@ -402,6 +417,8 @@ void text_manager::render()
                                     handle->copied += std::string(1, c);
 
                                 handle->last_copy_y = pos.y();
+
+                                any_copied = true;
                             }
 
                             if(focused && handle->char_dragged_over(pos, cdim))
@@ -413,7 +430,6 @@ void text_manager::render()
                             }
                         }
                     }
-
 
                     left_offset += rs.length * char_inf::cwidth;
                 }
@@ -440,7 +456,7 @@ void text_manager::render()
         imlist->AddRect(tl, br, selection_colour_u32, 1.f, 0, 2);
     }
 
-    if(check_copy)
+    if(handle->trigger_copy())
     {
         std::cout << "Copied2 " << handle->copied << std::endl;
 
@@ -450,6 +466,11 @@ void text_manager::render()
     vec2f found_window_size = {ImGui::GetWindowSize().x, ImGui::GetWindowSize().y};
 
     ImGui::End();
+
+    if(found_window_size != window_size)
+    {
+        handle->copy_suppressed = true;
+    }
 
     relayout(found_window_size);
 }

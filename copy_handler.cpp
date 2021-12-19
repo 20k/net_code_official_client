@@ -8,6 +8,9 @@ copy_handler global_copy_handler;
 
 bool copy_handler::char_is_within_select_box(vec2f pos, vec2f cdim)
 {
+    if(copy_suppressed)
+        return false;
+
     if(!held && !trigger_copy())
         return false;
 
@@ -24,6 +27,9 @@ bool copy_handler::char_is_within_select_box(vec2f pos, vec2f cdim)
 
 bool copy_handler::char_dragged_over(vec2f pos, vec2f cdim)
 {
+    if(copy_suppressed)
+        return false;
+
     if(!held)
         return false;
 
@@ -50,16 +56,21 @@ void copy_handler::on_lclick_release(vec2f pos)
 
     held = false;
 
-    if(finished)
-        return;
+    if(!copy_suppressed)
+        finished = true;
 
-    finished = true;
+    copy_suppressed = false;
 }
 
 void copy_handler::on_hold_lclick(vec2f pos)
 {
     held = true;
     copy_end = pos;
+}
+
+void copy_handler::on_no_lclick()
+{
+    copy_suppressed = false;
 }
 
 bool copy_handler::trigger_copy()

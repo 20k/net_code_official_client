@@ -16,11 +16,13 @@ struct copy_handler
     vec2f copy_end;
     bool finished = true;
     bool held = false;
+    bool copy_suppressed = false;
 
     void on_lclick(vec2f pos);
     void on_lclick_release(vec2f pos);
 
     void on_hold_lclick(vec2f pos);
+    void on_no_lclick();
 
     void process_formatted(std::vector<std::vector<formatted_char>>& chars);
     void process_formatted(const std::vector<formatted_char>& chars, vec2f chars_offset);
