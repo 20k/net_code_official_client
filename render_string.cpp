@@ -275,7 +275,7 @@ void paragraph_string::build(float clip_width)
     dim.y() = lines.size() * char_inf::cheight;
 }
 
-void text_manager::add_main_text(std::string str)
+void text_manager::add_main_text(std::string str, auto_handler& auto_handle)
 {
     paragraphs.emplace_back(std::move(str), false, auto_handle, true);
 }
@@ -461,7 +461,7 @@ void driven_scrollbar::adjust_by_lines(float lines, int trailing_blank_lines)
     fraction = clamp(fraction, 0.f, 1.f);
 }
 
-void text_manager::render()
+void text_manager::render(auto_handler& auto_handle)
 {
     float clip_width = window_size.x() - 2 * char_inf::cwbuf;
     float content_height = 0;

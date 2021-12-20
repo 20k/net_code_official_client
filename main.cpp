@@ -434,19 +434,20 @@ int main(int argc, char* argv[])
     bool printed_connecting = false;
 
     text_manager default_text;
+    auto_handler test_handler;
 
     default_text.command.command = "Test Command\nsecondline";
 
-    default_text.add_main_text("First line");
+    default_text.add_main_text("First line", test_handler);
 
     for(int i=0; i < 1024; i++)
     {
-        default_text.add_main_text("dfffffff`Dhello`ffffffffffff[] while function sasdfs\ndfwerqaowiejrlkdv;lkzcxmvlzjaskdjfakej\n");
+        default_text.add_main_text("dfffffff`Dhello`ffffffffffff[] while function sasdfs\ndfwerqaowiejrlkdv;lkzcxmvlzjaskdjfakej\n", test_handler);
     }
 
-    default_text.add_main_text("1234 3.4 {}");
+    default_text.add_main_text("1234 3.4 {}", test_handler);
 
-    default_text.add_main_text("lastline");
+    default_text.add_main_text("lastline", test_handler);
 
     //while(running)
     #ifndef __EMSCRIPTEN__
@@ -1421,7 +1422,7 @@ int main(int argc, char* argv[])
 
             vec2i window_dim = window.get_window_size();
 
-            default_text.render();
+            default_text.render(test_handler);
             //test_imgui_term.render(window);
             realtime_scripts.render_realtime_windows(to_write, was_closed_id, font_select, terminals.auto_handle, window.get_render_settings().is_srgb);
             chat_win.render(should_coordinate_focus);

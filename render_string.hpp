@@ -61,8 +61,6 @@ struct driven_scrollbar
 
 struct text_manager
 {
-    auto_handler auto_handle;
-
     editable_string command;
 
     driven_scrollbar scrollbar;
@@ -75,9 +73,9 @@ struct text_manager
 
     void relayout(vec2f new_window_size);
 
-    void add_main_text(std::string view);
+    void add_main_text(std::string view, auto_handler& auto_handle);
 
-    void render();
+    void render(auto_handler& auto_handle);
 
     std::vector<paragraph_string> paragraphs;
 };
