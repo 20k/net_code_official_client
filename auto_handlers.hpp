@@ -67,6 +67,7 @@ struct auto_handler : serialisable
     }
 };
 
-std::vector<render_string> auto_colour(auto_handler& handle, std::string_view view, bool colour_special = false, bool parse_for_autocompletes = true);
+std::vector<std::string> parse_for_autocompletes(std::string_view view);
+std::vector<render_string> auto_colour(std::string_view view, bool colour_like_terminal);
 
 #endif // AUTO_HANDLERS_HPP_INCLUDED

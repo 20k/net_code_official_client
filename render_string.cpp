@@ -18,7 +18,7 @@ vec3f process_colour(vec3f in)
 }
 
 ///this function should handle autocolouring
-std::vector<render_string> create_render_strings(std::string_view in, bool include_specials, auto_handler& handle, bool parse_for_autocompletes)
+std::vector<render_string> create_render_strings(std::string_view in, bool include_specials, bool colour_like_terminal)
 {
     std::vector<render_string> ret;
 
@@ -45,7 +45,7 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
 
                 std::string_view as_view = std::string_view(in.begin() + current_chunk.start, in.begin() + current_chunk.start + current_chunk.length);
 
-                std::vector<render_string> autocoloured = auto_colour(handle, as_view, false, parse_for_autocompletes);
+                std::vector<render_string> autocoloured = auto_colour(as_view, colour_like_terminal);
 
                 for(render_string& strs : autocoloured)
                 {
@@ -189,9 +189,9 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
 
 paragraph_string::paragraph_string(){}
 
-paragraph_string::paragraph_string(std::string in, bool include_specials, auto_handler& handle, bool parse_for_autocompletes)
+paragraph_string::paragraph_string(std::string in, bool include_specials, bool colour_like_terminal)
 {
-    basic_render_strings = create_render_strings(in, include_specials, handle, parse_for_autocompletes);
+    basic_render_strings = create_render_strings(in, include_specials, colour_like_terminal);
     str = std::move(in);
 }
 
@@ -277,7 +277,22 @@ void paragraph_string::build(float clip_width)
 
 void text_manager::add_main_text(std::string str, auto_handler& auto_handle)
 {
-    paragraphs.emplace_back(std::move(str), false, auto_handle, true);
+    paragraphs.emplace_back(std::move(str), false, true);
+
+    std::vector<std::string> autos = parse_for_autocompletes(str);
+
+    for(std::string& s : autos)
+    {
+        if(auto_handle.found_args.find(s) == auto_handle.found_args.end())
+        {
+            auto_handle.found_unprocessed_autocompletes.push_back(std::move(s));
+        }
+    }
+}
+
+void text_manager::add_main_text(std::string str)
+{
+    paragraphs.emplace_back(std::move(str), false, true);
 }
 
 void text_manager::add_command_to_main_text(auto_handler& auto_handle)
@@ -490,7 +505,7 @@ void text_manager::render(auto_handler& auto_handle)
 
     int trailing_blank_lines = 0;
 
-    paragraph_string command_line(command.command, true, auto_handle, false);
+    paragraph_string command_line(command.command, true, true);
     command_line.build(get_formatting_clip_width(window_size.x(), scrollbar.width));
 
     int command_line_height = command_line.lines.size();
@@ -742,7 +757,7 @@ void test_render_strings()
 
     auto_handler handle;
 
-    std::vector<render_string> strs = create_render_strings(base, false, handle, true);
+    std::vector<render_string> strs = create_render_strings(base, false, true);
 
     for(render_string& rstr : strs)
     {

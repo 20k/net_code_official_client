@@ -37,7 +37,7 @@ struct paragraph_string
     vec2f dim;
 
     paragraph_string();
-    paragraph_string(std::string in, bool include_specials, auto_handler& handle, bool parse_for_autocompletes);
+    paragraph_string(std::string in, bool include_specials, bool colour_like_terminal);
 
     void build(float clip_width);
 
@@ -74,6 +74,7 @@ struct text_manager
     void relayout(vec2f new_window_size);
 
     void add_main_text(std::string view, auto_handler& auto_handle);
+    void add_main_text(std::string view);
     void add_command_to_main_text(auto_handler& auto_handle);
 
     void render(auto_handler& auto_handle);

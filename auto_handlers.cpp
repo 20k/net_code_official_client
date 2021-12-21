@@ -139,7 +139,7 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
     }
 }
 
-std::vector<render_string> auto_colour(auto_handler& handle, std::string_view in, bool colour_special, bool parse_for_autocompletes)
+std::vector<render_string> auto_colour(std::string_view in, bool colour_like_terminal)
 {
     std::map<std::string, vec3f> cols
     {
@@ -174,7 +174,7 @@ std::vector<render_string> auto_colour(auto_handler& handle, std::string_view in
 
     std::map<std::string, vec3f> generic_keywords;
 
-    if(handle.use_autocolour)
+    if(colour_like_terminal)
     {
         generic_keywords["function"] = pale_blue;
         generic_keywords["while"] = pale_blue;
@@ -264,12 +264,12 @@ std::vector<render_string> auto_colour(auto_handler& handle, std::string_view in
         }
         else if(i.type == token::VALUE && (i.subtype == token::STRING || i.subtype == token::NUMBER || i.subtype == token::BOOLEAN))
         {
-            if(handle.use_autocolour || i.subtype == token::NUMBER || i.subtype == token::BOOLEAN)
+            if(colour_like_terminal || i.subtype == token::NUMBER || i.subtype == token::BOOLEAN)
             {
                 add_coloured_string(value_col);
             }
         }
-        else if(handle.use_autocolour && i.type == token::VALUE && i.subtype == token::GENERIC)
+        else if(colour_like_terminal && i.type == token::VALUE && i.subtype == token::GENERIC)
         {
             for(auto& ss : generic_keywords)
             {
@@ -295,38 +295,40 @@ std::vector<render_string> auto_colour(auto_handler& handle, std::string_view in
     {
         token_info& last = tokens.back();
 
-        if(last.end_pos != in.size())
+        if(last.end_pos != (int)in.size())
         {
             render_string next;
             next.start = last.end_pos;
-            next.length = in.size() - last.end_pos;
+            next.length = (int)in.size() - last.end_pos;
             next.colour = srgb_to_lin(default_colour/255.f)*255.f;
 
             strings.push_back(next);
         }
     }
 
-    if(parse_for_autocompletes)
+    return strings;
+}
+
+std::vector<std::string> parse_for_autocompletes(std::string_view view)
+{
+    std::vector<std::string> found_unprocessed_autocompletes;
+
+    std::vector<token_info> tokens = tokenise_general(view);
+
+    for(int kk=0; kk < (int)tokens.size() - 3; kk++)
     {
-        for(int kk=0; kk < (int)tokens.size() - 3; kk++)
+        if(tokens[kk].type == token::HOST_NAME && tokens[kk+1].type == token::DOT && tokens[kk+2].type == token::EXT_NAME)
         {
-            if(tokens[kk].type == token::HOST_NAME && tokens[kk+1].type == token::DOT && tokens[kk+2].type == token::EXT_NAME)
+            std::string str = tokens[kk].str + "." + tokens[kk+2].str;
+
+            if(str.size() != 0)
             {
-                std::string str = tokens[kk].str + "." + tokens[kk+2].str;
-
-                bool exists = handle.found_args.find(str) != handle.found_args.end();
-
-                if(str.size() != 0 && !exists)
-                {
-                    //std::cout << "fauto " << str << std::endl;
-
-                    handle.found_unprocessed_autocompletes.push_back(str);
-                }
+                found_unprocessed_autocompletes.push_back(str);
             }
         }
     }
 
-    return strings;
+    return found_unprocessed_autocompletes;
 }
 
 int insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<std::string>& vals, int pos, std::vector<token_info>& tokens, std::vector<interop_char>& in, int num_concrete_args)
