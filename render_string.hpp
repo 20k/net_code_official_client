@@ -74,6 +74,7 @@ struct text_manager
     void relayout(vec2f new_window_size);
 
     void add_main_text(std::string view, auto_handler& auto_handle);
+    void add_command_to_main_text(auto_handler& auto_handle);
 
     void render(auto_handler& auto_handle);
 

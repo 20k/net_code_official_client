@@ -280,6 +280,13 @@ void text_manager::add_main_text(std::string str, auto_handler& auto_handle)
     paragraphs.emplace_back(std::move(str), false, auto_handle, true);
 }
 
+void text_manager::add_command_to_main_text(auto_handler& auto_handle)
+{
+    add_main_text(std::move(command.command), auto_handle);
+    command.push_command_to_history(command.command);
+    command.clear_command();
+}
+
 float get_formatting_clip_width(float new_window_width, float scrollbar_width)
 {
     return new_window_width - 2 * char_inf::cwbuf - scrollbar_width - ImGui::GetStyle().FramePadding.x - 2 * char_inf::cwidth;
