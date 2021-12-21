@@ -483,6 +483,14 @@ void driven_scrollbar::adjust_by_lines(float lines, int trailing_blank_lines)
     fraction = clamp(fraction, 0.f, 1.f);
 }
 
+void text_manager::create_window(vec2f content_size, vec2f create_window_size)
+{
+    ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
+    ImGui::SetNextWindowSize(ImVec2(create_window_size.x(), create_window_size.y()), ImGuiCond_Appearing);
+
+    ImGui::Begin("Test Terminal", &open, ImGuiWindowFlags_NoScrollbar);
+}
+
 void text_manager::render(auto_handler& auto_handle)
 {
     float clip_width = window_size.x() - 2 * char_inf::cwbuf;
@@ -493,10 +501,8 @@ void text_manager::render(auto_handler& auto_handle)
         content_height += s.lines.size() * char_inf::cheight;
     }
 
-    ImGui::SetNextWindowContentSize({clip_width, content_height});
-    ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_Appearing);
-
-    ImGui::Begin("Test Terminal", nullptr, ImGuiWindowFlags_NoScrollbar);
+    ///ImGui::Begin
+    create_window({clip_width, content_height}, {400, 300});
 
     if(should_reset_scrollbar)
         scrollbar.fraction = 1;
@@ -505,7 +511,7 @@ void text_manager::render(auto_handler& auto_handle)
 
     int trailing_blank_lines = 0;
 
-    paragraph_string command_line(command.command, true, true);
+    paragraph_string command_line(command_visual_prefix + command.command, true, true);
     command_line.build(get_formatting_clip_width(window_size.x(), scrollbar.width));
 
     int command_line_height = command_line.lines.size();
@@ -749,6 +755,22 @@ void text_manager::render(auto_handler& auto_handle)
     ImGui::End();
 
     relayout(found_window_size);
+}
+
+void text_manager::clear_text()
+{
+    paragraphs.clear();
+}
+
+void text_manager::clear_command()
+{
+    command.clear_command();
+}
+
+main_terminal2::main_terminal2()
+{
+    command.command = "user ";
+    command.cursor_pos_idx = command.command.size();
 }
 
 void test_render_strings()

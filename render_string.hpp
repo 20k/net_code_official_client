@@ -61,6 +61,12 @@ struct driven_scrollbar
 
 struct text_manager
 {
+    bool new_terminal = true;
+    bool open = true;
+    int friendly_id = 0;
+
+    std::string command_visual_prefix;
+
     editable_string command;
 
     driven_scrollbar scrollbar;
@@ -77,9 +83,27 @@ struct text_manager
     void add_main_text(std::string view);
     void add_command_to_main_text(auto_handler& auto_handle);
 
+    virtual void create_window(vec2f content_size, vec2f window_size);
+
     void render(auto_handler& auto_handle);
 
+    void clear_text();
+    void clear_command();
+
     std::vector<paragraph_string> paragraphs;
+};
+
+struct main_terminal2 : text_manager
+{
+    main_terminal2();
+
+    bool title_dragging = false;
+    vec2f title_start_pos;
+
+    bool resize_dragging = false;
+    vec2f resize_start_pos;
+
+    std::string current_user;
 };
 
 void test_render_strings();
