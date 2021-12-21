@@ -323,7 +323,7 @@ std::vector<std::string> parse_for_autocompletes(std::string_view view)
 
             if(str.size() != 0)
             {
-                found_unprocessed_autocompletes.push_back(str);
+                found_unprocessed_autocompletes.push_back(std::move(str));
             }
         }
     }
