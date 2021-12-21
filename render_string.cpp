@@ -277,7 +277,7 @@ void paragraph_string::build(float clip_width)
 
 void text_manager::add_main_text(std::string str, auto_handler& auto_handle)
 {
-    paragraphs.emplace_back(std::move(str), false, true);
+    paragraphs.emplace_back(std::move(str), false, colour_like_terminal);
 
     std::vector<std::string> autos = parse_for_autocompletes(str);
 
@@ -292,7 +292,7 @@ void text_manager::add_main_text(std::string str, auto_handler& auto_handle)
 
 void text_manager::add_main_text(std::string str)
 {
-    paragraphs.emplace_back(std::move(str), false, true);
+    paragraphs.emplace_back(std::move(str), false, colour_like_terminal);
 }
 
 void text_manager::add_command_to_main_text(auto_handler& auto_handle)
@@ -769,8 +769,43 @@ void text_manager::clear_command()
 
 main_terminal2::main_terminal2()
 {
+    colour_like_terminal = true;
     command.command = "user ";
     command.cursor_pos_idx = command.command.size();
+}
+
+child_terminal::child_terminal()
+{
+    colour_like_terminal = true;
+}
+
+void chat_manager::set_chat_channels(const std::vector<std::string>& channels)
+{
+    std::set<std::string> logn_lookup;
+
+    for(const std::string& c : channels)
+    {
+        logn_lookup.insert(c);
+    }
+
+    for(auto& i : channels)
+    {
+        chat_threads[i];
+    }
+
+    for(auto it = chat_threads.begin(); it != chat_threads.end();)
+    {
+        bool has_channel = logn_lookup.find(it->first) != logn_lookup.end();
+
+        if(!has_channel)
+        {
+            it = chat_threads.erase(it);
+        }
+        else
+        {
+            it++;
+        }
+    }
 }
 
 void test_render_strings()

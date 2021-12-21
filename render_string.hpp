@@ -61,12 +61,14 @@ struct driven_scrollbar
 
 struct text_manager
 {
+    bool colour_like_terminal = false;
     bool new_terminal = true;
     bool open = true;
     int friendly_id = 0;
 
     std::string command_visual_prefix;
 
+    ///todo: default keyboard controls for this, migrate it away from main()
     editable_string command;
 
     driven_scrollbar scrollbar;
@@ -104,6 +106,31 @@ struct main_terminal2 : text_manager
     vec2f resize_start_pos;
 
     std::string current_user;
+};
+
+struct child_terminal : text_manager
+{
+    child_terminal();
+};
+
+struct chat_thread2 : text_manager
+{
+    bool has_unread_message = false;
+
+    bool was_focused = false;
+    bool was_hovered = false;
+    bool was_rendered = false;
+
+    std::string name;
+};
+
+struct chat_manager
+{
+    bool show_chat_in_main_window = true;
+
+    std::map<std::string, chat_thread2> chat_threads;
+
+    void set_chat_channels(const std::vector<std::string>& channels);
 };
 
 void test_render_strings();
