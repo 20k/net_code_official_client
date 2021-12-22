@@ -803,32 +803,6 @@ child_terminal::child_terminal()
 
 void chat_manager::set_chat_channels(const std::vector<std::string>& channels)
 {
-    /*std::set<std::string> logn_lookup;
-
-    for(const std::string& c : channels)
-    {
-        logn_lookup.insert(c);
-    }
-
-    for(auto& i : channels)
-    {
-        chat_threads[i];
-    }
-
-    for(auto it = chat_threads.begin(); it != chat_threads.end();)
-    {
-        bool has_channel = logn_lookup.find(it->first) != logn_lookup.end();
-
-        if(!has_channel)
-        {
-            it = chat_threads.erase(it);
-        }
-        else
-        {
-            it++;
-        }
-    }*/
-
     open_chat_channels = channels;
 }
 
