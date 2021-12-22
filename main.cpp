@@ -1429,6 +1429,7 @@ int main(int argc, char* argv[])
             default_text.default_controls(test_handler, to_write);
             default_text.render();
 
+            chat2.default_controls(test_handler, to_write);
             chat2.render();
 
             //test_imgui_term.render(window);

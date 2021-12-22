@@ -1023,6 +1023,14 @@ bool chat_thread2::create_window(vec2f content_size, vec2f create_window_size)
     return ImGui::Begin(name.c_str(), &open, flags);
 }
 
+void chat_manager::default_controls(auto_handler& auto_handle, connection_send_data& send)
+{
+    for(const std::string& name : open_chat_channels)
+    {
+        chat_threads[name].default_controls(auto_handle, send);
+    }
+}
+
 void chat_manager::render()
 {
     static bool once = file::exists("ui_setup_once_v2");

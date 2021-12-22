@@ -150,6 +150,7 @@ struct chat_manager
     void set_open_chat_channels(const std::vector<std::string>& channels);
     void add_text(const std::string& channel, const std::vector<std::string>& text);
 
+    void default_controls(auto_handler& auto_handle, connection_send_data& send);
     void render();
 };
 
