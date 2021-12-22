@@ -8,6 +8,9 @@
 #include "auto_handlers.hpp"
 #include <toolkit/fs_helpers.hpp>
 #include <GLFW/glfw3.h>
+#include <codecvt>
+#include <locale>
+#include <toolkit/clipboard.hpp>
 
 vec3f process_colour(vec3f in)
 {
@@ -301,8 +304,10 @@ void text_manager::add_main_text(std::string str)
     unseen_text = !was_visible;
 }
 
-void text_manager::add_command_to_main_text(auto_handler& auto_handle)
+void text_manager::add_command_to_main_text(auto_handler& auto_handle, connection_send_data& send)
 {
+    on_enter_text(command.command, send);
+
     add_main_text(std::move(command.command), auto_handle);
     command.push_command_to_history(command.command);
     command.clear_command();
@@ -489,6 +494,159 @@ void driven_scrollbar::adjust_by_lines(float lines, int trailing_blank_lines)
     fraction = clamp(fraction, 0.f, 1.f);
 }
 
+void text_manager::default_controls(auto_handler& auto_handle, connection_send_data& send)
+{
+    if(!was_focused)
+        return;
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    std::vector<uint32_t> input_utf32;
+
+    for(auto& i : io.InputQueueCharacters)
+    {
+        input_utf32.push_back(i);
+    }
+
+    for(uint32_t i : input_utf32)
+    {
+        if(i <= 126 && i >= 32)
+        {
+            std::u32string utf32;
+            utf32.push_back(i);
+
+            std::string utf8;
+
+            std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> cvt;
+
+            utf8 = cvt.to_bytes(utf32);
+
+            command.add_to_command(i);
+        }
+    }
+
+    bool enter = false;
+
+    int key_count = 512;
+
+    for(int i=0; i < key_count; i++)
+    {
+        if(!ImGui::IsKeyPressed(i))
+            continue;
+
+        if(i == io.KeyMap[ImGuiKey_Backspace])
+        {
+            if(io.KeyCtrl)
+            {
+                for(int kk=0; kk < 5; kk++)
+                    command.process_backspace();
+            }
+            else
+            {
+                command.process_backspace();
+            }
+        }
+
+        if(i == io.KeyMap[ImGuiKey_Delete])
+        {
+            if(io.KeyCtrl)
+            {
+                for(int kk=0; kk < 5; kk++)
+                    command.process_delete();
+            }
+            else
+            {
+                command.process_delete();
+            }
+        }
+
+        if(i == io.KeyMap[ImGuiKey_UpArrow])
+        {
+            command.move_command_history_idx(-1);
+        }
+
+        if(i == io.KeyMap[ImGuiKey_DownArrow])
+        {
+            command.move_command_history_idx(1);
+        }
+
+        if(i == io.KeyMap[ImGuiKey_LeftArrow])
+        {
+            if(!io.KeyCtrl)
+                command.move_cursor(-1);
+            else
+                command.move_cursor(-5);
+        }
+
+        if(i == io.KeyMap[ImGuiKey_RightArrow])
+        {
+            if(!io.KeyCtrl)
+                command.move_cursor(1);
+            else
+                command.move_cursor(5);
+        }
+
+        if(i == io.KeyMap[ImGuiKey_Home])
+        {
+            command.move_cursor(-(int)command.command.size());
+        }
+
+        if(i == io.KeyMap[ImGuiKey_End])
+        {
+            command.move_cursor(command.command.size());
+        }
+
+        if(i == io.KeyMap[ImGuiKey_Escape])
+        {
+            command.clear_command();
+        }
+
+        if(i == io.KeyMap[ImGuiKey_V])
+        {
+            if(io.KeyCtrl)
+            {
+                std::string add_text = clipboard::get();
+
+                for(auto& c : add_text)
+                {
+                    command.add_to_command(c);
+                }
+            }
+        }
+
+        if(i == io.KeyMap[ImGuiKey_Enter] || i == io.KeyMap[ImGuiKey_KeyPadEnter])
+        {
+            if(!io.KeyCtrl && !io.KeyShift)
+                enter = true;
+            else
+                command.add_to_command('\n');
+        }
+    }
+
+    int mouse_buttons = 5;
+
+    for(int i=0; i < mouse_buttons; i++)
+    {
+        if(!ImGui::IsMouseClicked(i))
+            continue;
+
+        if(i == 1)
+        {
+            std::string add_text = clipboard::get();
+
+            for(auto& c : add_text)
+            {
+                command.add_to_command(c);
+            }
+        }
+    }
+
+    if(enter)
+    {
+        add_command_to_main_text(auto_handle, send);
+    }
+}
+
 bool text_manager::create_window(vec2f content_size, vec2f create_window_size)
 {
     ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
@@ -518,6 +676,7 @@ void text_manager::render()
     vec2f found_window_size = {ImGui::GetWindowSize().x, ImGui::GetWindowSize().y};
 
     dock_id = ImGui::GetWindowDockID();
+    was_focused = ImGui::IsWindowFocused();
 
     if(should_render)
     {
@@ -853,9 +1012,6 @@ void chat_manager::render()
     }
 
     std::map<int, int> dock_ids;
-
-    bool any_focused = false;
-    bool any_hovered = false;
 
     for(const std::string& channel_name : open_chat_channels)
     {

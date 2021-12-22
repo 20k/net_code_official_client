@@ -1422,6 +1422,7 @@ int main(int argc, char* argv[])
 
             vec2i window_dim = window.get_window_size();
 
+            default_text.default_controls(test_handler, to_write);
             default_text.render();
             //test_imgui_term.render(window);
             realtime_scripts.render_realtime_windows(to_write, was_closed_id, font_select, terminals.auto_handle, window.get_render_settings().is_srgb);

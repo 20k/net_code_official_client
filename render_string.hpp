@@ -7,6 +7,7 @@
 #include <string>
 #include "auto_handlers.hpp"
 #include "editable_string.hpp"
+#include <networking/networking.hpp>
 
 ///so. Wants to be a single paragraph of text, prebroken up into render units
 ///wants to be split up into screen sized lines, each of a known length, so its easy to reformat if the screen resizes
@@ -69,6 +70,7 @@ struct text_manager
 
     ///derived properties
     bool was_visible = false;
+    bool was_focused = false;
     int dock_id = -1;
 
     std::string command_visual_prefix;
@@ -88,9 +90,11 @@ struct text_manager
 
     void add_main_text(std::string view, auto_handler& auto_handle);
     void add_main_text(std::string view);
-    void add_command_to_main_text(auto_handler& auto_handle);
+    void add_command_to_main_text(auto_handler& auto_handle, connection_send_data& send);
 
+    virtual void default_controls(auto_handler& auto_handle, connection_send_data& send);
     virtual bool create_window(vec2f content_size, vec2f window_size);
+    virtual void on_enter_text(std::string_view text, connection_send_data& send){}
 
     void render();
 
