@@ -105,7 +105,15 @@ struct text_manager
     std::vector<paragraph_string> paragraphs;
 };
 
-struct main_terminal2 : text_manager
+struct terminal2 : text_manager
+{
+    int tag = 0;
+
+    virtual void on_enter_text(std::string_view text, auto_handler& auto_handle, connection_send_data& send) override;
+    void extract_server_commands(nlohmann::json& in, auto_handler& auto_handle);
+};
+
+struct main_terminal2 : terminal2
 {
     main_terminal2();
 
@@ -118,7 +126,7 @@ struct main_terminal2 : text_manager
     std::string current_user;
 };
 
-struct child_terminal : text_manager
+struct child_terminal : terminal2
 {
     child_terminal();
 };

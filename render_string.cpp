@@ -960,6 +960,83 @@ void text_manager::clear_command()
     command.clear_command();
 }
 
+void terminal2::on_enter_text(std::string_view text, auto_handler& auto_handle, connection_send_data& send)
+{
+    if(text.starts_with("user "))
+    {
+
+    }
+
+    ///if is_local_command
+    ///up handling
+
+    {
+        nlohmann::json data;
+        data["type"] = "generic_server_command";
+        data["data"] = text;
+
+        data["tag"] = tag;
+
+        write_data dat;
+        dat.id = -1;
+        dat.data = data.dump();
+
+        send.write_to_websocket(std::move(dat));
+    }
+
+    add_main_text(std::string(text.begin(), text.end()), auto_handle);
+    add_main_text("\n");
+
+    command.push_command_to_history(text);
+    command.clear_command();
+}
+
+void terminal2::extract_server_commands(nlohmann::json& in, auto_handler& auto_handle)
+{
+    if(in == "")
+        return;
+
+    std::string type = in["type"];
+
+    if(type == "server_msg")
+    {
+        std::string data = in["data"];
+
+        if(in.count("tag") > 0)
+        {
+            try
+            {
+                ///The client will only ever send integer tags to the server, but theoretically the tag type can be anything
+                int found_tag = in["tag"];
+
+                if(tag != found_tag)
+                    return;
+            }
+            catch(...)
+            {
+                ///if there's a non integer tag, this message clearly isn't for us or even this client
+                return;
+            }
+        }
+        else
+        {
+            ///if there's no tag, return
+            if(dynamic_cast<main_terminal2*>(this) == nullptr)
+                return;
+        }
+
+        if(in.count("pad") == 0 || in["pad"] == 0)
+        {
+            data += "\n";
+        }
+
+        ///todo: authentication
+
+        add_main_text(data, auto_handle);
+        add_main_text("\n");
+    }
+}
+
 main_terminal2::main_terminal2()
 {
     colour_like_terminal = true;

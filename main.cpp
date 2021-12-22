@@ -433,9 +433,9 @@ int main(int argc, char* argv[])
 
     bool printed_connecting = false;
 
-    text_manager default_text;
     auto_handler test_handler;
 
+    /*text_manager default_text;
     default_text.command.command = "Test Command\nsecondline";
 
     default_text.add_main_text("First line", test_handler);
@@ -447,7 +447,9 @@ int main(int argc, char* argv[])
 
     default_text.add_main_text("1234 3.4 {}", test_handler);
 
-    default_text.add_main_text("lastline", test_handler);
+    default_text.add_main_text("lastline", test_handler);*/
+
+    main_terminal2 main_terminal;
 
     chat_manager chat2;
 
@@ -1333,6 +1335,7 @@ int main(int argc, char* argv[])
 
                 process_text_from_server(terminals, auth_manage, current_user, data, chat_win, font_select, realtime_scripts);
 
+                main_terminal.extract_server_commands(data, test_handler);
                 chat2.extract_server_commands(data);
             }
 
@@ -1426,8 +1429,8 @@ int main(int argc, char* argv[])
 
             vec2i window_dim = window.get_window_size();
 
-            default_text.default_controls(test_handler, to_write);
-            default_text.render();
+            main_terminal.default_controls(test_handler, to_write);
+            main_terminal.render();
 
             chat2.default_controls(test_handler, to_write);
             chat2.render();
