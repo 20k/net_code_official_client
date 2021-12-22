@@ -2,6 +2,7 @@
 #define STRING_HELPERS_HPP_INCLUDED
 
 #include "colour_interop.hpp"
+#include <string_view>
 
 namespace char_inf
 {
@@ -128,5 +129,6 @@ std::vector<formatted_char> format_characters(const std::vector<interop_char>& i
 struct auto_handler;
 
 std::string escape_str(const std::string& in);
+std::string escape_str(std::string_view in);
 
 #endif // STRING_HELPERS_HPP_INCLUDED

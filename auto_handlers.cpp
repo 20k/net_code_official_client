@@ -210,8 +210,6 @@ std::vector<render_string> auto_colour(std::string_view in, bool colour_like_ter
 
     std::vector<token_info> tokens = tokenise_general(in);
 
-    //for(token_info& i : tokens)
-
     if(tokens.size() > 0)
     {
         token_info& first = tokens.front();
@@ -304,6 +302,16 @@ std::vector<render_string> auto_colour(std::string_view in, bool colour_like_ter
 
             strings.push_back(next);
         }
+    }
+
+    if(tokens.size() == 0)
+    {
+        render_string next;
+        next.start = 0;
+        next.length = in.size();
+        next.colour = srgb_to_lin(default_colour/255.f)*255.f;
+
+        strings.push_back(next);
     }
 
     return strings;

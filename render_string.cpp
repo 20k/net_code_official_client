@@ -64,10 +64,13 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
                 ret.push_back(current_chunk);
             }
 
-            render_string& last_chunk = ret.back();
-
             current_chunk = render_string();
+
+            assert(ret.size() > 0);
+
+            render_string& last_chunk = ret.back();
             current_chunk.start = last_chunk.start + last_chunk.length;
+
             current_chunk.length = 0;
         }
     };
@@ -313,11 +316,13 @@ void text_manager::add_main_text(std::string str)
 
 void text_manager::add_command_to_main_text(auto_handler& auto_handle, connection_send_data& send)
 {
-    on_enter_text(command.command, send);
+    std::string str = command.command;
 
-    add_main_text(std::move(command.command), auto_handle);
-    command.push_command_to_history(command.command);
+    add_main_text(str, auto_handle);
+    command.push_command_to_history(str);
     command.clear_command();
+
+    on_enter_text(str, send);
 }
 
 void text_manager::relayout(vec2f new_window_size)
@@ -1021,6 +1026,115 @@ bool chat_thread2::create_window(vec2f content_size, vec2f create_window_size)
         flags |= ImGuiWindowFlags_UnsavedDocument;
 
     return ImGui::Begin(name.c_str(), &open, flags);
+}
+
+void chat_thread2::on_enter_text(std::string_view text, connection_send_data& send)
+{
+    if(text == "/join")
+    {
+        add_main_text("Syntax is /join channel password");
+    }
+    else if(text == "/leave")
+    {
+        add_main_text("Syntax is /leave channel");
+    }
+    else if(text == "/create")
+    {
+        add_main_text("Syntax is /create channel password");
+    }
+    else if(text.starts_with("/"))
+    {
+        int idx = 0;
+
+        for(; idx < (int)text.size() && text[idx] != ' '; idx++);
+
+        if(idx + 1 >= (int)text.size())
+        {
+            add_main_text("First argument must be a channel name, eg /join global");
+        }
+        else
+        {
+            idx++;
+
+            std::string channel_name;
+
+            for(; idx < (int)text.size() && text[idx] != ' '; idx++)
+            {
+                channel_name.push_back(text[idx]);
+            }
+
+            std::string channel_password;
+
+            if(idx + 1 < (int)text.size())
+            {
+                idx++;
+
+                ///password may include whitespace
+                for(; idx < (int)text.size(); idx++)
+                {
+                    channel_password.push_back(text[idx]);
+                }
+            }
+
+            std::string args = "{name:\"" + escape_str(channel_name) + "\"";
+
+            if(channel_password != "")
+            {
+                args += ", password:\"" + escape_str(channel_password) + "\"}";
+            }
+            else
+            {
+                args += "}";
+            }
+
+            std::string final_command;
+
+            if(text.starts_with("/join"))
+            {
+                final_command = "#channel.join(" + args + ")";
+            }
+            else if(text.starts_with("/leave"))
+            {
+                final_command = "#channel.leave(" + args + ")";
+            }
+            else if(text.starts_with("/create"))
+            {
+                final_command = "#channel.create(" + args + ")";
+            }
+            else
+            {
+                add_main_text("Not a valid command, try /join, /leave or /create");
+            }
+
+            if(final_command != "")
+            {
+                nlohmann::json data;
+                data["type"] = "client_chat";
+                data["respond"] = 1;
+                data["data"] = final_command;
+
+                write_data dat;
+                dat.id = -1;
+                dat.data = data.dump();
+
+                send.write_to_websocket(std::move(dat));
+            }
+        }
+    }
+    else
+    {
+        std::string escaped_string = escape_str(text);
+
+        nlohmann::json data;
+        data["type"] = "client_chat";
+        data["data"] = "#hs.msg.send({channel:\"" + name + "\", msg:\"" + escaped_string + "\"})";
+
+        write_data dat;
+        dat.id = -1;
+        dat.data = data.dump();
+
+        send.write_to_websocket(std::move(dat));
+    }
 }
 
 void chat_manager::default_controls(auto_handler& auto_handle, connection_send_data& send)

@@ -32,3 +32,8 @@ std::string escape_str(const std::string& in)
 
     return str;
 }
+
+std::string escape_str(std::string_view in)
+{
+    return escape_str(std::string(in.begin(), in.end()));
+}
