@@ -26,7 +26,7 @@ struct editable_string : serialisable
     void move_command_history_idx(int dir);
 
     void clear_command();
-    void push_command_to_history(const std::string& cmd);
+    void push_command_to_history(std::string_view cmd);
 };
 
 template<typename T>

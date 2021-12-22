@@ -91,11 +91,11 @@ struct text_manager
 
     void add_main_text(std::string view, auto_handler& auto_handle);
     void add_main_text(std::string view);
-    void add_command_to_main_text(auto_handler& auto_handle, connection_send_data& send);
+    void add_command_to_main_text(auto_handler& auto_handle);
 
     virtual void default_controls(auto_handler& auto_handle, connection_send_data& send);
     virtual bool create_window(vec2f content_size, vec2f window_size);
-    virtual void on_enter_text(std::string_view text, connection_send_data& send){}
+    virtual void on_enter_text(std::string_view text, auto_handler& auto_handle, connection_send_data& send);
 
     void render();
 
@@ -132,7 +132,7 @@ struct chat_thread2 : text_manager
     bool was_rendered = false;
 
     virtual bool create_window(vec2f content_size, vec2f window_size) override;
-    virtual void on_enter_text(std::string_view text, connection_send_data& send) override;
+    virtual void on_enter_text(std::string_view text, auto_handler& auto_handle, connection_send_data& send) override;
 
     std::string friendly_name;
 

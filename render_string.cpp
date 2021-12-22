@@ -314,15 +314,13 @@ void text_manager::add_main_text(std::string str)
     unseen_text = !was_visible;
 }
 
-void text_manager::add_command_to_main_text(auto_handler& auto_handle, connection_send_data& send)
+void text_manager::add_command_to_main_text(auto_handler& auto_handle)
 {
     std::string str = command.command;
 
     add_main_text(str, auto_handle);
     command.push_command_to_history(str);
     command.clear_command();
-
-    on_enter_text(str, send);
 }
 
 void text_manager::relayout(vec2f new_window_size)
@@ -650,7 +648,9 @@ void text_manager::default_controls(auto_handler& auto_handle, connection_send_d
 
     if(enter)
     {
-        add_command_to_main_text(auto_handle, send);
+        std::string entry = command.command;
+
+        on_enter_text(entry, auto_handle, send);
     }
 }
 
@@ -665,6 +665,11 @@ bool text_manager::create_window(vec2f content_size, vec2f create_window_size)
         flags |= ImGuiWindowFlags_UnsavedDocument;
 
     return ImGui::Begin("Test Terminal", &open, flags);
+}
+
+void text_manager::on_enter_text(std::string_view text, auto_handler& auto_handle, connection_send_data& send)
+{
+    add_command_to_main_text(auto_handle);
 }
 
 void text_manager::render()
@@ -1057,7 +1062,7 @@ bool chat_thread2::create_window(vec2f content_size, vec2f create_window_size)
     return ImGui::Begin(unfriendly_name.c_str(), &open, flags);
 }
 
-void chat_thread2::on_enter_text(std::string_view text, connection_send_data& send)
+void chat_thread2::on_enter_text(std::string_view text, auto_handler& auto_handle, connection_send_data& send)
 {
     if(text == "/join")
     {
@@ -1164,6 +1169,9 @@ void chat_thread2::on_enter_text(std::string_view text, connection_send_data& se
 
         send.write_to_websocket(std::move(dat));
     }
+
+    command.push_command_to_history(text);
+    command.clear_command();
 }
 
 void chat_manager::default_controls(auto_handler& auto_handle, connection_send_data& send)

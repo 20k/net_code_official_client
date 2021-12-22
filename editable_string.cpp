@@ -48,7 +48,6 @@ void editable_string::process_delete()
     command.erase(command.begin() + to_remove);
 }
 
-
 void editable_string::move_command_history_idx(int dir)
 {
     command_history_idx += dir;
@@ -76,7 +75,7 @@ void editable_string::clear_command()
     cursor_pos_idx = 0;
 }
 
-void editable_string::push_command_to_history(const std::string& cmd)
+void editable_string::push_command_to_history(std::string_view cmd)
 {
     int max_command_history = 1000;
 
@@ -90,6 +89,6 @@ void editable_string::push_command_to_history(const std::string& cmd)
             return;
     }
 
-    command_history.push_back(cmd);
+    command_history.push_back(std::string(cmd.begin(), cmd.end()));
     command_history_idx = (int)command_history.size();
 }
