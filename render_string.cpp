@@ -54,6 +54,11 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
 
                 for(render_string& strs : autocoloured)
                 {
+                    assert(strs.start + strs.length <= current_chunk.start + current_chunk.length);
+                }
+
+                for(render_string& strs : autocoloured)
+                {
                     strs.start += chunk_start;
                 }
 

@@ -210,6 +210,18 @@ std::vector<render_string> auto_colour(std::string_view in, bool colour_like_ter
 
     std::vector<token_info> tokens = tokenise_general(in);
 
+    for(int i=0; i < tokens.size(); i++)
+    {
+        token_info& tok = tokens[i];
+
+        if(tok.start_pos == tok.end_pos || tok.ghost)
+        {
+            tokens.erase(tokens.begin() + i);
+            i--;
+            continue;
+        }
+    }
+
     if(tokens.size() > 0)
     {
         token_info& first = tokens.front();
