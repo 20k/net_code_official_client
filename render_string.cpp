@@ -998,6 +998,21 @@ void chat_manager::extract_server_commands(nlohmann::json& in)
             this_thread.add_main_text(msgs[i]);
         }
     }
+
+    if(type == "chat_api_response")
+    {
+        std::string data = in["data"];
+
+        for(const std::string& name : open_chat_channels)
+        {
+            chat_thread2& cthread = chat_threads[name];
+
+            if(cthread.was_focused)
+            {
+                cthread.add_main_text(data);
+            }
+        }
+    }
 }
 
 void chat_manager::set_open_chat_channels(const std::vector<std::string>& channels)
@@ -1022,10 +1037,12 @@ bool chat_thread2::create_window(vec2f content_size, vec2f create_window_size)
 
     int flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoFocusOnAppearing;
 
+    std::string unfriendly_name = friendly_name + "###" + friendly_name + "$";
+
     if(unseen_text)
         flags |= ImGuiWindowFlags_UnsavedDocument;
 
-    return ImGui::Begin(name.c_str(), &open, flags);
+    return ImGui::Begin(unfriendly_name.c_str(), &open, flags);
 }
 
 void chat_thread2::on_enter_text(std::string_view text, connection_send_data& send)
@@ -1127,7 +1144,7 @@ void chat_thread2::on_enter_text(std::string_view text, connection_send_data& se
 
         nlohmann::json data;
         data["type"] = "client_chat";
-        data["data"] = "#hs.msg.send({channel:\"" + name + "\", msg:\"" + escaped_string + "\"})";
+        data["data"] = "#hs.msg.send({channel:\"" + friendly_name + "\", msg:\"" + escaped_string + "\"})";
 
         write_data dat;
         dat.id = -1;
@@ -1176,7 +1193,7 @@ void chat_manager::render()
 
         ImGui::SetNextWindowDockID(dock_id, ImGuiCond_FirstUseEver);
 
-        thread.name = channel_name + "###" + channel_name + "$";
+        thread.friendly_name = channel_name;
 
         thread.render();
 

@@ -134,7 +134,7 @@ struct chat_thread2 : text_manager
     virtual bool create_window(vec2f content_size, vec2f window_size) override;
     virtual void on_enter_text(std::string_view text, connection_send_data& send) override;
 
-    std::string name;
+    std::string friendly_name;
 
     std::vector<std::string> pending_input;
 };
