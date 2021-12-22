@@ -6,6 +6,8 @@
 #include "string_helpers.hpp"
 #include "copy_handler.hpp"
 #include "auto_handlers.hpp"
+#include <toolkit/fs_helpers.hpp>
+#include <GLFW/glfw3.h>
 
 vec3f process_colour(vec3f in)
 {
@@ -288,11 +290,15 @@ void text_manager::add_main_text(std::string str, auto_handler& auto_handle)
             auto_handle.found_unprocessed_autocompletes.push_back(std::move(s));
         }
     }
+
+    unseen_text = !was_visible;
 }
 
 void text_manager::add_main_text(std::string str)
 {
     paragraphs.emplace_back(std::move(str), false, colour_like_terminal);
+
+    unseen_text = !was_visible;
 }
 
 void text_manager::add_command_to_main_text(auto_handler& auto_handle)
@@ -483,15 +489,20 @@ void driven_scrollbar::adjust_by_lines(float lines, int trailing_blank_lines)
     fraction = clamp(fraction, 0.f, 1.f);
 }
 
-void text_manager::create_window(vec2f content_size, vec2f create_window_size)
+bool text_manager::create_window(vec2f content_size, vec2f create_window_size)
 {
     ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
     ImGui::SetNextWindowSize(ImVec2(create_window_size.x(), create_window_size.y()), ImGuiCond_Appearing);
 
-    ImGui::Begin("Test Terminal", &open, ImGuiWindowFlags_NoScrollbar);
+    int flags = ImGuiWindowFlags_NoScrollbar;
+
+    if(unseen_text)
+        flags |= ImGuiWindowFlags_UnsavedDocument;
+
+    return ImGui::Begin("Test Terminal", &open, flags);
 }
 
-void text_manager::render(auto_handler& auto_handle)
+void text_manager::render()
 {
     float clip_width = window_size.x() - 2 * char_inf::cwbuf;
     float content_height = 0;
@@ -502,259 +513,270 @@ void text_manager::render(auto_handler& auto_handle)
     }
 
     ///ImGui::Begin
-    create_window({clip_width, content_height}, {400, 300});
-
-    if(should_reset_scrollbar)
-        scrollbar.fraction = 1;
-
-    should_reset_scrollbar = false;
-
-    int trailing_blank_lines = 0;
-
-    paragraph_string command_line(command_visual_prefix + command.command, true, true);
-    command_line.build(get_formatting_clip_width(window_size.x(), scrollbar.width));
-
-    int command_line_height = command_line.lines.size();
-
-    if(command_line_height == 0)
-        trailing_blank_lines = 1;
-
-    trailing_blank_lines += command_line_height;
-
-    scrollbar.content_height = content_height;
-    scrollbar.window_size = window_size;
-
-    scrollbar.render(trailing_blank_lines);
-    copy_handler2& handle = get_global_copy_handler2();
-
-    std::string copy_string;
-
-    bool check_copy = false;
-    bool trigger_copy = false;
-
-    if(ImGui::IsWindowFocused())
-    {
-        if(handle.should_initiate_copy())
-        {
-            check_copy = true;
-            trigger_copy = true;
-        }
-
-        if(handle.is_dragging())
-        {
-            check_copy = true;
-        }
-    }
-
-    ///cancel copying if the titlebar is hovered
-    if(ImGui::IsItemHovered() && !handle.is_dragging())
-    {
-        handle.cancelled = true;
-    }
-
-    if(ImGui::IsWindowHovered() && !handle.is_dragging())
-    {
-        vec2f tl = {ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + get_window_title_offset()};
-        vec2f br = {ImGui::GetWindowPos().x + ImGui::GetWindowSize().x - scrollbar.width - char_inf::cwbuf - ImGui::GetStyle().FramePadding.x, ImGui::GetWindowPos().y + ImGui::GetWindowSize().y};
-
-        vec2f mouse_pos = {ImGui::GetMousePos().x, ImGui::GetMousePos().y};
-
-        bool point_in_rect = mouse_pos.x() >= tl.x() && mouse_pos.x() < br.x() && mouse_pos.y() >= tl.y() && mouse_pos.y() < br.y();
-
-        if(!point_in_rect)
-        {
-            handle.cancelled = true;
-        }
-    }
+    bool should_render = create_window({clip_width, content_height}, {400, 300});
 
     vec2f found_window_size = {ImGui::GetWindowSize().x, ImGui::GetWindowSize().y};
 
-    if(found_window_size != window_size)
+    dock_id = ImGui::GetWindowDockID();
+
+    if(should_render)
     {
-        handle.cancelled = true;
-    }
+        if(should_reset_scrollbar)
+            scrollbar.fraction = 1;
 
-    if(handle.cancelled)
-    {
-        check_copy = false;
-    }
+        should_reset_scrollbar = false;
 
-    float scroll_fraction = scrollbar.fraction;
+        int trailing_blank_lines = 0;
 
-    float adjusted_scroll_fraction = scroll_fraction;
+        paragraph_string command_line(command_visual_prefix + command.command, true, true);
+        command_line.build(get_formatting_clip_width(window_size.x(), scrollbar.width));
 
-    if(content_height > 0)
-    {
-        ///so, when scroll_fraction is 1, we want visible_y_end to be lines.size() * size + padding
-        float desired_visible_y_end = get_desired_visible_y_end(content_height, trailing_blank_lines);
+        int command_line_height = command_line.lines.size();
 
-        ///vye = scroll_fraction * content_height + window_size.y()
-        ///(vye - window_size.y()) / content_height = scroll_fraction
+        if(command_line_height == 0)
+            trailing_blank_lines = 1;
 
-        float scroll_fraction_at_end = (desired_visible_y_end - window_size.y()) / content_height;
+        trailing_blank_lines += command_line_height;
 
-        adjusted_scroll_fraction = scroll_fraction_at_end * scroll_fraction;
-    }
+        scrollbar.content_height = content_height;
+        scrollbar.window_size = window_size;
 
-    if(scroll_fraction < 1)
-        scrollbar_at_bottom = false;
+        scrollbar.render(trailing_blank_lines);
+        copy_handler2& handle = get_global_copy_handler2();
 
-    if(scroll_fraction == 1)
-        scrollbar_at_bottom = true;
+        std::string copy_string;
 
-    ///in pixels
-    float visible_y_start = adjusted_scroll_fraction * content_height;
-    float visible_y_end = visible_y_start + window_size.y();
+        bool check_copy = false;
+        bool trigger_copy = false;
 
-    float current_pixel_y = 0;
-
-    float base_left_offset = char_inf::cwbuf + ImGui::GetWindowPos().x;
-    float base_top_offset = ImGui::GetWindowPos().y;
-
-    float title_offset = get_window_title_offset();
-
-    vec2f cdim = {char_inf::cwidth, char_inf::cheight};
-
-    vec3f srgb_selection_colour = {80, 80, 255};
-    vec3f selection_colour = srgb_to_lin(srgb_selection_colour / 255.f) * 255.f;
-    ImU32 selection_colour_u32 = IM_COL32((int)selection_colour.x(), (int)selection_colour.y(), (int)selection_colour.z(), 255);
-
-    vec3f selection_light = srgb_to_lin(srgb_selection_colour / 255.f) * 255.f;
-    ImU32 selection_light_u32 = IM_COL32((int)selection_light.x(), (int)selection_light.y(), (int)selection_light.z(), 128);
-
-    vec2f highlight_tl = {FLT_MAX, FLT_MAX};
-    vec2f highlight_br = {-FLT_MAX, -FLT_MAX};
-    bool any_highlighted = false;
-
-    auto process_screen_line = [&](const paragraph_string& s, const screen_line& sl, float y_screen)
-    {
-        float left_offset = base_left_offset;
-
-        for(const render_string& rs : sl.strings)
+        if(ImGui::IsWindowFocused())
         {
-            vec3f colour = rs.colour;
-
-            int idx_start = rs.start;
-            int idx_len = rs.length;
-
-            int ir = colour.x();
-            int ig = colour.y();
-            int ib = colour.z();
-
-            const char* start = s.str.c_str() + idx_start;
-            const char* fin = s.str.c_str() + idx_start + idx_len;
-
-            ImDrawList* imlist = ImGui::GetWindowDrawList();
-
-            imlist->AddText(ImVec2(left_offset, y_screen), IM_COL32(ir, ig, ib, 255), start, fin);
-
-            if(check_copy || trigger_copy)
+            if(handle.should_initiate_copy())
             {
-                for(int kk=rs.start; kk < rs.start + rs.length; kk++)
+                check_copy = true;
+                trigger_copy = true;
+            }
+
+            if(handle.is_dragging())
+            {
+                check_copy = true;
+            }
+        }
+
+        ///cancel copying if the titlebar is hovered
+        if(ImGui::IsItemHovered() && !handle.is_dragging())
+        {
+            handle.cancelled = true;
+        }
+
+        if(ImGui::IsWindowHovered() && !handle.is_dragging())
+        {
+            vec2f tl = {ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + get_window_title_offset()};
+            vec2f br = {ImGui::GetWindowPos().x + ImGui::GetWindowSize().x - scrollbar.width - char_inf::cwbuf - ImGui::GetStyle().FramePadding.x, ImGui::GetWindowPos().y + ImGui::GetWindowSize().y};
+
+            vec2f mouse_pos = {ImGui::GetMousePos().x, ImGui::GetMousePos().y};
+
+            bool point_in_rect = mouse_pos.x() >= tl.x() && mouse_pos.x() < br.x() && mouse_pos.y() >= tl.y() && mouse_pos.y() < br.y();
+
+            if(!point_in_rect)
+            {
+                handle.cancelled = true;
+            }
+        }
+
+        if(found_window_size != window_size)
+        {
+            handle.cancelled = true;
+        }
+
+        if(handle.cancelled)
+        {
+            check_copy = false;
+        }
+
+        float scroll_fraction = scrollbar.fraction;
+
+        float adjusted_scroll_fraction = scroll_fraction;
+
+        if(content_height > 0)
+        {
+            ///so, when scroll_fraction is 1, we want visible_y_end to be lines.size() * size + padding
+            float desired_visible_y_end = get_desired_visible_y_end(content_height, trailing_blank_lines);
+
+            ///vye = scroll_fraction * content_height + window_size.y()
+            ///(vye - window_size.y()) / content_height = scroll_fraction
+
+            float scroll_fraction_at_end = (desired_visible_y_end - window_size.y()) / content_height;
+
+            adjusted_scroll_fraction = scroll_fraction_at_end * scroll_fraction;
+        }
+
+        if(scroll_fraction < 1)
+            scrollbar_at_bottom = false;
+
+        if(scroll_fraction == 1)
+            scrollbar_at_bottom = true;
+
+        ///in pixels
+        float visible_y_start = adjusted_scroll_fraction * content_height;
+        float visible_y_end = visible_y_start + window_size.y();
+
+        float current_pixel_y = 0;
+
+        float base_left_offset = char_inf::cwbuf + ImGui::GetWindowPos().x;
+        float base_top_offset = ImGui::GetWindowPos().y;
+
+        float title_offset = get_window_title_offset();
+
+        vec2f cdim = {char_inf::cwidth, char_inf::cheight};
+
+        vec3f srgb_selection_colour = {80, 80, 255};
+        vec3f selection_colour = srgb_to_lin(srgb_selection_colour / 255.f) * 255.f;
+        ImU32 selection_colour_u32 = IM_COL32((int)selection_colour.x(), (int)selection_colour.y(), (int)selection_colour.z(), 255);
+
+        vec3f selection_light = srgb_to_lin(srgb_selection_colour / 255.f) * 255.f;
+        ImU32 selection_light_u32 = IM_COL32((int)selection_light.x(), (int)selection_light.y(), (int)selection_light.z(), 128);
+
+        vec2f highlight_tl = {FLT_MAX, FLT_MAX};
+        vec2f highlight_br = {-FLT_MAX, -FLT_MAX};
+        bool any_highlighted = false;
+
+        auto process_screen_line = [&](const paragraph_string& s, const screen_line& sl, float y_screen)
+        {
+            float left_offset = base_left_offset;
+
+            for(const render_string& rs : sl.strings)
+            {
+                vec3f colour = rs.colour;
+
+                int idx_start = rs.start;
+                int idx_len = rs.length;
+
+                int ir = colour.x();
+                int ig = colour.y();
+                int ib = colour.z();
+
+                const char* start = s.str.c_str() + idx_start;
+                const char* fin = s.str.c_str() + idx_start + idx_len;
+
+                ImDrawList* imlist = ImGui::GetWindowDrawList();
+
+                imlist->AddText(ImVec2(left_offset, y_screen), IM_COL32(ir, ig, ib, 255), start, fin);
+
+                if(check_copy || trigger_copy)
                 {
-                    char c = s.str[kk];
-
-                    vec2f pos = {left_offset + (kk - rs.start) * char_inf::cwidth, y_screen};
-
-                    if(handle.char_within_region(pos, cdim))
+                    for(int kk=rs.start; kk < rs.start + rs.length; kk++)
                     {
-                        if(trigger_copy)
+                        char c = s.str[kk];
+
+                        vec2f pos = {left_offset + (kk - rs.start) * char_inf::cwidth, y_screen};
+
+                        if(handle.char_within_region(pos, cdim))
                         {
-                            if(copy_string.size() != 0 && handle.last_copy_y != pos.y())
-                                copy_string += "\n" + std::string(1, c);
-                            else
-                                copy_string += std::string(1, c);
+                            if(trigger_copy)
+                            {
+                                if(copy_string.size() != 0 && handle.last_copy_y != pos.y())
+                                    copy_string += "\n" + std::string(1, c);
+                                else
+                                    copy_string += std::string(1, c);
 
-                            handle.last_copy_y = pos.y();
+                                handle.last_copy_y = pos.y();
+                            }
+
+                            highlight_tl = min(highlight_tl, pos);
+                            highlight_br = max(highlight_br, pos + cdim);
+
+                            any_highlighted = true;
                         }
-
-                        highlight_tl = min(highlight_tl, pos);
-                        highlight_br = max(highlight_br, pos + cdim);
-
-                        any_highlighted = true;
                     }
                 }
+
+                left_offset += rs.length * char_inf::cwidth;
             }
+        };
 
-            left_offset += rs.length * char_inf::cwidth;
-        }
-    };
-
-    auto process_paragraph = [&](const paragraph_string& s)
-    {
-        for(const screen_line& sl : s.lines)
+        auto process_paragraph = [&](const paragraph_string& s)
         {
-            float top_offset = current_pixel_y;
-
-            float from_top_of_window = top_offset - visible_y_start;
-
-            float padded_y = from_top_of_window + base_top_offset + title_offset;
-
-            if(top_offset >= visible_y_start - char_inf::cheight && (top_offset < visible_y_end - (3.5 + trailing_blank_lines) * char_inf::cheight))
+            for(const screen_line& sl : s.lines)
             {
-                process_screen_line(s, sl, padded_y);
+                float top_offset = current_pixel_y;
+
+                float from_top_of_window = top_offset - visible_y_start;
+
+                float padded_y = from_top_of_window + base_top_offset + title_offset;
+
+                if(top_offset >= visible_y_start - char_inf::cheight && (top_offset < visible_y_end - (3.5 + trailing_blank_lines) * char_inf::cheight))
+                {
+                    process_screen_line(s, sl, padded_y);
+                }
+
+                current_pixel_y += char_inf::cheight;
+            }
+        };
+
+        auto process_paragraph_with_y = [&](const paragraph_string& s, float screen_y)
+        {
+            for(const screen_line& sl : s.lines)
+            {
+                process_screen_line(s, sl, screen_y);
+
+                screen_y += char_inf::cheight;
+            }
+        };
+
+        ///step 1: render everything
+        ///step 2: render only stuff in visible region
+        ///step 3: remove the content height calculation above
+        for(const paragraph_string& s : paragraphs)
+        {
+            process_paragraph(s);
+        }
+
+        {
+            float screen_y = base_top_offset + window_size.y() - ImGui::GetStyle().WindowPadding.y - char_inf::cheight * trailing_blank_lines;
+
+            process_paragraph_with_y(command_line, screen_y);
+        }
+
+        if(any_highlighted)
+        {
+            ImDrawList* imlist = ImGui::GetWindowDrawList();
+
+            ImVec2 tl = {highlight_tl.x(), highlight_tl.y()};
+            ImVec2 br = {highlight_br.x(), highlight_br.y()};
+
+            int thick = 0;
+
+            ImVec2 ptl = {tl.x + thick, tl.y + thick};
+            ImVec2 pbr = {br.x - thick, br.y - thick};
+
+            //selection_light_u32
+            imlist->AddRectFilled(ptl, pbr, selection_light_u32, 0, 0);
+            imlist->AddRect(tl, br, selection_colour_u32, 1.f, 0, 2);
+        }
+
+        if(trigger_copy)
+        {
+            if(copy_string.size() > 0)
+            {
+                std::cout << "Copied2 " << copy_string << std::endl;
+
+                handle.set_clipboard(copy_string);
             }
 
-            current_pixel_y += char_inf::cheight;
+            handle.reset_trigger();
         }
-    };
-
-    auto process_paragraph_with_y = [&](const paragraph_string& s, float screen_y)
-    {
-        for(const screen_line& sl : s.lines)
-        {
-            process_screen_line(s, sl, screen_y);
-
-            screen_y += char_inf::cheight;
-        }
-    };
-
-    ///step 1: render everything
-    ///step 2: render only stuff in visible region
-    ///step 3: remove the content height calculation above
-    for(const paragraph_string& s : paragraphs)
-    {
-        process_paragraph(s);
-    }
-
-    {
-        float screen_y = base_top_offset + window_size.y() - ImGui::GetStyle().WindowPadding.y - char_inf::cheight * trailing_blank_lines;
-
-        process_paragraph_with_y(command_line, screen_y);
-    }
-
-    if(any_highlighted)
-    {
-        ImDrawList* imlist = ImGui::GetWindowDrawList();
-
-        ImVec2 tl = {highlight_tl.x(), highlight_tl.y()};
-        ImVec2 br = {highlight_br.x(), highlight_br.y()};
-
-        int thick = 0;
-
-        ImVec2 ptl = {tl.x + thick, tl.y + thick};
-        ImVec2 pbr = {br.x - thick, br.y - thick};
-
-        //selection_light_u32
-        imlist->AddRectFilled(ptl, pbr, selection_light_u32, 0, 0);
-        imlist->AddRect(tl, br, selection_colour_u32, 1.f, 0, 2);
-    }
-
-    if(trigger_copy)
-    {
-        if(copy_string.size() > 0)
-        {
-            std::cout << "Copied2 " << copy_string << std::endl;
-
-            handle.set_clipboard(copy_string);
-        }
-
-        handle.reset_trigger();
     }
 
     ImGui::End();
 
-    relayout(found_window_size);
+    if(should_render)
+    {
+        relayout(found_window_size);
+        unseen_text = false;
+    }
+
+    was_visible = should_render;
 }
 
 void text_manager::clear_text()
@@ -781,7 +803,7 @@ child_terminal::child_terminal()
 
 void chat_manager::set_chat_channels(const std::vector<std::string>& channels)
 {
-    std::set<std::string> logn_lookup;
+    /*std::set<std::string> logn_lookup;
 
     for(const std::string& c : channels)
     {
@@ -805,7 +827,109 @@ void chat_manager::set_chat_channels(const std::vector<std::string>& channels)
         {
             it++;
         }
+    }*/
+
+    open_chat_channels = channels;
+}
+
+void chat_manager::add_text(const std::string& channel, const std::vector<std::string>& text)
+{
+    for(const std::string& str : text)
+    {
+        chat_threads[channel].add_main_text(str);
     }
+}
+
+bool chat_thread2::create_window(vec2f content_size, vec2f create_window_size)
+{
+    create_window_size = {500, 300};
+
+    ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
+    ImGui::SetNextWindowSize(ImVec2(create_window_size.x(), create_window_size.y()), ImGuiCond_Appearing);
+
+    int flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoFocusOnAppearing;
+
+    if(unseen_text)
+        flags |= ImGuiWindowFlags_UnsavedDocument;
+
+    return ImGui::Begin("Chat Thread", &open, flags);
+}
+
+void chat_manager::render()
+{
+    static bool once = file::exists("ui_setup_once_v2");
+    static ImGuiID dock_id = -1;
+
+    if(!once || ImGui::IsKeyPressed(GLFW_KEY_F2))
+    {
+        dock_id = ImGui::DockBuilderAddNode(0, ImGuiDockNodeFlags_None);
+        ImVec2 viewport_pos = ImGui::GetMainViewport()->Pos;
+        ImVec2 viewport_size = ImGui::GetMainViewport()->Size;
+        ImGui::DockBuilderSetNodePos(dock_id, ImVec2(viewport_pos.x + viewport_size.x - 600, viewport_pos.y + 100));
+        ImGui::DockBuilderSetNodeSize(dock_id, ImVec2(500, 300));
+
+        for(const std::string& channel : open_chat_channels)
+        {
+            ImGui::DockBuilderDockWindow(("###" + channel).c_str(), dock_id);
+        }
+
+        ImGui::DockBuilderFinish(dock_id);
+
+        file::write("ui_setup_once_v2", "1", file::mode::BINARY);
+    }
+
+    std::map<int, int> dock_ids;
+
+    bool any_focused = false;
+    bool any_hovered = false;
+
+    for(const std::string& channel_name : open_chat_channels)
+    {
+        chat_thread2& thread = chat_threads[channel_name];
+
+        ImGui::SetNextWindowDockID(dock_id, ImGuiCond_FirstUseEver);
+
+        thread.name = channel_name + "###" + channel_name;
+
+        thread.render();
+
+        ///should this be done unconditionally?
+        //if(thread.was_visible)
+        {
+            if(dock_id == (ImGuiID)-1)
+            {
+                dock_ids[thread.dock_id]++;
+            }
+        }
+    }
+
+    ///this takes the dock id with the largest number of chat windows docked in it
+    ///and makes that the default docking id
+    if(dock_id == (ImGuiID)-1)
+    {
+        int greatest_id = -1;
+        int greatest_count = 0;
+
+        for(auto& i : dock_ids)
+        {
+            if(i.second > greatest_count)
+            {
+                greatest_count = i.second;
+                greatest_id = i.first;
+            }
+        }
+
+        if(greatest_id != -1)
+        {
+            dock_id = greatest_id;
+        }
+        else
+        {
+            once = false;
+        }
+    }
+
+    once = true;
 }
 
 void test_render_strings()

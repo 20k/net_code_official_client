@@ -64,7 +64,12 @@ struct text_manager
     bool colour_like_terminal = false;
     bool new_terminal = true;
     bool open = true;
+    bool unseen_text = false;
     int friendly_id = 0;
+
+    ///derived properties
+    bool was_visible = false;
+    int dock_id = -1;
 
     std::string command_visual_prefix;
 
@@ -85,9 +90,9 @@ struct text_manager
     void add_main_text(std::string view);
     void add_command_to_main_text(auto_handler& auto_handle);
 
-    virtual void create_window(vec2f content_size, vec2f window_size);
+    virtual bool create_window(vec2f content_size, vec2f window_size);
 
-    void render(auto_handler& auto_handle);
+    void render();
 
     void clear_text();
     void clear_command();
@@ -121,7 +126,11 @@ struct chat_thread2 : text_manager
     bool was_hovered = false;
     bool was_rendered = false;
 
+    virtual bool create_window(vec2f content_size, vec2f window_size) override;
+
     std::string name;
+
+    std::vector<std::string> pending_input;
 };
 
 struct chat_manager
@@ -130,7 +139,12 @@ struct chat_manager
 
     std::map<std::string, chat_thread2> chat_threads;
 
+    std::vector<std::string> open_chat_channels;
+
     void set_chat_channels(const std::vector<std::string>& channels);
+    void add_text(const std::string& channel, const std::vector<std::string>& text);
+
+    void render();
 };
 
 void test_render_strings();
