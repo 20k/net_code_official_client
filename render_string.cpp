@@ -260,10 +260,7 @@ std::vector<screen_line> create_screen_lines(const std::string& base_string, con
             pos.x() += character_dim.x();
         }
 
-        if(pending.length > 0)
-        {
-            next_line.strings.push_back(pending);
-        }
+        next_line.strings.push_back(pending);
     }
 
     if(next_line.strings.size() > 0)
@@ -985,7 +982,7 @@ void terminal2::on_enter_text(std::string_view text, auto_handler& auto_handle, 
     }
 
     add_main_text(std::string(text.begin(), text.end()), auto_handle);
-    add_main_text("\n");
+    add_main_text("");
 
     command.push_command_to_history(text);
     command.clear_command();
@@ -1033,7 +1030,6 @@ void terminal2::extract_server_commands(nlohmann::json& in, auto_handler& auto_h
         ///todo: authentication
 
         add_main_text(data, auto_handle);
-        add_main_text("\n");
     }
 }
 
