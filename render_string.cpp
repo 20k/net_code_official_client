@@ -1017,6 +1017,18 @@ void chat_manager::extract_server_commands(nlohmann::json& in)
 
 void chat_manager::set_open_chat_channels(const std::vector<std::string>& channels)
 {
+    std::set<std::string> logn(channels.begin(), channels.end());
+
+    for(auto& [name, thread] : chat_threads)
+    {
+        if(logn.count(name) == 0)
+        {
+            thread.was_focused = false;
+            thread.was_hovered = false;
+            thread.was_rendered = false;
+        }
+    }
+
     open_chat_channels = channels;
 }
 
