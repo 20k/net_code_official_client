@@ -962,7 +962,40 @@ child_terminal::child_terminal()
     colour_like_terminal = true;
 }
 
-void chat_manager::set_chat_channels(const std::vector<std::string>& channels)
+void chat_manager::extract_server_commands(nlohmann::json& in)
+{
+    if(in == "")
+        return;
+
+    std::string type = in["type"];
+
+    if(type == "chat_api")
+    {
+        std::vector<std::string> chnls;
+        std::vector<std::string> msgs;
+
+        std::vector<std::string> in_channels = in["channels"];
+
+        std::vector<nlohmann::json> tell_msgs = in["tells"];
+
+        for(int i=0; i < (int)in["data"].size(); i++)
+        {
+            chnls.push_back(in["data"][i]["channel"]);
+            msgs.push_back(in["data"][i]["text"]);
+        }
+
+        set_open_chat_channels(in_channels);
+
+        for(int i=0; i < (int)chnls.size(); i++)
+        {
+            chat_thread2& this_thread = chat_threads[chnls[i]];
+
+            this_thread.add_main_text(msgs[i]);
+        }
+    }
+}
+
+void chat_manager::set_open_chat_channels(const std::vector<std::string>& channels)
 {
     open_chat_channels = channels;
 }
@@ -987,7 +1020,7 @@ bool chat_thread2::create_window(vec2f content_size, vec2f create_window_size)
     if(unseen_text)
         flags |= ImGuiWindowFlags_UnsavedDocument;
 
-    return ImGui::Begin("Chat Thread", &open, flags);
+    return ImGui::Begin(name.c_str(), &open, flags);
 }
 
 void chat_manager::render()
@@ -1005,7 +1038,7 @@ void chat_manager::render()
 
         for(const std::string& channel : open_chat_channels)
         {
-            ImGui::DockBuilderDockWindow(("###" + channel).c_str(), dock_id);
+            ImGui::DockBuilderDockWindow(("###" + channel + "$").c_str(), dock_id);
         }
 
         ImGui::DockBuilderFinish(dock_id);
@@ -1021,7 +1054,7 @@ void chat_manager::render()
 
         ImGui::SetNextWindowDockID(dock_id, ImGuiCond_FirstUseEver);
 
-        thread.name = channel_name + "###" + channel_name;
+        thread.name = channel_name + "###" + channel_name + "$";
 
         thread.render();
 

@@ -8,6 +8,7 @@
 #include "auto_handlers.hpp"
 #include "editable_string.hpp"
 #include <networking/networking.hpp>
+#include <nlohmann/json.hpp>
 
 ///so. Wants to be a single paragraph of text, prebroken up into render units
 ///wants to be split up into screen sized lines, each of a known length, so its easy to reformat if the screen resizes
@@ -145,7 +146,8 @@ struct chat_manager
 
     std::vector<std::string> open_chat_channels;
 
-    void set_chat_channels(const std::vector<std::string>& channels);
+    void extract_server_commands(nlohmann::json& in);
+    void set_open_chat_channels(const std::vector<std::string>& channels);
     void add_text(const std::string& channel, const std::vector<std::string>& text);
 
     void render();

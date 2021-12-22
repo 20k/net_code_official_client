@@ -449,6 +449,8 @@ int main(int argc, char* argv[])
 
     default_text.add_main_text("lastline", test_handler);
 
+    chat_manager chat2;
+
     //while(running)
     #ifndef __EMSCRIPTEN__
     while(!window.should_close() && terminals.main_terminal.open)
@@ -1330,6 +1332,8 @@ int main(int argc, char* argv[])
                 }
 
                 process_text_from_server(terminals, auth_manage, current_user, data, chat_win, font_select, realtime_scripts);
+
+                chat2.extract_server_commands(data);
             }
 
             if(write_clock.get_elapsed_time_s() > 5 && (!terminals.all_cache_valid() || chat_win.any_cache_invalid()))
@@ -1424,9 +1428,12 @@ int main(int argc, char* argv[])
 
             default_text.default_controls(test_handler, to_write);
             default_text.render();
+
+            chat2.render();
+
             //test_imgui_term.render(window);
             realtime_scripts.render_realtime_windows(to_write, was_closed_id, font_select, terminals.auto_handle, window.get_render_settings().is_srgb);
-            chat_win.render(should_coordinate_focus);
+            //chat_win.render(should_coordinate_focus);
             terminals.render(window, {window_dim.x(), window_dim.y()}, should_coordinate_focus);
 
             should_coordinate_focus = false;

@@ -2269,7 +2269,7 @@ void chat_window::render(bool refocus)
 
         for(int i=0; i < (int)side_buttons.size(); i++)
         {
-            ImGui::DockBuilderDockWindow(("###" + side_buttons[i]).c_str(), dock_id);
+            ImGui::DockBuilderDockWindow(("###" + side_buttons[i] + "^").c_str(), dock_id);
         }
 
         ImGui::DockBuilderFinish(dock_id);
@@ -2293,7 +2293,7 @@ void chat_window::render(bool refocus)
         else
             full_str += " ";
 
-        full_str += "###" + side_buttons[i];
+        full_str += "###" + side_buttons[i] + "^";
 
         ImGui::SetNextWindowDockID(dock_id, ImGuiCond_FirstUseEver);
 
