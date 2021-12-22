@@ -280,9 +280,15 @@ void paragraph_string::build(float clip_width)
     dim.y() = lines.size() * char_inf::cheight;
 }
 
+float get_formatting_clip_width(float new_window_width, float scrollbar_width)
+{
+    return new_window_width - 2 * char_inf::cwbuf - scrollbar_width - ImGui::GetStyle().FramePadding.x - 2 * char_inf::cwidth;
+}
+
 void text_manager::add_main_text(std::string str, auto_handler& auto_handle)
 {
     paragraphs.emplace_back(std::move(str), false, colour_like_terminal);
+    paragraphs.back().build(get_formatting_clip_width(window_size.x(), scrollbar.width));
 
     std::vector<std::string> autos = parse_for_autocompletes(str);
 
@@ -300,6 +306,7 @@ void text_manager::add_main_text(std::string str, auto_handler& auto_handle)
 void text_manager::add_main_text(std::string str)
 {
     paragraphs.emplace_back(std::move(str), false, colour_like_terminal);
+    paragraphs.back().build(get_formatting_clip_width(window_size.x(), scrollbar.width));
 
     unseen_text = !was_visible;
 }
@@ -311,11 +318,6 @@ void text_manager::add_command_to_main_text(auto_handler& auto_handle, connectio
     add_main_text(std::move(command.command), auto_handle);
     command.push_command_to_history(command.command);
     command.clear_command();
-}
-
-float get_formatting_clip_width(float new_window_width, float scrollbar_width)
-{
-    return new_window_width - 2 * char_inf::cwbuf - scrollbar_width - ImGui::GetStyle().FramePadding.x - 2 * char_inf::cwidth;
 }
 
 void text_manager::relayout(vec2f new_window_size)
