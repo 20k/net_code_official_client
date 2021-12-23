@@ -818,7 +818,7 @@ void text_manager::render(auto_handler& auto_handle)
 
         float current_pixel_y = 0;
 
-        float base_left_offset = char_inf::cwbuf + ImGui::GetWindowPos().x;
+        float base_left_offset = char_inf::cwbuf + ImGui::GetWindowPos().x + ImGui::GetStyle().FramePadding.x;
         float base_top_offset = ImGui::GetWindowPos().y;
 
         float title_offset = get_window_title_offset();
