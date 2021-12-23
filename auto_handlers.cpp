@@ -351,7 +351,18 @@ std::vector<std::string> parse_for_autocompletes(std::string_view view)
     return found_unprocessed_autocompletes;
 }
 
-int insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<std::string>& vals, int pos, std::vector<token_info>& tokens, std::vector<interop_char>& in, int num_concrete_args)
+static char index(const std::vector<interop_char>& dat, int idx)
+{
+    return dat[idx].c;
+}
+
+static char index(std::string_view view, int idx)
+{
+    return view[idx];
+}
+
+template<typename T>
+int insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<std::string>& vals, int pos, std::vector<token_info>& tokens, T& in, int num_concrete_args)
 {
     ///should be completely impossible
     if(pos < 0)
@@ -379,7 +390,7 @@ int insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<std
             token_info& ctoken = tokens[lpos];
             int spos = ctoken.start_pos + 1;
 
-            if(ctoken.str.size() == 1 && ((spos < (int)in.size() && in[spos].c != ' ') || spos >= (int)in.size()))
+            if(ctoken.str.size() == 1 && ((spos < (int)in.size() && index(in, spos) != ' ') || spos >= (int)in.size()))
                 insert_space = true;
         }
     }
@@ -444,7 +455,8 @@ int insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<std
     return num;
 }
 
-int insert_single_ghost(const std::string& str, int pos, std::vector<token_info>& tokens, std::vector<interop_char>& in, int ghost_offset)
+template<typename T>
+int insert_single_ghost(const std::string& str, int pos, std::vector<token_info>& tokens, T& in, int ghost_offset)
 {
     if(pos < 0)
         return 0;
@@ -464,7 +476,7 @@ int insert_single_ghost(const std::string& str, int pos, std::vector<token_info>
     return num;
 }
 
-void handle_tab_cycling(auto_handler& auto_handle, const std::vector<token_info>& tokens, std::vector<interop_char>& in, int& cursor_idx, int& cursor_offset)
+void handle_tab_cycling(auto_handler& auto_handle, const std::vector<token_info>& tokens, int& cursor_idx, int& cursor_offset)
 {
     if(!auto_handle.tab_pressed)
         return;
@@ -524,6 +536,26 @@ void handle_tab_cycling(auto_handler& auto_handle, const std::vector<token_info>
     }
 }
 
+void replace_string(std::vector<interop_char>& in, std::string replacement)
+{
+    in = string_to_interop_no_autos(replacement, false);
+}
+
+void replace_string(std::string& in, std::string_view replacement)
+{
+    in = std::string(replacement.begin(), replacement.end());
+}
+
+std::vector<interop_char> to_underlying_type(const std::vector<interop_char>& tag, const std::string& str)
+{
+    return string_to_interop_no_autos(str, false);
+}
+
+std::string to_underlying_type(const std::string& tag, const std::string& str)
+{
+    return str;
+}
+
 void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx, int& cursor_offset, std::string& command_str)
 {
     std::vector<token_info> tokens = tokenise_function(in, true);
@@ -541,7 +573,7 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
         {
             command_str += "()";
 
-            in = string_to_interop_no_autos(command_str, false);
+            replace_string(in, command_str);
 
             cursor_idx = in.size();
         }
@@ -701,7 +733,6 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
             std::string ex_str = "`c" + tok.str + "`";
 
-            auto interop = string_to_interop_no_autos(ex_str, false);
 
             int full_offset = tok.start_pos + in_offset;
             int full_no_col_offset = tok.start_pos + no_col_offset;
@@ -712,6 +743,7 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
             if(full_no_col_offset > (int)command_str.size())
                 full_no_col_offset = command_str.size();
 
+            auto interop = to_underlying_type(in, ex_str);
             in.insert(in.begin() + full_offset, interop.begin(), interop.end());
 
             if(tab_pressed && (keep_inserting || tok.type == token::CLOSE_PAREN || tok.type == token::CLOSE_CURLEY || tok.type == token::OPEN_CURLEY || tok.type == token::OPEN_PAREN))
@@ -763,7 +795,7 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
         }
         else
         {
-            handle_tab_cycling(*this, tokens, in, cursor_idx, cursor_offset);
+            handle_tab_cycling(*this, tokens, cursor_idx, cursor_offset);
         }
     }
 }

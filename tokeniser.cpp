@@ -13,12 +13,13 @@ bool in_bound(int pos, const Seq& dat)
     return pos < (int)dat.size();
 }
 
-char index(const std::vector<interop_char>& dat, int idx)
+
+static char index(const std::vector<interop_char>& dat, int idx)
 {
     return dat[idx].c;
 }
 
-char index(std::string_view view, int idx)
+static char index(std::string_view view, int idx)
 {
     return view[idx];
 }
