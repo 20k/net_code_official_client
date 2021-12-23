@@ -53,8 +53,6 @@ struct auto_handler : serialisable
 
     void handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx, int& cursor_offset, std::string& command_str);
 
-    bool handle_script_autocomplete(std::vector<interop_char>& in, int& cursor_idx, std::string& command_str, const std::string& name);
-
     /*void handle_tab(const std::vector<interop_char>& in, int& cursor_idx, int parse_start,
                     const std::vector<autocomplete_args>& found, const specials_status& specials, std::string& command_str,
                     const std::vector<std::string>& to_skip);*/
