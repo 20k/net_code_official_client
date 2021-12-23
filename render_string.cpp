@@ -153,11 +153,12 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
             if(next == '|')
                 suppress_specials = true;
 
+            bump_colour();
+
             currently_colouring = true;
 
             vec3f col = process_colour(letter_to_colour(next).value_or(default_colour));
 
-            bump_colour();
             current_chunk.colour = col;
 
             if(include_specials && !suppress_specials)
@@ -714,7 +715,7 @@ void text_manager::render(auto_handler& auto_handle)
 
         if(render_command == "")
         {
-            render_command = "'bType something here...`";
+            render_command = "`bType something here...`";
             specials = false;
         }
 
@@ -722,7 +723,7 @@ void text_manager::render(auto_handler& auto_handle)
 
         render_command = command_visual_prefix + render_command;
 
-        paragraph_string command_line(command_visual_prefix + command.command, specials, true);
+        paragraph_string command_line(render_command, specials, true);
         command_line.build(get_formatting_clip_width(window_size.x(), scrollbar.width));
 
         int command_line_height = command_line.lines.size();
