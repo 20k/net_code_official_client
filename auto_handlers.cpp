@@ -362,7 +362,7 @@ static char index(std::string_view view, int idx)
 }
 
 template<typename T>
-int insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<std::string>& vals, int pos, std::vector<token_info>& tokens, T& in, int num_concrete_args)
+int insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<std::string>& vals, int pos, std::vector<token_info>& tokens, const T& in, int num_concrete_args)
 {
     ///should be completely impossible
     if(pos < 0)
@@ -556,7 +556,7 @@ std::string to_underlying_type(const std::string& tag, const std::string& str)
     return str;
 }
 
-void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx, int& cursor_offset, std::string& command_str)
+void auto_handler::handle_autocompletes(std::string& in, int& cursor_idx, int& cursor_offset, std::string& command_str)
 {
     std::vector<token_info> tokens = tokenise_function(in, true);
 
@@ -725,14 +725,13 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
 
     for(int i=0; i < (int)tokens.size(); i++)
     {
-        token_info& tok = tokens[i];
+        const token_info& tok = tokens[i];
 
         if(tok.ghost)
         {
             any_ghosts_inserted = true;
 
-            std::string ex_str = "`c" + tok.str + "`";
-
+            std::string ex_str = "`|" + tok.str + "`";
 
             int full_offset = tok.start_pos + in_offset;
             int full_no_col_offset = tok.start_pos + no_col_offset;
@@ -797,5 +796,83 @@ void auto_handler::handle_autocompletes(std::vector<interop_char>& in, int& curs
         {
             handle_tab_cycling(*this, tokens, cursor_idx, cursor_offset);
         }
+    }
+
+    return;
+}
+
+void auto_handler::extract_server_commands(nlohmann::json& in)
+{
+    std::string type = in["type"];
+
+    if(type == "script_args")
+    {
+        std::string scriptname = in["script"];
+
+        std::cout << scriptname << std::endl;
+
+        if(scriptname.size() > 0)
+        {
+            std::vector<autocomplete_args> auto_args;
+
+            for(int i=0; i < (int)in["keys"].size(); i++)
+            {
+                std::string key = in["keys"][i];
+                std::string val = in["vals"][i];
+
+                auto_args.push_back({key, val});
+            }
+
+            found_args[scriptname] = auto_args;
+            is_valid[scriptname] = true;
+        }
+    }
+    else if(type == "script_args_invalid")
+    {
+        std::string scriptname = in["script"];
+
+        std::cout << "inv " << scriptname << std::endl;
+
+        if(scriptname.size() > 0)
+        {
+            is_valid[scriptname] = false;
+        }
+    }
+    else if(type == "script_args_ratelimit")
+    {
+        std::string name = in["script"];
+
+        std::cout << "rl name " << name << std::endl;
+
+        if(name.size() > 0)
+        {
+            found_unprocessed_autocompletes.push_back(name);
+        }
+    }
+}
+
+void auto_handler::make_server_request(connection_send_data& send)
+{
+    if(found_unprocessed_autocompletes.size() > 0 && time_since_last_request.get_elapsed_time_s() > 0.3)
+    {
+        time_since_last_request.restart();
+
+        for(const std::string& str : found_unprocessed_autocompletes)
+        {
+            nlohmann::json data;
+            data["type"] = "autocomplete_request";
+            data["data"] = str;
+
+            write_data dat;
+            dat.id = -1;
+            dat.data = data.dump();
+
+            send.write_to_websocket(std::move(dat));
+
+            break;
+        }
+
+        if(found_unprocessed_autocompletes.size() > 0)
+            found_unprocessed_autocompletes.erase(found_unprocessed_autocompletes.begin());
     }
 }

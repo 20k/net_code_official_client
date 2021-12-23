@@ -37,6 +37,7 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
 
     bool currently_colouring = false;
     bool set_colour = false;
+    bool suppress_specials = false;
 
     auto bump_colour = [&]()
     {
@@ -149,6 +150,9 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
         // ` initial
         if(cur == '`' && !currently_colouring)
         {
+            if(next == '|')
+                suppress_specials = true;
+
             currently_colouring = true;
 
             vec3f col = process_colour(letter_to_colour(next).value_or(default_colour));
@@ -156,7 +160,7 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
             bump_colour();
             current_chunk.colour = col;
 
-            if(include_specials)
+            if(include_specials && !suppress_specials)
             {
                 add_index(i);
                 add_index(i+1);
@@ -176,7 +180,7 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
 
         if((cur == '`' && currently_colouring) || cur == '\n')
         {
-            if(include_specials)
+            if(include_specials && !suppress_specials)
             {
                 add_index(i);
             }
@@ -189,6 +193,7 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
             }
 
             bump_colour();
+            suppress_specials = false;
             currently_colouring = false;
             current_chunk.colour = default_colour;
             continue;
@@ -292,10 +297,10 @@ float get_formatting_clip_width(float new_window_width, float scrollbar_width)
 
 void text_manager::add_main_text(std::string str, auto_handler& auto_handle)
 {
+    std::vector<std::string> autos = parse_for_autocompletes(str);
+
     paragraphs.emplace_back(std::move(str), false, colour_like_terminal);
     paragraphs.back().build(get_formatting_clip_width(window_size.x(), scrollbar.width));
-
-    std::vector<std::string> autos = parse_for_autocompletes(str);
 
     for(std::string& s : autos)
     {
@@ -630,6 +635,8 @@ void text_manager::default_controls(auto_handler& auto_handle, connection_send_d
         }
     }
 
+    auto_handle.tab_pressed = ImGui::IsKeyPressed(io.KeyMap[ImGuiKey_Tab]);
+
     int mouse_buttons = 5;
 
     for(int i=0; i < mouse_buttons; i++)
@@ -674,7 +681,7 @@ void text_manager::on_enter_text(std::string_view text, auto_handler& auto_handl
     add_command_to_main_text(auto_handle);
 }
 
-void text_manager::render()
+void text_manager::render(auto_handler& auto_handle)
 {
     float clip_width = window_size.x() - 2 * char_inf::cwbuf;
     float content_height = 0;
@@ -701,7 +708,21 @@ void text_manager::render()
 
         int trailing_blank_lines = 0;
 
-        paragraph_string command_line(command_visual_prefix + command.command, true, true);
+        std::string render_command = command.command;
+        bool specials = true;
+        int cursor_offset = 0;
+
+        if(render_command == "")
+        {
+            render_command = "'bType something here...`";
+            specials = false;
+        }
+
+        auto_handle.handle_autocompletes(render_command, command.cursor_pos_idx, cursor_offset, command.command);
+
+        render_command = command_visual_prefix + render_command;
+
+        paragraph_string command_line(command_visual_prefix + command.command, specials, true);
         command_line.build(get_formatting_clip_width(window_size.x(), scrollbar.width));
 
         int command_line_height = command_line.lines.size();
@@ -1260,7 +1281,7 @@ void chat_manager::default_controls(auto_handler& auto_handle, connection_send_d
     }
 }
 
-void chat_manager::render()
+void chat_manager::render(auto_handler& auto_handle)
 {
     static bool once = file::exists("ui_setup_once_v2");
     static ImGuiID dock_id = -1;
@@ -1293,7 +1314,7 @@ void chat_manager::render()
 
         thread.friendly_name = channel_name;
 
-        thread.render();
+        thread.render(auto_handle);
 
         ///should this be done unconditionally?
         //if(thread.was_visible)

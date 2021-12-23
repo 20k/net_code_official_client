@@ -378,7 +378,6 @@ int main(int argc, char* argv[])
     printf("Loaded files\n");
 
     steady_timer render_clock;
-    steady_timer request_clock;
     steady_timer write_clock;
     steady_timer imgui_delta;
 
@@ -1335,6 +1334,7 @@ int main(int argc, char* argv[])
 
                 process_text_from_server(terminals, auth_manage, current_user, data, chat_win, font_select, realtime_scripts);
 
+                test_handler.extract_server_commands(data);
                 main_terminal.extract_server_commands(data, test_handler);
                 chat2.extract_server_commands(data);
             }
@@ -1355,28 +1355,8 @@ int main(int argc, char* argv[])
             ///this is inadequate
             ///we need to be able to request multiple scripts at once
             ///and receive multiple as well
-            if(terminals.auto_handle.found_unprocessed_autocompletes.size() > 0 && request_clock.get_elapsed_time_s() > 0.3)
-            {
-                request_clock.restart();
-
-                for(const std::string& str : terminals.auto_handle.found_unprocessed_autocompletes)
-                {
-                    nlohmann::json data;
-                    data["type"] = "autocomplete_request";
-                    data["data"] = str;
-
-                    write_data dat;
-                    dat.id = -1;
-                    dat.data = data.dump();
-
-                    to_write.write_to_websocket(std::move(dat));
-
-                    break;
-                }
-
-                if(terminals.auto_handle.found_unprocessed_autocompletes.size() > 0)
-                    terminals.auto_handle.found_unprocessed_autocompletes.erase(terminals.auto_handle.found_unprocessed_autocompletes.begin());
-            }
+            terminals.auto_handle.make_server_request(to_write);
+            test_handler.make_server_request(to_write);
 
             if((terminals.get_focused_terminal()->focused || realtime_scripts.get_id_of_focused_realtime_window() != 1) && io.KeyCtrl && just_pressed(io.KeyMap[ImGuiKey_C]))
             {
@@ -1430,10 +1410,10 @@ int main(int argc, char* argv[])
             vec2i window_dim = window.get_window_size();
 
             main_terminal.default_controls(test_handler, to_write);
-            main_terminal.render();
+            main_terminal.render(test_handler);
 
             chat2.default_controls(test_handler, to_write);
-            chat2.render();
+            chat2.render(test_handler);
 
             //test_imgui_term.render(window);
             realtime_scripts.render_realtime_windows(to_write, was_closed_id, font_select, terminals.auto_handle, window.get_render_settings().is_srgb);

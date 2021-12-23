@@ -74,6 +74,9 @@ std::array<vec3f, 256> get_cmap()
     colour_map['3'] = {255, 255, 40};
     colour_map['4'] = {60, 255, 60};
 
+    ///used as a hack in autocompletes
+    colour_map['|'] = colour_map['c'];
+
     return colour_map;
 }
 

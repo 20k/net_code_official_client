@@ -7,9 +7,12 @@
 #include <string>
 #include <string_view>
 #include <networking/serialisable.hpp>
+#include <toolkit/clock.hpp>
 
 struct render_string;
 struct interop_char;
+struct token_info;
+struct connection_send_data;
 
 struct autocomplete_args : serialisable
 {
@@ -38,6 +41,7 @@ struct specials_status
 
 struct auto_handler : serialisable
 {
+    steady_timer time_since_last_request;
     bool tab_pressed = false;
 
     bool use_autocomplete = false;
@@ -51,11 +55,10 @@ struct auto_handler : serialisable
     void auto_colour(std::vector<interop_char>& in, bool colour_special = false, bool parse_for_autocompletes = true);
     //void auto_colour(std::string_view in, bool colour_special = false, bool parse_for_autocompletes = true);
 
-    void handle_autocompletes(std::vector<interop_char>& in, int& cursor_idx, int& cursor_offset, std::string& command_str);
+    void handle_autocompletes(std::string& in, int& cursor_idx, int& cursor_offset, std::string& command_str);
 
-    /*void handle_tab(const std::vector<interop_char>& in, int& cursor_idx, int parse_start,
-                    const std::vector<autocomplete_args>& found, const specials_status& specials, std::string& command_str,
-                    const std::vector<std::string>& to_skip);*/
+    void extract_server_commands(nlohmann::json& in);
+    void make_server_request(connection_send_data& send);
 
     SERIALISE_SIGNATURE(auto_handler)
     {

@@ -15,6 +15,7 @@
 #include "auth_manager.hpp"
 #include <toolkit/render_window.hpp>
 #include <imgui/misc/cpp/imgui_stdlib.h>
+#include "tokeniser.hpp"
 
 void scrollbar_hack::do_hack(int approx_num, bool set_scrollbar, format_cache_2& cache, vec2f dim)
 {
@@ -175,12 +176,27 @@ void render_handle_imgui(scrollbar_hack& scroll_hack, std::string& command, int&
                 specials = false;
             }
 
-            auto icommand = string_to_interop(render_command, specials, auto_handle, false);
-            auto icommand_pad = string_to_interop(command_padding, false, auto_handle, false);
-
             int cursor_offset = 0;
 
-            auto_handle.handle_autocompletes(icommand, cursor_pos_idx, cursor_offset, command);
+            /*{
+                std::vector<token_ghost_range> tokens = auto_handle.handle_autocompletes(render_command, cursor_pos_idx, cursor_offset, command);
+
+                int running_offset = 0;
+
+                for(token_ghost_range& tok : tokens)
+                {
+                    int start = tok.start + running_offset;
+                    int length = tok.length;
+
+                    render_command.insert(start, "`c");
+                    render_command.insert(start + length + 2, 1, '`');
+
+                    running_offset += 3;
+                }
+            }*/
+
+            auto icommand = string_to_interop(render_command, specials, auto_handle, false);
+            auto icommand_pad = string_to_interop(command_padding, false, auto_handle, false);
 
             interop_char curs;
             curs.col = {255, 255, 255};

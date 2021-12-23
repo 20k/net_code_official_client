@@ -97,7 +97,7 @@ struct text_manager
     virtual bool create_window(vec2f content_size, vec2f window_size);
     virtual void on_enter_text(std::string_view text, auto_handler& auto_handle, connection_send_data& send);
 
-    void render();
+    void render(auto_handler& auto_handle);
 
     void clear_text();
     void clear_command();
@@ -160,7 +160,7 @@ struct chat_manager
     void add_text(const std::string& channel, const std::vector<std::string>& text);
 
     void default_controls(auto_handler& auto_handle, connection_send_data& send);
-    void render();
+    void render(auto_handler& auto_handle);
 };
 
 void test_render_strings();
