@@ -9,6 +9,7 @@
 #include <imgui/misc/cpp/imgui_stdlib.h>
 #include "imgui_ui_components.hpp"
 #include <networking/networking.hpp>
+#include "render_string.hpp"
 
 void auth_manager::check(steamapi& s_api, connection_send_data& to_write, const std::string& current_user)
 {
@@ -155,4 +156,37 @@ void auth_manager::display(terminal_manager& terminals, steamapi& s_api, connect
     }
 
     ImGui::End();
+}
+
+void auth_manager::extract_server_commands(terminal2& output, nlohmann::json& in)
+{
+    std::string type = in["type"];
+
+    if(type == "server_msg")
+    {
+        if(in.count("authenticated") > 0 && in["authenticated"] == 1)
+        {
+            am_authenticated = true;
+
+            output.add_main_text(make_success_col("Successfully authenticated"));
+
+            printf("Authed!\n");
+        }
+    }
+    else if(type == "auth")
+    {
+        std::string key = in["data"];
+        std::string key_file = "hex_key.key";
+
+        if(!file::exists(key_file))
+        {
+            file::write(key_file, key, file::mode::BINARY);
+
+            output.add_main_text(make_success_col("Success! Try user lowercase_name to get started, and then #scripts.core()"));
+        }
+        else
+        {
+            output.add_main_text(make_error_col("Did not overwrite existing key file, you are already registered"));
+        }
+    }
 }

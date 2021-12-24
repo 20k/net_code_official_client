@@ -1337,6 +1337,7 @@ int main(int argc, char* argv[])
                 test_handler.extract_server_commands(data);
                 main_terminal.extract_server_commands(data, test_handler);
                 chat2.extract_server_commands(data);
+                auth_manage.extract_server_commands(main_terminal, data);
             }
 
             if(write_clock.get_elapsed_time_s() > 5 && (!terminals.all_cache_valid() || chat_win.any_cache_invalid()))
