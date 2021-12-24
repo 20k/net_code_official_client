@@ -1163,8 +1163,6 @@ void terminal2::extract_server_commands(context& ctx, nlohmann::json& in, auto_h
             data += "\n";
         }
 
-        ///todo: authentication
-
         add_main_text(data, auto_handle);
     }
     else if(type == "chat_api" && is_main_terminal)
@@ -1194,7 +1192,7 @@ void terminal2::extract_server_commands(context& ctx, nlohmann::json& in, auto_h
         {
             if(ctx.show_chat_in_main_window)
             {
-                add_main_text(msgs[i]);
+                add_main_text(msgs[i] + "\n");
             }
         }
 
