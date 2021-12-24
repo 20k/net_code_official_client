@@ -127,6 +127,33 @@ std::string default_up_handling(const std::string& user, const std::string& serv
     return server_msg;
 }
 
+void filter_down_handling(terminal2& main_terminal, nlohmann::json& in)
+{
+    std::string type = in["type"];
+
+    if(type == "script_down")
+    {
+        std::string name = in["name"];
+        std::string data = in["data"];
+
+        auto post_split = no_ss_split(name, ".");
+
+        if(post_split.size() >= 2)
+        {
+            std::string save_name = get_scripts_directory(post_split[0]) + "\\" + post_split[1] + ".down.js";
+
+            file::write(save_name, data, file::mode::TEXT);
+
+            #ifdef __EMSCRIPTEN__
+            std::string webdlname = name + ".down.js";
+            file::download(webdlname, data);
+            #endif // __EMSCRIPTEN__
+
+            main_terminal.add_main_text(make_success_col("Downloaded and saved script to " + get_scripts_directory(post_split[0]) + "\\" + post_split[1] + ".down.js") + "\n");
+        }
+    }
+}
+
 #ifdef __EMSCRIPTEN__
 EM_JS(int, get_window_location_length, (),
 {
@@ -399,8 +426,6 @@ int main(int argc, char* argv[])
 
     invalidate_everything(terminals, chat_win);
 
-    std::string current_user = "";
-
     steady_timer connection_clock;
 
     bool lastKeysDown[512] = {};
@@ -434,23 +459,11 @@ int main(int argc, char* argv[])
 
     auto_handler test_handler;
 
-    /*text_manager default_text;
-    default_text.command.command = "Test Command\nsecondline";
-
-    default_text.add_main_text("First line", test_handler);
-
-    for(int i=0; i < 1024; i++)
-    {
-        default_text.add_main_text("dfffffff`Dhello`ffffffffffff[] while function sasdfs\ndfwerqaowiejrlkdv;lkzcxmvlzjaskdjfakej\n", test_handler);
-    }
-
-    default_text.add_main_text("1234 3.4 {}", test_handler);
-
-    default_text.add_main_text("lastline", test_handler);*/
-
     main_terminal2 main_terminal;
 
     chat_manager chat2;
+
+    context ctx;
 
     //while(running)
     #ifndef __EMSCRIPTEN__
@@ -484,7 +497,7 @@ int main(int argc, char* argv[])
 
             connection_clock.restart();
 
-            auth_manage.check(s_api, to_write, current_user);
+            auth_manage.check(s_api, to_write, ctx.root_user);
 
             if(!printed_connecting)
                 terminals.main_terminal.add_text("Connecting...", terminals.auto_handle);
@@ -699,7 +712,7 @@ int main(int argc, char* argv[])
                         {
                             std::string name = post_split.size() == 2 ? post_split[0] : post_split[1];
 
-                            if(is_valid_full_name_string(current_user + "." + name))
+                            if(is_valid_full_name_string(ctx.root_user + "." + name))
                             {
                                 std::string fstr = "#up_es6 " + name + " " + drop.data;
 
@@ -1058,7 +1071,7 @@ int main(int argc, char* argv[])
 
             ImGui::PushFont(font_select.get_base_font());
 
-            auth_manage.display(terminals, s_api, to_write, current_user);
+            auth_manage.display(terminals, s_api, to_write, ctx.root_user);
 
             font_select.render(window);
 
@@ -1095,7 +1108,7 @@ int main(int argc, char* argv[])
 
                 to_edit->push_command_to_history(to_edit->command);
 
-                std::string swapping_users = "user ";
+                /*std::string swapping_users = "user ";
 
                 if(term.focused && term.command.command.substr(0, swapping_users.length()) == swapping_users)
                 {
@@ -1107,7 +1120,7 @@ int main(int argc, char* argv[])
                     {
                         current_user = spl[1];
                     }
-                }
+                }*/
 
                 if(term.focused)
                 {
@@ -1115,7 +1128,7 @@ int main(int argc, char* argv[])
 
                     if(!is_local_command(term.command.command))
                     {
-                        std::string up_data = default_up_handling(current_user, term.command.command, get_scripts_directory(current_user) + "/");
+                        std::string up_data = default_up_handling(ctx.root_user, term.command.command, get_scripts_directory(ctx.root_user) + "/");
 
                         nlohmann::json data;
                         data["type"] = "generic_server_command";
@@ -1291,7 +1304,7 @@ int main(int argc, char* argv[])
                 {
                     bool should_shutdown = false;
 
-                    std::string data = handle_local_command(current_user, cmd, terminals.auto_handle, should_shutdown, terminals, chat_win);
+                    std::string data = handle_local_command(ctx.root_user, cmd, terminals.auto_handle, should_shutdown, terminals, chat_win);
 
                     term.add_text(data, terminals.auto_handle);
 
@@ -1332,10 +1345,11 @@ int main(int argc, char* argv[])
                     std::cout << "Error Data Str " << dat.data << std::endl;
                 }
 
-                process_text_from_server(terminals, auth_manage, current_user, data, chat_win, font_select, realtime_scripts);
+                process_text_from_server(terminals, auth_manage, ctx.root_user, data, chat_win, font_select, realtime_scripts);
 
+                filter_down_handling(main_terminal, data);
                 test_handler.extract_server_commands(data);
-                main_terminal.extract_server_commands(data, test_handler);
+                main_terminal.extract_server_commands(ctx, data, test_handler);
                 chat2.extract_server_commands(data);
                 auth_manage.extract_server_commands(main_terminal, data);
             }
@@ -1410,10 +1424,10 @@ int main(int argc, char* argv[])
 
             vec2i window_dim = window.get_window_size();
 
-            main_terminal.default_controls(test_handler, to_write);
+            main_terminal.default_controls(ctx, test_handler, to_write);
             main_terminal.render(test_handler);
 
-            chat2.default_controls(test_handler, to_write);
+            chat2.default_controls(ctx, test_handler, to_write);
             chat2.render(test_handler);
 
             //test_imgui_term.render(window);

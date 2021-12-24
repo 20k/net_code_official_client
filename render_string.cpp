@@ -507,7 +507,7 @@ void driven_scrollbar::adjust_by_lines(float lines, int trailing_blank_lines)
     fraction = clamp(fraction, 0.f, 1.f);
 }
 
-void text_manager::default_controls(auto_handler& auto_handle, connection_send_data& send)
+void text_manager::default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send)
 {
     if(!was_focused)
         return;
@@ -660,7 +660,7 @@ void text_manager::default_controls(auto_handler& auto_handle, connection_send_d
     {
         std::string entry = command.command;
 
-        on_enter_text(entry, auto_handle, send);
+        on_enter_text(ctx, entry, auto_handle, send);
     }
 }
 
@@ -677,7 +677,7 @@ bool text_manager::create_window(vec2f content_size, vec2f create_window_size)
     return ImGui::Begin("Test Terminal", &open, flags);
 }
 
-void text_manager::on_enter_text(std::string_view text, auto_handler& auto_handle, connection_send_data& send)
+void text_manager::on_enter_text(context& ctx, std::string_view text, auto_handler& auto_handle, connection_send_data& send)
 {
     add_command_to_main_text(auto_handle);
 }
@@ -984,12 +984,18 @@ void text_manager::clear_command()
     command.clear_command();
 }
 
-void terminal2::on_enter_text(std::string_view text, auto_handler& auto_handle, connection_send_data& send)
+void terminal2::on_enter_text(context& ctx, std::string_view text, auto_handler& auto_handle, connection_send_data& send)
 {
-    if(text.starts_with("user "))
+    /*if(text.starts_with("user "))
     {
+        std::string_view without_prefix = text;
+        without_prefix.remove_prefix(strlen("user "));
 
-    }
+        if(without_prefix.size() > 0)
+        {
+            ctx.root_user = std::string(without_prefix.begin(), without_prefix.end());
+        }
+    }*/
 
     ///if is_local_command
     ///up handling
@@ -1015,10 +1021,13 @@ void terminal2::on_enter_text(std::string_view text, auto_handler& auto_handle, 
     command.clear_command();
 }
 
-void terminal2::extract_server_commands(nlohmann::json& in, auto_handler& auto_handle)
+void terminal2::extract_server_commands(context& ctx, nlohmann::json& in, auto_handler& auto_handle)
 {
     if(in == "")
         return;
+
+    ///this is absolute crap
+    bool is_main_terminal = dynamic_cast<main_terminal2*>(this) != nullptr;
 
     std::string type = in["type"];
 
@@ -1045,7 +1054,7 @@ void terminal2::extract_server_commands(nlohmann::json& in, auto_handler& auto_h
         else
         {
             ///if there's no tag, return
-            if(dynamic_cast<main_terminal2*>(this) == nullptr)
+            if(!is_main_terminal)
                 return;
         }
 
@@ -1057,6 +1066,44 @@ void terminal2::extract_server_commands(nlohmann::json& in, auto_handler& auto_h
         ///todo: authentication
 
         add_main_text(data, auto_handle);
+    }
+    else if(type == "chat_api" && is_main_terminal)
+    {
+        std::vector<std::string> chnls;
+        std::vector<std::string> msgs;
+
+        std::vector<nlohmann::json> tell_msgs = in["tells"];
+
+        std::vector<std::string> notifs = in["notifs"];
+
+        for(int i=0; i < (int)in["data"].size(); i++)
+        {
+            chnls.push_back(in["data"][i]["channel"]);
+            msgs.push_back(in["data"][i]["text"]);
+        }
+
+        for(auto& i : notifs)
+        {
+            add_main_text(i + "\n");
+        }
+
+        ctx.user = in["user"];
+        ctx.root_user = in["root_user"];
+
+        for(int i=0; i < (int)chnls.size(); i++)
+        {
+            if(ctx.show_chat_in_main_window)
+            {
+                add_main_text(msgs[i]);
+            }
+        }
+
+        for(int kk=0; kk < (int)tell_msgs.size(); kk++)
+        {
+            std::string text = tell_msgs[kk]["text"];
+
+            add_main_text(text + "\n");
+        }
     }
 }
 
@@ -1162,7 +1209,7 @@ bool chat_thread2::create_window(vec2f content_size, vec2f create_window_size)
     return ImGui::Begin(unfriendly_name.c_str(), &open, flags);
 }
 
-void chat_thread2::on_enter_text(std::string_view text, auto_handler& auto_handle, connection_send_data& send)
+void chat_thread2::on_enter_text(context& ctx, std::string_view text, auto_handler& auto_handle, connection_send_data& send)
 {
     if(text == "/join")
     {
@@ -1274,11 +1321,11 @@ void chat_thread2::on_enter_text(std::string_view text, auto_handler& auto_handl
     command.clear_command();
 }
 
-void chat_manager::default_controls(auto_handler& auto_handle, connection_send_data& send)
+void chat_manager::default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send)
 {
     for(const std::string& name : open_chat_channels)
     {
-        chat_threads[name].default_controls(auto_handle, send);
+        chat_threads[name].default_controls(ctx, auto_handle, send);
     }
 }
 

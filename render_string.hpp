@@ -9,6 +9,7 @@
 #include "editable_string.hpp"
 #include <networking/networking.hpp>
 #include <nlohmann/json.hpp>
+#include "context.hpp"
 
 ///so. Wants to be a single paragraph of text, prebroken up into render units
 ///wants to be split up into screen sized lines, each of a known length, so its easy to reformat if the screen resizes
@@ -93,9 +94,9 @@ struct text_manager
     void add_main_text(std::string view);
     void add_command_to_main_text(auto_handler& auto_handle);
 
-    virtual void default_controls(auto_handler& auto_handle, connection_send_data& send);
+    virtual void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
     virtual bool create_window(vec2f content_size, vec2f window_size);
-    virtual void on_enter_text(std::string_view text, auto_handler& auto_handle, connection_send_data& send);
+    virtual void on_enter_text(context& ctx, std::string_view text, auto_handler& auto_handle, connection_send_data& send);
 
     void render(auto_handler& auto_handle);
 
@@ -109,8 +110,8 @@ struct terminal2 : text_manager
 {
     int tag = 0;
 
-    virtual void on_enter_text(std::string_view text, auto_handler& auto_handle, connection_send_data& send) override;
-    void extract_server_commands(nlohmann::json& in, auto_handler& auto_handle);
+    virtual void on_enter_text(context& ctx, std::string_view text, auto_handler& auto_handle, connection_send_data& send) override;
+    void extract_server_commands(context& ctx, nlohmann::json& in, auto_handler& auto_handle);
 };
 
 struct main_terminal2 : terminal2
@@ -122,8 +123,6 @@ struct main_terminal2 : terminal2
 
     bool resize_dragging = false;
     vec2f resize_start_pos;
-
-    std::string current_user;
 };
 
 struct child_terminal : terminal2
@@ -140,7 +139,7 @@ struct chat_thread2 : text_manager
     bool was_rendered = false;
 
     virtual bool create_window(vec2f content_size, vec2f window_size) override;
-    virtual void on_enter_text(std::string_view text, auto_handler& auto_handle, connection_send_data& send) override;
+    virtual void on_enter_text(context& ctx, std::string_view text, auto_handler& auto_handle, connection_send_data& send) override;
 
     std::string friendly_name;
 
@@ -149,8 +148,6 @@ struct chat_thread2 : text_manager
 
 struct chat_manager
 {
-    bool show_chat_in_main_window = true;
-
     std::map<std::string, chat_thread2> chat_threads;
 
     std::vector<std::string> open_chat_channels;
@@ -159,7 +156,7 @@ struct chat_manager
     void set_open_chat_channels(const std::vector<std::string>& channels);
     void add_text(const std::string& channel, const std::vector<std::string>& text);
 
-    void default_controls(auto_handler& auto_handle, connection_send_data& send);
+    void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
     void render(auto_handler& auto_handle);
 };
 
