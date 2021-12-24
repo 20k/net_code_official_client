@@ -168,8 +168,6 @@ void auth_manager::extract_server_commands(terminal2& output, nlohmann::json& in
         {
             am_authenticated = true;
 
-            output.add_main_text(make_success_col("Successfully authenticated"));
-
             printf("Authed!\n");
         }
     }
@@ -182,11 +180,11 @@ void auth_manager::extract_server_commands(terminal2& output, nlohmann::json& in
         {
             file::write(key_file, key, file::mode::BINARY);
 
-            output.add_main_text(make_success_col("Success! Try user lowercase_name to get started, and then #scripts.core()"));
+            output.add_main_text(make_success_col("Successfully downloaded auth to key.key"));
         }
         else
         {
-            output.add_main_text(make_error_col("Did not overwrite existing key file, you are already registered"));
+            output.add_main_text(make_error_col("A key.key file already exists, please rename it first to avoid overwriting"));
         }
     }
 }
