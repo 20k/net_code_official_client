@@ -139,7 +139,13 @@ void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_specia
     }
 }
 
-std::vector<render_string> auto_colour(std::string_view in, bool colour_like_terminal)
+/*token::HASH,
+token::SECLEVEL,
+token::HOST_NAME,
+token::DOT,
+token::EXT_NAME,*/
+
+std::optional<vec3f> token_to_colour(const token_info& i, bool colour_like_terminal)
 {
     std::map<std::string, vec3f> cols
     {
@@ -206,11 +212,49 @@ std::vector<render_string> auto_colour(std::string_view in, bool colour_like_ter
     vec3f key_col = {243, 166, 3};
     //vec3f key_col = srgb_to_lin({243, 166, 3});
 
+    if(valid_colourings.count(i.type) > 0)
+    {
+        return cols[i.str];
+    }
+
+    else if(i.type == token::VALUE && (i.subtype == token::STRING || i.subtype == token::NUMBER || i.subtype == token::BOOLEAN))
+    {
+        if(colour_like_terminal || i.subtype == token::NUMBER || i.subtype == token::BOOLEAN)
+        {
+            return value_col;
+        }
+    }
+    else if(colour_like_terminal && i.type == token::VALUE && i.subtype == token::GENERIC)
+    {
+        for(auto& ss : generic_keywords)
+        {
+            if(ss.first == i.str)
+            {
+                return ss.second;
+            }
+        }
+    }
+    else if(i.type == token::KEY)
+    {
+        return key_col;
+    }
+    else if(i.type == token::HOST_NAME)
+    {
+        return letter_to_colour(string_to_colour(i.str).at(0)).value();
+    }
+
+    return std::nullopt;
+}
+
+std::vector<render_string> auto_colour(std::string_view in, bool colour_like_terminal)
+{
+    vec3f default_colour = letter_to_colour('A').value();
+
     std::vector<render_string> strings;
 
     std::vector<token_info> tokens = tokenise_general(in);
 
-    for(int i=0; i < tokens.size(); i++)
+    for(int i=0; i < (int)tokens.size(); i++)
     {
         token_info& tok = tokens[i];
 
@@ -268,31 +312,11 @@ std::vector<render_string> auto_colour(std::string_view in, bool colour_like_ter
             strings.push_back(next);
         };
 
-        if(valid_colourings.find(i.type) != valid_colourings.end())
+        std::optional<vec3f> colour = token_to_colour(i, colour_like_terminal);
+
+        if(colour.has_value())
         {
-            add_coloured_string(cols[i.str]);
-        }
-        else if(i.type == token::VALUE && (i.subtype == token::STRING || i.subtype == token::NUMBER || i.subtype == token::BOOLEAN))
-        {
-            if(colour_like_terminal || i.subtype == token::NUMBER || i.subtype == token::BOOLEAN)
-            {
-                add_coloured_string(value_col);
-            }
-        }
-        else if(colour_like_terminal && i.type == token::VALUE && i.subtype == token::GENERIC)
-        {
-            for(auto& ss : generic_keywords)
-            {
-                if(ss.first == i.str)
-                {
-                    add_coloured_string(ss.second);
-                    break;
-                }
-            }
-        }
-        else if(i.type == token::KEY)
-        {
-            add_coloured_string(key_col);
+            add_coloured_string(colour.value());
         }
 
         if(old_string_size == (int)strings.size())
