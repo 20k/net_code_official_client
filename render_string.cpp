@@ -11,6 +11,8 @@
 #include <codecvt>
 #include <locale>
 #include <toolkit/clipboard.hpp>
+#include "script_transfer.hpp"
+#include "local_commands.hpp"
 
 vec3f process_colour(vec3f in)
 {
@@ -1000,10 +1002,13 @@ void terminal2::on_enter_text(context& ctx, std::string_view text, auto_handler&
     ///if is_local_command
     ///up handling
 
+    if(!is_local_command(text))
     {
+        std::string up_data = default_up_handling(ctx.root_user, text, get_scripts_directory(ctx.root_user) + "/");
+
         nlohmann::json data;
         data["type"] = "generic_server_command";
-        data["data"] = text;
+        data["data"] = up_data;
 
         data["tag"] = tag;
 

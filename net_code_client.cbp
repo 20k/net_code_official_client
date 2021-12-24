@@ -370,6 +370,7 @@
 		<Unit filename="auto_handlers.cpp" />
 		<Unit filename="auto_handlers.hpp" />
 		<Unit filename="colour_interop.hpp" />
+		<Unit filename="context.hpp" />
 		<Unit filename="copy_handler.cpp" />
 		<Unit filename="copy_handler.hpp" />
 		<Unit filename="custom_profile.cpp">
@@ -445,6 +446,8 @@
 		<Unit filename="main.cpp" />
 		<Unit filename="render_string.cpp" />
 		<Unit filename="render_string.hpp" />
+		<Unit filename="script_transfer.cpp" />
+		<Unit filename="script_transfer.hpp" />
 		<Unit filename="serialisables.cpp" />
 		<Unit filename="serialisables.hpp" />
 		<Unit filename="steam_api.cpp" />

@@ -29,7 +29,7 @@ void ipc_open(const std::string& fname)
     system(("start " + fname).c_str());
 }
 
-std::string handle_local_command(const std::string& username, const std::string& command, auto_handler& auto_handle, bool& should_shutdown, terminal_manager& terminals, chat_window& chat)
+std::string handle_local_command(const std::string& username, std::string_view command, auto_handler& auto_handle, bool& should_shutdown, terminal_manager& terminals, chat_window& chat)
 {
     #ifndef __EMSCRIPTEN__
     file::mkdir("scripts");
@@ -103,9 +103,11 @@ std::string handle_local_command(const std::string& username, const std::string&
         return build;
     }
 
+    std::string s_command(command.begin(), command.end());
+
     if(starts_with(command, "#edit "))
     {
-        std::vector<std::string> fname = no_ss_split(command, " ");
+        std::vector<std::string> fname = no_ss_split(s_command, " ");
 
         if(fname.size() < 2)
             return make_error_col("Format is #edit scriptname");
@@ -126,7 +128,7 @@ std::string handle_local_command(const std::string& username, const std::string&
 
     if(starts_with(command, "#open "))
     {
-        std::vector<std::string> fname = no_ss_split(command, " ");
+        std::vector<std::string> fname = no_ss_split(s_command, " ");
 
         if(fname.size() < 2)
             return make_error_col("Format is #open scriptname");
@@ -150,7 +152,7 @@ std::string handle_local_command(const std::string& username, const std::string&
     return "";
 }
 
-bool is_local_command(const std::string& command)
+bool is_local_command(std::string_view command)
 {
     if(command == "#")
         return true;
