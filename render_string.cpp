@@ -42,6 +42,31 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
     bool set_colour = false;
     bool suppress_specials = false;
 
+    auto add_render_string = [&](const render_string& str)
+    {
+        if(str.length == 0)
+            return;
+
+        if(ret.size() == 0)
+        {
+            ret.push_back(str);
+        }
+        else
+        {
+            render_string& last = ret.back();
+
+            ///if our start is the same as last's end, and we're the same colour, merge
+            if(str.start == (last.start + last.length) && str.colour == last.colour)
+            {
+                last.length += str.length;
+            }
+            else
+            {
+                ret.push_back(str);
+            }
+        }
+    };
+
     auto bump_colour = [&]()
     {
         ///else, reset current chunk. Resetting current chunk is a no op, because the length is 0 and the start is valid
@@ -66,21 +91,25 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
                     strs.start += chunk_start;
                 }
 
-                ret.insert(ret.end(), autocoloured.begin(), autocoloured.end());
+                for(render_string& strs : autocoloured)
+                {
+                    add_render_string(strs);
+                }
             }
             else
             {
-                ret.push_back(current_chunk);
+                add_render_string(current_chunk);
             }
 
             current_chunk = render_string();
 
-            assert(ret.size() > 0);
+            if(ret.size() > 0)
+            {
+                render_string& last_chunk = ret.back();
+                current_chunk.start = last_chunk.start + last_chunk.length;
 
-            render_string& last_chunk = ret.back();
-            current_chunk.start = last_chunk.start + last_chunk.length;
-
-            current_chunk.length = 0;
+                current_chunk.length = 0;
+            }
         }
     };
 
