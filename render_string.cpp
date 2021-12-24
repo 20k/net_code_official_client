@@ -13,6 +13,7 @@
 #include <toolkit/clipboard.hpp>
 #include "script_transfer.hpp"
 #include "local_commands.hpp"
+#include <libncclient/nc_util.hpp>
 
 vec3f process_colour(vec3f in)
 {
@@ -986,6 +987,52 @@ void text_manager::clear_command()
     command.clear_command();
 }
 
+std::string on_edit(std::string_view command, std::string_view username)
+{
+    std::string s_command(command.begin(), command.end());
+
+    std::vector<std::string> fname = no_ss_split(s_command, " ");
+
+    if(fname.size() < 2)
+        return make_error_col("Format is #edit scriptname");
+
+    std::string name = fname[1];
+
+    std::string file_name = get_scripts_directory(username) + "/" + name + ".js";
+
+    if(!file::exists(file_name))
+    {
+        std::cout << "Trying to create " << file_name << std::endl;
+
+        file::write(file_name, "function(context, args)\n{\n\n}", file::mode::TEXT);
+    }
+
+    open_file(file_name);
+
+    return "";
+}
+
+std::string on_open(std::string_view command, std::string_view username)
+{
+    std::string s_command(command.begin(), command.end());
+
+    std::vector<std::string> fname = no_ss_split(s_command, " ");
+
+    if(fname.size() < 2)
+        return make_error_col("Format is #open scriptname");
+
+    std::string name = fname[1];
+
+    std::string file_name = get_scripts_directory(username) + "/" + name + ".js";
+
+    if(!file::exists(file_name))
+        return "No such file";
+
+    open_file(file_name);
+
+    return "";
+}
+
 void terminal2::on_enter_text(context& ctx, std::string_view text, auto_handler& auto_handle, connection_send_data& send)
 {
     /*if(text.starts_with("user "))
@@ -999,8 +1046,8 @@ void terminal2::on_enter_text(context& ctx, std::string_view text, auto_handler&
         }
     }*/
 
-    ///if is_local_command
-    ///up handling
+    add_main_text(std::string(text.begin(), text.end()), auto_handle);
+    add_main_text("");
 
     if(!is_local_command(text))
     {
@@ -1018,9 +1065,57 @@ void terminal2::on_enter_text(context& ctx, std::string_view text, auto_handler&
 
         send.write_to_websocket(std::move(dat));
     }
+    else
+    {
+        #ifndef __EMSCRIPTEN__
+        file::mkdir("scripts");
+        file::mkdir(get_scripts_directory(ctx.root_user).c_str());
+        #endif // __EMSCRIPTEN__
 
-    add_main_text(std::string(text.begin(), text.end()), auto_handle);
-    add_main_text("");
+        if(text == "#clear_autos" || text == "#autos_clear")
+        {
+            auto_handle.found_args.clear();
+            auto_handle.is_valid.clear();
+        }
+        else if(text == "#shutdown")
+        {
+            ctx.should_shutdown = true;
+        }
+        else if(text.starts_with("#cls"))
+        {
+            clear_text();
+        }
+        else if(ctx.root_user == "")
+        {
+            add_main_text("Please log in with user <username>\n");
+        }
+        else if(text == "#")
+        {
+            add_main_text(get_scripts_list(ctx.root_user));
+        }
+        else if(text.starts_with("#edit "))
+        {
+            std::string res = on_edit(text, ctx.root_user);
+
+            if(res != "")
+                add_main_text(res);
+        }
+        else if(text.starts_with("#open "))
+        {
+            std::string res = on_open(text, ctx.root_user);
+
+            if(res != "")
+                add_main_text(res);
+        }
+        else if(text.starts_with("#dir"))
+        {
+            open_directory(get_scripts_directory(ctx.root_user));
+        }
+        else
+        {
+            add_main_text("Unhandled local command\n");
+        }
+    }
 
     command.push_command_to_history(text);
     command.clear_command();

@@ -11,13 +11,13 @@
 #include <iostream>
 #include <string_view>
 
-std::string get_scripts_directory(const std::string& username)
+std::string get_scripts_directory(std::string_view username)
 {
     #ifndef __EMSCRIPTEN__
     #ifdef __WIN32__
-    return "scripts\\" + username;
+    return "scripts\\" + std::string(username.begin(), username.end());
     #else
-    return "scripts/" + username;
+    return "scripts/" + std::string(username.begin(), username.end());
     #endif // __WIN32__
     #else
     return "scripts";
@@ -27,6 +27,20 @@ std::string get_scripts_directory(const std::string& username)
 void ipc_open(const std::string& fname)
 {
     system(("start " + fname).c_str());
+}
+
+void open_file(std::string_view name)
+{
+    std::string sname(name.begin(), name.end());
+
+    system(("start " + sname).c_str());
+}
+
+void open_directory(std::string_view name)
+{
+    std::string sname(name.begin(), name.end());
+
+    system(("start " + sname).c_str());
 }
 
 std::string handle_local_command(const std::string& username, std::string_view command, auto_handler& auto_handle, bool& should_shutdown, terminal_manager& terminals, chat_window& chat)
@@ -150,6 +164,50 @@ std::string handle_local_command(const std::string& username, std::string_view c
     }
 
     return "";
+}
+
+std::string get_scripts_list(std::string_view username)
+{
+    std::vector<std::string> fname;
+
+    tinydir_dir dir;
+    #ifndef __EMSCRIPTEN__
+    tinydir_open(&dir, get_scripts_directory(username).c_str());
+    #else
+    tinydir_open(&dir, ("web/" + get_scripts_directory(username)).c_str());
+    #endif
+
+    while (dir.has_next)
+    {
+        tinydir_file file;
+        tinydir_readfile(&dir, &file);
+
+        if(!file.is_dir)
+        {
+            auto post_split = no_ss_split(file.name, ".");
+
+            if(post_split.size() == 2 && post_split[1] == "js")
+                fname.push_back(post_split[0]);
+        }
+
+        tinydir_next(&dir);
+    }
+
+    tinydir_close(&dir);
+
+    std::string build;
+
+    for(auto& i : fname)
+        build += i + ", ";
+
+    ///removes tailing ", "
+    if(build.size() > 0)
+    {
+        build.pop_back();
+        build.pop_back();
+    }
+
+    return build;
 }
 
 bool is_local_command(std::string_view command)

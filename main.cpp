@@ -1460,6 +1460,11 @@ int main(int argc, char* argv[])
         //#endif
 
         conn.send_bulk(to_write);
+
+        if(ctx.should_shutdown)
+        {
+            window.close();
+        }
     };
 
     #ifdef __EMSCRIPTEN__
