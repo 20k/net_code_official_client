@@ -408,6 +408,8 @@ int main(int argc, char* argv[])
 
     chat_manager chat2;
 
+    realtime_script_manager2 realtime_scripts2;
+
     context ctx;
 
     //while(running)
@@ -1293,6 +1295,7 @@ int main(int argc, char* argv[])
                 process_text_from_server(terminals, auth_manage, ctx.root_user, data, chat_win, font_select, realtime_scripts);
 
                 filter_down_handling(main_terminal, data);
+                realtime_scripts2.extract_server_commands(font_select, data);
                 test_handler.extract_server_commands(data);
                 main_terminal.extract_server_commands(ctx, data, test_handler);
                 chat2.extract_server_commands(data);

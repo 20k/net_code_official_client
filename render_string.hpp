@@ -10,6 +10,7 @@
 #include <networking/networking.hpp>
 #include <nlohmann/json.hpp>
 #include "context.hpp"
+#include "imgui_ui_components.hpp"
 
 ///so. Wants to be a single paragraph of text, prebroken up into render units
 ///wants to be split up into screen sized lines, each of a known length, so its easy to reformat if the screen resizes
@@ -156,6 +157,40 @@ struct chat_manager
     void set_open_chat_channels(const std::vector<std::string>& channels);
     void add_text(const std::string& channel, const std::vector<std::string>& text);
 
+    void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
+    void render(auto_handler& auto_handle);
+};
+
+struct font_selector;
+
+struct realtime_script_run2 : text_manager
+{
+    std::string script_name;
+
+    vec2f dim = {300, 300};
+
+    bool open = true;
+    bool was_open = true;
+    bool is_square_font = false;
+    bool was_square_font = false;
+
+    ui_stack stk;
+
+    vec2f current_dim;
+    bool should_send_new_size = false;
+    steady_timer last_resize;
+
+    uint64_t current_sequence_id = 0;
+    uint64_t acked_sequence_id = 0;
+
+    void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
+};
+
+struct realtime_script_manager2
+{
+    std::map<int, realtime_script_run2> windows;
+
+    void extract_server_commands(font_selector& fonts, nlohmann::json& in);
     void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
     void render(auto_handler& auto_handle);
 };

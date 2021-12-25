@@ -15,6 +15,8 @@ struct chat_thread;
 struct chat_window;
 struct auth_manager;
 
+std::string get_element_id(const std::string& type, const std::vector<nlohmann::json>& data);
+
 struct scrollbar_hack
 {
     ///lines above bottom

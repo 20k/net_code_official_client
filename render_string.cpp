@@ -14,6 +14,7 @@
 #include "script_transfer.hpp"
 #include "local_commands.hpp"
 #include <libncclient/nc_util.hpp>
+#include "font_cfg.hpp"
 
 vec3f process_colour(vec3f in)
 {
@@ -1528,6 +1529,163 @@ void chat_manager::render(auto_handler& auto_handle)
     }
 
     once = true;
+}
+
+void realtime_script_run2::default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send)
+{
+
+}
+
+void realtime_script_manager2::extract_server_commands(font_selector& fonts, nlohmann::json& in)
+{
+    if(in == "")
+        return;
+
+    std::string type = in["type"];
+
+    if(type == "command_realtime")
+    {
+        int id = in["id"];
+
+        realtime_script_run2& run = windows[id];
+
+        int width = 0;
+        int height = 0;
+
+        bool should_close = false;
+
+        if(in.count("width") > 0)
+            width = in["width"];
+        if(in.count("height") > 0)
+            height = in["height"];
+        if(in.count("close") > 0)
+            should_close = in["close"];
+        if(in.count("square_font") > 0)
+            run.is_square_font = (int)in["square_font"];
+
+        if(!should_close && in.count("msg") > 0)
+        {
+            run.clear_text();
+            run.add_main_text(in["msg"]);
+        }
+
+        if(should_close)
+        {
+            for(auto& i : windows)
+            {
+                int fid = i.first;
+                realtime_script_run2& other_run = i.second;
+
+                if(id == fid)
+                {
+                    other_run.open = false;
+                }
+            }
+        }
+
+        if(width != 0 && height != 0)
+        {
+            if(width < 5)
+                width = 5;
+            if(height < 5)
+                height = 5;
+
+            if(width > 300)
+                width = 300;
+            if(height > 300)
+                height = 300;
+
+            vec2f cdim = xy_to_vec(ImGui::CalcTextSize("A"));
+
+            if(run.is_square_font)
+            {
+                ImGui::PushFont(fonts.get_square_font());
+
+                cdim = xy_to_vec(ImGui::CalcTextSize("A"));
+
+                ImGui::PopFont();
+            }
+
+            int rwidth = width * cdim.x();
+            int rheight = height * cdim.y();
+
+            run.dim.x() = rwidth;
+            run.dim.y() = rheight;
+        }
+
+        if(in.count("name") > 0)
+        {
+            run.script_name = in["name"];
+        }
+    }
+    else if(type == "command_realtime_ui")
+    {
+        int id = in["id"];
+
+        realtime_script_run2& run = windows[id];
+
+        std::map<std::string, ui_element> existing_elements;
+
+        for(const ui_element& e : run.stk.elements)
+        {
+            if(e.element_id == "")
+                continue;
+
+            existing_elements[e.element_id] = e;
+        }
+
+        run.stk = ui_stack();
+
+        std::vector<std::string> typelist = in["typeidx"];
+        std::vector<int> typeargc = in["typeargc"];
+
+        if(in.count("client_seq_ack") > 0)
+            run.acked_sequence_id = in["client_seq_ack"];
+
+        int num = in["types"].size();
+        int current_argument_idx = 0;
+
+        for(int i=0; i < num; i++)
+        {
+            int idx = in["types"][i];
+
+            std::vector<nlohmann::json> arguments;
+
+            std::string val = typelist.at(idx);
+            int argument_count = typeargc.at(idx);
+
+            for(int kk=0; kk < argument_count; kk++)
+            {
+                arguments.push_back(in["arguments"][kk + current_argument_idx]);
+            }
+
+            current_argument_idx += argument_count;
+
+            //std::vector<nlohmann::json> arguments = (std::vector<nlohmann::json>)(in["arguments"][i]);
+
+            std::string element_id = get_element_id(val, arguments);
+
+            ui_element elem;
+
+            if(auto it = existing_elements.find(element_id); it != existing_elements.end())
+            {
+                elem = it->second;
+            }
+
+            elem.element_id = element_id;
+
+            elem.type = val;
+
+            ///if the sequence id of us is > than the current acked id, it means we're client authoritative for a bit
+            if((int)elem.arguments.size() != argument_count || run.acked_sequence_id >= elem.authoritative_until_sequence_id)
+                elem.arguments = arguments;
+
+            if((int)elem.arguments.size() != argument_count)
+                throw std::runtime_error("Bad argument count somehow");
+
+            run.stk.elements.push_back(elem);
+        }
+    }
 }
 
 void test_render_strings()
