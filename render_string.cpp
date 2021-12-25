@@ -246,16 +246,23 @@ paragraph_string::paragraph_string(std::string in, bool include_specials, bool c
     str = std::move(in);
 }
 
-vec2f get_char_size()
+vec2f get_char_size(ImFont* font)
 {
-    return xy_to_vec(ImGui::CalcTextSize("A"));
+    if(font == nullptr)
+        font = ImGui::GetCurrentContext()->Font;
+
+    float font_size = font->FontSize;
+
+    return xy_to_vec(font->CalcTextSizeA(font_size, FLT_MAX, -1.f, "A", nullptr, nullptr));
+
+    //return xy_to_vec(ImGui::CalcTextSize("A"));
 }
 
-std::vector<screen_line> create_screen_lines(const std::string& base_string, const std::vector<render_string>& basic_render_strings, float clipping_width)
+std::vector<screen_line> create_screen_lines(ImFont* font, const std::string& base_string, const std::vector<render_string>& basic_render_strings, float clipping_width)
 {
     std::vector<screen_line> ret;
 
-    vec2f character_dim = get_char_size();
+    vec2f character_dim = get_char_size(font);
 
     vec2f pos = {0,0};
 
@@ -319,18 +326,18 @@ std::vector<screen_line> create_screen_lines(const std::string& base_string, con
     return ret;
 }
 
-void paragraph_string::build(float clip_width)
+void paragraph_string::build(ImFont* font, float clip_width)
 {
     dim.x() = clip_width;
 
-    lines = create_screen_lines(str, basic_render_strings, clip_width);
+    lines = create_screen_lines(font, str, basic_render_strings, clip_width);
 
-    dim.y() = lines.size() * get_char_size().y();
+    dim.y() = lines.size() * get_char_size(font).y();
 }
 
-float get_formatting_clip_width(float new_window_width, float scrollbar_width)
+float get_formatting_clip_width(ImFont* font, float new_window_width, float scrollbar_width)
 {
-    return new_window_width - 2 * char_inf::cwbuf - scrollbar_width - ImGui::GetStyle().FramePadding.x - 2 * get_char_size().x();
+    return new_window_width - 2 * char_inf::cwbuf - scrollbar_width - ImGui::GetStyle().FramePadding.x - 2 * get_char_size(font).x();
 }
 
 void text_manager::add_main_text(std::string str, auto_handler& auto_handle)
@@ -338,7 +345,7 @@ void text_manager::add_main_text(std::string str, auto_handler& auto_handle)
     std::vector<std::string> autos = parse_for_autocompletes(str);
 
     paragraphs.emplace_back(std::move(str), false, colour_like_terminal);
-    paragraphs.back().build(get_formatting_clip_width(window_size.x(), scrollbar.width));
+    paragraphs.back().build(font, get_formatting_clip_width(font, window_size.x(), scrollbar.width));
 
     for(std::string& s : autos)
     {
@@ -354,7 +361,7 @@ void text_manager::add_main_text(std::string str, auto_handler& auto_handle)
 void text_manager::add_main_text(std::string str)
 {
     paragraphs.emplace_back(std::move(str), false, colour_like_terminal);
-    paragraphs.back().build(get_formatting_clip_width(window_size.x(), scrollbar.width));
+    paragraphs.back().build(font, get_formatting_clip_width(font, window_size.x(), scrollbar.width));
 
     unseen_text = !was_visible;
 }
@@ -381,14 +388,14 @@ void text_manager::relayout(vec2f new_window_size)
         }
     }
 
-    if(old_window_size.x() == new_window_size.x() && cached_character_size == get_char_size())
+    if(old_window_size.x() == new_window_size.x() && cached_character_size == get_char_size(font))
         return;
 
-    cached_character_size = get_char_size();
+    cached_character_size = get_char_size(font);
 
     for(paragraph_string& s : paragraphs)
     {
-        s.build(get_formatting_clip_width(new_window_size.x(), scrollbar.width));
+        s.build(font, get_formatting_clip_width(font, new_window_size.x(), scrollbar.width));
     }
 
     if(scrollbar_at_bottom)
@@ -405,7 +412,7 @@ float get_window_title_offset()
     return title_offset;
 }
 
-void driven_scrollbar::render(int trailing_blank_lines)
+void driven_scrollbar::render(ImFont* font, int trailing_blank_lines)
 {
     float paddingx = ImGui::GetStyle().FramePadding.x;
     float paddingy = ImGui::GetStyle().FramePadding.y + 16;
@@ -414,16 +421,18 @@ void driven_scrollbar::render(int trailing_blank_lines)
 
     float render_height = (height - paddingy) - get_window_title_offset();
 
+    vec2f char_size = get_char_size(font);
+
     if(ImGui::IsWindowFocused())
     {
         if(ImGui::IsKeyPressed(ImGui::GetIO().KeyMap[ImGuiKey_PageDown]))
         {
-            adjust_by_lines(floor(render_height / get_char_size().y()), trailing_blank_lines);
+            adjust_by_lines(font, floor(render_height / char_size.y()), trailing_blank_lines);
         }
 
         if(ImGui::IsKeyPressed(ImGui::GetIO().KeyMap[ImGuiKey_PageUp]))
         {
-            adjust_by_lines(-floor(render_height / get_char_size().y()), trailing_blank_lines);
+            adjust_by_lines(font, -floor(render_height / char_size.y()), trailing_blank_lines);
         }
     }
 
@@ -431,7 +440,7 @@ void driven_scrollbar::render(int trailing_blank_lines)
     {
         if(ImGui::GetIO().MouseWheel != 0)
         {
-            adjust_by_lines(-ImGui::GetIO().MouseWheel, trailing_blank_lines);
+            adjust_by_lines(font, -ImGui::GetIO().MouseWheel, trailing_blank_lines);
         }
     }
 
@@ -526,16 +535,16 @@ void driven_scrollbar::adjust_by_px(float py)
     fraction = clamp(fraction, 0.f, 1.f);
 }
 
-float get_desired_visible_y_end(float content_height, int trailing_blank_lines)
+float get_desired_visible_y_end(ImFont* font, float content_height, int trailing_blank_lines)
 {
     int additional = trailing_blank_lines;
 
-    return content_height + get_char_size().y() * (2 + additional) + ImGui::GetStyle().WindowPadding.y;
+    return content_height + get_char_size(font).y() * (2 + additional) + ImGui::GetStyle().WindowPadding.y;
 }
 
-void driven_scrollbar::adjust_by_lines(float lines, int trailing_blank_lines)
+void driven_scrollbar::adjust_by_lines(ImFont* font, float lines, int trailing_blank_lines)
 {
-    float desired_visible_y_end = get_desired_visible_y_end(content_height, trailing_blank_lines);
+    float desired_visible_y_end = get_desired_visible_y_end(font, content_height, trailing_blank_lines);
 
     float scroll_fraction_at_end = (desired_visible_y_end - window_size.y()) / content_height;
 
@@ -550,7 +559,7 @@ void driven_scrollbar::adjust_by_lines(float lines, int trailing_blank_lines)
     ///sfae * (scroll_fraction + x) * ch = vys
     ///sfae * scroll_fraction + x * sfae * ch = vys
 
-    float adjust_pixels = lines * get_char_size().y() / scroll_fraction_at_end;
+    float adjust_pixels = lines * get_char_size(font).y() / scroll_fraction_at_end;
 
     float as_frac = adjust_pixels / content_height;
 
@@ -744,9 +753,11 @@ void text_manager::render(context& ctx, auto_handler& auto_handle)
     float clip_width = window_size.x() - 2 * char_inf::cwbuf;
     float content_height = 0;
 
+    vec2f char_size = get_char_size(font);
+
     for(const paragraph_string& s : paragraphs)
     {
-        content_height += s.lines.size() * get_char_size().y();
+        content_height += s.lines.size() * char_size.y();
     }
 
     ///ImGui::Begin
@@ -756,8 +767,6 @@ void text_manager::render(context& ctx, auto_handler& auto_handle)
 
     dock_id = ImGui::GetWindowDockID();
     was_focused = ImGui::IsWindowFocused();
-
-    vec2f char_size = get_char_size();
 
     if(should_render)
     {
@@ -783,7 +792,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle)
         render_command = command_visual_prefix + render_command;
 
         paragraph_string command_line(render_command, specials, true);
-        command_line.build(get_formatting_clip_width(window_size.x(), scrollbar.width));
+        command_line.build(font, get_formatting_clip_width(font, window_size.x(), scrollbar.width));
 
         int command_line_height = command_line.lines.size();
 
@@ -795,7 +804,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle)
         scrollbar.content_height = content_height;
         scrollbar.window_size = window_size;
 
-        scrollbar.render(trailing_blank_lines);
+        scrollbar.render(font, trailing_blank_lines);
         copy_handler2& handle = get_global_copy_handler2();
 
         std::string copy_string;
@@ -855,7 +864,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle)
         if(content_height > 0)
         {
             ///so, when scroll_fraction is 1, we want visible_y_end to be lines.size() * size + padding
-            float desired_visible_y_end = get_desired_visible_y_end(content_height, trailing_blank_lines);
+            float desired_visible_y_end = get_desired_visible_y_end(font, content_height, trailing_blank_lines);
 
             ///vye = scroll_fraction * content_height + window_size.y()
             ///(vye - window_size.y()) / content_height = scroll_fraction
@@ -882,7 +891,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle)
 
         float title_offset = get_window_title_offset();
 
-        vec2f cdim = get_char_size();
+        vec2f cdim = get_char_size(font);
 
         vec3f srgb_selection_colour = {80, 80, 255};
         vec3f selection_colour = srgb_to_lin(srgb_selection_colour / 255.f) * 255.f;
@@ -1794,16 +1803,10 @@ void realtime_script_manager2::extract_server_commands(font_selector& fonts, nlo
             if(height > 300)
                 height = 300;
 
-            vec2f cdim = xy_to_vec(ImGui::CalcTextSize("A"));
-
             if(run.is_square_font)
-            {
-                ImGui::PushFont(fonts.get_square_font());
+                run.font = fonts.get_square_font();
 
-                cdim = xy_to_vec(ImGui::CalcTextSize("A"));
-
-                ImGui::PopFont();
-            }
+            vec2f cdim = get_char_size(run.font);
 
             int rwidth = width * cdim.x();
             int rheight = height * cdim.y();
@@ -1889,6 +1892,8 @@ void realtime_script_manager2::extract_server_commands(font_selector& fonts, nlo
 
 void test_render_strings()
 {
+    ImFont* font = ImGui::GetCurrentContext()->Font;
+
     std::string base = "hello there []\" asdf `Xcatepillar`\n`B`uncoloured\n`Dhithere\n``uncoloured`Dcoloured1`randomtext`Bcoloured2\n";
 
     auto_handler handle;
@@ -1904,7 +1909,7 @@ void test_render_strings()
 
     std::cout << "----\n";
 
-    std::vector<screen_line> screen_lines = create_screen_lines(base, strs, 60);
+    std::vector<screen_line> screen_lines = create_screen_lines(font, base, strs, 60);
 
     for(screen_line& line : screen_lines)
     {

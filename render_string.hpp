@@ -12,6 +12,8 @@
 #include "context.hpp"
 #include "imgui_ui_components.hpp"
 
+struct ImFont;
+
 ///so. Wants to be a single paragraph of text, prebroken up into render units
 ///wants to be split up into screen sized lines, each of a known length, so its easy to reformat if the screen resizes
 ///hierarchy: render string is a paragraph
@@ -43,7 +45,7 @@ struct paragraph_string
     paragraph_string();
     paragraph_string(std::string in, bool include_specials, bool colour_like_terminal);
 
-    void build(float clip_width);
+    void build(ImFont* font, float clip_width);
 
     std::string str;
 
@@ -58,13 +60,15 @@ struct driven_scrollbar
     float fraction = 1;
     float content_height = 0;
 
-    void render(int trailing_blank_lines);
+    void render(ImFont* font, int trailing_blank_lines);
     void adjust_by_px(float py);
-    void adjust_by_lines(float lines, int trailing_blank_lines);
+    void adjust_by_lines(ImFont* font, float lines, int trailing_blank_lines);
 };
 
 struct text_manager
 {
+    ImFont* font = nullptr;
+
     bool colour_like_terminal = false;
     bool new_terminal = true;
     bool open = true;
