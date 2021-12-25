@@ -799,6 +799,12 @@ void text_manager::render(context& ctx, auto_handler& auto_handle)
         if(command_line_height == 0)
             trailing_blank_lines = 1;
 
+        if(!use_type_prompt)
+        {
+            trailing_blank_lines = 0;
+            command_line = paragraph_string();
+        }
+
         trailing_blank_lines += command_line_height;
 
         scrollbar.content_height = content_height;
@@ -995,6 +1001,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle)
             process_paragraph(s);
         }
 
+        if(use_type_prompt)
         {
             float screen_y = base_top_offset + window_size.y() - ImGui::GetStyle().WindowPadding.y - char_size.y() * trailing_blank_lines;
 
@@ -1675,6 +1682,11 @@ void chat_manager::render(context& ctx, auto_handler& auto_handle)
     ImGui::End();
 }*/
 
+realtime_script_run2::realtime_script_run2()
+{
+    use_type_prompt = false;
+}
+
 bool realtime_script_run2::create_window(context& ctx, vec2f content_size, vec2f in_window_size)
 {
     std::string str = std::to_string(server_id);
@@ -1717,9 +1729,6 @@ bool realtime_script_run2::create_window(context& ctx, vec2f content_size, vec2f
 
     bool should_render = ImGui::Begin((title_str + "###" + str).c_str(), &open, ImGuiWindowFlags_NoScrollbar);
 
-    if(is_square_font)
-        ImGui::PushFont(ctx.font_select.get_square_font());
-
     is_focused = ImGui::IsWindowFocused();
     is_hovered = ImGui::IsWindowHovered();
 
@@ -1728,9 +1737,6 @@ bool realtime_script_run2::create_window(context& ctx, vec2f content_size, vec2f
 
 void realtime_script_run2::destroy_window()
 {
-    if(is_square_font)
-        ImGui::PopFont();
-
     ImGui::End();
 }
 

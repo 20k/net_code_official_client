@@ -67,6 +67,8 @@ struct driven_scrollbar
 
 struct text_manager
 {
+    bool use_type_prompt = true;
+
     ImFont* font = nullptr;
 
     bool colour_like_terminal = false;
@@ -170,6 +172,8 @@ struct font_selector;
 
 struct realtime_script_run2 : text_manager
 {
+    realtime_script_run2();
+
     int server_id = 0;
     std::string script_name;
 
