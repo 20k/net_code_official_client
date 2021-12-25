@@ -190,7 +190,7 @@ struct realtime_script_run2 : text_manager
     bool is_square_font = false;
     bool was_square_font = false;
 
-    bool set_size = false;
+    bool set_size = true;
 
     ui_stack stk;
 

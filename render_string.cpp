@@ -761,7 +761,8 @@ void add_text(ImDrawList* lst, ImFont* font, ImVec2 pos, ImU32 col, const char* 
 
 void text_manager::render(context& ctx, auto_handler& auto_handle)
 {
-    float clip_width = window_size.x() - 2 * char_inf::cwbuf;
+    float clip_width = get_formatting_clip_width(font, window_size.x(), scrollbar.width);
+
     float content_height = 0;
 
     vec2f char_size = get_char_size(font);
@@ -1723,6 +1724,8 @@ bool realtime_script_run2::create_window(context& ctx, vec2f content_size, vec2f
     }
 
     title_str += ext;
+
+    ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
 
     if(set_size)
         ImGui::SetNextWindowSize(ImVec2(dim.x(), dim.y()), ImGuiCond_Always);
