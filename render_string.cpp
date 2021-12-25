@@ -748,6 +748,16 @@ void text_manager::on_enter_text(context& ctx, std::string_view text, auto_handl
     add_command_to_main_text(auto_handle);
 }
 
+void add_text(ImDrawList* lst, ImFont* font, ImVec2 pos, ImU32 col, const char* start, const char* fin)
+{
+    if(font == nullptr)
+        font = ImGui::GetCurrentContext()->Font;
+
+    float font_size = font->FontSize;
+
+    lst->AddText(font, font_size, pos, col, start, fin);
+}
+
 void text_manager::render(context& ctx, auto_handler& auto_handle)
 {
     float clip_width = window_size.x() - 2 * char_inf::cwbuf;
@@ -930,7 +940,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle)
 
                 ImDrawList* imlist = ImGui::GetWindowDrawList();
 
-                imlist->AddText(ImVec2(left_offset, y_screen), IM_COL32(ir, ig, ib, 255), start, fin);
+                add_text(imlist, font, ImVec2(left_offset, y_screen), IM_COL32(ir, ig, ib, 255), start, fin);
 
                 if(check_copy || trigger_copy)
                 {
@@ -1811,6 +1821,8 @@ void realtime_script_manager2::extract_server_commands(font_selector& fonts, nlo
 
             if(run.is_square_font)
                 run.font = fonts.get_square_font();
+            else
+                run.font = nullptr;
 
             vec2f cdim = get_char_size(run.font);
 
