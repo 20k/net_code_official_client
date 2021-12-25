@@ -281,7 +281,9 @@ int main(int argc, char* argv[])
     style.DisplayWindowPadding = ImVec2(0,0);
     style.ItemInnerSpacing = ImVec2(0,0);*/
 
-    font_selector font_select;
+    context ctx;
+
+    font_selector& font_select = ctx.font_select;
     font_select.reset_default_fonts();
 
     terminal_manager terminals;
@@ -409,8 +411,6 @@ int main(int argc, char* argv[])
     chat_manager chat2;
 
     realtime_script_manager2 realtime_scripts2;
-
-    context ctx;
 
     //while(running)
     #ifndef __EMSCRIPTEN__
@@ -1372,13 +1372,13 @@ int main(int argc, char* argv[])
 
             vec2i window_dim = window.get_window_size();
 
-            realtime_scripts2.render(test_handler);
+            realtime_scripts2.render(ctx, test_handler);
 
             main_terminal.default_controls(ctx, test_handler, to_write);
-            main_terminal.render(test_handler);
+            main_terminal.render(ctx, test_handler);
 
             chat2.default_controls(ctx, test_handler, to_write);
-            chat2.render(test_handler);
+            chat2.render(ctx, test_handler);
 
             //test_imgui_term.render(window);
             //realtime_scripts.render_realtime_windows(to_write, was_closed_id, font_select, terminals.auto_handle, window.get_render_settings().is_srgb);

@@ -2,6 +2,7 @@
 #define CONTEXT_HPP_INCLUDED
 
 #include <string>
+#include "font_cfg.hpp"
 
 struct context
 {
@@ -10,6 +11,8 @@ struct context
 
     bool show_chat_in_main_window = true;
     bool should_shutdown = false;
+
+    font_selector font_select;
 };
 
 #endif // CONTEXT_HPP_INCLUDED

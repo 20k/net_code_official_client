@@ -96,10 +96,11 @@ struct text_manager
     void add_command_to_main_text(auto_handler& auto_handle);
 
     void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
-    virtual bool create_window(vec2f content_size, vec2f window_size);
+    virtual bool create_window(context& ctx, vec2f content_size, vec2f window_size);
+    virtual void destroy_window();
     virtual void on_enter_text(context& ctx, std::string_view text, auto_handler& auto_handle, connection_send_data& send);
 
-    void render(auto_handler& auto_handle);
+    void render(context& ctx, auto_handler& auto_handle);
 
     void clear_text();
     void clear_command();
@@ -139,7 +140,7 @@ struct chat_thread2 : text_manager
     bool was_hovered = false;
     bool was_rendered = false;
 
-    virtual bool create_window(vec2f content_size, vec2f window_size) override;
+    virtual bool create_window(context& ctx, vec2f content_size, vec2f window_size) override;
     virtual void on_enter_text(context& ctx, std::string_view text, auto_handler& auto_handle, connection_send_data& send) override;
 
     std::string friendly_name;
@@ -158,7 +159,7 @@ struct chat_manager
     void add_text(const std::string& channel, const std::vector<std::string>& text);
 
     void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
-    void render(auto_handler& auto_handle);
+    void render(context& ctx, auto_handler& auto_handle);
 };
 
 struct font_selector;
@@ -188,7 +189,8 @@ struct realtime_script_run2 : text_manager
     uint64_t current_sequence_id = 0;
     uint64_t acked_sequence_id = 0;
 
-    virtual bool create_window(vec2f content_size, vec2f in_window_size) override;
+    virtual bool create_window(context& ctx, vec2f content_size, vec2f in_window_size) override;
+    virtual void destroy_window() override;
     void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
     //void render(connection_send_data& send);
 };
@@ -201,7 +203,7 @@ struct realtime_script_manager2
     void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
     //void render(connection_send_data& send);
 
-    void render(auto_handler& auto_handle);
+    void render(context& ctx, auto_handler& auto_handle);
 };
 
 void test_render_strings();

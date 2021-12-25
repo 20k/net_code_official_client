@@ -3,7 +3,6 @@
 #include <iostream>
 #include <imgui.h>
 #include <imgui_internal.h>
-#include "string_helpers.hpp"
 #include "copy_handler.hpp"
 #include "auto_handlers.hpp"
 #include <toolkit/fs_helpers.hpp>
@@ -247,11 +246,16 @@ paragraph_string::paragraph_string(std::string in, bool include_specials, bool c
     str = std::move(in);
 }
 
+vec2f get_char_size()
+{
+    return xy_to_vec(ImGui::CalcTextSize("A"));
+}
+
 std::vector<screen_line> create_screen_lines(const std::string& base_string, const std::vector<render_string>& basic_render_strings, float clipping_width)
 {
     std::vector<screen_line> ret;
 
-    vec2f character_dim = {char_inf::cwidth, char_inf::cheight};
+    vec2f character_dim = get_char_size();
 
     vec2f pos = {0,0};
 
@@ -321,12 +325,12 @@ void paragraph_string::build(float clip_width)
 
     lines = create_screen_lines(str, basic_render_strings, clip_width);
 
-    dim.y() = lines.size() * char_inf::cheight;
+    dim.y() = lines.size() * get_char_size().y();
 }
 
 float get_formatting_clip_width(float new_window_width, float scrollbar_width)
 {
-    return new_window_width - 2 * char_inf::cwbuf - scrollbar_width - ImGui::GetStyle().FramePadding.x - 2 * char_inf::cwidth;
+    return new_window_width - 2 * char_inf::cwbuf - scrollbar_width - ImGui::GetStyle().FramePadding.x - 2 * get_char_size().x();
 }
 
 void text_manager::add_main_text(std::string str, auto_handler& auto_handle)
@@ -377,10 +381,10 @@ void text_manager::relayout(vec2f new_window_size)
         }
     }
 
-    if(old_window_size.x() == new_window_size.x() && cached_character_size == (vec2f){char_inf::cwidth, char_inf::cheight})
+    if(old_window_size.x() == new_window_size.x() && cached_character_size == get_char_size())
         return;
 
-    cached_character_size = {char_inf::cwidth, char_inf::cheight};
+    cached_character_size = get_char_size();
 
     for(paragraph_string& s : paragraphs)
     {
@@ -414,12 +418,12 @@ void driven_scrollbar::render(int trailing_blank_lines)
     {
         if(ImGui::IsKeyPressed(ImGui::GetIO().KeyMap[ImGuiKey_PageDown]))
         {
-            adjust_by_lines(floor(render_height / char_inf::cheight), trailing_blank_lines);
+            adjust_by_lines(floor(render_height / get_char_size().y()), trailing_blank_lines);
         }
 
         if(ImGui::IsKeyPressed(ImGui::GetIO().KeyMap[ImGuiKey_PageUp]))
         {
-            adjust_by_lines(-floor(render_height / char_inf::cheight), trailing_blank_lines);
+            adjust_by_lines(-floor(render_height / get_char_size().y()), trailing_blank_lines);
         }
     }
 
@@ -526,7 +530,7 @@ float get_desired_visible_y_end(float content_height, int trailing_blank_lines)
 {
     int additional = trailing_blank_lines;
 
-    return content_height + char_inf::cheight * (2 + additional) + ImGui::GetStyle().WindowPadding.y;
+    return content_height + get_char_size().y() * (2 + additional) + ImGui::GetStyle().WindowPadding.y;
 }
 
 void driven_scrollbar::adjust_by_lines(float lines, int trailing_blank_lines)
@@ -546,7 +550,7 @@ void driven_scrollbar::adjust_by_lines(float lines, int trailing_blank_lines)
     ///sfae * (scroll_fraction + x) * ch = vys
     ///sfae * scroll_fraction + x * sfae * ch = vys
 
-    float adjust_pixels = lines * char_inf::cheight / scroll_fraction_at_end;
+    float adjust_pixels = lines * get_char_size().y() / scroll_fraction_at_end;
 
     float as_frac = adjust_pixels / content_height;
 
@@ -712,7 +716,7 @@ void text_manager::default_controls(context& ctx, auto_handler& auto_handle, con
     }
 }
 
-bool text_manager::create_window(vec2f content_size, vec2f create_window_size)
+bool text_manager::create_window(context& ctx, vec2f content_size, vec2f create_window_size)
 {
     ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
     ImGui::SetNextWindowSize(ImVec2(create_window_size.x(), create_window_size.y()), ImGuiCond_Appearing);
@@ -725,28 +729,35 @@ bool text_manager::create_window(vec2f content_size, vec2f create_window_size)
     return ImGui::Begin("Test Terminal", &open, flags);
 }
 
+void text_manager::destroy_window()
+{
+    ImGui::End();
+}
+
 void text_manager::on_enter_text(context& ctx, std::string_view text, auto_handler& auto_handle, connection_send_data& send)
 {
     add_command_to_main_text(auto_handle);
 }
 
-void text_manager::render(auto_handler& auto_handle)
+void text_manager::render(context& ctx, auto_handler& auto_handle)
 {
     float clip_width = window_size.x() - 2 * char_inf::cwbuf;
     float content_height = 0;
 
     for(const paragraph_string& s : paragraphs)
     {
-        content_height += s.lines.size() * char_inf::cheight;
+        content_height += s.lines.size() * get_char_size().y();
     }
 
     ///ImGui::Begin
-    bool should_render = create_window({clip_width, content_height}, {400, 300});
+    bool should_render = create_window(ctx, {clip_width, content_height}, {400, 300});
 
     vec2f found_window_size = {ImGui::GetWindowSize().x, ImGui::GetWindowSize().y};
 
     dock_id = ImGui::GetWindowDockID();
     was_focused = ImGui::IsWindowFocused();
+
+    vec2f char_size = get_char_size();
 
     if(should_render)
     {
@@ -871,7 +882,7 @@ void text_manager::render(auto_handler& auto_handle)
 
         float title_offset = get_window_title_offset();
 
-        vec2f cdim = {char_inf::cwidth, char_inf::cheight};
+        vec2f cdim = get_char_size();
 
         vec3f srgb_selection_colour = {80, 80, 255};
         vec3f selection_colour = srgb_to_lin(srgb_selection_colour / 255.f) * 255.f;
@@ -912,7 +923,7 @@ void text_manager::render(auto_handler& auto_handle)
                     {
                         char c = s.str[kk];
 
-                        vec2f pos = {left_offset + (kk - rs.start) * char_inf::cwidth, y_screen};
+                        vec2f pos = {left_offset + (kk - rs.start) * char_size.x(), y_screen};
 
                         if(handle.char_within_region(pos, cdim))
                         {
@@ -934,7 +945,7 @@ void text_manager::render(auto_handler& auto_handle)
                     }
                 }
 
-                left_offset += rs.length * char_inf::cwidth;
+                left_offset += rs.length * char_size.x();
             }
         };
 
@@ -948,12 +959,12 @@ void text_manager::render(auto_handler& auto_handle)
 
                 float padded_y = from_top_of_window + base_top_offset + title_offset;
 
-                if(top_offset >= visible_y_start - char_inf::cheight && (top_offset < visible_y_end - (3.5 + trailing_blank_lines) * char_inf::cheight))
+                if(top_offset >= visible_y_start - char_size.y() && (top_offset < visible_y_end - (3.5 + trailing_blank_lines) * char_size.y()))
                 {
                     process_screen_line(s, sl, padded_y);
                 }
 
-                current_pixel_y += char_inf::cheight;
+                current_pixel_y += char_size.y();
             }
         };
 
@@ -963,7 +974,7 @@ void text_manager::render(auto_handler& auto_handle)
             {
                 process_screen_line(s, sl, screen_y);
 
-                screen_y += char_inf::cheight;
+                screen_y += char_size.y();
             }
         };
 
@@ -976,7 +987,7 @@ void text_manager::render(auto_handler& auto_handle)
         }
 
         {
-            float screen_y = base_top_offset + window_size.y() - ImGui::GetStyle().WindowPadding.y - char_inf::cheight * trailing_blank_lines;
+            float screen_y = base_top_offset + window_size.y() - ImGui::GetStyle().WindowPadding.y - char_size.y() * trailing_blank_lines;
 
             process_paragraph_with_y(command_line, screen_y);
         }
@@ -1011,7 +1022,7 @@ void text_manager::render(auto_handler& auto_handle)
         }
     }
 
-    ImGui::End();
+    destroy_window();
 
     if(should_render)
     {
@@ -1335,7 +1346,7 @@ void chat_manager::add_text(const std::string& channel, const std::vector<std::s
     }
 }
 
-bool chat_thread2::create_window(vec2f content_size, vec2f create_window_size)
+bool chat_thread2::create_window(context& ctx, vec2f content_size, vec2f create_window_size)
 {
     create_window_size = {500, 300};
 
@@ -1472,7 +1483,7 @@ void chat_manager::default_controls(context& ctx, auto_handler& auto_handle, con
     }
 }
 
-void chat_manager::render(auto_handler& auto_handle)
+void chat_manager::render(context& ctx, auto_handler& auto_handle)
 {
     static bool once = file::exists("ui_setup_once_v2");
     static ImGuiID dock_id = -1;
@@ -1505,7 +1516,7 @@ void chat_manager::render(auto_handler& auto_handle)
 
         thread.friendly_name = channel_name;
 
-        thread.render(auto_handle);
+        thread.render(ctx, auto_handle);
 
         ///should this be done unconditionally?
         //if(thread.was_visible)
@@ -1655,7 +1666,7 @@ void chat_manager::render(auto_handler& auto_handle)
     ImGui::End();
 }*/
 
-bool realtime_script_run2::create_window(vec2f content_size, vec2f in_window_size)
+bool realtime_script_run2::create_window(context& ctx, vec2f content_size, vec2f in_window_size)
 {
     std::string str = std::to_string(server_id);
 
@@ -1697,19 +1708,30 @@ bool realtime_script_run2::create_window(vec2f content_size, vec2f in_window_siz
 
     bool should_render = ImGui::Begin((title_str + "###" + str).c_str(), &open, ImGuiWindowFlags_NoScrollbar);
 
+    if(is_square_font)
+        ImGui::PushFont(ctx.font_select.get_square_font());
+
     is_focused = ImGui::IsWindowFocused();
     is_hovered = ImGui::IsWindowHovered();
 
     return should_render;
 }
 
-void realtime_script_manager2::render(auto_handler& auto_handle)
+void realtime_script_run2::destroy_window()
+{
+    if(is_square_font)
+        ImGui::PopFont();
+
+    ImGui::End();
+}
+
+void realtime_script_manager2::render(context& ctx, auto_handler& auto_handle)
 {
     for(auto& i : windows)
     {
         realtime_script_run2& run = i.second;
 
-        run.render(auto_handle);
+        run.render(ctx, auto_handle);
     }
 }
 
