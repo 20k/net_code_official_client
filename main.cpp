@@ -475,8 +475,8 @@ int main(int argc, char* argv[])
         if(chat_win.focused && has_chat_window)
             to_edit = chat_win.get_focused_editable().value_or(&no_string);
 
-        if(realtime_scripts.get_id_of_focused_realtime_window() != -1)
-            to_edit = &realtime_shim;
+        //if(realtime_scripts.get_id_of_focused_realtime_window() != -1)
+        //    to_edit = &realtime_shim;
 
         bool enter = false;
 
@@ -611,10 +611,10 @@ int main(int argc, char* argv[])
                     i.second.cache.invalidate_visual_cache();
                 }
 
-                for(auto& i : realtime_scripts.windows)
+                /*for(auto& i : realtime_scripts.windows)
                 {
                     i.second.cache.invalidate_visual_cache();
-                }
+                }*/
             }
 
             if(font_select.update_rebuild())
@@ -941,7 +941,7 @@ int main(int argc, char* argv[])
             ///todo: this isn't good enough. We need input *text*, and the stream of pressed keys to be presented to the script
             ///https://love2d.org/wiki/love.textinput
             ///https://love2d.org/wiki/love.keypressed
-            if(realtime_scripts.get_id_of_focused_realtime_window() != -1 && (realtime_str.size() > 0 || on_pressed.size() > 0 || on_released.size() > 0))
+            /*if(realtime_scripts.get_id_of_focused_realtime_window() != -1 && (realtime_str.size() > 0 || on_pressed.size() > 0 || on_released.size() > 0))
             {
                 nlohmann::json data;
                 data["type"] = "send_keystrokes_to_script";
@@ -994,10 +994,10 @@ int main(int argc, char* argv[])
                 }
 
                 script_mousewheel_delta = 0;
-            }
+            }*/
 
-            if(realtime_scripts.get_id_of_focused_realtime_window() == -1)
-                script_mousewheel_delta = 0;
+            //if(realtime_scripts.get_id_of_focused_realtime_window() == -1)
+            //    script_mousewheel_delta = 0;
 
             terminals.main_terminal.scroll_hack.scrolled_this_frame = mouse_delta;
 
@@ -1011,10 +1011,10 @@ int main(int argc, char* argv[])
                 i.second.scroll_hack.scrolled_this_frame = mouse_delta;
             }
 
-            for(auto& i : realtime_scripts.windows)
+            /*for(auto& i : realtime_scripts.windows)
             {
                 i.second.scroll_hack.scrolled_this_frame = mouse_delta;
-            }
+            }*/
 
             ImGui::PushFont(font_select.get_base_font());
 
@@ -1372,6 +1372,8 @@ int main(int argc, char* argv[])
 
             vec2i window_dim = window.get_window_size();
 
+            realtime_scripts2.render(test_handler);
+
             main_terminal.default_controls(ctx, test_handler, to_write);
             main_terminal.render(test_handler);
 
@@ -1379,7 +1381,7 @@ int main(int argc, char* argv[])
             chat2.render(test_handler);
 
             //test_imgui_term.render(window);
-            realtime_scripts.render_realtime_windows(to_write, was_closed_id, font_select, terminals.auto_handle, window.get_render_settings().is_srgb);
+            //realtime_scripts.render_realtime_windows(to_write, was_closed_id, font_select, terminals.auto_handle, window.get_render_settings().is_srgb);
             //chat_win.render(should_coordinate_focus);
             terminals.render(window, {window_dim.x(), window_dim.y()}, should_coordinate_focus);
 

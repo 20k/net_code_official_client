@@ -446,6 +446,8 @@ void driven_scrollbar::render(int trailing_blank_lines)
 
     float scroll_height = br.y - tl.y;
 
+    scroll_height = max(scroll_height, 1.f);
+
     tl.x += window_pos.x;
     tl.y += window_pos.y;
 
@@ -457,7 +459,7 @@ void driven_scrollbar::render(int trailing_blank_lines)
 
     ImGui::SetCursorScreenPos(tl);
 
-    ImGui::InvisibleButton("InvisiB", ImVec2(br.x - tl.x, br.y - tl.y), 0);
+    ImGui::InvisibleButton("InvisiB", ImVec2(max(br.x - tl.x, 4.f), max(br.y - tl.y, 4.f)), 0);
 
     float scrollbar_height = 14;
 
@@ -479,7 +481,20 @@ void driven_scrollbar::render(int trailing_blank_lines)
         col_bar = IM_COL32(50, 50, 50, 255);
     }
 
-    imlist->AddRectFilled({tl.x + sx, position_y_top + 2 + render_y + window_pos.y}, {br.x - sx, position_y_bottom + render_y + window_pos.y - 2}, col_bar, 6, 0);
+    ImVec2 scrollbar_tl = {tl.x + sx, position_y_top + 2 + render_y + window_pos.y};
+    ImVec2 scrollbar_br = {br.x - sx, position_y_bottom + render_y + window_pos.y - 2};
+
+    if(scrollbar_br.x - scrollbar_tl.x < 4)
+    {
+        scrollbar_br.x = scrollbar_tl.x + 4;
+    }
+
+    if(scrollbar_br.y - scrollbar_tl.y < 4)
+    {
+        scrollbar_br.y = scrollbar_tl.y + 4;
+    }
+
+    imlist->AddRectFilled(scrollbar_tl, scrollbar_br, col_bar, 6, 0);
 
     if(ImGui::IsItemClicked() || ImGui::IsItemActive())
     {
@@ -1531,9 +1546,171 @@ void chat_manager::render(auto_handler& auto_handle)
     once = true;
 }
 
-void realtime_script_run2::default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send)
+/*void realtime_script_run2::render(connection_send_data& send)
 {
+    std::string str = std::to_string(i.first);
 
+    std::string ext = "###" + str;
+
+    std::string title_str = str;
+
+    if(run.script_name != "")
+    {
+        title_str = run.script_name;
+    }
+
+    if(run.focused)
+    {
+        title_str += " (Active)";
+    }
+    else
+    {
+        title_str += "         "; ///for imgui docking grabbability
+    }
+
+    title_str += ext;
+
+    if(run.was_open && !run.open)
+    {
+        run.was_open = false;
+
+        was_closed_id = i.first;
+    }
+
+    if(!run.open)
+        continue;
+
+    if(run.set_size)
+        ImGui::SetNextWindowSize(ImVec2(run.dim.x(), run.dim.y()), ImGuiCond_Always);
+
+    run.set_size = false;
+
+    bool should_render = ImGui::Begin((title_str + "###" + str).c_str(), &run.open, ImGuiWindowFlags_NoScrollbar);
+
+    if(should_render)
+    {
+        run.current_tl_cursor_pos = {ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y};
+
+        run.focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+        run.hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
+
+        int cpos = -1;
+        std::string cmd = " ";
+
+        //run.cache.invalidate();
+
+        if(run.is_square_font)
+            ImGui::PushFont(fonts.get_square_font());
+
+        render_ui_stack(to_write, run, run.stk, i.first, is_linear_colour);
+
+        render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, run.cache);
+
+        ImVec2 window_size = ImGui::GetWindowSize();
+
+        vec2i last_dim = run.current_dim;
+        run.current_dim = {window_size.x, window_size.y};
+
+        if(run.current_dim.x() != last_dim.x() || run.current_dim.y() != last_dim.y())
+            run.should_send_new_size = true;
+
+        if(run.is_square_font != run.was_square_font)
+            run.should_send_new_size = true;
+
+        run.was_square_font = run.is_square_font;
+
+        if(run.should_send_new_size && run.last_resize.get_elapsed_time_s() >= 1)
+        {
+            vec2f br_absolute = run.current_pos + (vec2f){run.current_dim.x(), run.current_dim.y()};
+            vec2f relative_dim = br_absolute - run.current_tl_cursor_pos;
+
+            vec2f dim = relative_dim;
+
+            vec2f cdim = xy_to_vec(ImGui::CalcTextSize("A"));
+
+            nlohmann::json data;
+            data["type"] = "send_script_info";
+            data["id"] = i.first;
+            data["width"] = (dim.x() / cdim.x()) - 5;
+            data["height"] = dim.y() / cdim.y();
+
+            write_data dat;
+            dat.id = -1;
+            dat.data = data.dump();
+
+            to_write.write_to_websocket(std::move(dat));
+
+            run.last_resize.restart();
+            run.should_send_new_size = false;
+        }
+
+        if(run.is_square_font)
+            ImGui::PopFont();
+
+        auto my_pos = ImGui::GetWindowPos();
+
+        run.current_pos = {my_pos.x, my_pos.y};
+    }
+
+    ImGui::End();
+}*/
+
+bool realtime_script_run2::create_window(vec2f content_size, vec2f in_window_size)
+{
+    std::string str = std::to_string(server_id);
+
+    std::string ext = "###" + str;
+
+    std::string title_str = str;
+
+    if(script_name != "")
+    {
+        title_str = script_name;
+    }
+
+    if(is_focused)
+    {
+        title_str += " (Active)";
+    }
+    else
+    {
+        title_str += "         "; ///for imgui docking grabbability
+    }
+
+    title_str += ext;
+
+    if(was_open && !open)
+    {
+        was_open = false;
+
+        ///?
+        //was_closed_id = i.first;
+    }
+
+    if(!open)
+        return false;
+
+    if(set_size)
+        ImGui::SetNextWindowSize(ImVec2(dim.x(), dim.y()), ImGuiCond_Always);
+
+    set_size = false;
+
+    bool should_render = ImGui::Begin((title_str + "###" + str).c_str(), &open, ImGuiWindowFlags_NoScrollbar);
+
+    is_focused = ImGui::IsWindowFocused();
+    is_hovered = ImGui::IsWindowHovered();
+
+    return should_render;
+}
+
+void realtime_script_manager2::render(auto_handler& auto_handle)
+{
+    for(auto& i : windows)
+    {
+        realtime_script_run2& run = i.second;
+
+        run.render(auto_handle);
+    }
 }
 
 void realtime_script_manager2::extract_server_commands(font_selector& fonts, nlohmann::json& in)

@@ -95,7 +95,7 @@ struct text_manager
     void add_main_text(std::string view);
     void add_command_to_main_text(auto_handler& auto_handle);
 
-    virtual void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
+    void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
     virtual bool create_window(vec2f content_size, vec2f window_size);
     virtual void on_enter_text(context& ctx, std::string_view text, auto_handler& auto_handle, connection_send_data& send);
 
@@ -165,14 +165,19 @@ struct font_selector;
 
 struct realtime_script_run2 : text_manager
 {
+    int server_id = 0;
     std::string script_name;
 
     vec2f dim = {300, 300};
 
+    bool is_focused = false;
+    bool is_hovered = false;
     bool open = true;
     bool was_open = true;
     bool is_square_font = false;
     bool was_square_font = false;
+
+    bool set_size = false;
 
     ui_stack stk;
 
@@ -183,7 +188,9 @@ struct realtime_script_run2 : text_manager
     uint64_t current_sequence_id = 0;
     uint64_t acked_sequence_id = 0;
 
+    virtual bool create_window(vec2f content_size, vec2f in_window_size) override;
     void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
+    //void render(connection_send_data& send);
 };
 
 struct realtime_script_manager2
@@ -192,6 +199,8 @@ struct realtime_script_manager2
 
     void extract_server_commands(font_selector& fonts, nlohmann::json& in);
     void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
+    //void render(connection_send_data& send);
+
     void render(auto_handler& auto_handle);
 };
 
