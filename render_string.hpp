@@ -67,6 +67,7 @@ struct driven_scrollbar
 
 struct text_manager
 {
+    vec2f window_tl;
     bool use_type_prompt = true;
 
     ImFont* font = nullptr;
@@ -174,6 +175,9 @@ struct realtime_script_run2 : text_manager
 {
     realtime_script_run2();
 
+    steady_timer mouse_send_ratelimit;
+    vec2f unprocessed_scrollwheel;
+
     int server_id = 0;
     std::string script_name;
 
@@ -200,6 +204,7 @@ struct realtime_script_run2 : text_manager
     virtual bool create_window(context& ctx, vec2f content_size, vec2f in_window_size) override;
     virtual void destroy_window() override;
     void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
+    void terminate(connection_send_data& send);
     //void render(connection_send_data& send);
 };
 

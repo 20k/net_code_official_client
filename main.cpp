@@ -283,6 +283,8 @@ int main(int argc, char* argv[])
 
     context ctx;
 
+    ctx.backend = backend;
+
     font_selector& font_select = ctx.font_select;
     font_select.reset_default_fonts();
 
@@ -1372,6 +1374,7 @@ int main(int argc, char* argv[])
 
             vec2i window_dim = window.get_window_size();
 
+            realtime_scripts2.default_controls(ctx, test_handler, to_write);
             realtime_scripts2.render(ctx, test_handler);
 
             main_terminal.default_controls(ctx, test_handler, to_write);

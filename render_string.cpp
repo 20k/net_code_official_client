@@ -14,6 +14,7 @@
 #include "local_commands.hpp"
 #include <libncclient/nc_util.hpp>
 #include "font_cfg.hpp"
+#include <toolkit/render_window.hpp>
 
 vec3f process_colour(vec3f in)
 {
@@ -778,6 +779,13 @@ void text_manager::render(context& ctx, auto_handler& auto_handle)
     dock_id = ImGui::GetWindowDockID();
     was_focused = ImGui::IsWindowFocused();
 
+    float base_left_offset = char_inf::cwbuf + ImGui::GetWindowPos().x + ImGui::GetStyle().FramePadding.x;
+    float base_top_offset = ImGui::GetWindowPos().y;
+
+    float title_offset = get_window_title_offset();
+
+    window_tl = {base_left_offset, base_top_offset + title_offset};
+
     if(should_render)
     {
         if(should_reset_scrollbar)
@@ -901,11 +909,6 @@ void text_manager::render(context& ctx, auto_handler& auto_handle)
         float visible_y_end = visible_y_start + window_size.y();
 
         float current_pixel_y = 0;
-
-        float base_left_offset = char_inf::cwbuf + ImGui::GetWindowPos().x + ImGui::GetStyle().FramePadding.x;
-        float base_top_offset = ImGui::GetWindowPos().y;
-
-        float title_offset = get_window_title_offset();
 
         vec2f cdim = get_char_size(font);
 
@@ -1721,17 +1724,6 @@ bool realtime_script_run2::create_window(context& ctx, vec2f content_size, vec2f
 
     title_str += ext;
 
-    if(was_open && !open)
-    {
-        was_open = false;
-
-        ///?
-        //was_closed_id = i.first;
-    }
-
-    if(!open)
-        return false;
-
     if(set_size)
         ImGui::SetNextWindowSize(ImVec2(dim.x(), dim.y()), ImGuiCond_Always);
 
@@ -1750,11 +1742,153 @@ void realtime_script_run2::destroy_window()
     ImGui::End();
 }
 
+void realtime_script_run2::default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send)
+{
+    if(!is_focused)
+        return;
+
+    std::vector<std::string> input_string;
+
+    std::vector<uint32_t> input_utf32;
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    for(auto& i : io.InputQueueCharacters)
+    {
+        input_utf32.push_back(i);
+    }
+
+    for(uint32_t i : input_utf32)
+    {
+        if(i <= 126 && i >= 32)
+        {
+            std::u32string utf32;
+            utf32.push_back(i);
+
+            std::string utf8;
+
+            std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> cvt;
+
+            utf8 = cvt.to_bytes(utf32);
+
+            input_string.push_back(utf8);
+        }
+    }
+
+    std::vector<std::string> on_pressed;
+    std::vector<std::string> on_released;
+
+    int key_count = 512;
+
+    for(int i=0; i < key_count; i++)
+    {
+        if(!ImGui::IsKeyPressed(i))
+            continue;
+
+        if(auto val = ctx.backend->get_key_name(i); val != "")
+            on_pressed.push_back(val);
+    }
+
+    for(int i=0; i < key_count; i++)
+    {
+        if(!ImGui::IsKeyReleased(i))
+            continue;
+
+        if(auto val = ctx.backend->get_key_name(i); val != "")
+            on_released.push_back(val);
+    }
+
+    std::map<int, std::string> mouse_map;
+    mouse_map[0] = "lmouse";
+    mouse_map[1] = "rmouse";
+    mouse_map[2] = "mmouse";
+    mouse_map[3] = "x1mouse";
+    mouse_map[4] = "x2mouse";
+
+    for(int i=0; i < 5; i++)
+    {
+        if(ImGui::IsMouseClicked(i))
+            on_pressed.push_back(mouse_map[i]);
+
+        if(ImGui::IsMouseReleased(i))
+            on_released.push_back(mouse_map[i]);
+    }
+
+    if(input_string.size() > 0 || on_pressed.size() > 0 || on_released.size() > 0)
+    {
+        nlohmann::json data;
+        data["type"] = "send_keystrokes_to_script";
+        data["id"] = server_id;
+        data["input_keys"] = input_string;
+        data["pressed_keys"] = on_pressed;
+        data["released_keys"] = on_released;
+
+        write_data dat;
+        dat.id = -1;
+        dat.data = data.dump();
+
+        send.write_to_websocket(std::move(dat));
+    }
+
+    vec2f cursor_pos = {io.MousePos.x, io.MousePos.y};
+
+    vec2f relative_mouse = cursor_pos - window_tl;
+
+    vec2f mouse_char_pos = relative_mouse / get_char_size(font);
+
+    unprocessed_scrollwheel += {io.MouseWheelH, io.MouseWheel};
+
+    float mouse_ratelimit_ms = 33;
+
+    if(is_hovered && mouse_send_ratelimit.get_elapsed_time_s() * 1000. >= mouse_ratelimit_ms)
+    {
+        nlohmann::json data;
+        data["type"] = "update_mouse_to_script";
+        data["id"] = server_id;
+        data["mouse_x"] = mouse_char_pos.x();
+        data["mouse_y"] = mouse_char_pos.y();
+        data["mousewheel_x"] = unprocessed_scrollwheel.x();
+        data["mousewheel_y"] = unprocessed_scrollwheel.y();
+
+        write_data dat;
+        dat.id = -1;
+        dat.data = data.dump();
+
+        send.write_to_websocket(std::move(dat));
+
+        mouse_send_ratelimit.restart();
+        unprocessed_scrollwheel = {0,0};
+    }
+
+    if(io.KeyCtrl && ImGui::IsKeyPressed(io.KeyMap[ImGuiKey_C]))
+    {
+        terminate(send);
+    }
+}
+
+void realtime_script_run2::terminate(connection_send_data& send)
+{
+    open = false;
+
+    nlohmann::json data;
+    data["type"] = "client_terminate_scripts";
+    data["id"] = server_id;
+
+    write_data dat;
+    dat.id = -1;
+    dat.data = data.dump();
+
+    send.write_to_websocket(std::move(dat));
+}
+
 void realtime_script_manager2::render(context& ctx, auto_handler& auto_handle)
 {
     for(auto& i : windows)
     {
         realtime_script_run2& run = i.second;
+
+        if(!run.open)
+            continue;
 
         run.render(ctx, auto_handle);
     }
@@ -1772,6 +1906,8 @@ void realtime_script_manager2::extract_server_commands(font_selector& fonts, nlo
         int id = in["id"];
 
         realtime_script_run2& run = windows[id];
+
+        run.server_id = id;
 
         int width = 0;
         int height = 0;
@@ -1844,6 +1980,8 @@ void realtime_script_manager2::extract_server_commands(font_selector& fonts, nlo
 
         realtime_script_run2& run = windows[id];
 
+        run.server_id = id;
+
         std::map<std::string, ui_element> existing_elements;
 
         for(const ui_element& e : run.stk.elements)
@@ -1905,6 +2043,24 @@ void realtime_script_manager2::extract_server_commands(font_selector& fonts, nlo
 
             run.stk.elements.push_back(elem);
         }
+    }
+}
+
+void realtime_script_manager2::default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send)
+{
+    for(auto& i : windows)
+    {
+        realtime_script_run2& run = i.second;
+
+        if(!run.open && run.open != run.was_open)
+            run.terminate(send);
+
+        run.was_open = run.open;
+
+        if(!run.open)
+            continue;
+
+        run.default_controls(ctx, auto_handle, send);
     }
 }
 

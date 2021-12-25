@@ -4,6 +4,8 @@
 #include <string>
 #include "font_cfg.hpp"
 
+struct generic_backend;
+
 struct context
 {
     std::string user;
@@ -13,6 +15,7 @@ struct context
     bool should_shutdown = false;
 
     font_selector font_select;
+    generic_backend* backend = nullptr;
 };
 
 #endif // CONTEXT_HPP_INCLUDED
