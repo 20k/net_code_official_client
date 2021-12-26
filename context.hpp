@@ -3,6 +3,7 @@
 
 #include <string>
 #include "font_cfg.hpp"
+#include <toolkit/render_window.hpp>
 
 struct generic_backend;
 

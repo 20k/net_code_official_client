@@ -1298,6 +1298,82 @@ main_terminal2::main_terminal2()
     command.cursor_pos_idx = command.command.size();
 }
 
+bool main_terminal2::create_window(context& ctx, vec2f content_size, vec2f in_window_size)
+{
+    ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
+    //ImGui::SetNextWindowSize(ImVec2(in_window_size.x(), in_window_size.y()), ImGuiCond_Appearing);
+
+    int flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove;
+
+    ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
+    ImGui::SetNextWindowPos({window_pos.x(), window_pos.y()});
+    ctx.backend->set_window_position({window_pos.x(), window_pos.y()});
+
+    ImVec4 style_col = ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive);
+
+    ImGui::PushStyleColor(ImGuiCol_TitleBg, style_col);
+    ImGui::PushStyleColor(ImGuiCol_TitleBgCollapsed, style_col);
+
+    bool rendering = ImGui::Begin(" NET_CODE_", &open, flags);
+
+    if(ImGui::IsItemHovered() &&
+       ImGui::IsMouseDragging(0) && !title_dragging && !resize_dragging)
+    {
+        if(!title_dragging)
+        {
+            title_dragging = true;
+            title_start_pos = xy_to_vec(ImGui::GetMainViewport()->Pos);
+        }
+    }
+
+    #ifndef __EMSCRIPTEN__
+    if(ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+    {
+        ctx.backend->set_is_maximised(!ctx.backend->is_maximised());
+    }
+    #endif // __EMSCRIPTEN__
+
+    if(ImGui::BeginMenuBar())
+    {
+        if(ImGui::MenuItem("> New Terminal"))
+        {
+            //terminals.make_new_terminal();
+        }
+
+        ImGui::EndMenuBar();
+    }
+
+    if(title_dragging)
+    {
+        ImVec2 delta = ImGui::GetMouseDragDelta();
+
+        ImVec2 real_pos;
+        real_pos.x = delta.x + title_start_pos.x();
+        real_pos.y = delta.y + title_start_pos.y();
+
+        window_pos = {real_pos.x, real_pos.y};
+
+        ctx.backend->set_window_position({window_pos.x(), window_pos.y()});
+    }
+
+    if(!ImGui::IsMouseDown(0))
+    {
+        title_dragging = false;
+        resize_dragging = false;
+    }
+
+    //printf("Pos %f %f\n", window_pos.x, window_pos.y);
+
+    return rendering;
+}
+
+void main_terminal2::destroy_window()
+{
+    ImGui::End();
+
+    ImGui::PopStyleColor(2);
+}
+
 child_terminal::child_terminal()
 {
     colour_like_terminal = true;

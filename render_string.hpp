@@ -127,6 +127,11 @@ struct main_terminal2 : terminal2
 {
     main_terminal2();
 
+    virtual bool create_window(context& ctx, vec2f content_size, vec2f window_size) override;
+    virtual void destroy_window() override;
+
+    vec2f window_pos;
+
     bool title_dragging = false;
     vec2f title_start_pos;
 
