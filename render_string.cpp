@@ -800,6 +800,8 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
     {
         on_pre_render(ctx, auto_handle, send);
 
+        ImVec2 cursor_screen_pos = ImGui::GetCursorScreenPos();
+
         if(should_reset_scrollbar)
             scrollbar.fraction = 1;
 
@@ -996,7 +998,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
                 float padded_y = from_top_of_window + base_top_offset + title_offset;
 
-                if(top_offset >= visible_y_start - char_size.y() && (top_offset < visible_y_end - (3.5 + trailing_blank_lines) * char_size.y()))
+                if(top_offset >= visible_y_start - char_size.y() && padded_y >= cursor_screen_pos.y && (top_offset < visible_y_end - (3.5 + trailing_blank_lines) * char_size.y()))
                 {
                     process_screen_line(s, sl, padded_y);
                 }
