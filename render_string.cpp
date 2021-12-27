@@ -579,26 +579,7 @@ float get_desired_visible_y_end(ImFont* font, float content_height, int trailing
 
 void driven_scrollbar::adjust_by_lines(ImFont* font, float lines, int trailing_blank_lines)
 {
-    float clamped_ch = max(content_height, 1.f);
-
-    float desired_visible_y_end = get_desired_visible_y_end(font, clamped_ch, trailing_blank_lines);
-
-    float scroll_fraction_at_end = (desired_visible_y_end - window_size.y()) / clamped_ch;
-
-    ///vys = asf * ch + x
-
-    ///dvye = ch + constant
-    ///sfae =
-
-    ///so asf = sfae * scroll_fraction
-    ///and vys = asf * ch
-
-    ///sfae * (scroll_fraction + x) * ch = vys
-    ///sfae * scroll_fraction + x * sfae * ch = vys
-
-    float adjust_pixels = lines * get_char_size(font).y() / max(scroll_fraction_at_end, 0.001f);
-
-    float as_frac = adjust_pixels / clamped_ch;
+    float as_frac = lines * get_char_size(font).y() / max(ImGui::GetScrollMaxY(), 1.f);
 
     fraction += as_frac;
 
