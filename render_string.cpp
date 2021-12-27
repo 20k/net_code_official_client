@@ -461,6 +461,13 @@ void driven_scrollbar::render(ImFont* font, int trailing_blank_lines)
         }
     }
 
+    ImGuiWindow* win = ImGui::GetCurrentWindow();
+
+    if(win->ContentSize.y < win->InnerClipRect.GetHeight() - ImGui::GetStyle().WindowPadding.y * 2 - get_char_size(font).y())
+    {
+        fraction = 1;
+    }
+
     float render_x = ImGui::GetWindowSize().x - width - paddingx;
     float render_y = get_window_title_offset();
 
