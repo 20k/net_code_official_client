@@ -832,6 +832,8 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         ImVec2 cursor_screen_pos = ImGui::GetCursorScreenPos();
 
+        ImGui::Dummy(ImVec2(1, content_height));
+
         if(should_reset_scrollbar)
             scrollbar.fraction = 1;
 
@@ -851,8 +853,6 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         auto_handle.handle_autocompletes(render_command, command.cursor_pos_idx, cursor_offset, command.command);
 
-        //render_command = command_visual_prefix + render_command;
-
         paragraph_string command_line(command_visual_prefix, false, true);
         paragraph_string command_line2(render_command, specials, true);
 
@@ -870,7 +870,9 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         trailing_blank_lines += command_line_height;
 
-        scrollbar.content_height = content_height;
+        ImGui::Dummy(ImVec2(1, trailing_blank_lines * get_char_size(font).y()));
+
+        scrollbar.content_height = ImGui::GetCurrentWindow()->ContentSize.y;
         scrollbar.window_size = window_size;
 
         scrollbar.render(font, trailing_blank_lines);
