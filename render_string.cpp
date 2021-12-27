@@ -778,8 +778,15 @@ void text_manager::render(context& ctx, auto_handler& auto_handle)
 
     vec2f found_window_size = {ImGui::GetWindowSize().x, ImGui::GetWindowSize().y};
 
-    dock_id = ImGui::GetWindowDockID();
-    was_focused = ImGui::IsWindowFocused();
+    if(should_render)
+    {
+        dock_id = ImGui::GetWindowDockID();
+        was_focused = ImGui::IsWindowFocused();
+    }
+    else
+    {
+        was_focused = false;
+    }
 
     float base_left_offset = char_inf::cwbuf + ImGui::GetWindowPos().x + ImGui::GetStyle().FramePadding.x;
     float base_top_offset = ImGui::GetWindowPos().y;
@@ -852,8 +859,8 @@ void text_manager::render(context& ctx, auto_handler& auto_handle)
             }
         }
 
-        ///cancel copying if the titlebar is hovered
-        if(ImGui::IsItemHovered() && !handle.is_dragging())
+        ///cancel copying if window is being dragged
+        if(ImGui::GetCurrentContext()->MovingWindow != nullptr)
         {
             handle.cancelled = true;
         }
@@ -1304,7 +1311,7 @@ bool main_terminal2::create_window(context& ctx, vec2f content_size, vec2f in_wi
     ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
     //ImGui::SetNextWindowSize(ImVec2(in_window_size.x(), in_window_size.y()), ImGuiCond_Appearing);
 
-    int flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove;
+    int flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar;
 
     vec2i real_window_size = ctx.backend->get_window_size();
 
