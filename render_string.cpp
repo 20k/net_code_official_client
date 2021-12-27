@@ -16,6 +16,7 @@
 #include "font_cfg.hpp"
 #include <toolkit/render_window.hpp>
 #include "context.hpp"
+#include "ui_stack.hpp"
 
 vec3f process_colour(vec3f in)
 {
@@ -760,7 +761,7 @@ void add_text(ImDrawList* lst, ImFont* font, ImVec2 pos, ImU32 col, const char* 
     lst->AddText(font, font_size, pos, col, start, fin);
 }
 
-void text_manager::render(context& ctx, auto_handler& auto_handle)
+void text_manager::render(context& ctx, auto_handler& auto_handle, connection_send_data& send)
 {
     float clip_width = get_formatting_clip_width(font, window_size.x(), scrollbar.width);
 
@@ -797,6 +798,8 @@ void text_manager::render(context& ctx, auto_handler& auto_handle)
 
     if(should_render)
     {
+        on_pre_render(ctx, auto_handle, send);
+
         if(should_reset_scrollbar)
             scrollbar.fraction = 1;
 
@@ -1431,13 +1434,13 @@ void terminal_manager2::extract_server_commands(context& ctx, nlohmann::json& in
     }
 }
 
-void terminal_manager2::render(context& ctx, auto_handler& auto_handle)
+void terminal_manager2::render(context& ctx, auto_handler& auto_handle, connection_send_data& send)
 {
-    primary.render(ctx, auto_handle);
+    primary.render(ctx, auto_handle, send);
 
     for(auto& i : secondary)
     {
-        i.render(ctx, auto_handle);
+        i.render(ctx, auto_handle, send);
     }
 }
 
@@ -1679,7 +1682,7 @@ void chat_manager::default_controls(context& ctx, auto_handler& auto_handle, con
     }
 }
 
-void chat_manager::render(context& ctx, auto_handler& auto_handle)
+void chat_manager::render(context& ctx, auto_handler& auto_handle, connection_send_data& send)
 {
     static bool once = file::exists("ui_setup_once_v2");
     static ImGuiID dock_id = -1;
@@ -1712,7 +1715,7 @@ void chat_manager::render(context& ctx, auto_handler& auto_handle)
 
         thread.friendly_name = channel_name;
 
-        thread.render(ctx, auto_handle);
+        thread.render(ctx, auto_handle, send);
 
         ///should this be done unconditionally?
         //if(thread.was_visible)
@@ -1867,20 +1870,20 @@ realtime_script_run2::realtime_script_run2()
     use_type_prompt = false;
 }
 
-bool realtime_script_run2::create_window(context& ctx, vec2f content_size, vec2f in_window_size)
+std::string get_realtime_script_name(realtime_script_run2& in)
 {
-    std::string str = std::to_string(server_id);
+    std::string str = std::to_string(in.server_id);
 
     std::string ext = "###" + str;
 
     std::string title_str = str;
 
-    if(script_name != "")
+    if(in.script_name != "")
     {
-        title_str = script_name;
+        title_str = in.script_name;
     }
 
-    if(is_focused)
+    if(in.is_focused)
     {
         title_str += " (Active)";
     }
@@ -1891,14 +1894,21 @@ bool realtime_script_run2::create_window(context& ctx, vec2f content_size, vec2f
 
     title_str += ext;
 
-    ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
+    return title_str;
+}
+
+bool realtime_script_run2::create_window(context& ctx, vec2f content_size, vec2f in_window_size)
+{
+    std::string window_title = get_realtime_script_name(*this);
+
+    //ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
 
     if(set_size)
         ImGui::SetNextWindowSize(ImVec2(dim.x(), dim.y()), ImGuiCond_Always);
 
     set_size = false;
 
-    bool should_render = ImGui::Begin((title_str + "###" + str).c_str(), &open, ImGuiWindowFlags_NoScrollbar);
+    bool should_render = ImGui::Begin(window_title.c_str(), &open, ImGuiWindowFlags_NoScrollbar);
 
     is_focused = ImGui::IsWindowFocused();
     is_hovered = ImGui::IsWindowHovered();
@@ -1909,6 +1919,11 @@ bool realtime_script_run2::create_window(context& ctx, vec2f content_size, vec2f
 void realtime_script_run2::destroy_window()
 {
     ImGui::End();
+}
+
+void realtime_script_run2::on_pre_render(context& ctx, auto_handler& auto_handle, connection_send_data& send)
+{
+    render_ui_stack(send, current_sequence_id, stk, server_id, true);
 }
 
 void realtime_script_run2::default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send)
@@ -2050,7 +2065,7 @@ void realtime_script_run2::terminate(connection_send_data& send)
     send.write_to_websocket(std::move(dat));
 }
 
-void realtime_script_manager2::render(context& ctx, auto_handler& auto_handle)
+void realtime_script_manager2::render(context& ctx, auto_handler& auto_handle, connection_send_data& send)
 {
     for(auto& i : windows)
     {
@@ -2059,7 +2074,7 @@ void realtime_script_manager2::render(context& ctx, auto_handler& auto_handle)
         if(!run.open)
             continue;
 
-        run.render(ctx, auto_handle);
+        run.render(ctx, auto_handle, send);
     }
 }
 

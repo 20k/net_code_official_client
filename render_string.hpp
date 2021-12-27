@@ -105,9 +105,10 @@ struct text_manager
     void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
     virtual bool create_window(context& ctx, vec2f content_size, vec2f window_size);
     virtual void destroy_window();
+    virtual void on_pre_render(context& ctx, auto_handler& auto_handle, connection_send_data& send){}
     virtual void on_enter_text(context& ctx, std::string_view text, auto_handler& auto_handle, connection_send_data& send);
 
-    void render(context& ctx, auto_handler& auto_handle);
+    void render(context& ctx, auto_handler& auto_handle, connection_send_data& send);
 
     void clear_text();
     void clear_command();
@@ -150,7 +151,7 @@ struct terminal_manager2
     std::vector<child_terminal> secondary;
 
     void extract_server_commands(context& ctx, nlohmann::json& in, auto_handler& auto_handle);
-    void render(context& ctx, auto_handler& auto_handle);
+    void render(context& ctx, auto_handler& auto_handle, connection_send_data& send);
     void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
     void create_new_terminal();
 };
@@ -182,7 +183,7 @@ struct chat_manager
     void add_text(const std::string& channel, const std::vector<std::string>& text);
 
     void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
-    void render(context& ctx, auto_handler& auto_handle);
+    void render(context& ctx, auto_handler& auto_handle, connection_send_data& send);
 };
 
 struct font_selector;
@@ -219,6 +220,7 @@ struct realtime_script_run2 : text_manager
 
     virtual bool create_window(context& ctx, vec2f content_size, vec2f in_window_size) override;
     virtual void destroy_window() override;
+    void on_pre_render(context& ctx, auto_handler& auto_handle, connection_send_data& send);
     void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
     void terminate(connection_send_data& send);
     //void render(connection_send_data& send);
@@ -232,7 +234,7 @@ struct realtime_script_manager2
     void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
     //void render(connection_send_data& send);
 
-    void render(context& ctx, auto_handler& auto_handle);
+    void render(context& ctx, auto_handler& auto_handle, connection_send_data& send);
 };
 
 void test_render_strings();

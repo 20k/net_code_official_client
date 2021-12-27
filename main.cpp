@@ -920,13 +920,13 @@ int main(int argc, char* argv[])
             vec2i window_dim = window.get_window_size();
 
             realtime_scripts2.default_controls(ctx, test_handler, to_write);
-            realtime_scripts2.render(ctx, test_handler);
+            realtime_scripts2.render(ctx, test_handler, to_write);
 
             ctx.terminals.default_controls(ctx, test_handler, to_write);
-            ctx.terminals.render(ctx, test_handler);
+            ctx.terminals.render(ctx, test_handler, to_write);
 
             chat2.default_controls(ctx, test_handler, to_write);
-            chat2.render(ctx, test_handler);
+            chat2.render(ctx, test_handler, to_write);
 
             //test_imgui_term.render(window);
             //realtime_scripts.render_realtime_windows(to_write, was_closed_id, font_select, terminals.auto_handle, window.get_render_settings().is_srgb);

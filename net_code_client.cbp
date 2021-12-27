@@ -457,6 +457,8 @@
 		<Unit filename="text.fglsl" />
 		<Unit filename="tokeniser.cpp" />
 		<Unit filename="tokeniser.hpp" />
+		<Unit filename="ui_stack.cpp" />
+		<Unit filename="ui_stack.hpp" />
 		<Unit filename="util.hpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />

@@ -7,6 +7,7 @@
 #include "auto_handlers.hpp"
 #include "format_cache.hpp"
 #include <toolkit/clock.hpp>
+#include "ui_stack.hpp"
 
 #define MAX_TEXT_HISTORY 200
 #include <imgui/imgui.h>
@@ -27,28 +28,6 @@ struct scrollbar_hack
     bool should_update_scroll = false;
 
     void do_hack(int approx_num, bool set_scrollbar, format_cache_2& cache, vec2f dim);
-};
-
-struct ui_element
-{
-    std::string type;
-    std::string element_id;
-    std::vector<nlohmann::json> arguments;
-    uint64_t authoritative_until_sequence_id = 0;
-
-    bool was_hovered = false;
-    bool was_active = false;
-    bool was_focused = false;
-    bool was_visible = false;
-    bool was_return_true = false;
-
-    bool last_treenode_state = false;
-};
-
-struct ui_stack
-{
-    std::vector<ui_element> elements;
-    std::vector<std::string> typelist;
 };
 
 struct realtime_script_run
