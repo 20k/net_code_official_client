@@ -764,7 +764,7 @@ void text_manager::default_controls(context& ctx, auto_handler& auto_handle, con
 
 bool text_manager::create_window(context& ctx, vec2f content_size, vec2f create_window_size)
 {
-    ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
+    //ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
     ImGui::SetNextWindowSize(ImVec2(create_window_size.x(), create_window_size.y()), ImGuiCond_Appearing);
 
     int flags = ImGuiWindowFlags_NoScrollbar;
@@ -948,40 +948,11 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         float scroll_fraction = scrollbar.fraction;
 
-        float adjusted_scroll_fraction = scroll_fraction;
-
-        if(full_content_size > 0)
-        {
-            ///so, when scroll_fraction is 1, we want visible_y_end to be lines.size() * size + padding
-            float desired_visible_y_end = get_desired_visible_y_end(font, full_content_size, trailing_blank_lines);
-
-            ///vye = scroll_fraction * full_content_size + window_size.y()
-            ///(vye - window_size.y()) / full_content_size = scroll_fraction
-
-            float scroll_fraction_at_end = (desired_visible_y_end - window_size.y()) / full_content_size;
-
-            adjusted_scroll_fraction = scroll_fraction_at_end * scroll_fraction;
-        }
-
         if(scroll_fraction < 1)
             scrollbar_at_bottom = false;
 
         if(scroll_fraction == 1)
             scrollbar_at_bottom = true;
-
-        ///in pixels
-        /*float visible_y_start = adjusted_scroll_fraction * full_content_size;
-        float visible_y_end = visible_y_start + window_size.y();*/
-
-        float visible_y_start = cursor_pos.y;
-
-        printf("Render offset %f\n", visible_y_start);
-
-        float visible_y_end = GetCursorPos2().y;
-
-        printf("Current end %f\n", visible_y_end);
-
-        printf("Content Height %f\n", content_height);
 
         float current_pixel_y = cursor_screen_pos.y;
 
@@ -1378,7 +1349,7 @@ main_terminal2::main_terminal2()
 
 bool main_terminal2::create_window(context& ctx, vec2f content_size, vec2f in_window_size)
 {
-    ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
+    //ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
     //ImGui::SetNextWindowSize(ImVec2(in_window_size.x(), in_window_size.y()), ImGuiCond_Appearing);
 
     int flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
@@ -1616,7 +1587,7 @@ bool chat_thread2::create_window(context& ctx, vec2f content_size, vec2f create_
 {
     create_window_size = {500, 300};
 
-    ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
+    //ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
     ImGui::SetNextWindowSize(ImVec2(create_window_size.x(), create_window_size.y()), ImGuiCond_Appearing);
 
     int flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoScrollWithMouse;
