@@ -731,27 +731,18 @@ int main(int argc, char* argv[])
             float scroll_y = io.MouseWheel;
             //float scroll_x = io.MouseWheelH;
 
-            for(int i : mouse_pressed_data)
+            if(ImGui::IsMouseClicked(0))
             {
-                if(i == 0)
-                {
-                    get_global_copy_handler()->on_lclick(cursor_pos);
-                    get_global_copy_handler2().on_lclick(cursor_pos);
-                }
+                get_global_copy_handler2().on_lclick(cursor_pos);
             }
 
-            for(int i : mouse_released_data)
+            if(ImGui::IsMouseReleased(0))
             {
-                if(i == 0)
-                {
-                    get_global_copy_handler()->on_lclick_release(cursor_pos);
-                    get_global_copy_handler2().on_lclick_release(cursor_pos);
-                }
+                get_global_copy_handler2().on_lclick_release(cursor_pos);
             }
 
             if(!ImGui::IsMouseDown(0))
             {
-                get_global_copy_handler()->on_no_lclick();
                 get_global_copy_handler2().on_no_lclick();
             }
 
