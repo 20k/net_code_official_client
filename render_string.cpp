@@ -533,11 +533,18 @@ void driven_scrollbar::render(ImFont* font, int trailing_blank_lines)
         float mouse_position_at_0 = tl.y + scrollbar_height/2.f;
         float mouse_position_at_1 = tl.y + scroll_height - scrollbar_height/2.f;
 
-        float mouse_y_fraction = (mouse_y - mouse_position_at_0) / (mouse_position_at_1 - mouse_position_at_0);
+        float mouse_y_fraction = (mouse_y - mouse_position_at_0) / max(mouse_position_at_1 - mouse_position_at_0, 1.f);
 
         fraction = mouse_y_fraction;
 
         fraction = clamp(fraction, 0.f, 1.f);
+    }
+
+    {
+        float max_scroll = ImGui::GetScrollMaxY();
+        float of_max_scroll = fraction * max_scroll;
+
+        ImGui::SetScrollY(of_max_scroll);
     }
 }
 
@@ -561,9 +568,11 @@ float get_desired_visible_y_end(ImFont* font, float content_height, int trailing
 
 void driven_scrollbar::adjust_by_lines(ImFont* font, float lines, int trailing_blank_lines)
 {
-    float desired_visible_y_end = get_desired_visible_y_end(font, content_height, trailing_blank_lines);
+    float clamped_ch = max(content_height, 0.f);
 
-    float scroll_fraction_at_end = (desired_visible_y_end - window_size.y()) / content_height;
+    float desired_visible_y_end = get_desired_visible_y_end(font, clamped_ch, trailing_blank_lines);
+
+    float scroll_fraction_at_end = (desired_visible_y_end - window_size.y()) / clamped_ch;
 
     ///vys = asf * ch + x
 
@@ -576,9 +585,9 @@ void driven_scrollbar::adjust_by_lines(ImFont* font, float lines, int trailing_b
     ///sfae * (scroll_fraction + x) * ch = vys
     ///sfae * scroll_fraction + x * sfae * ch = vys
 
-    float adjust_pixels = lines * get_char_size(font).y() / scroll_fraction_at_end;
+    float adjust_pixels = lines * get_char_size(font).y() / max(scroll_fraction_at_end, 0.001f);
 
-    float as_frac = adjust_pixels / content_height;
+    float as_frac = adjust_pixels / clamped_ch;
 
     fraction += as_frac;
 
@@ -1927,7 +1936,7 @@ bool realtime_script_run2::create_window(context& ctx, vec2f content_size, vec2f
 
     set_size = false;
 
-    bool should_render = ImGui::Begin(window_title.c_str(), &open, ImGuiWindowFlags_NoScrollbar);
+    bool should_render = ImGui::Begin(window_title.c_str(), &open, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
     is_focused = ImGui::IsWindowFocused();
     is_hovered = ImGui::IsWindowHovered();
