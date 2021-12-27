@@ -1305,6 +1305,9 @@ bool main_terminal2::create_window(context& ctx, vec2f content_size, vec2f in_wi
 
     int flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove;
 
+    vec2i real_window_size = ctx.backend->get_window_size();
+
+    ImGui::SetNextWindowSize(ImVec2(real_window_size.x(), real_window_size.y()));
     ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
     ImGui::SetNextWindowPos({window_pos.x(), window_pos.y()});
     ctx.backend->set_window_position({window_pos.x(), window_pos.y()});
@@ -1313,6 +1316,9 @@ bool main_terminal2::create_window(context& ctx, vec2f content_size, vec2f in_wi
 
     ImGui::PushStyleColor(ImGuiCol_TitleBg, style_col);
     ImGui::PushStyleColor(ImGuiCol_TitleBgCollapsed, style_col);
+
+    ImVec4 resize_col = ImGui::GetStyleColorVec4(ImGuiCol_ResizeGrip);
+    ImU32 resize_colu32 = ImGui::ColorConvertFloat4ToU32(resize_col);
 
     bool rendering = ImGui::Begin(" NET_CODE_", &open, flags);
 
@@ -1356,11 +1362,44 @@ bool main_terminal2::create_window(context& ctx, vec2f content_size, vec2f in_wi
         ctx.backend->set_window_position({window_pos.x(), window_pos.y()});
     }
 
+    vec2f label_br = window_pos + window_size;
+    vec2f label_tl = label_br - (vec2f){30, 30};
+
+    bool hovering_label = ImGui::IsMouseHoveringRect({label_tl.x(), label_tl.y()}, {label_br.x(), label_br.y()}, true);
+
+    if(hovering_label || resize_dragging)
+        resize_colu32 = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_ResizeGripActive));
+
+    if(hovering_label)
+    {
+        if(ImGui::IsMouseDragging(0) && !title_dragging && !resize_dragging)
+        {
+            if(!resize_dragging)
+            {
+                resize_dragging = true;
+                resize_start_pos = {window_size.x(), window_size.y()};
+            }
+        }
+    }
+
+    if(resize_dragging)
+    {
+        ImVec2 delta = ImGui::GetMouseDragDelta();
+
+        int width = delta.x + resize_start_pos.x();
+        int height = delta.y + resize_start_pos.y();
+
+        if(width >= 50 && height >= 50)
+            ctx.backend->resize({width, height});
+    }
+
     if(!ImGui::IsMouseDown(0))
     {
         title_dragging = false;
         resize_dragging = false;
     }
+
+    ImGui::GetWindowDrawList()->AddTriangleFilled({label_tl.x(), label_br.y()}, {label_br.x(), label_br.y()}, {label_br.x(), label_tl.y()}, resize_colu32);
 
     //printf("Pos %f %f\n", window_pos.x, window_pos.y);
 
