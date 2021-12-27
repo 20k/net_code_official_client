@@ -795,15 +795,6 @@ void add_text(ImDrawList* lst, ImFont* font, ImVec2 pos, ImU32 col, const char* 
     lst->AddText(font, font_size, pos, col, start, fin);
 }
 
-ImVec2 GetCursorPos2()
-{
-    ImVec2 v1 = ImGui::GetCursorScreenPos();
-
-    ImVec2 v2 = ImGui::GetWindowPos();
-
-    return {v1.x - v2.x, v1.y - v2.y};
-}
-
 void text_manager::render(context& ctx, auto_handler& auto_handle, connection_send_data& send)
 {
     float clip_width = get_formatting_clip_width(font, window_size.x(), scrollbar.width);
@@ -845,7 +836,6 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         on_pre_render(ctx, auto_handle, send);
 
-        ImVec2 cursor_pos = GetCursorPos2();
         ImVec2 cursor_screen_pos = ImGui::GetCursorScreenPos();
 
         if(should_reset_scrollbar)
