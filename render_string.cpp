@@ -832,8 +832,6 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
     if(should_render)
     {
-        ImGui::Text("Hello there");
-
         on_pre_render(ctx, auto_handle, send);
 
         ImVec2 cursor_screen_pos = ImGui::GetCursorScreenPos();
