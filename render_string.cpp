@@ -431,6 +431,8 @@ float get_window_title_offset()
 
 void driven_scrollbar::render(ImFont* font, int trailing_blank_lines)
 {
+    ImVec2 cursor_backup = ImGui::GetCursorScreenPos();
+
     float paddingx = ImGui::GetStyle().FramePadding.x;
     float paddingy = ImGui::GetStyle().FramePadding.y + 16;
 
@@ -553,6 +555,8 @@ void driven_scrollbar::render(ImFont* font, int trailing_blank_lines)
 
         ImGui::SetScrollY(of_max_scroll);
     }
+
+    ImGui::SetCursorScreenPos(cursor_backup);
 }
 
 void driven_scrollbar::adjust_by_px(float py)
@@ -575,7 +579,7 @@ float get_desired_visible_y_end(ImFont* font, float content_height, int trailing
 
 void driven_scrollbar::adjust_by_lines(ImFont* font, float lines, int trailing_blank_lines)
 {
-    float clamped_ch = max(content_height, 0.f);
+    float clamped_ch = max(content_height, 1.f);
 
     float desired_visible_y_end = get_desired_visible_y_end(font, clamped_ch, trailing_blank_lines);
 
@@ -791,6 +795,15 @@ void add_text(ImDrawList* lst, ImFont* font, ImVec2 pos, ImU32 col, const char* 
     lst->AddText(font, font_size, pos, col, start, fin);
 }
 
+ImVec2 GetCursorPos2()
+{
+    ImVec2 v1 = ImGui::GetCursorScreenPos();
+
+    ImVec2 v2 = ImGui::GetWindowPos();
+
+    return {v1.x - v2.x, v1.y - v2.y};
+}
+
 void text_manager::render(context& ctx, auto_handler& auto_handle, connection_send_data& send)
 {
     float clip_width = get_formatting_clip_width(font, window_size.x(), scrollbar.width);
@@ -828,8 +841,11 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
     if(should_render)
     {
+        ImGui::Text("Hello there");
+
         on_pre_render(ctx, auto_handle, send);
 
+        ImVec2 cursor_pos = GetCursorPos2();
         ImVec2 cursor_screen_pos = ImGui::GetCursorScreenPos();
 
         ImGui::Dummy(ImVec2(1, content_height));
@@ -872,7 +888,9 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         ImGui::Dummy(ImVec2(1, trailing_blank_lines * get_char_size(font).y()));
 
-        scrollbar.content_height = ImGui::GetCurrentWindow()->ContentSize.y;
+        float full_content_size = ImGui::GetCurrentWindow()->ContentSize.y;
+
+        scrollbar.content_height = full_content_size;
         scrollbar.window_size = window_size;
 
         scrollbar.render(font, trailing_blank_lines);
@@ -932,15 +950,15 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         float adjusted_scroll_fraction = scroll_fraction;
 
-        if(content_height > 0)
+        if(full_content_size > 0)
         {
             ///so, when scroll_fraction is 1, we want visible_y_end to be lines.size() * size + padding
-            float desired_visible_y_end = get_desired_visible_y_end(font, content_height, trailing_blank_lines);
+            float desired_visible_y_end = get_desired_visible_y_end(font, full_content_size, trailing_blank_lines);
 
-            ///vye = scroll_fraction * content_height + window_size.y()
-            ///(vye - window_size.y()) / content_height = scroll_fraction
+            ///vye = scroll_fraction * full_content_size + window_size.y()
+            ///(vye - window_size.y()) / full_content_size = scroll_fraction
 
-            float scroll_fraction_at_end = (desired_visible_y_end - window_size.y()) / content_height;
+            float scroll_fraction_at_end = (desired_visible_y_end - window_size.y()) / full_content_size;
 
             adjusted_scroll_fraction = scroll_fraction_at_end * scroll_fraction;
         }
@@ -952,10 +970,20 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
             scrollbar_at_bottom = true;
 
         ///in pixels
-        float visible_y_start = adjusted_scroll_fraction * content_height;
-        float visible_y_end = visible_y_start + window_size.y();
+        /*float visible_y_start = adjusted_scroll_fraction * full_content_size;
+        float visible_y_end = visible_y_start + window_size.y();*/
 
-        float current_pixel_y = 0;
+        float visible_y_start = cursor_pos.y;
+
+        printf("Render offset %f\n", visible_y_start);
+
+        float visible_y_end = GetCursorPos2().y;
+
+        printf("Current end %f\n", visible_y_end);
+
+        printf("Content Height %f\n", content_height);
+
+        float current_pixel_y = cursor_screen_pos.y;
 
         vec2f cdim = get_char_size(font);
 
@@ -1028,13 +1056,15 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
         {
             for(const screen_line& sl : s.lines)
             {
-                float top_offset = current_pixel_y;
+                float padded_y = current_pixel_y;
+
+                /*float top_offset = current_pixel_y;
 
                 float from_top_of_window = top_offset - visible_y_start;
 
                 float padded_y = from_top_of_window + base_top_offset + title_offset;
 
-                if(top_offset >= visible_y_start - char_size.y() && padded_y >= cursor_screen_pos.y && (top_offset < visible_y_end - (3.5 + trailing_blank_lines) * char_size.y()))
+                if(top_offset >= visible_y_start - char_size.y() && padded_y >= cursor_screen_pos.y && (top_offset < visible_y_end - (3.5 + trailing_blank_lines) * char_size.y()))*/
                 {
                     process_screen_line(s, sl, padded_y);
                 }
@@ -1351,7 +1381,7 @@ bool main_terminal2::create_window(context& ctx, vec2f content_size, vec2f in_wi
     ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
     //ImGui::SetNextWindowSize(ImVec2(in_window_size.x(), in_window_size.y()), ImGuiCond_Appearing);
 
-    int flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar;
+    int flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 
     vec2i real_window_size = ctx.backend->get_window_size();
 
@@ -1589,7 +1619,7 @@ bool chat_thread2::create_window(context& ctx, vec2f content_size, vec2f create_
     ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
     ImGui::SetNextWindowSize(ImVec2(create_window_size.x(), create_window_size.y()), ImGuiCond_Appearing);
 
-    int flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoFocusOnAppearing;
+    int flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoScrollWithMouse;
 
     std::string unfriendly_name = friendly_name + "###" + friendly_name + "$";
 
