@@ -9,10 +9,10 @@
 #include "editable_string.hpp"
 #include <networking/networking.hpp>
 #include <nlohmann/json.hpp>
-#include "context.hpp"
 #include "imgui_ui_components.hpp"
 
 struct ImFont;
+struct context;
 
 ///so. Wants to be a single paragraph of text, prebroken up into render units
 ///wants to be split up into screen sized lines, each of a known length, so its easy to reformat if the screen resizes
@@ -142,6 +142,17 @@ struct main_terminal2 : terminal2
 struct child_terminal : terminal2
 {
     child_terminal();
+};
+
+struct terminal_manager2
+{
+    main_terminal2 primary;
+    std::vector<child_terminal> secondary;
+
+    void extract_server_commands(context& ctx, nlohmann::json& in, auto_handler& auto_handle);
+    void render(context& ctx, auto_handler& auto_handle);
+    void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
+    void create_new_terminal();
 };
 
 struct chat_thread2 : text_manager

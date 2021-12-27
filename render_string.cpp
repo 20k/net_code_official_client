@@ -15,6 +15,7 @@
 #include <libncclient/nc_util.hpp>
 #include "font_cfg.hpp"
 #include <toolkit/render_window.hpp>
+#include "context.hpp"
 
 vec3f process_colour(vec3f in)
 {
@@ -1343,7 +1344,7 @@ bool main_terminal2::create_window(context& ctx, vec2f content_size, vec2f in_wi
     {
         if(ImGui::MenuItem("> New Terminal"))
         {
-            //terminals.make_new_terminal();
+            ctx.terminals.create_new_terminal();
         }
 
         ImGui::EndMenuBar();
@@ -1411,6 +1412,49 @@ void main_terminal2::destroy_window()
     ImGui::End();
 
     ImGui::PopStyleColor(2);
+}
+
+void terminal_manager2::extract_server_commands(context& ctx, nlohmann::json& in, auto_handler& auto_handle)
+{
+    primary.extract_server_commands(ctx, in, auto_handle);
+
+    for(auto& i : secondary)
+    {
+        i.extract_server_commands(ctx, in, auto_handle);
+    }
+}
+
+void terminal_manager2::render(context& ctx, auto_handler& auto_handle)
+{
+    primary.render(ctx, auto_handle);
+
+    for(auto& i : secondary)
+    {
+        i.render(ctx, auto_handle);
+    }
+}
+
+void terminal_manager2::default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send)
+{
+    primary.default_controls(ctx, auto_handle, send);
+
+    for(auto& i : secondary)
+    {
+        i.default_controls(ctx, auto_handle, send);
+    }
+}
+
+void terminal_manager2::create_new_terminal()
+{
+    int max_id = 1;
+
+    for(auto& i : secondary)
+    {
+        max_id = std::max(i.tag, max_id);
+    }
+
+    child_terminal& child = secondary.emplace_back();
+    child.tag = max_id + 1;
 }
 
 child_terminal::child_terminal()

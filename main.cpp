@@ -61,6 +61,7 @@
 
 #include "render_string.hpp"
 #include "script_transfer.hpp"
+#include "context.hpp"
 
 std::string make_lower(std::string in)
 {
@@ -408,15 +409,13 @@ int main(int argc, char* argv[])
 
     auto_handler test_handler;
 
-    main_terminal2 main_terminal;
-
     chat_manager chat2;
 
     realtime_script_manager2 realtime_scripts2;
 
     //while(running)
     #ifndef __EMSCRIPTEN__
-    while(!window.should_close() && terminals.main_terminal.open)
+    while(!window.should_close() && ctx.terminals.primary.open)
     #else
     hptr = [&]()
     #endif
@@ -1296,12 +1295,13 @@ int main(int argc, char* argv[])
 
                 process_text_from_server(terminals, auth_manage, ctx.root_user, data, chat_win, font_select, realtime_scripts);
 
-                filter_down_handling(main_terminal, data);
+                filter_down_handling(ctx.terminals.primary, data);
+
+                ctx.terminals.extract_server_commands(ctx, data, test_handler);
                 realtime_scripts2.extract_server_commands(font_select, data);
                 test_handler.extract_server_commands(data);
-                main_terminal.extract_server_commands(ctx, data, test_handler);
                 chat2.extract_server_commands(data);
-                auth_manage.extract_server_commands(main_terminal, data);
+                auth_manage.extract_server_commands(ctx.terminals.primary, data);
             }
 
             if(write_clock.get_elapsed_time_s() > 5 && (!terminals.all_cache_valid() || chat_win.any_cache_invalid()))
@@ -1377,8 +1377,8 @@ int main(int argc, char* argv[])
             realtime_scripts2.default_controls(ctx, test_handler, to_write);
             realtime_scripts2.render(ctx, test_handler);
 
-            main_terminal.default_controls(ctx, test_handler, to_write);
-            main_terminal.render(ctx, test_handler);
+            ctx.terminals.default_controls(ctx, test_handler, to_write);
+            ctx.terminals.render(ctx, test_handler);
 
             chat2.default_controls(ctx, test_handler, to_write);
             chat2.render(ctx, test_handler);

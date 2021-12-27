@@ -3,7 +3,7 @@
 
 #include <string>
 #include "font_cfg.hpp"
-#include <toolkit/render_window.hpp>
+#include "render_string.hpp"
 
 struct generic_backend;
 
@@ -17,6 +17,7 @@ struct context
 
     font_selector font_select;
     generic_backend* backend = nullptr;
+    terminal_manager2 terminals;
 };
 
 #endif // CONTEXT_HPP_INCLUDED
