@@ -97,7 +97,7 @@ void auth_manager::check(steamapi& s_api, connection_send_data& to_write, const 
     }
 }
 
-void auth_manager::display(terminal_manager& terminals, steamapi& s_api, connection_send_data& to_write, const std::string& current_user)
+void auth_manager::display(terminal2& term, steamapi& s_api, connection_send_data& to_write, const std::string& current_user)
 {
     if(am_authenticated)
         return;
@@ -136,7 +136,7 @@ void auth_manager::display(terminal_manager& terminals, steamapi& s_api, connect
 
                 if(should_display_dialogue)
                 {
-                    terminals.main_terminal.add_text("Something went wrong, try again", terminals.auto_handle);
+                    term.add_main_text("Something went wrong, try again");
                 }
             }
         }

@@ -713,26 +713,7 @@ int main(int argc, char* argv[])
 
             unprocessed_frames = 0;
 
-            /*if(font_select.update_rebuild(window, font_select.current_base_font_size))
-            {
-                term.invalidate();
-            }*/
-
             vec2f cursor_pos = {io.MousePos.x, io.MousePos.y};
-
-            for(int i=0; i < (int)(sizeof(curKeysDown) / sizeof(curKeysDown[0])); i++)
-            {
-                ///this isn't working correctly on emscripten, probably due to the callback issue
-                if((curKeysDown[i] && !lastKeysDown[i]) || ImGui::IsKeyPressed(i))
-                {
-                    glfw_key_pressed_data.push_back(i);
-                }
-
-                if(!curKeysDown[i] && lastKeysDown[i])
-                {
-                    glfw_key_released_data.push_back(i);
-                }
-            }
 
             for(int i=0; i < (int)(sizeof(curMouseDown) / sizeof(curMouseDown[0])); i++)
             {
@@ -750,167 +731,10 @@ int main(int argc, char* argv[])
             float scroll_y = io.MouseWheel;
             //float scroll_x = io.MouseWheelH;
 
-            std::vector<uint32_t> input_utf32;
-
-            for(auto& i : io.InputQueueCharacters)
-            {
-                input_utf32.push_back(i);
-            }
-
-            for(uint32_t i : input_utf32)
-            {
-                if(i <= 126 && i >= 32)
-                {
-                    std::u32string utf32;
-                    utf32.push_back(i);
-
-                    std::string utf8;
-
-                    std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> cvt;
-
-                    utf8 = cvt.to_bytes(utf32);
-
-                    to_edit->add_to_command(i);
-
-                    last_line_invalidate_everything(terminals, chat_win);
-
-                    realtime_str.push_back(utf8);
-                }
-            }
-
-            for(int i : glfw_key_pressed_data)
-            {
-                if(auto val = backend->get_key_name(i); val != "")
-                    on_pressed.push_back(val);
-
-                last_line_invalidate_everything(terminals, chat_win);
-
-                if(i == io.KeyMap[ImGuiKey_Backspace])
-                {
-                    if(io.KeyCtrl)
-                    {
-                        for(int kk=0; kk < 5; kk++)
-                            to_edit->process_backspace();
-                    }
-                    else
-                    {
-                        to_edit->process_backspace();
-                    }
-                }
-
-                if(i == io.KeyMap[ImGuiKey_Delete])
-                {
-                    if(io.KeyCtrl)
-                    {
-                        for(int kk=0; kk < 5; kk++)
-                            to_edit->process_delete();
-                    }
-                    else
-                    {
-                        to_edit->process_delete();
-                    }
-                }
-
-                if(i == io.KeyMap[ImGuiKey_UpArrow])
-                {
-                    to_edit->move_command_history_idx(-1);
-                }
-
-                if(i == io.KeyMap[ImGuiKey_DownArrow])
-                {
-                    to_edit->move_command_history_idx(1);
-                }
-
-                if(i == io.KeyMap[ImGuiKey_LeftArrow])
-                {
-                    if(!io.KeyCtrl)
-                        to_edit->move_cursor(-1);
-                    else
-                        to_edit->move_cursor(-5);
-                }
-
-                if(i == io.KeyMap[ImGuiKey_RightArrow])
-                {
-                    if(!io.KeyCtrl)
-                        to_edit->move_cursor(1);
-                    else
-                        to_edit->move_cursor(5);
-                }
-
-                if(i == io.KeyMap[ImGuiKey_Home])
-                {
-                    to_edit->move_cursor(-(int)to_edit->command.size());
-                }
-
-                if(i == io.KeyMap[ImGuiKey_End])
-                {
-                    to_edit->move_cursor(to_edit->command.size());
-                }
-
-                if(i == io.KeyMap[ImGuiKey_Escape])
-                {
-                    to_edit->clear_command();
-                }
-
-                if(i == io.KeyMap[ImGuiKey_V])
-                {
-                    if(io.KeyCtrl)
-                    {
-                        std::string add_text = clipboard::get();
-
-                        for(auto& c : add_text)
-                        {
-                            to_edit->add_to_command(c);
-                        }
-                    }
-                }
-
-                if(i == GLFW_KEY_F1)
-                {
-                    font_select.is_open = !font_select.is_open;
-                }
-
-                if(i == io.KeyMap[ImGuiKey_Enter] || i == io.KeyMap[ImGuiKey_KeyPadEnter])
-                {
-                    if(to_edit != &realtime_shim && to_edit != &no_string)
-                    {
-                        if(!io.KeyCtrl && !io.KeyShift)
-                            enter = true;
-                        else
-                            to_edit->add_to_command('\n');
-                    }
-                    else
-                        to_edit->add_to_command('\n');
-                }
-            }
-
-            for(int i : glfw_key_released_data)
-            {
-                if(auto val = backend->get_key_name(i); val != "")
-                    on_released.push_back(val);
-            }
-
             for(int i : mouse_pressed_data)
             {
-                if(mouse_map.find(i) != mouse_map.end())
-                    on_pressed.push_back(mouse_map[i]);
-
-                if(i == 1)
-                {
-                    std::string add_text = clipboard::get();
-
-                    for(auto& c : add_text)
-                    {
-                        to_edit->add_to_command(c);
-                    }
-
-                    last_line_invalidate_everything(terminals, chat_win);
-                }
-
                 if(i == 0)
                 {
-                    last_line_invalidate_everything(terminals, chat_win);
-
                     get_global_copy_handler()->on_lclick(cursor_pos);
                     get_global_copy_handler2().on_lclick(cursor_pos);
                 }
@@ -918,13 +742,8 @@ int main(int argc, char* argv[])
 
             for(int i : mouse_released_data)
             {
-                if(mouse_map.find(i) != mouse_map.end())
-                    on_released.push_back(mouse_map[i]);
-
                 if(i == 0)
                 {
-                    last_line_invalidate_everything(terminals, chat_win);
-
                     get_global_copy_handler()->on_lclick_release(cursor_pos);
                     get_global_copy_handler2().on_lclick_release(cursor_pos);
                 }
@@ -1000,13 +819,6 @@ int main(int argc, char* argv[])
             //if(realtime_scripts.get_id_of_focused_realtime_window() == -1)
             //    script_mousewheel_delta = 0;
 
-            terminals.main_terminal.scroll_hack.scrolled_this_frame = mouse_delta;
-
-            for(auto& i : terminals.sub_terminals)
-            {
-                i.second.scroll_hack.scrolled_this_frame = mouse_delta;
-            }
-
             for(auto& i : chat_win.chat_threads)
             {
                 i.second.scroll_hack.scrolled_this_frame = mouse_delta;
@@ -1019,7 +831,7 @@ int main(int argc, char* argv[])
 
             ImGui::PushFont(font_select.get_base_font());
 
-            auth_manage.display(terminals, s_api, to_write, ctx.root_user);
+            auth_manage.display(ctx.terminals.primary, s_api, to_write, ctx.root_user);
 
             font_select.render(window);
 
@@ -1027,248 +839,6 @@ int main(int argc, char* argv[])
             {
                 ImGui::SetStyleLinearColor(window_ctx.is_srgb);
             }*/
-
-            terminals.main_terminal.check_insert_user_command();
-
-            if(starts_with(to_edit->command, "user user ") && terminals.get_focused_terminal()->focused)
-            {
-                if((int)to_edit->command.size() > (int)strlen("user "))
-                {
-                    for(int i=0; i < (int)strlen("user "); i++)
-                    {
-                        to_edit->command.erase(to_edit->command.begin());
-                        to_edit->cursor_pos_idx = to_edit->command.size();
-                    }
-                }
-            }
-
-            if(enter && to_edit->command.size() > 0)
-            {
-                terminal_imgui& term = *terminals.get_focused_terminal();
-
-                if(term.focused)
-                {
-                    term.consider_resetting_scrollbar = true;
-                }
-
-                if(!chat_win.focused)
-                    to_edit->command = strip_whitespace(to_edit->command);
-
-                to_edit->push_command_to_history(to_edit->command);
-
-                /*std::string swapping_users = "user ";
-
-                if(term.focused && term.command.command.substr(0, swapping_users.length()) == swapping_users)
-                {
-                    std::vector<std::string> spl = no_ss_split(term.command.command, " ");
-
-                    ///HACK ALERT
-                    ///NEED TO WAIT FOR SERVER CONFIRMATION
-                    if(spl.size() >= 2)
-                    {
-                        current_user = spl[1];
-                    }
-                }*/
-
-                if(term.focused)
-                {
-                    term.cache.invalidate();
-
-                    if(!is_local_command(term.command.command))
-                    {
-                        std::string up_data = default_up_handling(ctx.root_user, term.command.command, get_scripts_directory(ctx.root_user) + "/");
-
-                        nlohmann::json data;
-                        data["type"] = "generic_server_command";
-                        data["data"] = up_data;
-
-                        if(terminals.get_focused_terminal_id() > 0)
-                        {
-                            data["tag"] = terminals.get_focused_terminal_id();
-                        }
-
-                        write_data dat;
-                        dat.id = -1;
-                        dat.data = data.dump();
-
-                        to_write.write_to_websocket(std::move(dat));
-                    }
-                }
-                else
-                {
-                    std::string command = "";
-
-                    std::optional<chat_thread*> thrd = chat_win.get_focused_chat_thread();
-
-                    if(thrd.has_value())
-                    {
-                        command = thrd.value()->command.command;
-                        thrd.value()->cache.invalidate();
-                    }
-
-                    bool bump = false;
-
-                    if(command == "/join")
-                    {
-                        term.add_text("Syntax is /join channel password", terminals.auto_handle);
-                        bump = true;
-                    }
-                    else if(command == "/leave")
-                    {
-                        term.add_text("Syntax is /leave channel", terminals.auto_handle);
-                        bump = true;
-                    }
-                    else if(command == "/create")
-                    {
-                        term.add_text("Syntax is /create channel password", terminals.auto_handle);
-                        bump = true;
-                    }
-                    else if(starts_with(command, "/"))
-                    {
-                        bump = true;
-
-                        int idx = 0;
-
-                        for(; idx < (int)command.size() && command[idx] != ' '; idx++);
-
-                        if(idx + 1 >= (int)command.size())
-                        {
-                            term.add_text("First argument must be a channel name, eg /join global", terminals.auto_handle);
-                        }
-                        else
-                        {
-                            idx++;
-
-                            std::string channel_name;
-
-                            for(; idx < (int)command.size() && command[idx] != ' '; idx++)
-                            {
-                                channel_name.push_back(command[idx]);
-                            }
-
-                            std::string channel_password;
-
-                            if(idx + 1 < (int)command.size())
-                            {
-                                idx++;
-
-                                ///password may include whitespace
-                                for(; idx < (int)command.size(); idx++)
-                                {
-                                    channel_password.push_back(command[idx]);
-                                }
-                            }
-
-                            std::string args = "{name:\"" + escape_str(channel_name) + "\"";
-
-                            if(channel_password != "")
-                            {
-                                args += ", password:\"" + escape_str(channel_password) + "\"}";
-                            }
-                            else
-                            {
-                                args += "}";
-                            }
-
-                            std::string final_command;
-
-                            if(starts_with(command, "/join"))
-                            {
-                                final_command = "#channel.join(" + args + ")";
-                            }
-                            else if(starts_with(command, "/leave"))
-                            {
-                                final_command = "#channel.leave(" + args + ")";
-                            }
-                            else if(starts_with(command, "/create"))
-                            {
-                                final_command = "#channel.create(" + args + ")";
-                            }
-                            else
-                            {
-                                term.add_text("Not a valid command, try /join, /leave or /create", terminals.auto_handle);
-                            }
-
-                            if(final_command != "")
-                            {
-                                nlohmann::json data;
-                                data["type"] = "client_chat";
-                                data["respond"] = 1;
-                                data["data"] = final_command;
-
-                                write_data dat;
-                                dat.id = -1;
-                                dat.data = data.dump();
-
-                                to_write.write_to_websocket(std::move(dat));
-                            }
-                        }
-                    }
-                    else if(has_chat_window)
-                    {
-                        std::optional<chat_thread*> focused_thread = chat_win.get_focused_chat_thread();
-
-                        if(focused_thread.has_value())
-                        {
-                            std::string escaped_string = escape_str(focused_thread.value()->command.command);
-
-                            nlohmann::json data;
-                            data["type"] = "client_chat";
-                            data["data"] = "#hs.msg.send({channel:\"" + focused_thread.value()->name + "\", msg:\"" + escaped_string + "\"})";
-
-                            write_data dat;
-                            dat.id = -1;
-                            dat.data = data.dump();
-
-                            to_write.write_to_websocket(std::move(dat));
-                        }
-                    }
-
-                    if(bump)
-                    {
-                        chat_win.add_text_to_focused(command);
-
-                        std::optional<chat_thread*> focused_thread = chat_win.get_focused_chat_thread();
-
-                        if(focused_thread)
-                        {
-                            focused_thread.value()->cache.invalidate();
-                        }
-                    }
-                }
-
-                std::string cmd = term.command.command;
-
-                if(term.focused)
-                {
-                    term.bump_command_to_history(terminals.auto_handle);
-                }
-                else if(auto opt = chat_win.get_focused_chat_thread(); opt.has_value())
-                {
-                    opt.value()->command.clear_command();
-                }
-
-                if(term.focused && is_local_command(cmd))
-                {
-                    bool should_shutdown = false;
-
-                    std::string data = handle_local_command(ctx.root_user, cmd, terminals.auto_handle, should_shutdown, terminals, chat_win);
-
-                    term.add_text(data, terminals.auto_handle);
-
-                    if(should_shutdown)
-                    {
-                        window.close();
-                    }
-                }
-
-                pretty_atomic_write_all(terminal_file, serialise(terminals, serialise_mode::DISK));
-                pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
-            }
-            else if(enter && to_edit->command.size() == 0)
-            {
-                terminals.get_focused_terminal()->add_text(" ", terminals.auto_handle);
-            }
 
             if(ImGui::IsMouseDown(0))
             {
@@ -1292,8 +862,6 @@ int main(int argc, char* argv[])
                 {
                     std::cout << "Error Data Str " << dat.data << std::endl;
                 }
-
-                process_text_from_server(terminals, auth_manage, ctx.root_user, data, chat_win, font_select, realtime_scripts);
 
                 filter_down_handling(ctx.terminals.primary, data);
 
@@ -1320,21 +888,7 @@ int main(int argc, char* argv[])
             ///this is inadequate
             ///we need to be able to request multiple scripts at once
             ///and receive multiple as well
-            terminals.auto_handle.make_server_request(to_write);
             test_handler.make_server_request(to_write);
-
-            if((terminals.get_focused_terminal()->focused || realtime_scripts.get_id_of_focused_realtime_window() != 1) && io.KeyCtrl && just_pressed(io.KeyMap[ImGuiKey_C]))
-            {
-                nlohmann::json data;
-                data["type"] = "client_terminate_scripts";
-                data["id"] = -1;
-
-                write_data dat;
-                dat.id = -1;
-                dat.data = data.dump();
-
-                to_write.write_to_websocket(std::move(dat));
-            }
 
             if(has_settings_window)
             {
@@ -1344,7 +898,7 @@ int main(int argc, char* argv[])
 
                 if(ImGui::Button("New terminal"))
                 {
-                    terminals.make_new_terminal();
+                    ctx.terminals.create_new_terminal();
                 }
 
                 ImGui::End();
@@ -1401,18 +955,6 @@ int main(int argc, char* argv[])
                 dat.data = data.dump();
 
                 to_write.write_to_websocket(std::move(dat));
-            }
-
-            if(terminals.auto_handle.tab_pressed)
-            {
-                last_line_invalidate_everything(terminals, chat_win);
-            }
-
-            terminals.auto_handle.tab_pressed = ImGui::IsKeyPressed(io.KeyMap[ImGuiKey_Tab]);
-
-            if(terminals.auto_handle.tab_pressed)
-            {
-                last_line_invalidate_everything(terminals, chat_win);
             }
 
             ///this is a hack to fix the fact that sometimes

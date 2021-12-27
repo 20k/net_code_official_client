@@ -6,7 +6,6 @@
 
 struct connection_send_data;
 struct steamapi;
-struct terminal_manager;
 struct terminal2;
 
 struct auth_manager
@@ -14,7 +13,7 @@ struct auth_manager
     bool am_authenticated = false;
 
     void check(steamapi& s_api, connection_send_data& to_write, const std::string& current_user);
-    void display(terminal_manager& term, steamapi& s_api, connection_send_data& to_write, const std::string& current_user);
+    void display(terminal2& term, steamapi& s_api, connection_send_data& to_write, const std::string& current_user);
 
     void extract_server_commands(terminal2& output, nlohmann::json& in);
 
