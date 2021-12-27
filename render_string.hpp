@@ -46,6 +46,7 @@ struct paragraph_string
     paragraph_string(std::string in, bool include_specials, bool colour_like_terminal);
 
     void build(ImFont* font, float clip_width);
+    void merge(const paragraph_string& in);
 
     std::string str;
 

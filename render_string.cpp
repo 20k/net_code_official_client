@@ -249,6 +249,20 @@ paragraph_string::paragraph_string(std::string in, bool include_specials, bool c
     str = std::move(in);
 }
 
+void paragraph_string::merge(const paragraph_string& in)
+{
+    int old_length = str.size();
+
+    str += in.str;
+
+    for(render_string brs : in.basic_render_strings)
+    {
+        brs.start += old_length;
+
+        basic_render_strings.push_back(brs);
+    }
+}
+
 vec2f get_char_size(ImFont* font)
 {
     if(font == nullptr)
@@ -821,9 +835,13 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         auto_handle.handle_autocompletes(render_command, command.cursor_pos_idx, cursor_offset, command.command);
 
-        render_command = command_visual_prefix + render_command;
+        //render_command = command_visual_prefix + render_command;
 
-        paragraph_string command_line(render_command, specials, true);
+        paragraph_string command_line(command_visual_prefix, false, true);
+        paragraph_string command_line2(render_command, specials, true);
+
+        command_line.merge(command_line2);
+
         command_line.build(font, get_formatting_clip_width(font, window_size.x(), scrollbar.width));
 
         int command_line_height = command_line.lines.size();
@@ -1142,7 +1160,7 @@ void terminal2::on_enter_text(context& ctx, std::string_view text, auto_handler&
         }
     }*/
 
-    add_main_text(std::string(text.begin(), text.end()), auto_handle);
+    add_main_text(command_visual_prefix + std::string(text.begin(), text.end()), auto_handle);
     add_main_text("");
 
     if(!is_local_command(text))
@@ -1283,6 +1301,8 @@ void terminal2::extract_server_commands(context& ctx, nlohmann::json& in, auto_h
 
         ctx.user = in["user"];
         ctx.root_user = in["root_user"];
+
+        command_visual_prefix = colour_string(ctx.user) + "> ";
 
         for(int i=0; i < (int)chnls.size(); i++)
         {
