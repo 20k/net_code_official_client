@@ -848,8 +848,6 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
         ImVec2 cursor_pos = GetCursorPos2();
         ImVec2 cursor_screen_pos = ImGui::GetCursorScreenPos();
 
-        ImGui::Dummy(ImVec2(1, content_height));
-
         if(should_reset_scrollbar)
             scrollbar.fraction = 1;
 
@@ -886,7 +884,9 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         trailing_blank_lines += command_line_height;
 
-        ImGui::Dummy(ImVec2(1, trailing_blank_lines * get_char_size(font).y()));
+        float full_dummy_size = content_height + trailing_blank_lines * get_char_size(font).y() - ImGui::GetStyle().ItemSpacing.y * 2 + ImGui::GetStyle().WindowPadding.y;
+
+        ImGui::Dummy(ImVec2(1, full_dummy_size));
 
         float full_content_size = ImGui::GetCurrentWindow()->ContentSize.y;
 
@@ -955,6 +955,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
             scrollbar_at_bottom = true;
 
         float current_pixel_y = cursor_screen_pos.y;
+        float end_pixel_y = ImGui::GetCursorScreenPos().y;
 
         vec2f cdim = get_char_size(font);
 
@@ -1023,6 +1024,8 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
             }
         };
 
+        float input_prompt_y = base_top_offset + window_size.y() - ImGui::GetStyle().WindowPadding.y - char_size.y() * trailing_blank_lines;
+
         auto process_paragraph = [&](const paragraph_string& s)
         {
             for(const screen_line& sl : s.lines)
@@ -1036,6 +1039,8 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
                 float padded_y = from_top_of_window + base_top_offset + title_offset;
 
                 if(top_offset >= visible_y_start - char_size.y() && padded_y >= cursor_screen_pos.y && (top_offset < visible_y_end - (3.5 + trailing_blank_lines) * char_size.y()))*/
+
+                if(padded_y < input_prompt_y - char_size.y())
                 {
                     process_screen_line(s, sl, padded_y);
                 }
@@ -1064,9 +1069,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         if(use_type_prompt)
         {
-            float screen_y = base_top_offset + window_size.y() - ImGui::GetStyle().WindowPadding.y - char_size.y() * trailing_blank_lines;
-
-            process_paragraph_with_y(command_line, screen_y);
+            process_paragraph_with_y(command_line, input_prompt_y);
         }
 
         if(any_highlighted)
