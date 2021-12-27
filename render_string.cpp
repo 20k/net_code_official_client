@@ -830,10 +830,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
             trailing_blank_lines = 1;
 
         if(!use_type_prompt)
-        {
             trailing_blank_lines = 0;
-            command_line = paragraph_string();
-        }
 
         trailing_blank_lines += command_line_height;
 
