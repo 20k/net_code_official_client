@@ -408,7 +408,7 @@ void text_manager::relayout(vec2f new_window_size)
 
 float get_window_title_offset()
 {
-    float decoration_up_height = ImGui::GetCurrentWindow()->TitleBarHeight() + ImGui::GetCurrentWindow()->MenuBarHeight();
+    float decoration_up_height = ImGui::GetCurrentWindow()->TitleBarHeight() + ImGui::GetCurrentWindow()->MenuBarHeight() * 0;
     float title_offset = decoration_up_height + ImGui::GetStyle().WindowPadding.y;
 
     return title_offset;
