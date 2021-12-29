@@ -357,12 +357,14 @@ float get_formatting_clip_width(ImFont* font, float new_window_width, float scro
     return new_window_width - 2 * char_inf::cwbuf - scrollbar_width - ImGui::GetStyle().FramePadding.x - 2 * get_char_size(font).x();
 }
 
+#define SCROLLBAR_WIDTH 14
+
 void text_manager::add_main_text(std::string str, auto_handler& auto_handle)
 {
     std::vector<std::string> autos = parse_for_autocompletes(str);
 
     paragraphs.emplace_back(std::move(str), false, colour_like_terminal);
-    paragraphs.back().build(font, get_formatting_clip_width(font, window_size.x(), scrollbar.width));
+    paragraphs.back().build(font, get_formatting_clip_width(font, window_size.x(), SCROLLBAR_WIDTH));
 
     for(std::string& s : autos)
     {
@@ -378,7 +380,7 @@ void text_manager::add_main_text(std::string str, auto_handler& auto_handle)
 void text_manager::add_main_text(std::string str)
 {
     paragraphs.emplace_back(std::move(str), false, colour_like_terminal);
-    paragraphs.back().build(font, get_formatting_clip_width(font, window_size.x(), scrollbar.width));
+    paragraphs.back().build(font, get_formatting_clip_width(font, window_size.x(), SCROLLBAR_WIDTH));
 
     unseen_text = !was_visible;
 }
@@ -397,14 +399,6 @@ void text_manager::relayout(vec2f new_window_size)
     vec2f old_window_size = window_size;
     window_size = new_window_size;
 
-    if(old_window_size != new_window_size)
-    {
-        if(scrollbar_at_bottom)
-        {
-            should_reset_scrollbar = true;
-        }
-    }
-
     if(old_window_size.x() == new_window_size.x() && cached_character_size == get_char_size(font))
         return;
 
@@ -412,12 +406,7 @@ void text_manager::relayout(vec2f new_window_size)
 
     for(paragraph_string& s : paragraphs)
     {
-        s.build(font, get_formatting_clip_width(font, new_window_size.x(), scrollbar.width));
-    }
-
-    if(scrollbar_at_bottom)
-    {
-        should_reset_scrollbar = true;
+        s.build(font, get_formatting_clip_width(font, new_window_size.x(), SCROLLBAR_WIDTH));
     }
 }
 
@@ -429,7 +418,7 @@ float get_window_title_offset()
     return title_offset;
 }
 
-void driven_scrollbar::render(ImFont* font, int trailing_blank_lines)
+void driven_scrollbar::tick()
 {
     if(locked_to_bottom)
     {
@@ -437,8 +426,6 @@ void driven_scrollbar::render(ImFont* font, int trailing_blank_lines)
             locked_to_bottom = false;
         else
             ImGui::SetScrollHereY(1);
-
-        return;
     }
     else
     {
@@ -447,169 +434,15 @@ void driven_scrollbar::render(ImFont* font, int trailing_blank_lines)
             locked_to_bottom = true;
             ImGui::SetScrollHereY(1);
         }
-
-        return;
-    }
-
-    ImVec2 cursor_backup = ImGui::GetCursorScreenPos();
-
-    float paddingx = ImGui::GetStyle().FramePadding.x;
-    float paddingy = ImGui::GetStyle().FramePadding.y + 32;
-
-    float height = ImGui::GetWindowSize().y;
-
-    float render_height = (height - paddingy) - get_window_title_offset();
-
-    vec2f char_size = get_char_size(font);
-
-    if(ImGui::IsWindowFocused())
-    {
-        if(ImGui::IsKeyPressed(ImGui::GetIO().KeyMap[ImGuiKey_PageDown]))
-        {
-            adjust_by_lines(font, floor(render_height / char_size.y()), trailing_blank_lines);
-        }
-
-        if(ImGui::IsKeyPressed(ImGui::GetIO().KeyMap[ImGuiKey_PageUp]))
-        {
-            adjust_by_lines(font, -floor(render_height / char_size.y()), trailing_blank_lines);
-        }
-    }
-
-    if(ImGui::IsWindowHovered())
-    {
-        if(ImGui::GetIO().MouseWheel != 0)
-        {
-            adjust_by_lines(font, -ImGui::GetIO().MouseWheel, trailing_blank_lines);
-        }
-    }
-
-    ImGuiWindow* win = ImGui::GetCurrentWindow();
-
-    if(win->ContentSize.y < win->InnerClipRect.GetHeight() - ImGui::GetStyle().WindowPadding.y * 2 - get_char_size(font).y())
-    {
-        fraction = 1;
-    }
-
-    float render_x = ImGui::GetWindowSize().x - width - paddingx;
-    float render_y = get_window_title_offset() + get_char_size(font).y() * 2;
-
-    ImDrawList* imlist = ImGui::GetWindowDrawList();
-
-    ImVec2 window_pos = ImGui::GetWindowPos();
-
-    ImU32 col = IM_COL32(5, 5, 5, 255);
-    ImU32 col2 = IM_COL32(2, 2, 2, 255);
-
-    ImVec2 tl = {render_x, render_y};
-    ImVec2 br = {render_x + width, height - paddingy};
-
-    float scroll_height = br.y - tl.y;
-
-    scroll_height = max(scroll_height, 1.f);
-
-    tl.x += window_pos.x;
-    tl.y += window_pos.y;
-
-    br.x += window_pos.x;
-    br.y += window_pos.y;
-
-    imlist->AddRectFilled(tl, br, col2, 0, 0);
-    imlist->AddRect(tl, br, col, 0, 0, 1);
-
-    float scrollbar_height = 14;
-
-    float desired_scrollbar_end = scroll_height;
-
-    float scroll_fraction_at_end = (desired_scrollbar_end - scrollbar_height) / scroll_height;
-
-    float adjusted_scroll_fraction = mix(0, scroll_fraction_at_end, fraction);
-
-    float position_y_top = adjusted_scroll_fraction * scroll_height;
-    float position_y_bottom = position_y_top + scrollbar_height;
-
-    float sx = 2;
-
-    ImVec2 scrollbar_tl = {tl.x + sx, position_y_top + 2 + render_y + window_pos.y};
-    ImVec2 scrollbar_br = {br.x - sx, position_y_bottom + render_y + window_pos.y - 2};
-
-    //ImGui::SetCursorScreenPos(tl);
-
-    //ImGui::InvisibleButton("InvisiB", ImVec2(max(br.x - tl.x, 4.f), max(br.y - tl.y, 4.f)), 0);
-
-    ImU32 col_bar = IM_COL32(15, 15, 15, 255);
-
-    if(ImGui::IsItemHovered())
-    {
-        col_bar = IM_COL32(50, 50, 50, 255);
-    }
-
-    if(scrollbar_br.x - scrollbar_tl.x < 4)
-    {
-        scrollbar_br.x = scrollbar_tl.x + 4;
-    }
-
-    if(scrollbar_br.y - scrollbar_tl.y < 4)
-    {
-        scrollbar_br.y = scrollbar_tl.y + 4;
-    }
-
-    imlist->AddRectFilled(scrollbar_tl, scrollbar_br, col_bar, 6, 0);
-
-    if(ImGui::IsItemClicked() || ImGui::IsItemActive())
-    {
-        float mouse_y = ImGui::GetMousePos().y;
-
-        float mouse_position_at_0 = tl.y + scrollbar_height/2.f;
-        float mouse_position_at_1 = tl.y + scroll_height - scrollbar_height/2.f;
-
-        float mouse_y_fraction = (mouse_y - mouse_position_at_0) / max(mouse_position_at_1 - mouse_position_at_0, 1.f);
-
-        fraction = mouse_y_fraction;
-
-        fraction = clamp(fraction, 0.f, 1.f);
-    }
-
-    //ImGui::SetCursorScreenPos(cursor_backup);
-
-    {
-        //float max_scroll = ImGui::GetCurrentWindow()->ContentSizeIdeal.y + ImGui::GetStyle().WindowPadding.y * 2;
-        float max_scroll = ImGui::GetScrollMaxY();
-        float of_max_scroll = fraction * max_scroll;
-
-        if(ImGui::IsWindowFocused())
-        {
-            printf("Frac %f pos %f contentsize %f\n", fraction, max_scroll, ImGui::GetCurrentWindow()->ContentSize.y);
-        }
-
-        ImGui::SetScrollY(of_max_scroll);
     }
 }
 
-void driven_scrollbar::adjust_by_px(float py)
-{
-    float adjust_pixels = py;
-
-    float as_frac = adjust_pixels / content_height;
-
-    fraction += as_frac;
-
-    fraction = clamp(fraction, 0.f, 1.f);
-}
 
 float get_desired_visible_y_end(ImFont* font, float content_height, int trailing_blank_lines)
 {
     int additional = trailing_blank_lines;
 
     return content_height + get_char_size(font).y() * (2 + additional) + ImGui::GetStyle().WindowPadding.y;
-}
-
-void driven_scrollbar::adjust_by_lines(ImFont* font, float lines, int trailing_blank_lines)
-{
-    float as_frac = lines * get_char_size(font).y() / max(ImGui::GetScrollMaxY(), 1.f);
-
-    fraction += as_frac;
-
-    fraction = clamp(fraction, 0.f, 1.f);
 }
 
 void text_manager::default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send)
@@ -804,7 +637,7 @@ void add_text(ImDrawList* lst, ImFont* font, ImVec2 pos, ImU32 col, const char* 
 
 void text_manager::render(context& ctx, auto_handler& auto_handle, connection_send_data& send)
 {
-    float clip_width = get_formatting_clip_width(font, window_size.x(), scrollbar.width);
+    float clip_width = get_formatting_clip_width(font, window_size.x(), SCROLLBAR_WIDTH);
 
     float content_height = 0;
 
@@ -843,20 +676,6 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         ImVec2 cursor_screen_pos = ImGui::GetCursorScreenPos();
 
-        if(ImGui::IsWindowFocused())
-        {
-            ImGuiWindow* window = ImGui::GetCurrentWindow();
-
-            printf("ContentSize %f\n", window->ContentSize.y);
-
-            printf("CP %f %f\n", window->DC.CursorMaxPos.y, window->DC.CursorStartPos.y);
-        }
-
-        if(should_reset_scrollbar)
-            scrollbar.fraction = 1;
-
-        should_reset_scrollbar = false;
-
         int trailing_blank_lines = 0;
 
         std::string render_command = command.command;
@@ -876,7 +695,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         command_line.merge(command_line2);
 
-        command_line.build(font, get_formatting_clip_width(font, window_size.x(), scrollbar.width));
+        command_line.build(font, get_formatting_clip_width(font, window_size.x(), SCROLLBAR_WIDTH));
 
         int command_line_height = command_line.lines.size();
 
@@ -891,10 +710,6 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
         float full_dummy_size = content_height + trailing_blank_lines * get_char_size(font).y() - ImGui::GetStyle().ItemSpacing.y * 2 + ImGui::GetStyle().WindowPadding.y;
 
         ImGui::Dummy(ImVec2(1, full_dummy_size));
-
-        //float full_content_size = ImGui::GetCurrentWindow()->ContentRegionRect.GetHeight();
-
-        float full_content_size = ImGui::GetCurrentWindow()->ContentSize.y;
 
         copy_handler2& handle = get_global_copy_handler2();
 
@@ -926,7 +741,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
         if(ImGui::IsWindowHovered() && !handle.is_dragging())
         {
             vec2f tl = {ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + get_window_title_offset()};
-            vec2f br = {ImGui::GetWindowPos().x + ImGui::GetWindowSize().x - scrollbar.width - char_inf::cwbuf - ImGui::GetStyle().FramePadding.x, ImGui::GetWindowPos().y + ImGui::GetWindowSize().y};
+            vec2f br = {ImGui::GetWindowPos().x + ImGui::GetWindowSize().x - SCROLLBAR_WIDTH - char_inf::cwbuf - ImGui::GetStyle().FramePadding.x, ImGui::GetWindowPos().y + ImGui::GetWindowSize().y};
 
             vec2f mouse_pos = {ImGui::GetMousePos().x, ImGui::GetMousePos().y};
 
@@ -948,16 +763,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
             check_copy = false;
         }
 
-        float scroll_fraction = scrollbar.fraction;
-
-        if(scroll_fraction < 1)
-            scrollbar_at_bottom = false;
-
-        if(scroll_fraction == 1)
-            scrollbar_at_bottom = true;
-
         float current_pixel_y = cursor_screen_pos.y;
-        float end_pixel_y = ImGui::GetCursorScreenPos().y;
 
         vec2f cdim = get_char_size(font);
 
@@ -1034,15 +840,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
             {
                 float padded_y = current_pixel_y;
 
-                /*float top_offset = current_pixel_y;
-
-                float from_top_of_window = top_offset - visible_y_start;
-
-                float padded_y = from_top_of_window + base_top_offset + title_offset;
-
-                if(top_offset >= visible_y_start - char_size.y() && padded_y >= cursor_screen_pos.y && (top_offset < visible_y_end - (3.5 + trailing_blank_lines) * char_size.y()))*/
-
-                if(padded_y < input_prompt_y - char_size.y())
+                if(padded_y < input_prompt_y - char_size.y() + 2)
                 {
                     process_screen_line(s, sl, padded_y);
                 }
@@ -1103,10 +901,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
             handle.reset_trigger();
         }
 
-        scrollbar.content_height = full_content_size;
-        scrollbar.window_size = window_size;
-
-        scrollbar.render(font, trailing_blank_lines);
+        scrollbar.tick();
     }
 
     destroy_window();
@@ -1600,7 +1395,7 @@ bool chat_thread2::create_window(context& ctx, vec2f content_size, vec2f create_
     //ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
     ImGui::SetNextWindowSize(ImVec2(create_window_size.x(), create_window_size.y()), ImGuiCond_Appearing);
 
-    int flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoScrollWithMouse;
+    int flags = ImGuiWindowFlags_NoFocusOnAppearing;
 
     std::string unfriendly_name = friendly_name + "###" + friendly_name + "$";
 
@@ -1956,7 +1751,7 @@ bool realtime_script_run2::create_window(context& ctx, vec2f content_size, vec2f
 
     set_size = false;
 
-    bool should_render = ImGui::Begin(window_title.c_str(), &open, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    bool should_render = ImGui::Begin(window_title.c_str(), &open, 0);
 
     is_focused = ImGui::IsWindowFocused();
     is_hovered = ImGui::IsWindowHovered();

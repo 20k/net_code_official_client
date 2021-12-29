@@ -58,14 +58,7 @@ struct driven_scrollbar
 {
     bool locked_to_bottom = true;
 
-    vec2f window_size;
-    float width = 14;
-    float fraction = 1;
-    float content_height = 0;
-
-    void render(ImFont* font, int trailing_blank_lines);
-    void adjust_by_px(float py);
-    void adjust_by_lines(ImFont* font, float lines, int trailing_blank_lines);
+    void tick();
 };
 
 struct text_manager
@@ -95,9 +88,6 @@ struct text_manager
 
     vec2f window_size;
     vec2f cached_character_size;
-
-    bool should_reset_scrollbar = true;
-    bool scrollbar_at_bottom = false;
 
     void relayout(vec2f new_window_size);
 
