@@ -59,6 +59,7 @@ struct paragraph_string : serialisable, free_function
 struct driven_scrollbar
 {
     bool locked_to_bottom = true;
+    bool bottom_oriented = true;
 
     void tick();
 };

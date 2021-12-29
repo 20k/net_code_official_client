@@ -427,6 +427,9 @@ float get_window_title_offset()
 
 void driven_scrollbar::tick()
 {
+    if(!bottom_oriented)
+        return;
+
     if(locked_to_bottom)
     {
         if(ImGui::GetIO().MouseWheel != 0)
@@ -1429,7 +1432,7 @@ bool chat_thread2::create_window(context& ctx, vec2f content_size, vec2f create_
     if(unseen_text)
         flags |= ImGuiWindowFlags_UnsavedDocument;
 
-    return ImGui::Begin(unfriendly_name.c_str(), &open, flags);
+    return ImGui::Begin(unfriendly_name.c_str(), nullptr, flags);
 }
 
 void chat_thread2::on_enter_text(context& ctx, std::string_view text, auto_handler& auto_handle, connection_send_data& send)
@@ -1793,6 +1796,8 @@ void realtime_script_run2::destroy_window()
 
 void realtime_script_run2::on_pre_render(context& ctx, auto_handler& auto_handle, connection_send_data& send)
 {
+    scrollbar.bottom_oriented = stk.elements.size() == 0;
+
     render_ui_stack(send, current_sequence_id, stk, server_id, true);
 }
 

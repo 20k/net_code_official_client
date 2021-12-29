@@ -72,6 +72,9 @@ DEFINE_SERIALISE_FUNCTION(chat_thread2)
 {
     SERIALISE_SETUP();
 
+    DO_FSERIALISE(unseen_text);
+    DO_FSERIALISE(friendly_id);
+    DO_FSERIALISE(paragraphs);
     DO_FSERIALISE(friendly_name);
 }
 
