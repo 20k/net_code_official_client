@@ -3,12 +3,6 @@
 
 #include <networking/serialisable_fwd.hpp>
 
-struct terminal_imgui;
-
-DECLARE_SERIALISE_FUNCTION(terminal_imgui);
-DECLARE_SERIALISE_FUNCTION(chat_window);
-DECLARE_SERIALISE_FUNCTION(terminal_manager);
-
 DECLARE_SERIALISE_FUNCTION(render_string);
 DECLARE_SERIALISE_FUNCTION(paragraph_string);
 DECLARE_SERIALISE_FUNCTION(text_manager);

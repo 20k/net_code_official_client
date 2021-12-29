@@ -221,7 +221,7 @@ int main(int argc, char* argv[])
 
     bool has_file = false;
 
-    std::string window_file = "window_v2.txt";
+    std::string window_file = "window_v3.txt";
 
     if(file::exists(window_file))
     {
@@ -286,30 +286,19 @@ int main(int argc, char* argv[])
 
     ctx.backend = backend;
 
+    auto_handler test_handler;
+    chat_manager chat2;
+    realtime_script_manager2 realtime_scripts2;
+
     font_selector& font_select = ctx.font_select;
     font_select.reset_default_fonts();
 
-    terminal_manager terminals;
-
-    chat_window chat_win;
-    realtime_script_manager realtime_scripts;
-
     printf("Terminal + Chat window\n");
-
-    bool should_coordinate_focus = true;
-
-    ///platform independent
-    std::map<int, std::string> mouse_map;
-    mouse_map[0] = "lmouse";
-    mouse_map[1] = "rmouse";
-    mouse_map[2] = "mmouse";
-    mouse_map[3] = "x1mouse";
-    mouse_map[4] = "x2mouse";
 
     printf("Specials\n");
 
-    std::string terminal_file = "terminal_v7.txt";
-    std::string chat_file = "chat_v6.txt";
+    std::string terminal_file = "terminal_v8.txt";
+    std::string chat_file = "chat_v7.txt";
     //std::string settings_file = "text_sett_v1.txt";
     std::string font_file = "font_sett_v2.txt";
     std::string notepad_file = "notepad.txt";
@@ -319,7 +308,7 @@ int main(int argc, char* argv[])
         if(file::exists(terminal_file))
         {
             nlohmann::json dat = nlohmann::json::parse(file::read(terminal_file, file::mode::BINARY));
-            deserialise(dat, terminals, serialise_mode::DISK);
+            deserialise(dat, ctx.terminals, serialise_mode::DISK);
         }
     }
     catch(...){printf("Invalid terminal file\n");}
@@ -329,7 +318,7 @@ int main(int argc, char* argv[])
         if(file::exists(chat_file))
         {
             nlohmann::json dat = nlohmann::json::parse(file::read(chat_file, file::mode::BINARY));
-            deserialise(dat, chat_win, serialise_mode::DISK);
+            deserialise(dat, chat2, serialise_mode::DISK);
         }
     }
     catch(...){printf("Invalid chat file\n");}
@@ -356,7 +345,6 @@ int main(int argc, char* argv[])
 
     steady_timer render_clock;
     steady_timer write_clock;
-    steady_timer imgui_delta;
 
     steady_timer mouse_clock;
     float mouse_send_time_ms = 33;
@@ -364,17 +352,6 @@ int main(int argc, char* argv[])
     #ifdef TESTING
     std::vector<std::string> api_calls;
     #endif // TESTING
-
-    //double diff_s = 0.f;
-
-    editable_string realtime_shim;
-    std::vector<std::string> realtime_str;
-    std::vector<std::string> on_pressed;
-    std::vector<std::string> on_released;
-
-    double script_mousewheel_delta = 0.;
-
-    invalidate_everything(terminals, chat_win);
 
     steady_timer connection_clock;
 
@@ -406,12 +383,6 @@ int main(int argc, char* argv[])
     steady_timer sleep_limiter;
 
     bool printed_connecting = false;
-
-    auto_handler test_handler;
-
-    chat_manager chat2;
-
-    realtime_script_manager2 realtime_scripts2;
 
     //while(running)
     #ifndef __EMSCRIPTEN__
@@ -448,9 +419,9 @@ int main(int argc, char* argv[])
             auth_manage.check(s_api, to_write, ctx.root_user);
 
             if(!printed_connecting)
-                terminals.main_terminal.add_text("Connecting...", terminals.auto_handle);
+                ctx.terminals.primary.add_main_text("Connecting...");
             else
-                terminals.main_terminal.extend_text(".", terminals.auto_handle);
+                ctx.terminals.primary.add_main_text(".");
 
             printed_connecting = true;
         }
@@ -459,29 +430,6 @@ int main(int argc, char* argv[])
         {
             printed_connecting = false;
         }
-
-        realtime_shim.clear_command();
-        realtime_str.clear();
-        on_pressed.clear();
-        on_released.clear();
-
-        editable_string no_string;
-        editable_string* to_edit = &no_string;
-
-        if(terminals.get_focused_terminal()->focused)
-            to_edit = &terminals.get_focused_terminal()->command;
-
-        bool has_chat_window = chat_win.focused;
-
-        if(chat_win.focused && has_chat_window)
-            to_edit = chat_win.get_focused_editable().value_or(&no_string);
-
-        //if(realtime_scripts.get_id_of_focused_realtime_window() != -1)
-        //    to_edit = &realtime_shim;
-
-        bool enter = false;
-
-        float mouse_delta = 0.f;
 
         bool last_is_open = s_api.is_overlay_open();
 
@@ -575,15 +523,6 @@ int main(int argc, char* argv[])
         last_mouse_pos = io.MousePos;
         //last_can_suppress_inputs = can_suppress_inputs;
 
-        if(!terminals.all_cache_valid())
-            visual_events = true;
-
-        for(auto& i : chat_win.chat_threads)
-        {
-            if(i.second.was_rendered && !i.second.cache.valid())
-                visual_events = true;
-        }
-
         if(last_is_open != s_api.is_overlay_open())
         {
             visual_events = true;
@@ -603,25 +542,8 @@ int main(int argc, char* argv[])
                 sleep_limiter.restart();
             }
 
-            if(visual_events)
-            {
-                terminals.invalidate_visual_cache();
-
-                for(auto& i : chat_win.chat_threads)
-                {
-                    i.second.cache.invalidate_visual_cache();
-                }
-
-                /*for(auto& i : realtime_scripts.windows)
-                {
-                    i.second.cache.invalidate_visual_cache();
-                }*/
-            }
-
             if(font_select.update_rebuild())
             {
-                invalidate_everything(terminals, chat_win);
-
                 ImGui_ImplOpenGL3_DestroyDeviceObjects();
                 ImGui_ImplOpenGL3_CreateDeviceObjects();
 
@@ -746,79 +668,9 @@ int main(int argc, char* argv[])
                 get_global_copy_handler2().on_no_lclick();
             }
 
-            mouse_delta += scroll_y;
-            script_mousewheel_delta += scroll_y;
-
             ///todo: this isn't good enough. We need input *text*, and the stream of pressed keys to be presented to the script
             ///https://love2d.org/wiki/love.textinput
             ///https://love2d.org/wiki/love.keypressed
-            /*if(realtime_scripts.get_id_of_focused_realtime_window() != -1 && (realtime_str.size() > 0 || on_pressed.size() > 0 || on_released.size() > 0))
-            {
-                nlohmann::json data;
-                data["type"] = "send_keystrokes_to_script";
-                data["id"] = realtime_scripts.get_id_of_focused_realtime_window();
-                data["input_keys"] = realtime_str;
-                data["pressed_keys"] = on_pressed;
-                data["released_keys"] = on_released;
-
-                write_data dat;
-                dat.id = -1;
-                dat.data = data.dump();
-
-                to_write.write_to_websocket(std::move(dat));
-            }
-
-            if(realtime_scripts.get_id_of_focused_realtime_window() != -1 && mouse_clock.get_elapsed_time_s() * 1000 >= mouse_send_time_ms)
-            {
-                mouse_clock.restart();
-
-                vec2f mpos = cursor_pos;
-
-                realtime_script_run& run = realtime_scripts.windows[realtime_scripts.get_id_of_focused_realtime_window()];
-
-                mpos = mpos - run.current_tl_cursor_pos;
-
-                vec2f br_absolute = run.current_pos + (vec2f){run.current_dim.x(), run.current_dim.y()};
-                vec2f relative_dim = br_absolute - run.current_tl_cursor_pos;
-
-                //vec2i dim = run.current_dim;
-
-                vec2f dim = relative_dim;
-
-                if(mpos.x() >= 0 && mpos.y() >= 0 && mpos.x() <= dim.x() && mpos.y() <= dim.y())
-                {
-                    vec2f char_mpos = mpos / (vec2f){char_inf::cwidth, char_inf::cheight};
-
-                    nlohmann::json data;
-                    data["type"] = "update_mouse_to_script";
-                    data["id"] = realtime_scripts.get_id_of_focused_realtime_window();
-                    data["mouse_x"] = char_mpos.x();
-                    data["mouse_y"] = char_mpos.y();
-                    data["mousewheel_x"] = 0.f;
-                    data["mousewheel_y"] = script_mousewheel_delta;
-
-                    write_data dat;
-                    dat.id = -1;
-                    dat.data = data.dump();
-
-                    to_write.write_to_websocket(std::move(dat));
-                }
-
-                script_mousewheel_delta = 0;
-            }*/
-
-            //if(realtime_scripts.get_id_of_focused_realtime_window() == -1)
-            //    script_mousewheel_delta = 0;
-
-            for(auto& i : chat_win.chat_threads)
-            {
-                i.second.scroll_hack.scrolled_this_frame = mouse_delta;
-            }
-
-            /*for(auto& i : realtime_scripts.windows)
-            {
-                i.second.scroll_hack.scrolled_this_frame = mouse_delta;
-            }*/
 
             ImGui::PushFont(font_select.get_base_font());
 
@@ -826,14 +678,8 @@ int main(int argc, char* argv[])
 
             font_select.render(window);
 
-            /*if(window_ctx.srgb_dirty)
-            {
-                ImGui::SetStyleLinearColor(window_ctx.is_srgb);
-            }*/
-
             if(ImGui::IsMouseDown(0))
             {
-                get_global_copy_handler()->on_hold_lclick(cursor_pos);
                 get_global_copy_handler2().on_hold_lclick(cursor_pos);
             }
 
@@ -863,10 +709,10 @@ int main(int argc, char* argv[])
                 auth_manage.extract_server_commands(ctx.terminals.primary, data);
             }
 
-            if(write_clock.get_elapsed_time_s() > 5 && (!terminals.all_cache_valid() || chat_win.any_cache_invalid()))
+            if(write_clock.get_elapsed_time_s() > 5)
             {
-                pretty_atomic_write_all(terminal_file, serialise(terminals, serialise_mode::DISK));
-                pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
+                pretty_atomic_write_all(terminal_file, serialise(ctx.terminals, serialise_mode::DISK));
+                pretty_atomic_write_all(chat_file, serialise(chat2, serialise_mode::DISK));
 
                 auto save_sett = window.get_render_settings();
 
@@ -885,7 +731,7 @@ int main(int argc, char* argv[])
             {
                 ImGui::Begin("Settings", &has_settings_window);
 
-                ImGui::Checkbox("Show chat in terminal", &chat_win.show_chat_in_main_window);
+                ImGui::Checkbox("Show chat in terminal", &ctx.show_chat_in_main_window);
 
                 if(ImGui::Button("New terminal"))
                 {
@@ -915,8 +761,6 @@ int main(int argc, char* argv[])
 
             //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
 
-            int was_closed_id = -1;
-
             vec2i window_dim = window.get_window_size();
 
             realtime_scripts2.default_controls(ctx, test_handler, to_write);
@@ -928,44 +772,11 @@ int main(int argc, char* argv[])
             chat2.default_controls(ctx, test_handler, to_write);
             chat2.render(ctx, test_handler, to_write);
 
-            //test_imgui_term.render(window);
-            //realtime_scripts.render_realtime_windows(to_write, was_closed_id, font_select, terminals.auto_handle, window.get_render_settings().is_srgb);
-            //chat_win.render(should_coordinate_focus);
-            //terminals.render(window, {window_dim.x(), window_dim.y()}, should_coordinate_focus);
-
-            should_coordinate_focus = false;
-
-            if(was_closed_id != -1)
-            {
-                nlohmann::json data;
-                data["type"] = "client_terminate_scripts";
-                data["id"] = was_closed_id;
-
-                write_data dat;
-                dat.id = -1;
-                dat.data = data.dump();
-
-                to_write.write_to_websocket(std::move(dat));
-            }
-
-            ///this is a hack to fix the fact that sometimes
-            ///click input doesn't make clean click/release pairs
-            if(!ImGui::IsMouseDown(0))
-            {
-                get_global_copy_handler()->finished = false;
-                get_global_copy_handler()->held = false;
-            }
-
             int lcwidth = char_inf::cwidth;
             int lcheight = char_inf::cheight;
 
             char_inf::cwidth = ImGui::CalcTextSize("A").x + char_inf::extra_glyph_spacing;
             char_inf::cheight = ImGui::CalcTextSize("A").y;
-
-            if(char_inf::cwidth != lcwidth || char_inf::cheight != lcheight)
-            {
-                invalidate_everything(terminals, chat_win);
-            }
 
             ImGui::PopFont();
 
@@ -1030,8 +841,8 @@ int main(int argc, char* argv[])
     #endif // __EMSCRIPTEN__*/
 
     file::write(notepad_file, notepad, file::mode::BINARY);
-    pretty_atomic_write_all(terminal_file, serialise(terminals, serialise_mode::DISK));
-    pretty_atomic_write_all(chat_file, serialise(chat_win, serialise_mode::DISK));
+    pretty_atomic_write_all(terminal_file, serialise(ctx.terminals, serialise_mode::DISK));
+    pretty_atomic_write_all(chat_file, serialise(chat2, serialise_mode::DISK));
 
     auto save_sett = window.get_render_settings();
 
