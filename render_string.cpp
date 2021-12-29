@@ -467,6 +467,19 @@ float get_desired_visible_y_end(ImFont* font, float content_height, int trailing
     return content_height + get_char_size(font).y() * (2 + additional) + ImGui::GetStyle().WindowPadding.y;
 }
 
+void terminate_script(connection_send_data& send, int id)
+{
+    nlohmann::json data;
+    data["type"] = "client_terminate_scripts";
+    data["id"] = id;
+
+    write_data dat;
+    dat.id = -1;
+    dat.data = data.dump();
+
+    send.write_to_websocket(std::move(dat));
+}
+
 void text_manager::default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send)
 {
     if(!was_focused)
@@ -594,6 +607,11 @@ void text_manager::default_controls(context& ctx, auto_handler& auto_handle, con
             else
                 command.add_to_command('\n');
         }
+    }
+
+    if(io.KeyCtrl && ImGui::IsKeyPressed(io.KeyMap[ImGuiKey_C]))
+    {
+        terminate_script(send, -1);
     }
 
     auto_handle.tab_pressed = ImGui::IsKeyPressed(io.KeyMap[ImGuiKey_Tab]);
@@ -1667,115 +1685,6 @@ void chat_manager::render(context& ctx, auto_handler& auto_handle, connection_se
     once = true;
 }
 
-/*void realtime_script_run2::render(connection_send_data& send)
-{
-    std::string str = std::to_string(i.first);
-
-    std::string ext = "###" + str;
-
-    std::string title_str = str;
-
-    if(run.script_name != "")
-    {
-        title_str = run.script_name;
-    }
-
-    if(run.focused)
-    {
-        title_str += " (Active)";
-    }
-    else
-    {
-        title_str += "         "; ///for imgui docking grabbability
-    }
-
-    title_str += ext;
-
-    if(run.was_open && !run.open)
-    {
-        run.was_open = false;
-
-        was_closed_id = i.first;
-    }
-
-    if(!run.open)
-        continue;
-
-    if(run.set_size)
-        ImGui::SetNextWindowSize(ImVec2(run.dim.x(), run.dim.y()), ImGuiCond_Always);
-
-    run.set_size = false;
-
-    bool should_render = ImGui::Begin((title_str + "###" + str).c_str(), &run.open, ImGuiWindowFlags_NoScrollbar);
-
-    if(should_render)
-    {
-        run.current_tl_cursor_pos = {ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y};
-
-        run.focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
-        run.hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
-
-        int cpos = -1;
-        std::string cmd = " ";
-
-        //run.cache.invalidate();
-
-        if(run.is_square_font)
-            ImGui::PushFont(fonts.get_square_font());
-
-        render_ui_stack(to_write, run, run.stk, i.first, is_linear_colour);
-
-        render_handle_imgui(run.scroll_hack, cmd, cpos, {run.parsed_data}, auto_handle, run.cache);
-
-        ImVec2 window_size = ImGui::GetWindowSize();
-
-        vec2i last_dim = run.current_dim;
-        run.current_dim = {window_size.x, window_size.y};
-
-        if(run.current_dim.x() != last_dim.x() || run.current_dim.y() != last_dim.y())
-            run.should_send_new_size = true;
-
-        if(run.is_square_font != run.was_square_font)
-            run.should_send_new_size = true;
-
-        run.was_square_font = run.is_square_font;
-
-        if(run.should_send_new_size && run.last_resize.get_elapsed_time_s() >= 1)
-        {
-            vec2f br_absolute = run.current_pos + (vec2f){run.current_dim.x(), run.current_dim.y()};
-            vec2f relative_dim = br_absolute - run.current_tl_cursor_pos;
-
-            vec2f dim = relative_dim;
-
-            vec2f cdim = xy_to_vec(ImGui::CalcTextSize("A"));
-
-            nlohmann::json data;
-            data["type"] = "send_script_info";
-            data["id"] = i.first;
-            data["width"] = (dim.x() / cdim.x()) - 5;
-            data["height"] = dim.y() / cdim.y();
-
-            write_data dat;
-            dat.id = -1;
-            dat.data = data.dump();
-
-            to_write.write_to_websocket(std::move(dat));
-
-            run.last_resize.restart();
-            run.should_send_new_size = false;
-        }
-
-        if(run.is_square_font)
-            ImGui::PopFont();
-
-        auto my_pos = ImGui::GetWindowPos();
-
-        run.current_pos = {my_pos.x, my_pos.y};
-    }
-
-    ImGui::End();
-}*/
-
 realtime_script_run2::realtime_script_run2()
 {
     use_type_prompt = false;
@@ -1967,15 +1876,7 @@ void realtime_script_run2::terminate(connection_send_data& send)
 {
     open = false;
 
-    nlohmann::json data;
-    data["type"] = "client_terminate_scripts";
-    data["id"] = server_id;
-
-    write_data dat;
-    dat.id = -1;
-    dat.data = data.dump();
-
-    send.write_to_websocket(std::move(dat));
+    terminate_script(send, server_id);
 }
 
 void realtime_script_manager2::render(context& ctx, auto_handler& auto_handle, connection_send_data& send)
