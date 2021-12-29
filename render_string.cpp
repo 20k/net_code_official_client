@@ -840,7 +840,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
             {
                 float padded_y = current_pixel_y;
 
-                if(padded_y < input_prompt_y - char_size.y() + 2)
+                if(padded_y < input_prompt_y - char_size.y() + 4)
                 {
                     process_screen_line(s, sl, padded_y);
                 }
