@@ -40,6 +40,7 @@ struct screen_line
 
 struct paragraph_string
 {
+    int unformatted_char_width = 0;
     vec2f dim;
 
     paragraph_string();

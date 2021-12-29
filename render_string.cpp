@@ -247,6 +247,11 @@ paragraph_string::paragraph_string(std::string in, bool include_specials, bool c
 {
     basic_render_strings = create_render_strings(in, include_specials, colour_like_terminal);
     str = std::move(in);
+
+    for(const render_string& strs : basic_render_strings)
+    {
+        unformatted_char_width += strs.length;
+    }
 }
 
 void paragraph_string::merge(const paragraph_string& in)
@@ -260,6 +265,8 @@ void paragraph_string::merge(const paragraph_string& in)
         brs.start += old_length;
 
         basic_render_strings.push_back(brs);
+
+        unformatted_char_width += brs.length;
     }
 }
 
@@ -691,6 +698,9 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
         auto_handle.handle_autocompletes(render_command, command.cursor_pos_idx, cursor_offset, command.command);
 
         paragraph_string command_line(command_visual_prefix, false, true);
+
+        int prefix_width = command_line.unformatted_char_width;
+
         paragraph_string command_line2(render_command, specials, true);
 
         command_line.merge(command_line2);
@@ -870,6 +880,25 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
         if(use_type_prompt)
         {
             process_paragraph_with_y(command_line, input_prompt_y);
+
+            ImDrawList* drawlist = ImGui::GetWindowDrawList();
+
+            if(ImGui::IsWindowFocused() && command.command.size() > 0)
+            {
+                vec3f my_col = srgb_to_lin(letter_to_colour('A').value());
+
+                float cwidth = get_char_size(font).x();
+
+                int cursor_cpos = command.cursor_pos_idx + cursor_offset;
+
+                ImVec2 pos((cursor_cpos + prefix_width) * cwidth - cwidth/2.f + base_left_offset, input_prompt_y);
+
+                ImU32 col = ImGui::ColorConvertFloat4ToU32({my_col.x(), my_col.y(), my_col.z(), 255});
+
+                const char* text = "|";
+
+                add_text(drawlist, font, pos, col, text, text + 1);
+            }
         }
 
         if(any_highlighted)
