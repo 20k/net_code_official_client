@@ -431,10 +431,30 @@ float get_window_title_offset()
 
 void driven_scrollbar::render(ImFont* font, int trailing_blank_lines)
 {
+    if(locked_to_bottom)
+    {
+        if(ImGui::GetIO().MouseWheel != 0)
+            locked_to_bottom = false;
+        else
+            ImGui::SetScrollHereY(1);
+
+        return;
+    }
+    else
+    {
+        if(ImGui::GetScrollY() == ImGui::GetScrollMaxY())
+        {
+            locked_to_bottom = true;
+            ImGui::SetScrollHereY(1);
+        }
+
+        return;
+    }
+
     ImVec2 cursor_backup = ImGui::GetCursorScreenPos();
 
     float paddingx = ImGui::GetStyle().FramePadding.x;
-    float paddingy = ImGui::GetStyle().FramePadding.y + 16;
+    float paddingy = ImGui::GetStyle().FramePadding.y + 32;
 
     float height = ImGui::GetWindowSize().y;
 
@@ -471,7 +491,7 @@ void driven_scrollbar::render(ImFont* font, int trailing_blank_lines)
     }
 
     float render_x = ImGui::GetWindowSize().x - width - paddingx;
-    float render_y = get_window_title_offset();
+    float render_y = get_window_title_offset() + get_char_size(font).y() * 2;
 
     ImDrawList* imlist = ImGui::GetWindowDrawList();
 
@@ -496,10 +516,6 @@ void driven_scrollbar::render(ImFont* font, int trailing_blank_lines)
     imlist->AddRectFilled(tl, br, col2, 0, 0);
     imlist->AddRect(tl, br, col, 0, 0, 1);
 
-    ImGui::SetCursorScreenPos(tl);
-
-    ImGui::InvisibleButton("InvisiB", ImVec2(max(br.x - tl.x, 4.f), max(br.y - tl.y, 4.f)), 0);
-
     float scrollbar_height = 14;
 
     float desired_scrollbar_end = scroll_height;
@@ -511,17 +527,21 @@ void driven_scrollbar::render(ImFont* font, int trailing_blank_lines)
     float position_y_top = adjusted_scroll_fraction * scroll_height;
     float position_y_bottom = position_y_top + scrollbar_height;
 
-    ImU32 col_bar = IM_COL32(15, 15, 15, 255);
-
     float sx = 2;
+
+    ImVec2 scrollbar_tl = {tl.x + sx, position_y_top + 2 + render_y + window_pos.y};
+    ImVec2 scrollbar_br = {br.x - sx, position_y_bottom + render_y + window_pos.y - 2};
+
+    //ImGui::SetCursorScreenPos(tl);
+
+    //ImGui::InvisibleButton("InvisiB", ImVec2(max(br.x - tl.x, 4.f), max(br.y - tl.y, 4.f)), 0);
+
+    ImU32 col_bar = IM_COL32(15, 15, 15, 255);
 
     if(ImGui::IsItemHovered())
     {
         col_bar = IM_COL32(50, 50, 50, 255);
     }
-
-    ImVec2 scrollbar_tl = {tl.x + sx, position_y_top + 2 + render_y + window_pos.y};
-    ImVec2 scrollbar_br = {br.x - sx, position_y_bottom + render_y + window_pos.y - 2};
 
     if(scrollbar_br.x - scrollbar_tl.x < 4)
     {
@@ -549,14 +569,20 @@ void driven_scrollbar::render(ImFont* font, int trailing_blank_lines)
         fraction = clamp(fraction, 0.f, 1.f);
     }
 
+    //ImGui::SetCursorScreenPos(cursor_backup);
+
     {
+        //float max_scroll = ImGui::GetCurrentWindow()->ContentSizeIdeal.y + ImGui::GetStyle().WindowPadding.y * 2;
         float max_scroll = ImGui::GetScrollMaxY();
         float of_max_scroll = fraction * max_scroll;
 
+        if(ImGui::IsWindowFocused())
+        {
+            printf("Frac %f pos %f contentsize %f\n", fraction, max_scroll, ImGui::GetCurrentWindow()->ContentSize.y);
+        }
+
         ImGui::SetScrollY(of_max_scroll);
     }
-
-    ImGui::SetCursorScreenPos(cursor_backup);
 }
 
 void driven_scrollbar::adjust_by_px(float py)
@@ -817,6 +843,15 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         ImVec2 cursor_screen_pos = ImGui::GetCursorScreenPos();
 
+        if(ImGui::IsWindowFocused())
+        {
+            ImGuiWindow* window = ImGui::GetCurrentWindow();
+
+            printf("ContentSize %f\n", window->ContentSize.y);
+
+            printf("CP %f %f\n", window->DC.CursorMaxPos.y, window->DC.CursorStartPos.y);
+        }
+
         if(should_reset_scrollbar)
             scrollbar.fraction = 1;
 
@@ -857,12 +892,10 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         ImGui::Dummy(ImVec2(1, full_dummy_size));
 
+        //float full_content_size = ImGui::GetCurrentWindow()->ContentRegionRect.GetHeight();
+
         float full_content_size = ImGui::GetCurrentWindow()->ContentSize.y;
 
-        scrollbar.content_height = full_content_size;
-        scrollbar.window_size = window_size;
-
-        scrollbar.render(font, trailing_blank_lines);
         copy_handler2& handle = get_global_copy_handler2();
 
         std::string copy_string;
@@ -1069,6 +1102,11 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
             handle.reset_trigger();
         }
+
+        scrollbar.content_height = full_content_size;
+        scrollbar.window_size = window_size;
+
+        scrollbar.render(font, trailing_blank_lines);
     }
 
     destroy_window();
@@ -1324,7 +1362,7 @@ bool main_terminal2::create_window(context& ctx, vec2f content_size, vec2f in_wi
     //ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
     //ImGui::SetNextWindowSize(ImVec2(in_window_size.x(), in_window_size.y()), ImGuiCond_Appearing);
 
-    int flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+    int flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoResize;
 
     vec2i real_window_size = ctx.backend->get_window_size();
 

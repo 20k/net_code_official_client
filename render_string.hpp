@@ -56,6 +56,8 @@ struct paragraph_string
 
 struct driven_scrollbar
 {
+    bool locked_to_bottom = true;
+
     vec2f window_size;
     float width = 14;
     float fraction = 1;
