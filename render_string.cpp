@@ -1401,8 +1401,6 @@ void chat_manager::set_open_chat_channels(const std::vector<std::string>& channe
         if(logn.count(name) == 0)
         {
             thread.was_focused = false;
-            thread.was_hovered = false;
-            thread.was_rendered = false;
         }
     }
 

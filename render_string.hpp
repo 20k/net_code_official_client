@@ -10,6 +10,7 @@
 #include <networking/networking.hpp>
 #include <nlohmann/json.hpp>
 #include "imgui_ui_components.hpp"
+#include <networking/serialisable_fwd.hpp>
 
 struct ImFont;
 struct context;
@@ -22,7 +23,7 @@ struct context;
 
 ///no ok so:
 ///render strings should be built unconditionally, and then split up further by lines
-struct render_string
+struct render_string : serialisable, free_function
 {
     vec3f colour;
     ///using a string_view would be too complicated, as it would require updating the views
@@ -38,7 +39,7 @@ struct screen_line
     std::vector<render_string> strings;
 };
 
-struct paragraph_string
+struct paragraph_string : serialisable, free_function
 {
     int unformatted_char_width = 0;
     vec2f dim;
@@ -62,7 +63,7 @@ struct driven_scrollbar
     void tick();
 };
 
-struct text_manager
+struct text_manager : serialisable, free_function
 {
     vec2f window_tl;
     bool use_type_prompt = true;
@@ -139,7 +140,7 @@ struct child_terminal : terminal2
     child_terminal();
 };
 
-struct terminal_manager2
+struct terminal_manager2 : serialisable, free_function
 {
     main_terminal2 primary;
     std::vector<child_terminal> secondary;
@@ -152,21 +153,13 @@ struct terminal_manager2
 
 struct chat_thread2 : text_manager
 {
-    bool has_unread_message = false;
-
-    bool was_focused = false;
-    bool was_hovered = false;
-    bool was_rendered = false;
-
     virtual bool create_window(context& ctx, vec2f content_size, vec2f window_size) override;
     virtual void on_enter_text(context& ctx, std::string_view text, auto_handler& auto_handle, connection_send_data& send) override;
 
     std::string friendly_name;
-
-    std::vector<std::string> pending_input;
 };
 
-struct chat_manager
+struct chat_manager  : serialisable, free_function
 {
     std::map<std::string, chat_thread2> chat_threads;
 
