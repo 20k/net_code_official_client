@@ -1584,6 +1584,10 @@ void chat_thread2::on_enter_text(context& ctx, std::string_view text, auto_handl
             }
         }
     }
+    else if(text == "#cls")
+    {
+        clear_text();
+    }
     else
     {
         std::string escaped_string = escape_str(text);
