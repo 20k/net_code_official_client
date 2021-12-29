@@ -139,6 +139,8 @@ struct main_terminal2 : terminal2
 struct child_terminal : terminal2
 {
     child_terminal();
+
+    virtual bool create_window(context& ctx, vec2f content_size, vec2f window_size) override;
 };
 
 struct terminal_manager2 : serialisable, free_function

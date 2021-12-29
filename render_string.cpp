@@ -425,10 +425,22 @@ float get_window_title_offset()
     return title_offset;
 }
 
+bool any_scrollbar_active()
+{
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+    ImGuiID active_id = ImGui::GetActiveID();
+    return active_id && (active_id == ImGui::GetWindowScrollbarID(window, ImGuiAxis_X) || active_id == ImGui::GetWindowScrollbarID(window, ImGuiAxis_Y));
+}
+
 void driven_scrollbar::tick()
 {
     if(!bottom_oriented)
         return;
+
+    if(any_scrollbar_active())
+    {
+        locked_to_bottom = false;
+    }
 
     if(locked_to_bottom)
     {
@@ -1135,44 +1147,48 @@ void terminal2::extract_server_commands(context& ctx, nlohmann::json& in, auto_h
 
         add_main_text(data, auto_handle);
     }
-    else if(type == "chat_api" && is_main_terminal)
+    else if(type == "chat_api")
     {
-        std::vector<std::string> chnls;
-        std::vector<std::string> msgs;
-
-        std::vector<nlohmann::json> tell_msgs = in["tells"];
-
-        std::vector<std::string> notifs = in["notifs"];
-
-        for(int i=0; i < (int)in["data"].size(); i++)
-        {
-            chnls.push_back(in["data"][i]["channel"]);
-            msgs.push_back(in["data"][i]["text"]);
-        }
-
-        for(auto& i : notifs)
-        {
-            add_main_text(i + "\n");
-        }
-
         ctx.user = in["user"];
         ctx.root_user = in["root_user"];
 
         command_visual_prefix = colour_string(ctx.user) + "> ";
 
-        for(int i=0; i < (int)chnls.size(); i++)
+        if(is_main_terminal)
         {
-            if(ctx.show_chat_in_main_window)
+            std::vector<std::string> chnls;
+            std::vector<std::string> msgs;
+
+            std::vector<nlohmann::json> tell_msgs = in["tells"];
+
+            std::vector<std::string> notifs = in["notifs"];
+
+            for(int i=0; i < (int)in["data"].size(); i++)
             {
-                add_main_text(msgs[i] + "\n");
+                chnls.push_back(in["data"][i]["channel"]);
+                msgs.push_back(in["data"][i]["text"]);
             }
-        }
 
-        for(int kk=0; kk < (int)tell_msgs.size(); kk++)
-        {
-            std::string text = tell_msgs[kk]["text"];
+            for(auto& i : notifs)
+            {
+                if(is_main_terminal)
+                    add_main_text(i + "\n");
+            }
 
-            add_main_text(text + "\n");
+            for(int i=0; i < (int)chnls.size(); i++)
+            {
+                if(ctx.show_chat_in_main_window)
+                {
+                    add_main_text(msgs[i] + "\n");
+                }
+            }
+
+            for(int kk=0; kk < (int)tell_msgs.size(); kk++)
+            {
+                std::string text = tell_msgs[kk]["text"];
+
+                add_main_text(text + "\n");
+            }
         }
     }
 }
@@ -1256,7 +1272,7 @@ bool main_terminal2::create_window(context& ctx, vec2f content_size, vec2f in_wi
     if(hovering_label || resize_dragging)
         resize_colu32 = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_ResizeGripActive));
 
-    if(hovering_label)
+    if(hovering_label && !any_scrollbar_active())
     {
         if(ImGui::IsMouseDragging(0) && !title_dragging && !resize_dragging)
         {
@@ -1317,6 +1333,16 @@ void terminal_manager2::render(context& ctx, auto_handler& auto_handle, connecti
     {
         i.render(ctx, auto_handle, send);
     }
+
+    for(int i=0; i < (int)secondary.size(); i++)
+    {
+        if(!secondary[i].open)
+        {
+            secondary.erase(secondary.begin() + i);
+            i--;
+            continue;
+        }
+    }
 }
 
 void terminal_manager2::default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send)
@@ -1345,6 +1371,18 @@ void terminal_manager2::create_new_terminal()
 child_terminal::child_terminal()
 {
     colour_like_terminal = true;
+}
+
+bool child_terminal::create_window(context& ctx, vec2f content_size, vec2f create_window_size)
+{
+    ImGui::SetNextWindowSize(ImVec2(create_window_size.x(), create_window_size.y()), ImGuiCond_Appearing);
+
+    int flags = 0;
+
+    if(unseen_text)
+        flags |= ImGuiWindowFlags_UnsavedDocument;
+
+    return ImGui::Begin(std::to_string(tag).c_str(), &open, flags);
 }
 
 void chat_manager::extract_server_commands(nlohmann::json& in)
