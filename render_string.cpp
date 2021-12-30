@@ -241,10 +241,31 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
     return ret;
 }
 
+static
+void fix_tabs(std::string& str)
+{
+    int tab_width = 4;
+
+    for(int i=0; i < (int)str.size(); i++)
+    {
+        if(str[i] == '\t')
+        {
+            str[i] = ' ';
+
+            for(int k=0; k < tab_width - 1; k++)
+            {
+                str.insert(str.begin() + i, ' ');
+            }
+        }
+    }
+}
+
 paragraph_string::paragraph_string(){}
 
 paragraph_string::paragraph_string(std::string in, bool include_specials, bool colour_like_terminal)
 {
+    fix_tabs(in);
+
     basic_render_strings = create_render_strings(in, include_specials, colour_like_terminal);
     str = std::move(in);
 

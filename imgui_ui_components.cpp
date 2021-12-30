@@ -563,6 +563,7 @@ void terminal_imgui::bump_command_to_history(auto_handler& auto_handle)
     limit_size(history, MAX_TEXT_HISTORY);
 }
 
+static
 void fix_tabs(std::string& str)
 {
     int tab_width = 4;
