@@ -622,12 +622,16 @@ void text_manager::default_controls(context& ctx, auto_handler& auto_handle, con
         {
             float page_scroll_lines = floor((window_size.y() - ImGui::GetStyle().WindowPadding.y * 2 - get_window_title_offset()) / get_char_size(font).y()) - last_trailing_blank_lines;
 
+            page_scroll_lines = max(page_scroll_lines, 0.f);
+
             scrollbar.pending_scroll -= page_scroll_lines * get_char_size(font).y();
         }
 
         if(i == io.KeyMap[ImGuiKey_PageDown])
         {
             float page_scroll_lines = floor((window_size.y() - ImGui::GetStyle().WindowPadding.y * 2 - get_window_title_offset()) / get_char_size(font).y()) - last_trailing_blank_lines;
+
+            page_scroll_lines = max(page_scroll_lines, 0.f);
 
             scrollbar.pending_scroll += page_scroll_lines * get_char_size(font).y();
         }
