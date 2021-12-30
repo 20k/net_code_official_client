@@ -705,6 +705,8 @@ void add_text(ImDrawList* lst, ImFont* font, ImVec2 pos, ImU32 col, const char* 
 
 void text_manager::render(context& ctx, auto_handler& auto_handle, connection_send_data& send)
 {
+    limit_history();
+
     float clip_width = get_formatting_clip_width(font, window_size.x(), SCROLLBAR_WIDTH);
 
     float content_height = 0;
@@ -1005,6 +1007,24 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
     }
 
     was_visible = should_render;
+}
+
+void text_manager::limit_history()
+{
+    int max_size = MAX_TEXT_HISTORY;
+    int buffer = 10;
+
+    int my_size = paragraphs.size();
+
+    if(my_size > max_size + buffer)
+    {
+        int extra_elements = my_size - max_size;
+
+        auto front_it = std::make_move_iterator(paragraphs.begin() + extra_elements);
+        auto back_it = std::make_move_iterator(paragraphs.end());
+
+        paragraphs = std::vector<paragraph_string>(front_it, back_it);
+    }
 }
 
 void text_manager::clear_text()

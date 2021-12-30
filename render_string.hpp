@@ -108,6 +108,7 @@ struct text_manager : serialisable, free_function
 
     void render(context& ctx, auto_handler& auto_handle, connection_send_data& send);
 
+    void limit_history();
     void clear_text();
     void clear_command();
 
