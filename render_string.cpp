@@ -1227,10 +1227,12 @@ bool main_terminal2::create_window(context& ctx, vec2f content_size, vec2f in_wi
 
     vec2i real_window_size = ctx.backend->get_window_size();
 
+    ImVec2 viewport_pos = ImGui::GetMainViewport()->Pos;
+
     ImGui::SetNextWindowSize(ImVec2(real_window_size.x(), real_window_size.y()));
     ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
-    ImGui::SetNextWindowPos({window_pos.x(), window_pos.y()});
-    ctx.backend->set_window_position({window_pos.x(), window_pos.y()});
+    ImGui::SetNextWindowPos(viewport_pos);
+    ctx.backend->set_window_position({viewport_pos.x, viewport_pos.y});
 
     ImVec4 style_col = ImGui::GetStyleColorVec4(ImGuiCol_TitleBgActive);
 
@@ -1277,12 +1279,10 @@ bool main_terminal2::create_window(context& ctx, vec2f content_size, vec2f in_wi
         real_pos.x = delta.x + title_start_pos.x();
         real_pos.y = delta.y + title_start_pos.y();
 
-        window_pos = {real_pos.x, real_pos.y};
-
-        ctx.backend->set_window_position({window_pos.x(), window_pos.y()});
+        ctx.backend->set_window_position({real_pos.x, real_pos.y});
     }
 
-    vec2f label_br = window_pos + window_size;
+    vec2f label_br = (vec2f){viewport_pos.x, viewport_pos.y} + window_size;
     vec2f label_tl = label_br - (vec2f){30, 30};
 
     bool hovering_label = ImGui::IsMouseHoveringRect({label_tl.x(), label_tl.y()}, {label_br.x(), label_br.y()}, true);
