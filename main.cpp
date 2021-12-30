@@ -254,11 +254,14 @@ int main(int argc, char* argv[])
     generic_backend* backend = new sdl2_backend(sett, "net_code_");
 
     render_window window(sett, backend);
-    ImGui::GetIO().MouseDragThreshold = 0;
-    ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    io.MouseDragThreshold = 0;
+    io.ConfigWindowsMoveFromTitleBarOnly = true;
     //ImGui::GetIO().ConfigWindowsResizeFromEdges = false;
 
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     //io.ConfigViewportsNoTaskBarIcon = true;
 
     ImVec4 background_col(30/255.f, 30/255.f, 30/255.f, 1.f);
@@ -370,8 +373,6 @@ int main(int argc, char* argv[])
     bool has_settings_window = false;
 
     printf("Pre main loop\n");
-
-    ImGuiIO& io = ImGui::GetIO();
 
     int iconn = conn.client_connected_to_server;
     printf("Am connected? %i\n", iconn);

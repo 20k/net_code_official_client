@@ -434,6 +434,16 @@ bool any_scrollbar_active()
 
 void driven_scrollbar::tick()
 {
+    bool just_moved = false;
+
+    if(pending_scroll != 0)
+    {
+        float current_scroll = ImGui::GetCurrentWindow()->Scroll.y;
+        ImGui::SetScrollY(current_scroll + pending_scroll);
+        pending_scroll = 0;
+        just_moved = true;
+    }
+
     if(!bottom_oriented)
         return;
 
@@ -444,14 +454,14 @@ void driven_scrollbar::tick()
 
     if(locked_to_bottom)
     {
-        if(ImGui::GetIO().MouseWheel != 0)
+        if(ImGui::GetIO().MouseWheel != 0 || just_moved)
             locked_to_bottom = false;
         else
             ImGui::SetScrollHereY(1);
     }
     else
     {
-        if(ImGui::GetScrollY() == ImGui::GetScrollMaxY())
+        if(ImGui::GetScrollY() == ImGui::GetScrollMaxY() && !just_moved)
         {
             locked_to_bottom = true;
             ImGui::SetScrollHereY(1);
@@ -607,6 +617,20 @@ void text_manager::default_controls(context& ctx, auto_handler& auto_handle, con
             else
                 command.add_to_command('\n');
         }
+
+        if(i == io.KeyMap[ImGuiKey_PageUp])
+        {
+            float page_scroll_lines = floor((window_size.y() - ImGui::GetStyle().WindowPadding.y * 2 - get_window_title_offset()) / get_char_size(font).y()) - last_trailing_blank_lines;
+
+            scrollbar.pending_scroll -= page_scroll_lines * get_char_size(font).y();
+        }
+
+        if(i == io.KeyMap[ImGuiKey_PageDown])
+        {
+            float page_scroll_lines = floor((window_size.y() - ImGui::GetStyle().WindowPadding.y * 2 - get_window_title_offset()) / get_char_size(font).y()) - last_trailing_blank_lines;
+
+            scrollbar.pending_scroll += page_scroll_lines * get_char_size(font).y();
+        }
     }
 
     if(io.KeyCtrl && ImGui::IsKeyPressed(io.KeyMap[ImGuiKey_C]))
@@ -749,6 +773,8 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
             trailing_blank_lines = 0;
 
         trailing_blank_lines += command_line_height;
+
+        last_trailing_blank_lines = trailing_blank_lines;
 
         float full_dummy_size = content_height + trailing_blank_lines * get_char_size(font).y() - ImGui::GetStyle().ItemSpacing.y * 2 + ImGui::GetStyle().WindowPadding.y;
 
