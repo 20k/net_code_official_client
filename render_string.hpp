@@ -62,7 +62,7 @@ struct driven_scrollbar
     bool bottom_oriented = true;
     float pending_scroll = 0;
 
-    void set_next_scroll();
+    void set_next_scroll(const std::string& window_title);
     void tick();
 };
 
@@ -84,6 +84,7 @@ struct text_manager : serialisable, free_function
     bool was_focused = false;
     int dock_id = -1;
     int last_trailing_blank_lines = 0;
+    float window_title_offset = 0;
 
     std::string command_visual_prefix;
 

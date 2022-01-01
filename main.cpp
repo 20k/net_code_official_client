@@ -261,7 +261,7 @@ int main(int argc, char* argv[])
     io.ConfigWindowsMoveFromTitleBarOnly = true;
     //ImGui::GetIO().ConfigWindowsResizeFromEdges = false;
 
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     //io.ConfigViewportsNoTaskBarIcon = true;
 
     ImVec4 background_col(30/255.f, 30/255.f, 30/255.f, 1.f);

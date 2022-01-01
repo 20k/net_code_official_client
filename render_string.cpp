@@ -464,14 +464,20 @@ void SetWindowScrollY(const char* name, float scroll_y)
     }
 }
 
-void driven_scrollbar::set_next_scroll()
+void driven_scrollbar::set_next_scroll(const std::string& window_title)
 {
+    ImGuiWindow* window = ImGui::FindWindowByName(window_title.c_str());
+
+    if(window == nullptr)
+        return;
+
     if(bottom_oriented && locked_to_bottom)
     {
-        ///so this overwrites scrolltarget
-        ///but scrolling is done in newframe, which sets scrolltarget as well
-        ///which means this overwrites the scroll target from there, which aint right
-        ImGui::SetNextWindowScroll(ImVec2(-1, 999999));
+        ///don't scroll to bottom if scrolltarget has been set this frame
+        if(window->ScrollTarget.y == FLT_MAX)
+        {
+            ImGui::SetNextWindowScroll(ImVec2(-1.f, 999999.f));
+        }
     }
 }
 
@@ -493,13 +499,6 @@ void driven_scrollbar::tick()
         printf("Scoll %f\n", pending_scroll);
         printf("Mouse Wheel %f\n", ImGui::GetIO().MouseWheel);
     }*/
-
-    if(ImGui::IsWindowFocused())
-    {
-        float scroll = ImGui::GetCurrentWindow()->Scroll.y;
-
-        printf("Scr %f\n", scroll);
-    }
 
     if(!bottom_oriented)
         return;
@@ -677,7 +676,7 @@ void text_manager::default_controls(context& ctx, auto_handler& auto_handle, con
 
         if(i == io.KeyMap[ImGuiKey_PageUp])
         {
-            float page_scroll_lines = floor((window_size.y() - ImGui::GetStyle().WindowPadding.y * 2 - get_window_title_offset()) / get_char_size(font).y()) - last_trailing_blank_lines;
+            float page_scroll_lines = floor((window_size.y() - ImGui::GetStyle().WindowPadding.y * 2 - window_title_offset) / get_char_size(font).y()) - last_trailing_blank_lines;
 
             page_scroll_lines = max(page_scroll_lines, 0.f);
 
@@ -686,7 +685,7 @@ void text_manager::default_controls(context& ctx, auto_handler& auto_handle, con
 
         if(i == io.KeyMap[ImGuiKey_PageDown])
         {
-            float page_scroll_lines = floor((window_size.y() - ImGui::GetStyle().WindowPadding.y * 2 - get_window_title_offset()) / get_char_size(font).y()) - last_trailing_blank_lines;
+            float page_scroll_lines = floor((window_size.y() - ImGui::GetStyle().WindowPadding.y * 2 - window_title_offset) / get_char_size(font).y()) - last_trailing_blank_lines;
 
             page_scroll_lines = max(page_scroll_lines, 0.f);
 
@@ -780,7 +779,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
         content_height += s.lines.size() * char_size.y();
     }
 
-    scrollbar.set_next_scroll();
+    scrollbar.set_next_scroll(get_window_name());
 
     ///ImGui::Begin
     bool should_render = create_window(ctx, {clip_width, content_height}, {400, 300});
@@ -807,6 +806,8 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
     if(should_render)
     {
         on_pre_render(ctx, auto_handle, send);
+
+        window_title_offset = get_window_title_offset();
 
         ImVec2 cursor_screen_pos = ImGui::GetCursorScreenPos();
 
