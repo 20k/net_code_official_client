@@ -62,6 +62,7 @@ struct driven_scrollbar
     bool bottom_oriented = true;
     float pending_scroll = 0;
 
+    void set_next_scroll();
     void tick();
 };
 
@@ -101,6 +102,8 @@ struct text_manager : serialisable, free_function
     void add_command_to_main_text(auto_handler& auto_handle);
 
     void default_controls(context& ctx, auto_handler& auto_handle, connection_send_data& send);
+
+    virtual std::string get_window_name();
     virtual bool create_window(context& ctx, vec2f content_size, vec2f window_size);
     virtual void destroy_window();
     virtual void on_pre_render(context& ctx, auto_handler& auto_handle, connection_send_data& send){}
@@ -127,6 +130,7 @@ struct main_terminal2 : terminal2
 {
     main_terminal2();
 
+    virtual std::string get_window_name() override;
     virtual bool create_window(context& ctx, vec2f content_size, vec2f window_size) override;
     virtual void destroy_window() override;
 
@@ -141,6 +145,7 @@ struct child_terminal : terminal2
 {
     child_terminal();
 
+    virtual std::string get_window_name() override;
     virtual bool create_window(context& ctx, vec2f content_size, vec2f window_size) override;
 };
 
@@ -157,6 +162,7 @@ struct terminal_manager2 : serialisable, free_function
 
 struct chat_thread2 : text_manager
 {
+    virtual std::string get_window_name() override;
     virtual bool create_window(context& ctx, vec2f content_size, vec2f window_size) override;
     virtual void on_enter_text(context& ctx, std::string_view text, auto_handler& auto_handle, connection_send_data& send) override;
 
@@ -209,6 +215,7 @@ struct realtime_script_run2 : text_manager
     uint64_t current_sequence_id = 0;
     uint64_t acked_sequence_id = 0;
 
+    virtual std::string get_window_name() override;
     virtual bool create_window(context& ctx, vec2f content_size, vec2f in_window_size) override;
     virtual void destroy_window() override;
     void on_pre_render(context& ctx, auto_handler& auto_handle, connection_send_data& send);

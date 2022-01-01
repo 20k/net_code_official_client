@@ -453,6 +453,28 @@ bool any_scrollbar_active()
     return active_id && (active_id == ImGui::GetWindowScrollbarID(window, ImGuiAxis_X) || active_id == ImGui::GetWindowScrollbarID(window, ImGuiAxis_Y));
 }
 
+void SetWindowScrollY(const char* name, float scroll_y)
+{
+    if (ImGuiWindow* window = ImGui::FindWindowByName(name))
+    {
+        // this is a copy of internal SetWindowScrollY()
+        window->DC.CursorMaxPos.y += window->Scroll.y;
+        window->Scroll.y = scroll_y;
+        window->DC.CursorMaxPos.y -= window->Scroll.y;
+    }
+}
+
+void driven_scrollbar::set_next_scroll()
+{
+    if(bottom_oriented && locked_to_bottom)
+    {
+        ///so this overwrites scrolltarget
+        ///but scrolling is done in newframe, which sets scrolltarget as well
+        ///which means this overwrites the scroll target from there, which aint right
+        ImGui::SetNextWindowScroll(ImVec2(-1, 999999));
+    }
+}
+
 void driven_scrollbar::tick()
 {
     bool just_moved = false;
@@ -463,6 +485,20 @@ void driven_scrollbar::tick()
         ImGui::SetScrollY(current_scroll + pending_scroll);
         pending_scroll = 0;
         just_moved = true;
+        locked_to_bottom = false;
+    }
+
+    /*if(ImGui::IsWindowFocused())
+    {
+        printf("Scoll %f\n", pending_scroll);
+        printf("Mouse Wheel %f\n", ImGui::GetIO().MouseWheel);
+    }*/
+
+    if(ImGui::IsWindowFocused())
+    {
+        float scroll = ImGui::GetCurrentWindow()->Scroll.y;
+
+        printf("Scr %f\n", scroll);
     }
 
     if(!bottom_oriented)
@@ -477,15 +513,15 @@ void driven_scrollbar::tick()
     {
         if(ImGui::GetIO().MouseWheel != 0 || just_moved)
             locked_to_bottom = false;
-        else
-            ImGui::SetScrollHereY(1);
+        //else
+        //    ImGui::SetScrollHereY(1);
     }
     else
     {
         if(ImGui::GetScrollY() == ImGui::GetScrollMaxY() && !just_moved)
         {
             locked_to_bottom = true;
-            ImGui::SetScrollHereY(1);
+            //ImGui::SetScrollHereY(1);
         }
     }
 }
@@ -691,6 +727,11 @@ void text_manager::default_controls(context& ctx, auto_handler& auto_handle, con
     }
 }
 
+std::string text_manager::get_window_name()
+{
+    return "Test Terminal";
+}
+
 bool text_manager::create_window(context& ctx, vec2f content_size, vec2f create_window_size)
 {
     //ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
@@ -701,7 +742,7 @@ bool text_manager::create_window(context& ctx, vec2f content_size, vec2f create_
     if(unseen_text)
         flags |= ImGuiWindowFlags_UnsavedDocument;
 
-    return ImGui::Begin("Test Terminal", &open, flags);
+    return ImGui::Begin(get_window_name().c_str(), &open, flags);
 }
 
 void text_manager::destroy_window()
@@ -738,6 +779,8 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
     {
         content_height += s.lines.size() * char_size.y();
     }
+
+    scrollbar.set_next_scroll();
 
     ///ImGui::Begin
     bool should_render = create_window(ctx, {clip_width, content_height}, {400, 300});
@@ -1289,6 +1332,11 @@ main_terminal2::main_terminal2()
     command.cursor_pos_idx = command.command.size();
 }
 
+std::string main_terminal2::get_window_name()
+{
+    return " NET_CODE_";
+}
+
 bool main_terminal2::create_window(context& ctx, vec2f content_size, vec2f in_window_size)
 {
     //ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
@@ -1313,7 +1361,7 @@ bool main_terminal2::create_window(context& ctx, vec2f content_size, vec2f in_wi
     ImVec4 resize_col = ImGui::GetStyleColorVec4(ImGuiCol_ResizeGrip);
     ImU32 resize_colu32 = ImGui::ColorConvertFloat4ToU32(resize_col);
 
-    bool rendering = ImGui::Begin(" NET_CODE_", &open, flags);
+    bool rendering = ImGui::Begin(get_window_name().c_str(), &open, flags);
 
     if(ImGui::IsItemHovered() &&
        ImGui::IsMouseDragging(0) && !title_dragging && !resize_dragging)
@@ -1462,6 +1510,11 @@ child_terminal::child_terminal()
     colour_like_terminal = true;
 }
 
+std::string child_terminal::get_window_name()
+{
+    return std::to_string(tag);
+}
+
 bool child_terminal::create_window(context& ctx, vec2f content_size, vec2f create_window_size)
 {
     ImGui::SetNextWindowSize(ImVec2(create_window_size.x(), create_window_size.y()), ImGuiCond_Appearing);
@@ -1471,7 +1524,7 @@ bool child_terminal::create_window(context& ctx, vec2f content_size, vec2f creat
     if(unseen_text)
         flags |= ImGuiWindowFlags_UnsavedDocument;
 
-    return ImGui::Begin(std::to_string(tag).c_str(), &open, flags);
+    return ImGui::Begin(get_window_name().c_str(), &open, flags);
 }
 
 void chat_manager::extract_server_commands(nlohmann::json& in)
@@ -1545,6 +1598,11 @@ void chat_manager::add_text(const std::string& channel, const std::vector<std::s
     }
 }
 
+std::string chat_thread2::get_window_name()
+{
+    return friendly_name + "###" + friendly_name + "$";
+}
+
 bool chat_thread2::create_window(context& ctx, vec2f content_size, vec2f create_window_size)
 {
     create_window_size = {500, 300};
@@ -1554,12 +1612,10 @@ bool chat_thread2::create_window(context& ctx, vec2f content_size, vec2f create_
 
     int flags = ImGuiWindowFlags_NoFocusOnAppearing;
 
-    std::string unfriendly_name = friendly_name + "###" + friendly_name + "$";
-
     if(unseen_text)
         flags |= ImGuiWindowFlags_UnsavedDocument;
 
-    return ImGui::Begin(unfriendly_name.c_str(), nullptr, flags);
+    return ImGui::Begin(get_window_name().c_str(), nullptr, flags);
 }
 
 void chat_thread2::on_enter_text(context& ctx, std::string_view text, auto_handler& auto_handle, connection_send_data& send)
@@ -1792,10 +1848,13 @@ std::string get_realtime_script_name(realtime_script_run2& in)
     return title_str;
 }
 
+std::string realtime_script_run2::get_window_name()
+{
+    return get_realtime_script_name(*this);
+}
+
 bool realtime_script_run2::create_window(context& ctx, vec2f content_size, vec2f in_window_size)
 {
-    std::string window_title = get_realtime_script_name(*this);
-
     //ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
 
     if(set_size)
@@ -1803,7 +1862,7 @@ bool realtime_script_run2::create_window(context& ctx, vec2f content_size, vec2f
 
     set_size = false;
 
-    bool should_render = ImGui::Begin(window_title.c_str(), &open, 0);
+    bool should_render = ImGui::Begin(get_window_name().c_str(), &open, 0);
 
     is_focused = ImGui::IsWindowFocused();
     is_hovered = ImGui::IsWindowHovered();

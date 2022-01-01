@@ -388,6 +388,7 @@
 			<Option link="0" />
 		</Unit>
 		<Unit filename="deps/imgui/imgui_draw.cpp" />
+		<Unit filename="deps/imgui/imgui_internal.h" />
 		<Unit filename="deps/imgui/imgui_tables.cpp" />
 		<Unit filename="deps/imgui/imgui_widgets.cpp" />
 		<Unit filename="deps/imgui/misc/cpp/imgui_stdlib.cpp" />
