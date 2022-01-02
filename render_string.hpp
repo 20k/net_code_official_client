@@ -9,8 +9,8 @@
 #include "editable_string.hpp"
 #include <networking/networking.hpp>
 #include <nlohmann/json.hpp>
-#include "imgui_ui_components.hpp"
 #include <networking/serialisable_fwd.hpp>
+#include "ui_stack.hpp"
 
 struct ImFont;
 struct context;

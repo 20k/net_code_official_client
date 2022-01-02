@@ -6,7 +6,6 @@
 #include <libncclient/nc_util.hpp>
 
 #include "auto_handlers.hpp"
-#include "imgui_ui_components.hpp"
 
 #include <iostream>
 #include <string_view>
@@ -41,129 +40,6 @@ void open_directory(std::string_view name)
     std::string sname(name.begin(), name.end());
 
     system(("start " + sname).c_str());
-}
-
-std::string handle_local_command(const std::string& username, std::string_view command, auto_handler& auto_handle, bool& should_shutdown, terminal_manager& terminals, chat_window& chat)
-{
-    #ifndef __EMSCRIPTEN__
-    file::mkdir("scripts");
-    file::mkdir(get_scripts_directory(username).c_str());
-    #endif // __EMSCRIPTEN__
-
-    if(starts_with(command, "#clear_autos") || starts_with(command, "#autos_clear"))
-    {
-        auto_handle.found_args.clear();
-        auto_handle.is_valid.clear();
-    }
-
-    if(starts_with(command, "#shutdown"))
-    {
-        should_shutdown = true;
-    }
-
-    if(starts_with(command, "#cls"))
-        clear_everything(terminals, chat);
-
-    if(starts_with(command, "#clear_term"))
-        terminals.get_focused_terminal()->clear_terminal();
-
-    if(starts_with(command, "#clear_chat"))
-        chat.clear_chat();
-
-    if(username == "")
-        return "Please log in with user <username>";
-
-    if(command == "#")
-    {
-        std::vector<std::string> fname;
-
-        tinydir_dir dir;
-        #ifndef __EMSCRIPTEN__
-        tinydir_open(&dir, get_scripts_directory(username).c_str());
-        #else
-        tinydir_open(&dir, ("web/" + get_scripts_directory(username)).c_str());
-        #endif
-
-        while (dir.has_next)
-        {
-            tinydir_file file;
-            tinydir_readfile(&dir, &file);
-
-            if(!file.is_dir)
-            {
-                auto post_split = no_ss_split(file.name, ".");
-
-                if(post_split.size() == 2 && post_split[1] == "js")
-                    fname.push_back(post_split[0]);
-            }
-
-            tinydir_next(&dir);
-        }
-
-        tinydir_close(&dir);
-
-        std::string build;
-
-        for(auto& i : fname)
-            build += i + ", ";
-
-        ///removes tailing ", "
-        if(build.size() > 0)
-        {
-            build.pop_back();
-            build.pop_back();
-        }
-
-        return build;
-    }
-
-    std::string s_command(command.begin(), command.end());
-
-    if(starts_with(command, "#edit "))
-    {
-        std::vector<std::string> fname = no_ss_split(s_command, " ");
-
-        if(fname.size() < 2)
-            return make_error_col("Format is #edit scriptname");
-
-        std::string name = fname[1];
-
-        std::string file_name = get_scripts_directory(username) + "/" + name + ".js";
-
-        if(!file::exists(file_name))
-        {
-            std::cout << "Trying to create " << file_name << std::endl;
-
-            file::write(file_name, "function(context, args)\n{\n\n}", file::mode::TEXT);
-        }
-
-        ipc_open(file_name);
-    }
-
-    if(starts_with(command, "#open "))
-    {
-        std::vector<std::string> fname = no_ss_split(s_command, " ");
-
-        if(fname.size() < 2)
-            return make_error_col("Format is #open scriptname");
-
-        std::string name = fname[1];
-
-        std::string file_name = get_scripts_directory(username) + "/" + name + ".js";
-
-        if(!file::exists(file_name))
-            return "No such file";
-
-        ipc_open(file_name);
-    }
-
-    if(starts_with(command, "#dir"))
-    {
-        system(("start " + get_scripts_directory(username)).c_str());
-        //ShellExecute(NULL, "open", "scripts", NULL, NULL, SW_SHOWDEFAULT);
-    }
-
-    return "";
 }
 
 std::string get_scripts_list(std::string_view username)

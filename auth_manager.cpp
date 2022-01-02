@@ -7,7 +7,6 @@
 #include <imgui/imgui.h>
 #include "string_helpers.hpp"
 #include <imgui/misc/cpp/imgui_stdlib.h>
-#include "imgui_ui_components.hpp"
 #include <networking/networking.hpp>
 #include "render_string.hpp"
 

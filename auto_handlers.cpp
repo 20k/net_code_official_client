@@ -454,7 +454,7 @@ int insert_kv_ghosts(const std::vector<std::string>& keys, const std::vector<std
 
         if(val.size() >= 2)
         {
-            auto tokenise_temp = tokenise_general(string_to_interop_no_autos(val, true));
+            auto tokenise_temp = tokenise_general(val);
 
             if(tokenise_temp.size() > 0 && tokenise_temp[0].type == token::VALUE && tokenise_temp[0].subtype == token::STRING)
             {
@@ -560,19 +560,9 @@ void handle_tab_cycling(auto_handler& auto_handle, const std::vector<token_info>
     }
 }
 
-void replace_string(std::vector<interop_char>& in, std::string replacement)
-{
-    in = string_to_interop_no_autos(replacement, false);
-}
-
 void replace_string(std::string& in, std::string_view replacement)
 {
     in = std::string(replacement.begin(), replacement.end());
-}
-
-std::vector<interop_char> to_underlying_type(const std::vector<interop_char>& tag, const std::string& str)
-{
-    return string_to_interop_no_autos(str, false);
 }
 
 std::string to_underlying_type(const std::string& tag, const std::string& str)

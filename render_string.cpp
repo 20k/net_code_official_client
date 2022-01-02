@@ -17,6 +17,7 @@
 #include <toolkit/render_window.hpp>
 #include "context.hpp"
 #include "ui_stack.hpp"
+#include "string_helpers.hpp"
 
 vec3f process_colour(vec3f in)
 {
@@ -1054,6 +1055,8 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
 void text_manager::limit_history()
 {
+    #define MAX_TEXT_HISTORY 200
+
     int max_size = MAX_TEXT_HISTORY;
     int buffer = 10;
 

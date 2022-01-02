@@ -31,6 +31,7 @@ struct ui_stack
     std::vector<std::string> typelist;
 };
 
+std::string get_element_id(const std::string& type, const std::vector<nlohmann::json>& data);
 void render_ui_stack(connection_send_data& to_write, uint64_t& sequence_id_in, ui_stack& stk, int id, bool is_linear_colour);
 
 #endif // UI_STACK_HPP_INCLUDED
