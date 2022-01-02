@@ -453,17 +453,6 @@ bool any_scrollbar_active()
     return active_id && (active_id == ImGui::GetWindowScrollbarID(window, ImGuiAxis_X) || active_id == ImGui::GetWindowScrollbarID(window, ImGuiAxis_Y));
 }
 
-void SetWindowScrollY(const char* name, float scroll_y)
-{
-    if (ImGuiWindow* window = ImGui::FindWindowByName(name))
-    {
-        // this is a copy of internal SetWindowScrollY()
-        window->DC.CursorMaxPos.y += window->Scroll.y;
-        window->Scroll.y = scroll_y;
-        window->DC.CursorMaxPos.y -= window->Scroll.y;
-    }
-}
-
 void driven_scrollbar::set_next_scroll(const std::string& window_title)
 {
     ImGuiWindow* window = ImGui::FindWindowByName(window_title.c_str());
@@ -494,12 +483,6 @@ void driven_scrollbar::tick()
         locked_to_bottom = false;
     }
 
-    /*if(ImGui::IsWindowFocused())
-    {
-        printf("Scoll %f\n", pending_scroll);
-        printf("Mouse Wheel %f\n", ImGui::GetIO().MouseWheel);
-    }*/
-
     if(!bottom_oriented)
         return;
 
@@ -512,16 +495,11 @@ void driven_scrollbar::tick()
     {
         if(ImGui::GetIO().MouseWheel != 0 || just_moved)
             locked_to_bottom = false;
-        //else
-        //    ImGui::SetScrollHereY(1);
     }
     else
     {
         if(ImGui::GetScrollY() == ImGui::GetScrollMaxY() && !just_moved)
-        {
             locked_to_bottom = true;
-            //ImGui::SetScrollHereY(1);
-        }
     }
 }
 
