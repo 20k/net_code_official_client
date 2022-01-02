@@ -10,7 +10,6 @@
 #include <toolkit/clock.hpp>
 
 struct render_string;
-struct interop_char;
 struct token_info;
 struct connection_send_data;
 
@@ -50,10 +49,6 @@ struct auto_handler : serialisable
     std::vector<std::string> found_unprocessed_autocompletes;
     std::map<std::string, std::vector<autocomplete_args>> found_args;
     std::map<std::string, int> is_valid;
-
-    ///returns autocomplete
-    void auto_colour(std::vector<interop_char>& in, bool colour_special = false, bool parse_for_autocompletes = true);
-    //void auto_colour(std::string_view in, bool colour_special = false, bool parse_for_autocompletes = true);
 
     void handle_autocompletes(std::string& in, int& cursor_idx, int& cursor_offset, std::string& command_str);
 

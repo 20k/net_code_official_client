@@ -650,9 +650,6 @@ int main(int argc, char* argv[])
                 }
             }
 
-            float scroll_y = io.MouseWheel;
-            //float scroll_x = io.MouseWheelH;
-
             if(ImGui::IsMouseClicked(0))
             {
                 get_global_copy_handler2().on_lclick(cursor_pos);

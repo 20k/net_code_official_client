@@ -6,139 +6,6 @@
 #include "render_string.hpp"
 #include <iostream>
 
-inline
-void colour_interop(std::vector<interop_char>& in, int start, int fin, vec3f col)
-{
-    for(int kk=start; kk < fin; kk++)
-    {
-        if(kk < 0)
-            continue;
-        if(kk >= (int)in.size())
-            return;
-
-        if(in[kk].coloured)
-            continue;
-
-        in[kk].col = col;
-    }
-}
-
-void auto_handler::auto_colour(std::vector<interop_char>& in, bool colour_special, bool parse_for_autocompletes)
-{
-    std::map<std::string, vec3f> cols
-    {
-        {"fs.", {60, 255, 60}},
-        {"hs.", {255, 255, 40}},
-        {"ms.", {255, 140, 40}},
-        {"ls.", {255, 20, 20}},
-        {"ns.", {255, 20, 255}},
-        {"4s.", {60, 255, 60}},
-        {"3s.", {255, 255, 40}},
-        {"2s.", {255, 140, 40}},
-        {"1s.", {255, 20, 20}},
-        {"0s.", {255, 20, 255}},
-        {"s.", {255, 20, 255}},
-        {"", {255, 20, 255}},
-    };
-
-    vec3f pale_blue = {120, 120, 255};
-    vec3f pale_red = {255, 60, 60};
-
-    cols["{"] = pale_red;
-    cols["}"] = pale_red;
-    cols["["] = pale_red;
-    cols["]"] = pale_red;
-
-    /*for(auto& i : cols)
-    {
-        i.second = srgb_to_lin(i.second);
-    }*/
-
-    std::map<std::string, vec3f> generic_keywords;
-
-    if(use_autocolour)
-    {
-        generic_keywords["function"] = pale_blue;
-        generic_keywords["while"] = pale_blue;
-        generic_keywords["for"] = pale_blue;
-        generic_keywords["if"] = pale_blue;
-        generic_keywords["return"] = pale_blue;
-        generic_keywords[";"] = pale_red;
-    }
-
-    /*for(auto& i : generic_keywords)
-    {
-        i.second = srgb_to_lin(i.second);
-    }*/
-
-    std::set<token::token> valid_colourings
-    {
-        token::SECLEVEL,
-        //token::OPEN_PAREN,
-        token::OPEN_CURLEY,
-        //token::CLOSE_PAREN,
-        token::CLOSE_CURLEY,
-        token::OPEN_SQUARE,
-        token::CLOSE_SQUARE,
-    };
-
-    vec3f value_col = {8, 143, 242};
-    //vec3f value_col = srgb_to_lin({8, 143, 242});
-    //vec3f value_col = {100, 206, 209};
-    vec3f key_col = {243, 166, 3};
-    //vec3f key_col = srgb_to_lin({243, 166, 3});
-
-    std::vector<token_info> tokens = tokenise_general(in);
-
-    for(token_info& i : tokens)
-    {
-        if(valid_colourings.find(i.type) != valid_colourings.end())
-        {
-            colour_interop(in, i.start_pos, i.end_pos, cols[i.str]);
-        }
-        else if(i.type == token::VALUE && (i.subtype == token::STRING || i.subtype == token::NUMBER || i.subtype == token::BOOLEAN))
-        {
-            if(use_autocolour || i.subtype == token::NUMBER || i.subtype == token::BOOLEAN)
-                colour_interop(in, i.start_pos, i.end_pos, value_col);
-        }
-        else if(use_autocolour && i.type == token::VALUE && i.subtype == token::GENERIC && use_autocolour)
-        {
-            for(auto& ss : generic_keywords)
-            {
-                if(ss.first == i.str)
-                {
-                    colour_interop(in, i.start_pos, i.end_pos, ss.second);
-                    break;
-                }
-            }
-        }
-        else if(i.type == token::KEY)
-        {
-            colour_interop(in, i.start_pos, i.end_pos, key_col);
-        }
-    }
-
-    if(parse_for_autocompletes)
-    {
-        for(int kk=0; kk < (int)tokens.size() - 3; kk++)
-        {
-            if(tokens[kk].type == token::HOST_NAME && tokens[kk+1].type == token::DOT && tokens[kk+2].type == token::EXT_NAME)
-            {
-                std::string str = tokens[kk].str + "." + tokens[kk+2].str;
-
-                bool exists = found_args.find(str) != found_args.end();
-
-                if(str.size() != 0 && !exists)
-                {
-                    //std::cout << "fauto " << str << std::endl;
-
-                    found_unprocessed_autocompletes.push_back(str);
-                }
-            }
-        }
-    }
-}
-
 /*token::HASH,
 token::SECLEVEL,
 token::HOST_NAME,
@@ -163,8 +30,6 @@ std::optional<vec3f> token_to_colour(const token_info& i, bool colour_like_termi
         {"", {255, 20, 255}},
     };
 
-    vec3f default_colour = letter_to_colour('A').value();
-
     vec3f pale_blue = {120, 120, 255};
     vec3f pale_red = {255, 60, 60};
 
@@ -172,11 +37,6 @@ std::optional<vec3f> token_to_colour(const token_info& i, bool colour_like_termi
     cols["}"] = pale_red;
     cols["["] = pale_red;
     cols["]"] = pale_red;
-
-    /*for(auto& i : cols)
-    {
-        i.second = srgb_to_lin(i.second);
-    }*/
 
     std::map<std::string, vec3f> generic_keywords;
 
@@ -190,11 +50,6 @@ std::optional<vec3f> token_to_colour(const token_info& i, bool colour_like_termi
         generic_keywords[";"] = pale_red;
     }
 
-    /*for(auto& i : generic_keywords)
-    {
-        i.second = srgb_to_lin(i.second);
-    }*/
-
     std::set<token::token> valid_colourings
     {
         token::SECLEVEL,
@@ -207,10 +62,8 @@ std::optional<vec3f> token_to_colour(const token_info& i, bool colour_like_termi
     };
 
     vec3f value_col = {8, 143, 242};
-    //vec3f value_col = srgb_to_lin({8, 143, 242});
     //vec3f value_col = {100, 206, 209};
     vec3f key_col = {243, 166, 3};
-    //vec3f key_col = srgb_to_lin({243, 166, 3});
 
     if(valid_colourings.count(i.type) > 0)
     {
@@ -373,11 +226,6 @@ std::vector<std::string> parse_for_autocompletes(std::string_view view)
     }
 
     return found_unprocessed_autocompletes;
-}
-
-static char index(const std::vector<interop_char>& dat, int idx)
-{
-    return dat[idx].c;
 }
 
 static char index(std::string_view view, int idx)
