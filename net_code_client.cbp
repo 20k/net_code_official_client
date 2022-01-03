@@ -312,6 +312,7 @@
 			<Add option="-DSDL_MAIN_HANDLED" />
 			<Add option="-DIMGUI_ENABLE_FREETYPE" />
 			<Add option="-DNO_SERIALISE_RATELIMIT" />
+			<Add option="-DNO_DEFAULT_BACKEND" />
 			<Add directory="deps" />
 			<Add directory="deps/SFML/include" />
 			<Add directory="deps/freetype/include/freetype" />
@@ -377,7 +378,10 @@
 			<Option compiler="gcc" use="0" buildCommand="$compiler $includes -c $file -o $object" />
 		</Unit>
 		<Unit filename="custom_profile.hpp" />
-		<Unit filename="deps/imgui/backends/imgui_impl_glfw.cpp" />
+		<Unit filename="deps/imgui/backends/imgui_impl_glfw.cpp">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
 		<Unit filename="deps/imgui/backends/imgui_impl_opengl3.cpp" />
 		<Unit filename="deps/imgui/backends/imgui_impl_sdl.cpp" />
 		<Unit filename="deps/imgui/imconfig.h" />
@@ -422,7 +426,10 @@
 		<Unit filename="deps/toolkit/opencl.hpp" />
 		<Unit filename="deps/toolkit/render_window.cpp" />
 		<Unit filename="deps/toolkit/render_window.hpp" />
-		<Unit filename="deps/toolkit/render_window_glfw.cpp" />
+		<Unit filename="deps/toolkit/render_window_glfw.cpp">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
 		<Unit filename="deps/toolkit/render_window_glfw.hpp" />
 		<Unit filename="deps/toolkit/render_window_sdl2.cpp" />
 		<Unit filename="deps/toolkit/render_window_sdl2.hpp" />
