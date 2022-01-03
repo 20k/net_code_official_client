@@ -828,7 +828,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         float full_dummy_size = content_height + trailing_blank_lines * get_char_size(font).y() - ImGui::GetStyle().ItemSpacing.y * 2 + ImGui::GetStyle().WindowPadding.y;
 
-        ImGui::Dummy(ImVec2(1, full_dummy_size));
+        ImGui::Dummy(ImVec2(default_width - ImGui::GetStyle().WindowPadding.x * 2, full_dummy_size));
 
         copy_handler2& handle = get_global_copy_handler2();
 
@@ -2081,6 +2081,8 @@ void realtime_script_manager2::extract_server_commands(font_selector& fonts, nlo
 
             run.dim.x() = rwidth;
             run.dim.y() = rheight;
+
+            run.default_width = run.dim.x();
         }
 
         if(in.count("name") > 0)

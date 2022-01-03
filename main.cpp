@@ -303,6 +303,7 @@ int main(int argc, char* argv[])
     std::string chat_file = "chat_v7.txt";
     //std::string settings_file = "text_sett_v1.txt";
     std::string font_file = "font_sett_v2.txt";
+    std::string autos_file = "autocompletes_v1.txt";
     std::string notepad_file = "notepad.txt";
 
     try
@@ -336,6 +337,16 @@ int main(int argc, char* argv[])
     }
     catch(...){printf("Invalid font file\n");}
 
+    try
+    {
+        if(file::exists(autos_file))
+        {
+            nlohmann::json dat = nlohmann::json::parse(file::read(autos_file, file::mode::BINARY));
+            deserialise(dat, test_handler, serialise_mode::DISK);
+        }
+    }
+    catch(...){printf("Invalid autocompletes file\n");}
+
     std::string notepad;
 
     if(file::exists(notepad_file))
@@ -347,9 +358,6 @@ int main(int argc, char* argv[])
 
     steady_timer render_clock;
     steady_timer write_clock;
-
-    steady_timer mouse_clock;
-    float mouse_send_time_ms = 33;
 
     #ifdef TESTING
     std::vector<std::string> api_calls;
@@ -363,11 +371,6 @@ int main(int argc, char* argv[])
     bool curMouseDown[5] = {};
     ImVec2 last_mouse_pos = ImVec2(0,0);
     ImVec2 last_display_size = ImVec2(0,0);
-
-    auto just_pressed = [&](int key)
-    {
-        return curKeysDown[key] && !lastKeysDown[key];
-    };
 
     bool has_settings_window = false;
 
@@ -434,12 +437,6 @@ int main(int argc, char* argv[])
         bool last_is_open = s_api.is_overlay_open();
 
         s_api.pump_callbacks();
-
-        std::vector<int> glfw_key_pressed_data;
-        std::vector<int> glfw_key_released_data;
-
-        std::vector<int> mouse_pressed_data;
-        std::vector<int> mouse_released_data;
 
         static_assert(sizeof(lastKeysDown) == sizeof(curKeysDown));
         static_assert(sizeof(lastMouseDown) == sizeof(curMouseDown));
@@ -637,19 +634,6 @@ int main(int argc, char* argv[])
 
             vec2f cursor_pos = {io.MousePos.x, io.MousePos.y};
 
-            for(int i=0; i < (int)(sizeof(curMouseDown) / sizeof(curMouseDown[0])); i++)
-            {
-                if(curMouseDown[i] && !lastMouseDown[i])
-                {
-                    mouse_pressed_data.push_back(i);
-                }
-
-                if(!curMouseDown[i] && lastMouseDown[i])
-                {
-                    mouse_released_data.push_back(i);
-                }
-            }
-
             if(ImGui::IsMouseClicked(0))
             {
                 get_global_copy_handler2().on_lclick(cursor_pos);
@@ -710,6 +694,7 @@ int main(int argc, char* argv[])
             {
                 pretty_atomic_write_all(terminal_file, serialise(ctx.terminals, serialise_mode::DISK));
                 pretty_atomic_write_all(chat_file, serialise(chat2, serialise_mode::DISK));
+                pretty_atomic_write_all(autos_file, serialise(test_handler, serialise_mode::DISK));
 
                 auto save_sett = window.get_render_settings();
 
@@ -758,8 +743,6 @@ int main(int argc, char* argv[])
 
             //std::cout << render_clock.restart().asMicroseconds() / 1000.f << std::endl;
 
-            vec2i window_dim = window.get_window_size();
-
             realtime_scripts2.default_controls(ctx, test_handler, to_write);
             realtime_scripts2.render(ctx, test_handler, to_write);
 
@@ -768,9 +751,6 @@ int main(int argc, char* argv[])
 
             chat2.default_controls(ctx, test_handler, to_write);
             chat2.render(ctx, test_handler, to_write);
-
-            int lcwidth = char_inf::cwidth;
-            int lcheight = char_inf::cheight;
 
             char_inf::cwidth = ImGui::CalcTextSize("A").x + char_inf::extra_glyph_spacing;
             char_inf::cheight = ImGui::CalcTextSize("A").y;

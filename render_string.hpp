@@ -78,6 +78,7 @@ struct text_manager : serialisable, free_function
     bool open = true;
     bool unseen_text = false;
     int friendly_id = 0;
+    float default_width = 400;
 
     ///derived properties
     bool was_visible = false;
