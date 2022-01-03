@@ -743,6 +743,53 @@ void add_text(ImDrawList* lst, ImFont* font, ImVec2 pos, ImU32 col, const char* 
     lst->AddText(font, font_size, pos, col, start, fin);
 }
 
+struct cli_prompt_info
+{
+    int cursor_offset = 0;
+    int trailing_lines = 0;
+    int prefix_width = 0;
+    paragraph_string text;
+};
+
+cli_prompt_info make_cli_prompt(ImFont* font, editable_string& command, const std::string& command_visual_prefix, auto_handler& auto_handle, bool use_type_prompt, vec2f window_size)
+{
+    cli_prompt_info inf;
+
+    std::string render_command = command.command;
+    bool specials = true;
+
+    if(render_command == "")
+    {
+        render_command = "`bType something here...`";
+        specials = false;
+    }
+
+    auto_handle.handle_autocompletes(render_command, command.cursor_pos_idx, inf.cursor_offset, command.command);
+
+    paragraph_string command_line(command_visual_prefix, false, true);
+
+    inf.prefix_width = command_line.unformatted_char_width;
+
+    paragraph_string command_line2(render_command, specials, true);
+
+    command_line.merge(command_line2);
+
+    command_line.build(font, get_formatting_clip_width(font, window_size.x(), SCROLLBAR_WIDTH));
+
+    int command_line_height = command_line.lines.size();
+
+    if(command_line_height == 0)
+        inf.trailing_lines = 1;
+
+    if(!use_type_prompt)
+        inf.trailing_lines = 0;
+
+    inf.trailing_lines += command_line_height;
+    inf.text = std::move(command_line);
+
+    return inf;
+}
+
 void text_manager::render(context& ctx, auto_handler& auto_handle, connection_send_data& send)
 {
     limit_history();
@@ -790,43 +837,11 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         ImVec2 cursor_screen_pos = ImGui::GetCursorScreenPos();
 
-        int trailing_blank_lines = 0;
+        cli_prompt_info cpi = make_cli_prompt(font, command, command_visual_prefix, auto_handle, use_type_prompt, window_size);
 
-        std::string render_command = command.command;
-        bool specials = true;
-        int cursor_offset = 0;
+        last_trailing_blank_lines = cpi.trailing_lines;
 
-        if(render_command == "")
-        {
-            render_command = "`bType something here...`";
-            specials = false;
-        }
-
-        auto_handle.handle_autocompletes(render_command, command.cursor_pos_idx, cursor_offset, command.command);
-
-        paragraph_string command_line(command_visual_prefix, false, true);
-
-        int prefix_width = command_line.unformatted_char_width;
-
-        paragraph_string command_line2(render_command, specials, true);
-
-        command_line.merge(command_line2);
-
-        command_line.build(font, get_formatting_clip_width(font, window_size.x(), SCROLLBAR_WIDTH));
-
-        int command_line_height = command_line.lines.size();
-
-        if(command_line_height == 0)
-            trailing_blank_lines = 1;
-
-        if(!use_type_prompt)
-            trailing_blank_lines = 0;
-
-        trailing_blank_lines += command_line_height;
-
-        last_trailing_blank_lines = trailing_blank_lines;
-
-        float full_dummy_size = content_height + trailing_blank_lines * get_char_size(font).y() - ImGui::GetStyle().ItemSpacing.y * 2 + ImGui::GetStyle().WindowPadding.y;
+        float full_dummy_size = content_height + cpi.trailing_lines * get_char_size(font).y() - ImGui::GetStyle().ItemSpacing.y * 2 + ImGui::GetStyle().WindowPadding.y;
 
         ImGui::Dummy(ImVec2(default_width - ImGui::GetStyle().WindowPadding.x * 2, full_dummy_size));
 
@@ -951,7 +966,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
             }
         };
 
-        float input_prompt_y = base_top_offset + window_size.y() - ImGui::GetStyle().WindowPadding.y - char_size.y() * trailing_blank_lines;
+        float input_prompt_y = base_top_offset + window_size.y() - ImGui::GetStyle().WindowPadding.y - char_size.y() * cpi.trailing_lines;
 
         auto process_paragraph = [&](const paragraph_string& s)
         {
@@ -988,7 +1003,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         if(use_type_prompt)
         {
-            process_paragraph_with_y(command_line, input_prompt_y);
+            process_paragraph_with_y(cpi.text, input_prompt_y);
 
             ImDrawList* drawlist = ImGui::GetWindowDrawList();
 
@@ -998,9 +1013,9 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
                 float cwidth = get_char_size(font).x();
 
-                int cursor_cpos = command.cursor_pos_idx + cursor_offset;
+                int cursor_cpos = command.cursor_pos_idx + cpi.cursor_offset;
 
-                ImVec2 pos((cursor_cpos + prefix_width) * cwidth - cwidth/2.f + base_left_offset, input_prompt_y);
+                ImVec2 pos((cursor_cpos + cpi.prefix_width) * cwidth - cwidth/2.f + base_left_offset, input_prompt_y);
 
                 ImU32 col = ImGui::ColorConvertFloat4ToU32({my_col.x(), my_col.y(), my_col.z(), 255});
 
@@ -1588,6 +1603,8 @@ std::string chat_thread2::get_window_name()
 bool chat_thread2::create_window(context& ctx, vec2f content_size, vec2f create_window_size)
 {
     create_window_size = {500, 300};
+
+    //ImGui::SetNextWindowContentSize(ImVec2(0.f, content_size.y()));
 
     //ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
     ImGui::SetNextWindowSize(ImVec2(create_window_size.x(), create_window_size.y()), ImGuiCond_Appearing);
