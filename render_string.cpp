@@ -364,7 +364,7 @@ std::vector<screen_line> create_screen_lines(ImFont* font, const std::string& ba
         next_line.strings.push_back(pending);
     }
 
-    if(next_line.strings.size() > 0)
+    if(next_line.strings.size() > 0 || base_string.size() == 0)
     {
         ret.push_back(next_line);
     }
@@ -1152,7 +1152,6 @@ void terminal2::on_enter_text(context& ctx, std::string_view text, auto_handler&
     }*/
 
     add_main_text(command_visual_prefix + std::string(text.begin(), text.end()), auto_handle);
-    add_main_text("");
 
     if(!is_local_command(text))
     {
@@ -1192,7 +1191,7 @@ void terminal2::on_enter_text(context& ctx, std::string_view text, auto_handler&
         }
         else if(ctx.root_user == "")
         {
-            add_main_text("Please log in with user <username>\n");
+            add_main_text("Please log in with user <username>");
         }
         else if(text == "#")
         {
@@ -1220,6 +1219,8 @@ void terminal2::on_enter_text(context& ctx, std::string_view text, auto_handler&
         {
             add_main_text("Unhandled local command\n");
         }
+
+        add_main_text("");
     }
 
     command.push_command_to_history(text);
