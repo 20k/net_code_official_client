@@ -28,6 +28,7 @@ DEFINE_SERIALISE_FUNCTION(text_manager)
     DO_FSERIALISE(unseen_text);
     DO_FSERIALISE(friendly_id);
     DO_FSERIALISE(paragraphs);
+    DO_FSERIALISE(command);
 }
 
 DEFINE_SERIALISE_FUNCTION(terminal2)
@@ -38,6 +39,7 @@ DEFINE_SERIALISE_FUNCTION(terminal2)
     DO_FSERIALISE(friendly_id);
     DO_FSERIALISE(paragraphs);
     DO_FSERIALISE(tag);
+    DO_FSERIALISE(command);
 }
 
 DEFINE_SERIALISE_FUNCTION(main_terminal2)
@@ -48,6 +50,7 @@ DEFINE_SERIALISE_FUNCTION(main_terminal2)
     DO_FSERIALISE(friendly_id);
     DO_FSERIALISE(paragraphs);
     DO_FSERIALISE(tag);
+    DO_FSERIALISE(command);
 }
 
 DEFINE_SERIALISE_FUNCTION(child_terminal)
@@ -58,6 +61,7 @@ DEFINE_SERIALISE_FUNCTION(child_terminal)
     DO_FSERIALISE(friendly_id);
     DO_FSERIALISE(paragraphs);
     DO_FSERIALISE(tag);
+    DO_FSERIALISE(command);
 }
 
 DEFINE_SERIALISE_FUNCTION(terminal_manager2)
@@ -76,6 +80,7 @@ DEFINE_SERIALISE_FUNCTION(chat_thread2)
     DO_FSERIALISE(friendly_id);
     DO_FSERIALISE(paragraphs);
     DO_FSERIALISE(friendly_name);
+    DO_FSERIALISE(command);
 }
 
 DEFINE_SERIALISE_FUNCTION(chat_manager)
