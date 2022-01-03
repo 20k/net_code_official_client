@@ -827,15 +827,6 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
     if(should_render)
     {
-        if(ImGui::IsWindowHovered())
-        {
-            printf("My content height %f\n", content_height + ImGui::GetStyle().ItemSpacing.y);
-
-            float imgui_content = ImGui::GetCurrentWindow()->WorkRect.GetHeight();
-
-            printf("Imgui content height %f\n", imgui_content);
-        }
-
         on_pre_render(ctx, auto_handle, send);
 
         window_title_offset = get_window_title_offset();
