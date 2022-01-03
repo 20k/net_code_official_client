@@ -504,14 +504,6 @@ void driven_scrollbar::tick()
     }
 }
 
-
-float get_desired_visible_y_end(ImFont* font, float content_height, int trailing_blank_lines)
-{
-    int additional = trailing_blank_lines;
-
-    return content_height + get_char_size(font).y() * (2 + additional) + ImGui::GetStyle().WindowPadding.y;
-}
-
 void terminate_script(connection_send_data& send, int id)
 {
     nlohmann::json data;
@@ -807,12 +799,12 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
     cli_prompt_info cpi = make_cli_prompt(font, command, command_visual_prefix, auto_handle, use_type_prompt, window_size);
 
-    content_height += cpi.trailing_lines * get_char_size(font).y();
+    content_height += cpi.trailing_lines * char_size.y();
 
     scrollbar.set_next_scroll(get_window_name());
 
     ///ImGui::Begin
-    bool should_render = create_window(ctx, {clip_width, content_height}, {400, 300});
+    bool should_render = create_window(ctx, {clip_width, content_height + ImGui::GetStyle().ItemSpacing.y}, {400, 300});
 
     vec2f found_window_size = {ImGui::GetWindowSize().x, ImGui::GetWindowSize().y};
 
@@ -835,6 +827,15 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
     if(should_render)
     {
+        if(ImGui::IsWindowHovered())
+        {
+            printf("My content height %f\n", content_height + ImGui::GetStyle().ItemSpacing.y);
+
+            float imgui_content = ImGui::GetCurrentWindow()->WorkRect.GetHeight();
+
+            printf("Imgui content height %f\n", imgui_content);
+        }
+
         on_pre_render(ctx, auto_handle, send);
 
         window_title_offset = get_window_title_offset();
@@ -843,7 +844,7 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         last_trailing_blank_lines = cpi.trailing_lines;
 
-        float full_dummy_size = content_height - ImGui::GetStyle().ItemSpacing.y * 2 + ImGui::GetStyle().WindowPadding.y;
+        float full_dummy_size = content_height;// - ImGui::GetStyle().WindowPadding.y * 2;
 
         ImGui::Dummy(ImVec2(default_width - ImGui::GetStyle().WindowPadding.x * 2, full_dummy_size));
 
