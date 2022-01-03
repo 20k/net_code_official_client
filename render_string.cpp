@@ -712,7 +712,7 @@ std::string text_manager::get_window_name()
 
 bool text_manager::create_window(context& ctx, vec2f content_size, vec2f create_window_size)
 {
-    //ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
+    ImGui::SetNextWindowContentSize({0.f, content_size.y()});
     ImGui::SetNextWindowSize(ImVec2(create_window_size.x(), create_window_size.y()), ImGuiCond_Appearing);
 
     int flags = ImGuiWindowFlags_NoScrollbar;
@@ -805,6 +805,10 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
         content_height += s.lines.size() * char_size.y();
     }
 
+    cli_prompt_info cpi = make_cli_prompt(font, command, command_visual_prefix, auto_handle, use_type_prompt, window_size);
+
+    content_height += cpi.trailing_lines * get_char_size(font).y();
+
     scrollbar.set_next_scroll(get_window_name());
 
     ///ImGui::Begin
@@ -837,11 +841,9 @@ void text_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         ImVec2 cursor_screen_pos = ImGui::GetCursorScreenPos();
 
-        cli_prompt_info cpi = make_cli_prompt(font, command, command_visual_prefix, auto_handle, use_type_prompt, window_size);
-
         last_trailing_blank_lines = cpi.trailing_lines;
 
-        float full_dummy_size = content_height + cpi.trailing_lines * get_char_size(font).y() - ImGui::GetStyle().ItemSpacing.y * 2 + ImGui::GetStyle().WindowPadding.y;
+        float full_dummy_size = content_height - ImGui::GetStyle().ItemSpacing.y * 2 + ImGui::GetStyle().WindowPadding.y;
 
         ImGui::Dummy(ImVec2(default_width - ImGui::GetStyle().WindowPadding.x * 2, full_dummy_size));
 
@@ -1345,6 +1347,7 @@ bool main_terminal2::create_window(context& ctx, vec2f content_size, vec2f in_wi
 
     ImVec2 viewport_pos = ImGui::GetMainViewport()->Pos;
 
+    ImGui::SetNextWindowContentSize(ImVec2(0.f, content_size.y()));
     ImGui::SetNextWindowSize(ImVec2(real_window_size.x(), real_window_size.y()));
     ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
     ImGui::SetNextWindowPos(viewport_pos);
@@ -1514,6 +1517,7 @@ std::string child_terminal::get_window_name()
 
 bool child_terminal::create_window(context& ctx, vec2f content_size, vec2f create_window_size)
 {
+    ImGui::SetNextWindowContentSize(ImVec2(0.f, content_size.y()));
     ImGui::SetNextWindowSize(ImVec2(create_window_size.x(), create_window_size.y()), ImGuiCond_Appearing);
 
     int flags = 0;
@@ -1604,8 +1608,7 @@ bool chat_thread2::create_window(context& ctx, vec2f content_size, vec2f create_
 {
     create_window_size = {500, 300};
 
-    //ImGui::SetNextWindowContentSize(ImVec2(0.f, content_size.y()));
-
+    ImGui::SetNextWindowContentSize(ImVec2(0.f, content_size.y()));
     //ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
     ImGui::SetNextWindowSize(ImVec2(create_window_size.x(), create_window_size.y()), ImGuiCond_Appearing);
 
@@ -1855,6 +1858,12 @@ std::string realtime_script_run2::get_window_name()
 bool realtime_script_run2::create_window(context& ctx, vec2f content_size, vec2f in_window_size)
 {
     //ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
+
+    ///we only know how big the content size is if there are no imgui elements
+    ///this means that scripts with imgui elements in them would have a buggy bottom oriented resize
+    ///however conveniently, scripts with imgui elements in them are not bottom oriented!
+    if(stk.elements.size() == 0)
+        ImGui::SetNextWindowContentSize(ImVec2(0.f, content_size.y()));
 
     if(set_size)
         ImGui::SetNextWindowSize(ImVec2(dim.x(), dim.y()), ImGuiCond_Always);
