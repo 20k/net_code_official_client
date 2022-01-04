@@ -1745,7 +1745,6 @@ void chat_manager::default_controls(context& ctx, auto_handler& auto_handle, con
 
 void chat_manager::render(context& ctx, auto_handler& auto_handle, connection_send_data& send)
 {
-    //static bool once = file::exists("ui_setup_once_v2");
     static ImGuiID dock_id = -1;
 
     if(!windows_constrained || ImGui::IsKeyPressed(GLFW_KEY_F2))
@@ -1764,7 +1763,6 @@ void chat_manager::render(context& ctx, auto_handler& auto_handle, connection_se
         ImGui::DockBuilderFinish(dock_id);
 
         windows_constrained = true;
-        //file::write("ui_setup_once_v2", "1", file::mode::BINARY);
     }
 
     std::map<int, int> dock_ids;
