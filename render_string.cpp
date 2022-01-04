@@ -1510,6 +1510,12 @@ std::string child_terminal::get_window_name()
 
 bool child_terminal::create_window(context& ctx, vec2f content_size, vec2f create_window_size)
 {
+    if(!has_set_viewport)
+    {
+        ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
+        has_set_viewport = true;
+    }
+
     ImGui::SetNextWindowContentSize(ImVec2(0.f, content_size.y()));
     ImGui::SetNextWindowSize(ImVec2(create_window_size.x(), create_window_size.y()), ImGuiCond_Appearing);
 
@@ -1739,10 +1745,10 @@ void chat_manager::default_controls(context& ctx, auto_handler& auto_handle, con
 
 void chat_manager::render(context& ctx, auto_handler& auto_handle, connection_send_data& send)
 {
-    static bool once = file::exists("ui_setup_once_v2");
+    //static bool once = file::exists("ui_setup_once_v2");
     static ImGuiID dock_id = -1;
 
-    if(!once || ImGui::IsKeyPressed(GLFW_KEY_F2))
+    if(!windows_constrained || ImGui::IsKeyPressed(GLFW_KEY_F2))
     {
         dock_id = ImGui::DockBuilderAddNode(0, ImGuiDockNodeFlags_None);
         ImVec2 viewport_pos = ImGui::GetMainViewport()->Pos;
@@ -1757,7 +1763,8 @@ void chat_manager::render(context& ctx, auto_handler& auto_handle, connection_se
 
         ImGui::DockBuilderFinish(dock_id);
 
-        file::write("ui_setup_once_v2", "1", file::mode::BINARY);
+        windows_constrained = true;
+        //file::write("ui_setup_once_v2", "1", file::mode::BINARY);
     }
 
     std::map<int, int> dock_ids;
@@ -1804,11 +1811,9 @@ void chat_manager::render(context& ctx, auto_handler& auto_handle, connection_se
         }
         else
         {
-            once = false;
+            windows_constrained = false;
         }
     }
-
-    once = true;
 }
 
 realtime_script_run2::realtime_script_run2()
@@ -1851,6 +1856,12 @@ std::string realtime_script_run2::get_window_name()
 bool realtime_script_run2::create_window(context& ctx, vec2f content_size, vec2f in_window_size)
 {
     //ImGui::SetNextWindowContentSize({content_size.x(), content_size.y()});
+
+    if(!has_set_viewport)
+    {
+        ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
+        has_set_viewport = true;
+    }
 
     ///we only know how big the content size is if there are no imgui elements
     ///this means that scripts with imgui elements in them would have a buggy bottom oriented resize

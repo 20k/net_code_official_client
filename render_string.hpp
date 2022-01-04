@@ -79,6 +79,7 @@ struct text_manager : serialisable, free_function
     bool unseen_text = false;
     int friendly_id = 0;
     float default_width = 400;
+    bool has_set_viewport = false;
 
     ///derived properties
     bool was_visible = false;
@@ -173,6 +174,8 @@ struct chat_thread2 : text_manager
 
 struct chat_manager  : serialisable, free_function
 {
+    bool windows_constrained = false;
+
     std::map<std::string, chat_thread2> chat_threads;
 
     std::vector<std::string> open_chat_channels;
