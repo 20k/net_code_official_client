@@ -364,6 +364,7 @@
 			<Add option="-lversion" />
 			<Add option="-loleaut32" />
 			<Add option="-lsetupapi" />
+			<Add option="-ldwrite" />
 			<Add directory="deps/steamworks_sdk_150/sdk/redistributable_bin/win64" />
 		</Linker>
 		<Unit filename="auth_manager.cpp" />
