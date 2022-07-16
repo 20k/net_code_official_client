@@ -9,6 +9,7 @@
 #include <map>
 #include <atomic>
 #include <vector>
+#include <algorithm>
 
 thread_local int stack_count = 0;
 thread_local int stack_stop = 0;
