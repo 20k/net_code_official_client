@@ -210,7 +210,7 @@
 				<Option output="bin/ProfileCustom/crapmud_client" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/ProfileCustom/" />
 				<Option type="1" />
-				<Option compiler="clang" />
+				<Option compiler="gcc" />
 				<Option projectCompilerOptionsRelation="1" />
 				<Option projectLinkerOptionsRelation="1" />
 				<Compiler>
@@ -283,7 +283,7 @@
 				<Option output="bin/ProfileCustomGCC/crapmud_client" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/ProfileCustomGCC/" />
 				<Option type="1" />
-				<Option compiler="gnu_gcc_compiler_ucrt64" />
+				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-Og" />
 					<Add option="-g" />
