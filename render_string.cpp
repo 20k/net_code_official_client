@@ -200,7 +200,10 @@ std::vector<render_string> create_render_strings(std::string_view in, bool inclu
             if(include_specials && !suppress_specials)
             {
                 add_index(i);
-                add_index(i+1);
+
+                ///this condition mirrors the if for if cur == '`' || cur == '\n', to avoid double adding the same inex
+                if(next != 0 && next != '`' && next != '\n')
+                    add_index(i+1);
             }
 
             if(next != '`')
